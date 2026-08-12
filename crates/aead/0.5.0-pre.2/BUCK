@@ -1,0 +1,27 @@
+load("@buckal//:cargo_manifest.bzl", "cargo_manifest")
+load("@buckal//:wrapper.bzl", "rust_library")
+
+http_archive(
+    name = "vendor",
+    urls = [
+        "https://static.crates.io/crates/aead/aead-0.5.0-pre.2.crate",
+    ],
+    sha256 = "ebd885afa9fa966b7715dc1c46bf47330b9156eec79a09d2003c5af03d153ba0",
+    type = "tar.gz",
+    strip_prefix = "aead-0.5.0-pre.2",
+)
+
+cargo_manifest(
+    name = "manifest",
+    vendor = ":vendor",
+)
+
+rust_library(
+    name = "aead",
+    srcs = [":vendor"],
+    crate = "aead",
+    crate_root = "vendor/src/lib.rs",
+    edition = "2021",
+    rustc_flags = ["@$(location :manifest[env_flags])"],
+    visibility = ["PUBLIC"],
+)

@@ -1,0 +1,27 @@
+load("@buckal//:cargo_manifest.bzl", "cargo_manifest")
+load("@buckal//:wrapper.bzl", "rust_library")
+
+http_archive(
+    name = "vendor",
+    urls = [
+        "https://static.crates.io/crates/adler2/adler2-2.0.0.crate",
+    ],
+    sha256 = "512761e0bb2578dd7380c6baaa0f4ce03e84f95e960231d1dec8bf4d7d6e2627",
+    type = "tar.gz",
+    strip_prefix = "adler2-2.0.0",
+)
+
+cargo_manifest(
+    name = "manifest",
+    vendor = ":vendor",
+)
+
+rust_library(
+    name = "adler2",
+    srcs = [":vendor"],
+    crate = "adler2",
+    crate_root = "vendor/src/lib.rs",
+    edition = "2021",
+    rustc_flags = ["@$(location :manifest[env_flags])"],
+    visibility = ["PUBLIC"],
+)

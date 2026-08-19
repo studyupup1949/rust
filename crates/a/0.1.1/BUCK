@@ -1,15 +1,4 @@
-load("@buckal//:cargo_manifest.bzl", "cargo_manifest")
 load("@buckal//:wrapper.bzl", "rust_library")
-
-filegroup(
-    name = "package_src",
-    srcs = glob(["**"], exclude = ["BUCK"]),
-)
-
-cargo_manifest(
-    name = "manifest",
-    vendor = ":package_src",
-)
 
 rust_library(
     name = "a",
@@ -17,7 +6,11 @@ rust_library(
     crate = "a",
     crate_root = "src/lib.rs",
     edition = "2024",
+    features = ["default"],
 
-    rustc_flags = ["@$(location :manifest[env_flags])"],
     visibility = ["PUBLIC"],
+    deps = [
+        "//third-party/rust/crates/chrono/0.4.45:chrono",
+        "//third-party/rust/crates/thiserror/2.0.20:thiserror",
+    ],
 )

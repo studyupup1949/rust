@@ -1,15 +1,4 @@
-load("@buckal//:cargo_manifest.bzl", "cargo_manifest")
 load("@buckal//:wrapper.bzl", "rust_library")
-
-filegroup(
-    name = "package_src",
-    srcs = glob(["**"], exclude = ["BUCK"]),
-)
-
-cargo_manifest(
-    name = "manifest",
-    vendor = ":package_src",
-)
 
 rust_library(
     name = "aead",
@@ -18,6 +7,8 @@ rust_library(
     crate_root = "src/lib.rs",
     edition = "2018",
 
-    rustc_flags = ["@$(location :manifest[env_flags])"],
     visibility = ["PUBLIC"],
+    deps = [
+        "//third-party/rust/crates/generic-array/0.14.9:generic_array",
+    ],
 )

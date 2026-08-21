@@ -1,0 +1,36 @@
+[package]
+name = "a121-sys"
+description = "Raw bindings to the A121 radar sensor C SDK"
+authors = ["Ragarnoy <tiagolernould@gmail.com>"]
+keywords = ["embedded", "a121", "radar"]
+repository = "https://github.com/Ragarnoy/a121-sys"
+documentation = "https://docs.rs/a121-sys"
+categories = ["embedded", "no-std"]
+readme = "README.md"
+license = "MIT"
+edition = "2021"
+version = "0.5.0"
+rust-version = "1.82"
+build = "build/mod.rs"
+
+[dependencies]
+
+[build-dependencies]
+bindgen = { version = "0.70" }
+cc = "1.1"
+
+[features]
+stub_library = []
+distance = []
+presence = []
+std = []
+
+[package.metadata.docs.rs]
+all-features = true
+rustdoc-args = ["--cfg", "docsrs"]
+
+
+[profile.release]
+codegen-units = 1
+lto = true
+opt-level = "s"

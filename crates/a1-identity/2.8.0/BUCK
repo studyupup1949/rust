@@ -1,0 +1,21 @@
+load("@buckal//:wrapper.bzl", "rust_library")
+
+rust_library(
+    name = "a1_identity",
+    srcs = glob(["**/*.rs"]),
+    crate = "a1_identity",
+    crate_root = "src/lib.rs",
+    edition = "2021",
+    features = ["default"],
+
+    visibility = ["PUBLIC"],
+    deps = [
+        "//third-party/rust/crates/a1-ai/2.8.0:a1_ai",
+        "//third-party/rust/crates/blake3/1.8.6:blake3",
+        "//third-party/rust/crates/ed25519-dalek/2.2.0:ed25519_dalek",
+        "//third-party/rust/crates/hex/0.4.3:hex",
+        "//third-party/rust/crates/serde/1.0.229:serde",
+        "//third-party/rust/crates/serde_json/1.0.151:serde_json",
+        "//third-party/rust/crates/thiserror/1.0.69:thiserror",
+    ],
+)

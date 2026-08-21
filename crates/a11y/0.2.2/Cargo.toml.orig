@@ -1,0 +1,45 @@
+[package]
+name = "a11y"  # A11y is the abbreviation for accessibility
+description = "无障碍（ACCESSIBILITY,A11Y,辅助功能）"
+keywords.workspace = true
+license.workspace = true
+version.workspace = true
+edition.workspace = true
+readme = "README.md"
+repository.workspace = true
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[package.metadata.docs.rs]
+all-features = true
+rustc-args = ["--cfg", "docsrs"]
+rustdoc-args = ["--cfg", "docsrs", "--generate-link-to-definition"]
+default-target = "x86_64-pc-windows-msvc"
+
+[features]
+jab = ["jab_lib"]
+ia2 = ["ia2_lib", "win-wrap/msaa", "windows/Win32_Foundation"]
+scintilla = ["win-wrap/control", "scintilla-sys"]
+jab_lib = ["rigela-utils/library", "rigela-utils/common"]
+ia2_lib = ["rigela-utils/library", "windows-core"]
+
+[dependencies.win-wrap]
+workspace = true
+optional = true
+
+[dependencies.rigela-utils]
+path = "../utils"
+version = "0.2.2"
+optional = true
+
+[dependencies.scintilla-sys]
+version = "4.0.9"
+optional = true
+
+[dependencies.windows]
+workspace = true
+optional = true
+
+[dependencies.windows-core]
+workspace = true
+optional = true

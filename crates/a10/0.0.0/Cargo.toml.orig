@@ -1,0 +1,6 @@
+[package]
+name = "a10"
+version = "0.0.0"
+license = "MIT"
+description = "Reserving the name."
+edition = "2018"

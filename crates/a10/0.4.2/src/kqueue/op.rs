@@ -1,0 +1,620 @@
+use std::io;
+use std::mem::MaybeUninit;
+use std::task::{self, Poll};
+
+use crate::kqueue::fd::OpKind;
+use crate::op::OpState;
+use crate::{AsyncFd, OpPollResult, SubmissionQueue};
+
+// # Usage
+//
+// We have two kinds of state for operations: Direct and Evented. The first is
+// for operations for which we can't poll for readiness, e.g. socket(2). The
+// latter is for operations for which we can poll for readiness, e.g. read(2).
+//
+// ## Direct
+//
+// For a direct operation (not to be confused with direct descriptors) we create
+// a new State with Direct as status. The operation has unique access to the
+// entire state for the entire duration. The following in the common flow.
+//
+// 1. The Direct status is created as NotStarted.
+// 2. The operation is polled, the state is set to Complete, and using the
+//    resources and arguments the operation is executed.
+//
+// Yes, it's that simple.
+//
+// ## Evented
+//
+// For evented operations the flow is a little more complex.
+//
+// 1. The Evented status is created as NotStarted.
+// 2. After the operation is polled the Future's Waker is added to the list of
+//    waiting futures stored in fd::State (see fd::OpState for more details).
+//    If this operation is the first OpKind in the list it will also submit an
+//    event to poll for the readiness.
+// 3. Once we get a readiness event for the fd we wake all operation waiting for
+//    that kind of operation (OpKind).
+// 4. Once the operation is awoken again, not in the Waiting state, it will try
+//    the operation. If this returns a WouldBlock error we got back to step 2
+//    and set the state to NotStarted. If it does succeed we return the result
+//    and we're done.
+//
+// # Dropping
+//
+// Since neither the Direct or Evented shares any resources with the OS we can
+// safely drop both of them without worrying about access from the OS. However,
+// do we have some special handling where if the status is Complete the
+// resources are not initialised. If the status not Complete the resources must
+// be initialised.
+//
+// For fd::State (part of AsyncFd) there could be outstanding readiness polls
+// that use the fd::State as user_data we delay the allocation. We do this by
+// checking if the state has been initialised and if there are any pending ops.
+// If there are no pending ops we can safely drop the state. If there are
+// pending ops we need to delay the deallcation since a readiness poll could be
+// returned at any time in the completion queue, which would access the state.
+//
+// We delay the deallcation by sending a user-space event (EVFILT_USER) to the
+// polling thread with the pointer as identifier, which returns as user_data in
+// the completion event where we can safely deallocate it. Since we close the
+// file descriptor *before* we send this event we're ensured that any previous
+// events that may hold a pointer to the fd::State will have been processed.
+
+#[derive(Debug)]
+#[allow(private_bounds)] // For use of StateStatus.
+pub(crate) struct State<T: StateStatus, R, A> {
+    // Felds need to be pub(super) for the impl_fd_op! macro.
+    pub(super) status: T,
+    /// Resources used for the operation.
+    ///
+    /// This is only initialised if the status is not [`Direct::Complete`] or
+    /// [`Evented::Complete`], hence `MaybeUninit`.
+    pub(super) resources: MaybeUninit<R>,
+    /// Arguments for the operation.
+    pub(super) args: A,
+}
+
+impl<T: StateStatus, R, A> OpState for State<T, R, A> {
+    type Resources = R;
+    type Args = A;
+
+    fn new(resources: Self::Resources, args: Self::Args) -> Self {
+        State {
+            status: T::new(),
+            resources: MaybeUninit::new(resources),
+            args,
+        }
+    }
+
+    fn resources_mut(&mut self) -> Option<&mut Self::Resources> {
+        if self.status.not_started() {
+            // SAFETY: if the status is started we still have unique access to
+            // the resources.
+            Some(unsafe { self.resources.assume_init_mut() })
+        } else {
+            None
+        }
+    }
+
+    fn args(&self) -> &Self::Args {
+        &self.args
+    }
+
+    fn args_mut(&mut self) -> Option<&mut Self::Args> {
+        if self.status.not_started() {
+            Some(&mut self.args)
+        } else {
+            None
+        }
+    }
+
+    unsafe fn drop(&mut self, _: &SubmissionQueue) {
+        // Nothing special to do.
+    }
+
+    fn reset(&mut self, resources: Self::Resources, args: Self::Args) {
+        assert!(self.status.complete());
+        *self = State::new(resources, args);
+    }
+}
+
+impl<T: StateStatus, R, A> Drop for State<T, R, A> {
+    fn drop(&mut self) {
+        if !self.status.complete() {
+            // SAFETY: if the status is not complete the resources must be
+            // initialised, so it's safe to drop them.
+            unsafe { self.resources.assume_init_drop() }
+        }
+    }
+}
+
+/// Status of a [`State`].
+trait StateStatus {
+    /// Create a not started status.
+    fn new() -> Self;
+
+    /// Returns true if the operation has not started.
+    fn not_started(&self) -> bool;
+
+    /// Returns true if the operation is complete.
+    fn complete(&self) -> bool;
+}
+
+/// Status of an operation that is done synchronously, e.g. opening a socket.
+#[derive(Copy, Clone, Debug)]
+pub(crate) enum Direct {
+    /// Operation has not started yet.
+    NotStarted,
+    /// Last state where the operation was fully cleaned up.
+    Complete,
+}
+
+impl StateStatus for Direct {
+    fn new() -> Self {
+        Direct::NotStarted
+    }
+
+    fn not_started(&self) -> bool {
+        matches!(self, Direct::NotStarted)
+    }
+
+    fn complete(&self) -> bool {
+        matches!(self, Direct::Complete)
+    }
+}
+
+/// Operation that is done using a synchronous function.
+pub(crate) trait DirectOp {
+    type Output;
+    type Resources;
+    type Args: Copy;
+
+    /// Run the synchronous operation.
+    fn run(
+        sq: &SubmissionQueue,
+        resources: Self::Resources,
+        args: Self::Args,
+    ) -> io::Result<Self::Output>;
+}
+
+impl<T: DirectOp> crate::op::Op for T {
+    type Output = io::Result<T::Output>;
+    type Resources = T::Resources;
+    type Args = T::Args;
+    type State = State<Direct, T::Resources, T::Args>;
+
+    fn poll(
+        state: &mut Self::State,
+        _: &mut task::Context<'_>,
+        sq: &SubmissionQueue,
+    ) -> Poll<Self::Output> {
+        match state.status {
+            Direct::NotStarted => {
+                // SAFETY: since the status is not Complete the resources are
+                // initialised. And since we set the status to Complete is safe
+                // to read the resources and leave the old place unitialised.
+                state.status = Direct::Complete;
+                let resources = unsafe { state.resources.assume_init_read() };
+                Poll::Ready(T::run(sq, resources, state.args))
+            }
+            // Shouldn't be reachable, but if the Future is used incorrectly it
+            // can be.
+            Direct::Complete => panic!("polled Future after completion"),
+        }
+    }
+}
+
+/// Operation that is done using a synchronous function.
+pub(crate) trait DirectOpExtract: DirectOp {
+    /// Extracted output of the operation.
+    type ExtractOutput;
+
+    /// Same as [`DirectOp::run`], but returns extracted output.
+    fn run_extract(
+        sq: &SubmissionQueue,
+        resources: Self::Resources,
+        args: Self::Args,
+    ) -> io::Result<Self::ExtractOutput>;
+}
+
+impl<T: DirectOpExtract> crate::op::OpExtract for T {
+    type ExtractOutput = io::Result<<Self as DirectOpExtract>::ExtractOutput>;
+
+    fn poll_extract(
+        state: &mut Self::State,
+        _: &mut task::Context<'_>,
+        sq: &SubmissionQueue,
+    ) -> Poll<Self::ExtractOutput> {
+        match state.status {
+            Direct::NotStarted => {
+                // SAFETY: since the status is not Complete the resources are
+                // initialised. And since we set the status to Complete is safe
+                // to read the resources and leave the old place unitialised.
+                state.status = Direct::Complete;
+                let resources = unsafe { state.resources.assume_init_read() };
+                Poll::Ready(T::run_extract(sq, resources, state.args))
+            }
+            // Shouldn't be reachable, but if the Future is used incorrectly it
+            // can be.
+            Direct::Complete => panic!("polled Future after completion"),
+        }
+    }
+}
+
+/// Same as [`DirectOp`], but for operations using file descriptors.
+pub(crate) trait DirectFdOp {
+    type Output;
+    type Resources;
+    type Args: Copy;
+
+    /// Same as [`DirectOp::run`], but using an `AsyncFd`.
+    fn run(fd: &AsyncFd, resources: Self::Resources, args: Self::Args) -> io::Result<Self::Output>;
+}
+
+/// Macro to implement the FdOp trait.
+//
+// NOTE: this should be a simple implementation:
+//   impl<T: DirectFdOp> crate::op::FdOp for T
+// But that conflicts with the FdOp implementation for T below, causing E0119.
+macro_rules! impl_fd_op {
+    ( $( $T: ident $( < $( $gen: ident ),+ > )? ),* ) => {
+        $(
+        impl $( < $( $gen ),+ > )? crate::op::FdOp for $T $( < $( $gen ),* > )?
+            where Self: $crate::kqueue::op::DirectFdOp,
+        {
+            type Output = ::std::io::Result<<Self as $crate::kqueue::op::DirectFdOp>::Output>;
+            type Resources = <Self as $crate::kqueue::op::DirectFdOp>::Resources;
+            type Args = <Self as $crate::kqueue::op::DirectFdOp>::Args;
+            type State = $crate::kqueue::op::State<$crate::kqueue::op::Direct, <Self as $crate::kqueue::op::DirectFdOp>::Resources, <Self as $crate::kqueue::op::DirectFdOp>::Args>;
+
+            fn poll(
+                state: &mut Self::State,
+                _: &mut ::std::task::Context<'_>,
+                fd: &$crate::AsyncFd,
+            ) -> ::std::task::Poll<Self::Output> {
+                match state.status {
+                    $crate::kqueue::op::Direct::NotStarted => {
+                        // SAFETY: since the status is not Complete the resources are
+                        // initialised. And since we set the status to Complete is safe
+                        // to read the resources and leave the old place unitialised.
+                        state.status = $crate::kqueue::op::Direct::Complete;
+                        let resources = unsafe { state.resources.assume_init_read() };
+                        ::std::task::Poll::Ready(Self::run(fd, resources, state.args))
+                    },
+                    // Shouldn't be reachable, but if the Future is used incorrectly it
+                    // can be.
+                    $crate::kqueue::op::Direct::Complete => ::std::panic!("polled Future after completion"),
+                }
+            }
+        }
+        )*
+    };
+}
+
+pub(super) use impl_fd_op;
+
+/// Status of an operation that whats for an event (on a file descriptor) first.
+#[derive(Copy, Clone, Debug)]
+pub(crate) enum Evented {
+    /// Operation has not started yet.
+    NotStarted,
+    /// Ran the setup, not yet submitted an event, or need to submit an event
+    /// again.
+    ToSubmit,
+    /// Event was submitted, waiting for a result.
+    Waiting,
+    /// Last state where the operation was fully cleaned up.
+    Complete,
+}
+
+impl StateStatus for Evented {
+    fn new() -> Self {
+        Evented::NotStarted
+    }
+
+    fn not_started(&self) -> bool {
+        matches!(self, Evented::NotStarted)
+    }
+
+    fn complete(&self) -> bool {
+        matches!(self, Evented::Complete)
+    }
+}
+
+/// Operation on a file descriptor that waits for an event first and uses
+/// non-blocking I/O.
+pub(crate) trait FdOp {
+    type Output;
+    type Resources;
+    type Args;
+    type OperationOutput;
+
+    /// Setup to run *before* waiting for an event.
+    ///
+    /// Defaults to doing nothing.
+    fn setup(
+        fd: &AsyncFd,
+        resources: &mut Self::Resources,
+        args: &mut Self::Args,
+    ) -> io::Result<()> {
+        _ = (fd, resources, args);
+        Ok(())
+    }
+
+    /// What kind of operation is being done.
+    const OP_KIND: OpKind;
+
+    /// Try the operation.
+    ///
+    /// If this returns [`WouldBlock`] the operation is tried again.
+    ///
+    /// [`WouldBlock`]: std::io::Error::WouldBlock
+    fn try_run(
+        fd: &AsyncFd,
+        resources: &mut Self::Resources,
+        args: &mut Self::Args,
+    ) -> io::Result<Self::OperationOutput>;
+
+    /// Map a succesful operation result.
+    ///
+    /// It's always the `Ok(OperationOutput)` from `try_run`.
+    fn map_ok(
+        fd: &AsyncFd,
+        resources: Self::Resources,
+        output: Self::OperationOutput,
+    ) -> Self::Output;
+}
+
+impl<T: FdOp> crate::op::FdOp for T {
+    type Output = io::Result<T::Output>;
+    type Resources = T::Resources;
+    type Args = T::Args;
+    type State = State<Evented, T::Resources, T::Args>;
+
+    fn poll(
+        state: &mut Self::State,
+        ctx: &mut task::Context<'_>,
+        fd: &AsyncFd,
+    ) -> Poll<Self::Output> {
+        poll::<T, _>(state, ctx, fd, T::map_ok)
+    }
+}
+
+pub(crate) trait FdOpExtract: FdOp {
+    /// Extracted output of the operation.
+    type ExtractOutput;
+
+    /// Same as [`FdOp::map_ok`], returning the extract output.
+    fn map_ok_extract(
+        fd: &AsyncFd,
+        resources: Self::Resources,
+        output: Self::OperationOutput,
+    ) -> Self::ExtractOutput;
+}
+
+impl<T: FdOpExtract> crate::op::FdOpExtract for T {
+    type ExtractOutput = io::Result<T::ExtractOutput>;
+
+    fn poll_extract(
+        state: &mut Self::State,
+        ctx: &mut task::Context<'_>,
+        fd: &AsyncFd,
+    ) -> Poll<Self::ExtractOutput> {
+        poll::<T, _>(state, ctx, fd, T::map_ok_extract)
+    }
+}
+
+pub(crate) trait FdIter {
+    type Output;
+    type Resources;
+    type Args;
+    type OperationOutput;
+
+    /// See [`FdOp::setup`].
+    fn setup(
+        fd: &AsyncFd,
+        resources: &mut Self::Resources,
+        args: &mut Self::Args,
+    ) -> io::Result<()> {
+        _ = (fd, resources, args);
+        Ok(())
+    }
+
+    /// See [`FdOp::OP_KIND`].
+    const OP_KIND: OpKind;
+
+    /// See [`FdOp::try_run`].
+    fn try_run(
+        fd: &AsyncFd,
+        resources: &mut Self::Resources,
+        args: &mut Self::Args,
+    ) -> io::Result<Self::OperationOutput>;
+
+    /// Determine what to do next.
+    fn next(resources: &Self::Resources, output: &Self::OperationOutput) -> Next;
+
+    /// Similar to [`FdOp::map_ok`], but this processes one of the results.
+    /// Meaning it only have a reference to the resources and doesn't take
+    /// ownership of it.
+    fn map_next(
+        fd: &AsyncFd,
+        resources: &Self::Resources,
+        output: Self::OperationOutput,
+    ) -> Self::Output;
+}
+
+/// Returned by [`FdIter::next`].
+pub(crate) enum Next {
+    /// Call [`FdIter::try_run`] again.
+    TryRun,
+    /// Submit and wait for another event.
+    Submit,
+    /// Operation is complete.
+    Complete,
+}
+
+impl<T: FdIter> crate::op::FdIter for T {
+    type Output = io::Result<T::Output>;
+    type Resources = T::Resources;
+    type Args = T::Args;
+    type State = State<Evented, T::Resources, T::Args>;
+
+    fn poll_next(
+        state: &mut Self::State,
+        ctx: &mut task::Context<'_>,
+        fd: &AsyncFd,
+    ) -> Poll<Option<Self::Output>> {
+        let mut r = None;
+        poll_inner(
+            state,
+            ctx,
+            fd,
+            T::setup,
+            T::OP_KIND,
+            T::try_run,
+            |state, output| {
+                debug_assert!(!matches!(state.status, Evented::Complete));
+                // SAFETY: the old status was not Complete, which means that the
+                // resources are initialised, so we can safely return a
+                // reference to it.
+                let resources = unsafe { state.resources.assume_init_ref() };
+                match T::next(resources, output) {
+                    Next::TryRun => {
+                        // Need to try the operation again and hit a would block
+                        // error before we can wait for another readiness event.
+                        state.status = Evented::Waiting;
+                        resources
+                    }
+                    Next::Submit => {
+                        // Need to submit and wait for another event.
+                        state.status = Evented::ToSubmit;
+                        resources
+                    }
+                    Next::Complete => {
+                        state.status = Evented::Complete;
+                        // SAFETY: the old status was not Complete, which means
+                        // that the resources are initialised. Since we've just
+                        // set the status to complete is safe to read the
+                        // resources and leave the old place unitialised.
+                        let resources = unsafe { state.resources.assume_init_read() };
+                        r.insert(resources)
+                    }
+                }
+            },
+            T::map_next,
+            || None,
+        )
+    }
+}
+
+fn poll<T: FdOp, Out>(
+    state: &mut State<Evented, T::Resources, T::Args>,
+    ctx: &mut task::Context<'_>,
+    fd: &AsyncFd,
+    map_ok: impl FnOnce(&AsyncFd, T::Resources, T::OperationOutput) -> Out,
+) -> Poll<io::Result<Out>> {
+    poll_inner(
+        state,
+        ctx,
+        fd,
+        T::setup,
+        T::OP_KIND,
+        T::try_run,
+        |state, _| {
+            debug_assert!(!matches!(state.status, Evented::Complete));
+            state.status = Evented::Complete;
+            // SAFETY: the old status was not Complete, which means that the
+            // resources are initialised. Since we've just set the status to
+            // complete is safe to read the resources and leave the old place
+            // unitialised.
+            unsafe { state.resources.assume_init_read() }
+        },
+        map_ok,
+        // Shouldn't poll Futures after completion, so we panic as it's
+        // incorrect usage.
+        || panic!("polled Future after completion"),
+    )
+}
+
+#[allow(clippy::needless_pass_by_ref_mut)] // for ctx, matches Future::poll.
+#[allow(clippy::too_many_arguments)]
+fn poll_inner<'s, R, A, OpOut, R2, Ok, Res>(
+    state: &'s mut State<Evented, R, A>,
+    ctx: &mut task::Context<'_>,
+    fd: &AsyncFd,
+    setup: impl Fn(&AsyncFd, &mut R, &mut A) -> io::Result<()>,
+    op_kind: OpKind,
+    try_run: impl Fn(&AsyncFd, &mut R, &mut A) -> io::Result<OpOut>,
+    after_try_run: impl FnOnce(&'s mut State<Evented, R, A>, &OpOut) -> R2,
+    map_ok: impl FnOnce(&AsyncFd, R2, OpOut) -> Ok,
+    poll_complete: impl FnOnce() -> Res,
+) -> Poll<Res>
+where
+    Res: OpPollResult<Ok>,
+    R2: 's,
+{
+    loop {
+        match &mut state.status {
+            Evented::NotStarted => {
+                // Perform any setup required before waiting for an event.
+                // SAFETY: status is not Complete so it's safe to access the resources.
+                let resources = unsafe { state.resources.assume_init_mut() };
+                if let Err(err) = setup(fd, resources, &mut state.args) {
+                    return Poll::Ready(Res::from_err(err));
+                }
+
+                state.status = Evented::ToSubmit;
+                // Continue in the next loop iteration.
+            }
+            Evented::ToSubmit => {
+                let fd_state = fd.state();
+                // Add ourselves to the waiters for the operation.
+                let needs_register = {
+                    let mut fd_state = fd_state.lock();
+                    let needs_register = !fd_state.has_waiting_op(op_kind);
+                    fd_state.add(op_kind, ctx.waker().clone());
+                    needs_register
+                }; // Unlock fd state.
+
+                // If we're to first we need to register an event with the
+                // kernel.
+                if needs_register {
+                    fd.sq.submissions().add(|event| {
+                        event.0.filter = match op_kind {
+                            OpKind::Read => libc::EVFILT_READ,
+                            OpKind::Write => libc::EVFILT_WRITE,
+                        };
+                        event.0.ident = fd.fd().cast_unsigned() as _;
+                        event.0.udata = fd_state.as_udata();
+                    });
+                }
+
+                // Set ourselves to waiting for an event from the kernel.
+                state.status = Evented::Waiting;
+                // We've added our waker above to the list, we'll be woken up
+                // once we can make progress.
+                return Poll::Pending;
+            }
+            Evented::Waiting => {
+                // SAFETY: status is not Complete so it's safe to access the resources.
+                let resources = unsafe { state.resources.assume_init_mut() };
+                match try_run(fd, resources, &mut state.args) {
+                    Ok(output) => {
+                        let resources = after_try_run(state, &output);
+                        return Poll::Ready(Res::from_ok(map_ok(fd, resources, output)));
+                    }
+                    Err(ref err) if err.kind() == io::ErrorKind::WouldBlock => {
+                        state.status = Evented::ToSubmit;
+                        // Try again in the next loop iteration.
+                    }
+                    Err(err) => {
+                        state.status = Evented::Complete;
+                        return Poll::Ready(Res::from_err(err));
+                    }
+                }
+            }
+            Evented::Complete => return Poll::Ready(poll_complete()),
+        }
+    }
+}

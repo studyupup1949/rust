@@ -1,0 +1,33 @@
+[package]
+name          = "a10"
+description   = "This library is meant as a low-level library safely exposing different OS's abilities to perform non-blocking I/O."
+version       = "0.4.2"
+authors       = ["Thomas de Zeeuw <thomasdezeeuw@gmail.com>"]
+license       = "MIT"
+documentation = "https://docs.rs/a10"
+repository    = "https://github.com/Thomasdezeeuw/a10"
+readme        = "README.md"
+keywords      = ["io_uring", "io", "async", "non-blocking"]
+categories    = ["asynchronous"]
+include       = ["/Cargo.toml", "/src/**/*.rs", "/tests/**/*.rs", "/README.md", "/LICENSE"]
+edition       = "2024"
+rust-version  = "1.92"
+
+[features]
+default = []
+# Enables nightly only features.
+# * Enables usage of the `AsyncIterator` trait (`async_iterator`).
+nightly = []
+
+[dependencies]
+libc         = { version = "0.2.181", default-features = false }
+log          = { version = "0.4.21",  default-features = false, features = ["kv_std"] }
+
+[dev-dependencies]
+std-logger   = { version = "0.5.3", default-features = false }
+getrandom    = { version = "0.3.4", default-features = false }
+
+[[test]]
+name    = "signals"
+# Tests need control of the main thread.
+harness = false

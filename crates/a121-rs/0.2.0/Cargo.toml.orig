@@ -1,0 +1,44 @@
+[package]
+name = "a121-rs"
+description = "Rust driver for the Acconeer A121 radar sensor"
+authors = ["Ragarnoy <tiagolernould@gmail.com>"]
+keywords = ["embedded", "a121", "radar"]
+repository = "https://github.com/Ragarnoy/a121-rs"
+documentation = "https://docs.rs/a121-rs"
+categories = ["embedded", "no-std"]
+readme = "README.md"
+license = "MIT"
+edition = "2021"
+version = "0.2.0"
+rust-version = "1.82"
+
+[dependencies]
+a121-sys = { version = "0.7.0", features = ["distance", "presence"] }
+
+defmt = { version = "1.0.1", optional = true }
+
+embedded-hal = "1.0.0"
+embedded-hal-async = "1.0.0"
+embassy-sync = { version = "0.7.2", features = [ "defmt" ] }
+
+num = { version = "0.4", default-features = false }
+libm = { version = "0.2.15", default-features = false, optional = true }
+
+[features]
+distance = ["a121-sys/distance"]
+presence = ["a121-sys/presence"]
+libm = ["dep:libm", "num/libm"]
+# Recommended if you don't want to have to link a huge chunk of newlib
+nightly-logger = ["defmt"]
+std = []
+defmt = ["dep:defmt"]
+
+[profile.dev]
+lto = true
+codegen-units = 1
+
+[profile.release]
+debug = 2
+codegen-units = 1
+lto = true
+opt-level = "s"

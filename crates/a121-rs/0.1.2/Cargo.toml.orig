@@ -1,0 +1,47 @@
+[package]
+name = "a121-rs"
+description = "Rust driver for the Acconeer A121 radar sensor"
+authors = ["Ragarnoy <tiagolernould@gmail.com>"]
+keywords = ["embedded", "a121", "radar"]
+repository = "https://github.com/Ragarnoy/a121-rs"
+documentation = "https://docs.rs/a121-rs"
+categories = ["embedded", "no-std"]
+readme = "README.md"
+license = "MIT"
+edition = "2021"
+version = "0.1.2"
+links = "acconeer_a121"
+rust-version = "1.75"
+
+[dependencies]
+defmt = "0.3.5"
+defmt-rtt = "0.4.0"
+
+embedded-hal = "1.0.0"
+embedded-hal-async = "1.0.0"
+embassy-sync = { version = "0.5.0", features = [ "defmt" ] }
+
+num = { version = "0.4", default-features = false }
+libm = { version = "0.2.8", default-features = false, optional = true }
+
+[build-dependencies]
+bindgen = "0.69"
+cc = "1.0"
+
+[features]
+distance = []
+presence = []
+libm = ["dep:libm", "num/libm"]
+nightly-logger = []
+std = []
+
+[profile.dev]
+lto = true
+codegen-units = 1
+
+[profile.release]
+debug = 2
+codegen-units = 1
+lto = true
+opt-level = "s"
+

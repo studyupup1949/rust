@@ -1,0 +1,27 @@
+#![cfg_attr(feature = "nightly", feature(async_iterator))]
+
+mod util;
+
+#[path = "functional/config.rs"]
+mod config;
+#[path = "functional/fd.rs"]
+mod fd;
+#[path = "functional/fs.rs"]
+mod fs;
+#[path = "functional/fs_notify.rs"]
+#[cfg(any(target_os = "android", target_os = "linux"))]
+mod fs_notify;
+#[path = "functional/io.rs"]
+mod io;
+#[path = "functional/mem.rs"]
+mod mem;
+#[path = "functional/net.rs"]
+mod net;
+#[path = "functional/net_options.rs"]
+mod net_options;
+#[path = "functional/process.rs"]
+mod process;
+#[path = "functional/read_buf.rs"]
+mod read_buf;
+#[path = "functional/ring.rs"]
+mod ring;

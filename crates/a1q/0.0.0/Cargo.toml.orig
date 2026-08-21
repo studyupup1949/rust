@@ -1,0 +1,9 @@
+[package]
+name = "a1q"
+description = "Terminal based messenger"
+license = "MIT OR Apache-2.0"
+version = "0.0.0"
+edition = "2024"
+authors = ["Alex Lebedev <me@alex-lebe.dev>"]
+
+[dependencies]

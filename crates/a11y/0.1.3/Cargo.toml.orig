@@ -1,0 +1,36 @@
+[package]
+name = "a11y"  # A11y is the abbreviation for accessibility
+description = "无障碍（ACCESSIBILITY,A11Y,辅助功能）"
+keywords.workspace = true
+license.workspace = true
+version.workspace = true
+edition.workspace = true
+readme = "README.md"
+repository.workspace = true
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[package.metadata.docs.rs]
+all-features = true
+rustc-args = ["--cfg", "docsrs"]
+rustdoc-args = ["--cfg", "docsrs", "--generate-link-to-definition"]
+
+[features]
+jab = ["JabLib"]
+ia2 = ["IAccessible2Lib", "win-wrap/msaa"]
+JabLib = ["rigela-utils/library"]
+IAccessible2Lib = ["rigela-utils/library", "windows/windows-interface"]
+
+[dependencies.win-wrap]
+path = "../win-wrap"
+version = "0.1"
+optional = true
+
+[dependencies.rigela-utils]
+path = "../utils"
+version = "0.1"
+optional = true
+
+[dependencies.windows]
+workspace = true
+optional = true

@@ -1,0 +1,68 @@
+# Run scheduled (rolling) jobs on a nightly basis, as your crate may break independently of any
+# given PR. E.g., updates to rust nightly and updates to this crates dependencies.
+permissions:
+  contents: read
+on:
+  push:
+    branches: [master]
+  pull_request:
+  schedule:
+    - cron:  '7 7 * * *'
+concurrency:
+  group: ${{ github.workflow }}-${{ github.head_ref || github.run_id }}
+  cancel-in-progress: true
+name: rolling
+
+env:
+  CARGO_TERM_COLOR: always
+  ACC_RSS_LIBS: "/home/runner/work/a121-sys/a121-sys/staticlibs"
+
+jobs:
+  nightly:
+    runs-on: ubuntu-latest
+    name: ubuntu / nightly
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: true
+      - name: Install nightly
+        uses: dtolnay/rust-toolchain@nightly
+        with:
+          targets: thumbv7em-none-eabihf
+      - name: Install ARM toolchain
+        uses: carlosperate/arm-none-eabi-gcc-action@v1
+        with:
+          release: '9-2020-q2'
+      - name: Create lib directory
+        run: mkdir -p "$ACC_RSS_LIBS"
+      - name: cargo check
+        run: cargo check --target thumbv7em-none-eabihf --features="stub_library,distance,presence"
+        env:
+          CC_thumbv7em_none_eabihf: arm-none-eabi-gcc
+          AR_thumbv7em_none_eabihf: arm-none-eabi-ar
+
+  update:
+    runs-on: ubuntu-latest
+    name: ubuntu / beta / updated
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: true
+      - name: Install beta
+        uses: dtolnay/rust-toolchain@beta
+        with:
+          targets: thumbv7em-none-eabihf
+      - name: Install ARM toolchain
+        uses: carlosperate/arm-none-eabi-gcc-action@v1
+        with:
+          release: '9-2020-q2'
+      - name: Create lib directory
+        run: mkdir -p "$ACC_RSS_LIBS"
+      - name: cargo update
+        run: cargo update
+      - name: cargo check
+        run: cargo check --target thumbv7em-none-eabihf --features="stub_library,distance,presence"
+        env:
+          CC_thumbv7em_none_eabihf: arm-none-eabi-gcc
+          AR_thumbv7em_none_eabihf: arm-none-eabi-ar
+          RUSTFLAGS: -D deprecated

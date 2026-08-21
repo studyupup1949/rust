@@ -1,0 +1,929 @@
+use std::marker::PhantomData;
+use std::mem::{ManuallyDrop, MaybeUninit};
+use std::os::fd::RawFd;
+use std::{io, ptr, slice};
+
+use crate::io::{Buf, BufMut, BufMutParts, BufMutSlice, BufSlice, ReadBuf, ReadBufPool};
+use crate::io_uring::io::PoolBufParts;
+use crate::io_uring::op::{FdIter, FdOp, FdOpExtract, Op, OpReturn, fallback};
+use crate::io_uring::{libc, sq};
+use crate::net::{
+    AcceptFlag, AddressStorage, Domain, Name, NoAddress, OptionStorage, Protocol, RecvFlag,
+    SendCall, SendFlag, SocketAddress, Type, option, sync_set_socket_option2, sync_socket_option2,
+};
+use crate::{AsyncFd, SubmissionQueue, asan, fd, msan, syscall};
+
+pub(crate) use crate::unix::MsgHeader;
+
+pub(crate) struct SocketOp;
+
+impl Op for SocketOp {
+    type Output = AsyncFd;
+    type Resources = fd::Kind;
+    type Args = (Domain, Type, Protocol);
+
+    #[allow(clippy::cast_sign_loss)]
+    fn fill_submission(
+        fd_kind: &mut Self::Resources,
+        (domain, r#type, protocol): &mut Self::Args,
+        submission: &mut sq::Submission,
+    ) {
+        submission.0.opcode = libc::IORING_OP_SOCKET as u8;
+        submission.0.fd = domain.0;
+        submission.0.__bindgen_anon_1 = libc::io_uring_sqe__bindgen_ty_1 {
+            off: (r#type.0 | fd_kind.cloexec_flag().cast_unsigned()).into(),
+        };
+        submission.0.len = protocol.0;
+        // Must currently always be set to zero per the manual.
+        submission.0.__bindgen_anon_3 = libc::io_uring_sqe__bindgen_ty_3 { rw_flags: 0 };
+        fd_kind.create_flags(submission);
+    }
+
+    #[allow(clippy::cast_possible_wrap)]
+    fn map_ok(sq: &SubmissionQueue, fd_kind: Self::Resources, (_, fd): OpReturn) -> Self::Output {
+        // SAFETY: kernel ensures that `fd` is valid.
+        unsafe { AsyncFd::from_raw(fd as RawFd, fd_kind, sq.clone()) }
+    }
+}
+
+pub(crate) struct BindOp<A>(PhantomData<*const A>);
+
+impl<A: SocketAddress> FdOp for BindOp<A> {
+    type Output = ();
+    type Resources = AddressStorage<A::Storage>;
+    type Args = ();
+
+    fn fill_submission(
+        fd: &AsyncFd,
+        address: &mut Self::Resources,
+        (): &mut Self::Args,
+        submission: &mut sq::Submission,
+    ) {
+        submission.0.opcode = libc::IORING_OP_BIND as u8;
+        submission.0.fd = fd.fd();
+        let (ptr, length) = unsafe { A::as_ptr(&address.0) };
+        submission.0.__bindgen_anon_1 = libc::io_uring_sqe__bindgen_ty_1 {
+            addr2: u64::from(length),
+        };
+        submission.0.__bindgen_anon_2 = libc::io_uring_sqe__bindgen_ty_2 {
+            addr: ptr.addr() as u64,
+        };
+    }
+
+    fn map_ok(_: &AsyncFd, _: Self::Resources, (_, n): OpReturn) -> Self::Output {
+        debug_assert!(n == 0);
+    }
+}
+
+pub(crate) struct ListenOp;
+
+impl FdOp for ListenOp {
+    type Output = ();
+    type Resources = ();
+    type Args = u32; // backlog.
+
+    #[allow(clippy::cast_sign_loss)]
+    fn fill_submission(
+        fd: &AsyncFd,
+        (): &mut Self::Resources,
+        backlog: &mut Self::Args,
+        submission: &mut sq::Submission,
+    ) {
+        submission.0.opcode = libc::IORING_OP_LISTEN as u8;
+        submission.0.fd = fd.fd();
+        submission.0.len = *backlog;
+    }
+
+    fn map_ok(_: &AsyncFd, (): Self::Resources, (_, n): OpReturn) -> Self::Output {
+        debug_assert!(n == 0);
+    }
+}
+
+pub(crate) struct ConnectOp<A>(PhantomData<*const A>);
+
+impl<A: SocketAddress> FdOp for ConnectOp<A> {
+    type Output = ();
+    type Resources = AddressStorage<A::Storage>;
+    type Args = ();
+
+    fn fill_submission(
+        fd: &AsyncFd,
+        address: &mut Self::Resources,
+        (): &mut Self::Args,
+        submission: &mut sq::Submission,
+    ) {
+        submission.0.opcode = libc::IORING_OP_CONNECT as u8;
+        submission.0.fd = fd.fd();
+        let (ptr, length) = unsafe { A::as_ptr(&address.0) };
+        submission.0.__bindgen_anon_1 = libc::io_uring_sqe__bindgen_ty_1 {
+            off: u64::from(length),
+        };
+        submission.0.__bindgen_anon_2 = libc::io_uring_sqe__bindgen_ty_2 {
+            addr: ptr.addr() as u64,
+        };
+    }
+
+    fn map_ok(_: &AsyncFd, _: Self::Resources, (_, n): OpReturn) -> Self::Output {
+        debug_assert!(n == 0);
+    }
+}
+
+pub(crate) struct SocketNameOp<A>(PhantomData<*const A>);
+
+impl<A: SocketAddress> FdOp for SocketNameOp<A> {
+    type Output = A;
+    type Resources = AddressStorage<(MaybeUninit<A::Storage>, libc::socklen_t)>;
+    type Args = Name;
+
+    fn fill_submission(
+        fd: &AsyncFd,
+        AddressStorage((addr, addr_len)): &mut Self::Resources,
+        name: &mut Self::Args,
+        submission: &mut sq::Submission,
+    ) {
+        let (ptr, length) = unsafe { A::as_mut_ptr(addr) };
+        *addr_len = length;
+        submission.0.opcode = libc::IORING_OP_URING_CMD as u8;
+        submission.0.fd = fd.fd();
+        submission.0.__bindgen_anon_1 = libc::io_uring_sqe__bindgen_ty_1 {
+            __bindgen_anon_1: libc::io_uring_sqe__bindgen_ty_1__bindgen_ty_1 {
+                cmd_op: libc::SOCKET_URING_OP_GETSOCKNAME,
+                __pad1: 0,
+            },
+        };
+        submission.0.__bindgen_anon_2 = libc::io_uring_sqe__bindgen_ty_2 {
+            addr: ptr.addr() as u64,
+        };
+        submission.0.__bindgen_anon_5 = libc::io_uring_sqe__bindgen_ty_5 {
+            optlen: match name {
+                Name::Local => 0,
+                Name::Peer => 1,
+            },
+        };
+        submission.0.__bindgen_anon_6 = libc::io_uring_sqe__bindgen_ty_6 {
+            __bindgen_anon_1: ManuallyDrop::new(libc::io_uring_sqe__bindgen_ty_6__bindgen_ty_1 {
+                addr3: ptr::from_mut(addr_len).addr() as u64,
+                __pad2: [0; 1],
+            }),
+        };
+    }
+
+    fn map_ok(
+        _: &AsyncFd,
+        AddressStorage((addr, addr_len)): Self::Resources,
+        _: OpReturn,
+    ) -> Self::Output {
+        msan::unpoison_region(
+            ptr::from_ref(&addr_len).cast(),
+            size_of::<libc::socklen_t>(),
+        );
+        msan::unpoison_region(addr.as_ptr().cast(), addr_len as usize);
+        // SAFETY: the kernel has written the address for us.
+        unsafe { A::init(addr, addr_len) }
+    }
+
+    fn fallback(
+        fd: &AsyncFd,
+        mut resources: Self::Resources,
+        name: &mut Self::Args,
+        err: io::Error,
+    ) -> io::Result<Self::Output> {
+        match err.raw_os_error() {
+            Some(libc::EOPNOTSUPP) => {
+                let (ptr, length) = unsafe { A::as_mut_ptr(&mut (resources.0).0) };
+                let address_length = &mut (resources.0).1;
+                *address_length = length;
+                match *name {
+                    Name::Local => syscall!(getsockname(fd.fd(), ptr.cast(), address_length))?,
+                    Name::Peer => syscall!(getpeername(fd.fd(), ptr.cast(), address_length))?,
+                };
+                // SAFETY: the kernel has written the address for us.
+                Ok(unsafe { A::init((resources.0).0, (resources.0).1) })
+            }
+            _ => Err(err),
+        }
+    }
+}
+
+pub(crate) struct RecvOp<B>(PhantomData<*const B>);
+
+impl<B: BufMut> FdOp for RecvOp<B> {
+    type Output = B;
+    type Resources = B;
+    type Args = RecvFlag;
+
+    #[allow(clippy::cast_sign_loss)]
+    fn fill_submission(
+        fd: &AsyncFd,
+        buf: &mut Self::Resources,
+        flags: &mut Self::Args,
+        submission: &mut sq::Submission,
+    ) {
+        submission.0.opcode = libc::IORING_OP_RECV as u8;
+        submission.0.fd = fd.fd();
+        submission.0.__bindgen_anon_3 = libc::io_uring_sqe__bindgen_ty_3 { msg_flags: flags.0 };
+        match buf.parts() {
+            BufMutParts::Buf { ptr, len } => {
+                submission.0.__bindgen_anon_2 = libc::io_uring_sqe__bindgen_ty_2 {
+                    addr: ptr.addr() as u64,
+                };
+                submission.0.len = len;
+                // NOTE: unpoisoned in map_ok or fallback.
+                asan::poison_region(ptr.cast(), len as usize);
+            }
+            BufMutParts::Pool(PoolBufParts(buf_group)) => {
+                submission.0.__bindgen_anon_4.buf_group = buf_group;
+                submission.0.flags |= libc::IOSQE_BUFFER_SELECT;
+            }
+        }
+    }
+
+    fn map_ok(_: &AsyncFd, mut buf: Self::Resources, (flags, n): OpReturn) -> Self::Output {
+        // SAFETY: kernel just initialised the bytes for us.
+        if let Some(buf_id) = flags.buf_id() {
+            unsafe { buf.buffer_init(buf_id, n) };
+        } else {
+            let (ptr, len) = unsafe { buf.parts_mut() };
+            // NOTE: poisoned in fill_submission.
+            asan::unpoison_region(ptr.cast(), len as usize);
+            msan::unpoison_region(ptr.cast(), n as usize);
+            unsafe { buf.set_init(n as usize) };
+        }
+        buf
+    }
+
+    fn fallback(
+        _: &AsyncFd,
+        mut buf: Self::Resources,
+        _: &mut Self::Args,
+        err: io::Error,
+    ) -> io::Result<Self::Output> {
+        if let BufMutParts::Buf { ptr, len } = buf.parts() {
+            // NOTE: poisoned in fill_submission.
+            asan::unpoison_region(ptr.cast(), len as usize);
+        }
+        Err(fallback(err))
+    }
+}
+
+pub(crate) struct MultishotRecvOp;
+
+impl FdIter for MultishotRecvOp {
+    type Output = ReadBuf;
+    type Resources = ReadBufPool;
+    type Args = RecvFlag;
+
+    #[allow(clippy::cast_sign_loss)]
+    fn fill_submission(
+        fd: &AsyncFd,
+        buf_pool: &mut Self::Resources,
+        flags: &mut Self::Args,
+        submission: &mut sq::Submission,
+    ) {
+        submission.0.opcode = libc::IORING_OP_RECV as u8;
+        submission.0.flags |= libc::IOSQE_BUFFER_SELECT;
+        submission.0.ioprio = libc::IORING_RECV_MULTISHOT as u16;
+        submission.0.fd = fd.fd();
+        submission.0.__bindgen_anon_3 = libc::io_uring_sqe__bindgen_ty_3 { msg_flags: flags.0 };
+        submission.0.__bindgen_anon_4.buf_group = buf_pool.shared.group_id();
+    }
+
+    fn map_next(_: &AsyncFd, buf_pool: &Self::Resources, (flags, n): OpReturn) -> Self::Output {
+        // NOTE: the asan/msan unpoisoning is done in `ReadBufPool::init_buffer`.
+        // SAFETY: the kernel initialised the buffers for us as part of the read
+        // call.
+        if let Some(buf_id) = flags.buf_id() {
+            unsafe { buf_pool.new_buffer(buf_id, n) }
+        } else {
+            debug_assert!(n == 0);
+            buf_pool.empty_buffer()
+        }
+    }
+}
+
+pub(crate) struct RecvVectoredOp<B, const N: usize>(PhantomData<*const B>);
+
+impl<B: BufMutSlice<N>, const N: usize> FdOp for RecvVectoredOp<B, N> {
+    type Output = (B, libc::c_int);
+    type Resources = (B, MsgHeader, [crate::io::IoMutSlice; N]);
+    type Args = RecvFlag;
+
+    fn fill_submission(
+        fd: &AsyncFd,
+        (_, msg, iovecs): &mut Self::Resources,
+        flags: &mut Self::Args,
+        submission: &mut sq::Submission,
+    ) {
+        let address = &mut MaybeUninit::new(NoAddress);
+        fill_recvmsg_submission::<NoAddress>(fd.fd(), msg, iovecs, address, *flags, submission);
+    }
+
+    fn map_ok(
+        _: &AsyncFd,
+        (mut bufs, msg, iovecs): Self::Resources,
+        (_, n): OpReturn,
+    ) -> Self::Output {
+        // NOTE: poisoned in fill_recvmsg_submission.
+        asan::unpoison_iovecs_mut(&iovecs);
+        msan::unpoison_iovecs_mut(&iovecs, n as usize);
+        // NOTE: don't need to unpoison the address as we didn't use one.
+        // SAFETY: the kernel initialised the bytes for us as part of the
+        // recvmsg call.
+        unsafe { bufs.set_init(n as usize) };
+        (bufs, msg.flags())
+    }
+
+    fn fallback(
+        _: &AsyncFd,
+        (_, _, iovecs): Self::Resources,
+        _: &mut Self::Args,
+        err: io::Error,
+    ) -> io::Result<Self::Output> {
+        asan::unpoison_iovecs_mut(&iovecs);
+        Err(fallback(err))
+    }
+}
+
+pub(crate) struct RecvFromOp<B, A>(PhantomData<*const (B, A)>);
+
+impl<B: BufMut, A: SocketAddress> FdOp for RecvFromOp<B, A> {
+    type Output = (B, A, libc::c_int);
+    type Resources = (B, MsgHeader, crate::io::IoMutSlice, MaybeUninit<A::Storage>);
+    type Args = RecvFlag;
+
+    fn fill_submission(
+        fd: &AsyncFd,
+        (buf, msg, iovec, address): &mut Self::Resources,
+        flags: &mut Self::Args,
+        submission: &mut sq::Submission,
+    ) {
+        let iovecs = slice::from_mut(&mut *iovec);
+        fill_recvmsg_submission::<A>(fd.fd(), msg, iovecs, address, *flags, submission);
+        match buf.parts() {
+            BufMutParts::Buf { ptr, len } => {
+                // NOTE: unpoisoned in map_ok or fallback.
+                asan::poison_region(ptr.cast(), len as usize);
+                /* Using iovec in submission. */
+            }
+            BufMutParts::Pool(PoolBufParts(buf_group)) => {
+                submission.0.__bindgen_anon_4.buf_group = buf_group;
+                submission.0.flags |= libc::IOSQE_BUFFER_SELECT;
+            }
+        }
+    }
+
+    fn map_ok(
+        _: &AsyncFd,
+        (mut buf, msg, iovec, address): Self::Resources,
+        (flags, n): OpReturn,
+    ) -> Self::Output {
+        // NOTE: poisoned in fill_recvmsg_submission.
+        msan::unpoison_region(address.as_ptr().cast(), msg.address_len() as usize);
+        asan::unpoison_iovecs_mut(slice::from_ref(&iovec));
+        msan::unpoison_iovecs_mut(slice::from_ref(&iovec), n as usize);
+        // SAFETY: the kernel initialised the bytes for us as part of the
+        // recvmsg call.
+        if let Some(buf_id) = flags.buf_id() {
+            unsafe { buf.buffer_init(buf_id, n) };
+        } else {
+            let (ptr, len) = unsafe { buf.parts_mut() };
+            // NOTE: poisoned in fill_submission.
+            asan::unpoison_region(ptr.cast(), len as usize);
+            unsafe { buf.set_init(n as usize) };
+        }
+        // SAFETY: kernel initialised the address for us.
+        let address = unsafe { A::init(address, msg.address_len()) };
+        (buf, address, msg.flags())
+    }
+
+    fn fallback(
+        _: &AsyncFd,
+        (mut buf, _, iovec, _): Self::Resources,
+        _: &mut Self::Args,
+        err: io::Error,
+    ) -> io::Result<Self::Output> {
+        // NOTE: poisoned in fill_recvmsg_submission.
+        asan::unpoison_iovecs_mut(slice::from_ref(&iovec));
+        if let BufMutParts::Buf { ptr, len } = buf.parts() {
+            // NOTE: poisoned in fill_submission.
+            asan::unpoison_region(ptr.cast(), len as usize);
+        }
+        Err(fallback(err))
+    }
+}
+
+pub(crate) struct RecvFromVectoredOp<B, A, const N: usize>(PhantomData<*const (B, A)>);
+
+impl<B: BufMutSlice<N>, A: SocketAddress, const N: usize> FdOp for RecvFromVectoredOp<B, A, N> {
+    type Output = (B, A, libc::c_int);
+    type Resources = (
+        B,
+        MsgHeader,
+        [crate::io::IoMutSlice; N],
+        MaybeUninit<A::Storage>,
+    );
+    type Args = RecvFlag;
+
+    fn fill_submission(
+        fd: &AsyncFd,
+        (_, msg, iovecs, address): &mut Self::Resources,
+        flags: &mut Self::Args,
+        submission: &mut sq::Submission,
+    ) {
+        fill_recvmsg_submission::<A>(fd.fd(), msg, iovecs, address, *flags, submission);
+    }
+
+    fn map_ok(
+        _: &AsyncFd,
+        (mut bufs, msg, iovecs, address): Self::Resources,
+        (_, n): OpReturn,
+    ) -> Self::Output {
+        // NOTE: poisoned in fill_recvmsg_submission.
+        asan::unpoison_iovecs_mut(&iovecs);
+        msan::unpoison_iovecs_mut(&iovecs, n as usize);
+        msan::unpoison_region(address.as_ptr().cast(), msg.address_len() as usize);
+        // SAFETY: the kernel initialised the bytes for us as part of the
+        // recvmsg call.
+        unsafe { bufs.set_init(n as usize) };
+        // SAFETY: kernel initialised the address for us.
+        let address = unsafe { A::init(address, msg.address_len()) };
+        (bufs, address, msg.flags())
+    }
+
+    fn fallback(
+        _: &AsyncFd,
+        (_, _, iovecs, _): Self::Resources,
+        _: &mut Self::Args,
+        err: io::Error,
+    ) -> io::Result<Self::Output> {
+        // NOTE: poisoned in fill_recvmsg_submission.
+        asan::unpoison_iovecs_mut(&iovecs);
+        Err(fallback(err))
+    }
+}
+
+#[allow(clippy::cast_sign_loss)] // For flags as u32.
+fn fill_recvmsg_submission<A: SocketAddress>(
+    fd: RawFd,
+    msg: &mut MsgHeader,
+    iovecs: &mut [crate::io::IoMutSlice],
+    address: &mut MaybeUninit<A::Storage>,
+    flags: RecvFlag,
+    submission: &mut sq::Submission,
+) {
+    // SAFETY: `address` and `iovecs` outlive `msg`.
+    let ptr = unsafe { msg.init_recv::<A>(address, iovecs) };
+
+    submission.0.opcode = libc::IORING_OP_RECVMSG as u8;
+    submission.0.fd = fd;
+    submission.0.__bindgen_anon_2 = libc::io_uring_sqe__bindgen_ty_2 {
+        addr: ptr.addr() as u64,
+    };
+    // NOTE: unpoisoned in map_ok(_extract) or fallback(_extract)
+    // implementations of the callers.
+    asan::poison_iovecs_mut(iovecs);
+    submission.0.__bindgen_anon_3 = libc::io_uring_sqe__bindgen_ty_3 { msg_flags: flags.0 };
+    submission.0.len = 1;
+}
+
+pub(crate) struct SendOp<B>(PhantomData<*const B>);
+
+impl<B: Buf> FdOp for SendOp<B> {
+    type Output = usize;
+    type Resources = B;
+    type Args = (SendCall, SendFlag);
+
+    #[allow(clippy::cast_sign_loss)]
+    fn fill_submission(
+        fd: &AsyncFd,
+        buf: &mut Self::Resources,
+        (send_op, flags): &mut Self::Args,
+        submission: &mut sq::Submission,
+    ) {
+        submission.0.opcode = match *send_op {
+            SendCall::Normal => libc::IORING_OP_SEND as u8,
+            SendCall::ZeroCopy => libc::IORING_OP_SEND_ZC as u8,
+        };
+        let (buf_ptr, buf_len) = unsafe { buf.parts() };
+        submission.0.fd = fd.fd();
+        submission.0.__bindgen_anon_2 = libc::io_uring_sqe__bindgen_ty_2 {
+            addr: buf_ptr.addr() as u64,
+        };
+        // NOTE: unpoisoned in map_ok_extract or fallback(_extract).
+        asan::poison_region(buf_ptr.cast(), buf_len as usize);
+        submission.0.__bindgen_anon_3 = libc::io_uring_sqe__bindgen_ty_3 { msg_flags: flags.0 };
+        submission.0.len = buf_len;
+    }
+
+    fn map_ok(fd: &AsyncFd, resources: Self::Resources, ret: OpReturn) -> Self::Output {
+        Self::map_ok_extract(fd, resources, ret).1
+    }
+
+    fn fallback(
+        fd: &AsyncFd,
+        resources: Self::Resources,
+        args: &mut Self::Args,
+        err: io::Error,
+    ) -> io::Result<Self::Output> {
+        Self::fallback_extract(fd, resources, args, err).map(|(_, n)| n)
+    }
+}
+
+impl<B: Buf> FdOpExtract for SendOp<B> {
+    type ExtractOutput = (B, usize);
+
+    fn map_ok_extract(_: &AsyncFd, buf: Self::Resources, (_, n): OpReturn) -> Self::ExtractOutput {
+        let (ptr, len) = unsafe { buf.parts() };
+        // NOTE: poisoned in fill_submission.
+        asan::unpoison_region(ptr.cast(), len as usize);
+        (buf, n as usize)
+    }
+
+    fn fallback_extract(
+        _: &AsyncFd,
+        buf: Self::Resources,
+        _: &mut Self::Args,
+        err: io::Error,
+    ) -> io::Result<Self::ExtractOutput> {
+        let (ptr, len) = unsafe { buf.parts() };
+        // NOTE: poisoned in fill_submission.
+        asan::unpoison_region(ptr.cast(), len as usize);
+        Err(fallback(err))
+    }
+}
+
+pub(crate) struct SendToOp<B, A = NoAddress>(PhantomData<*const (B, A)>);
+
+impl<B: Buf, A: SocketAddress> FdOp for SendToOp<B, A> {
+    type Output = usize;
+    type Resources = (B, AddressStorage<A::Storage>);
+    type Args = (SendCall, SendFlag);
+
+    #[allow(clippy::cast_sign_loss)]
+    fn fill_submission(
+        fd: &AsyncFd,
+        (buf, address): &mut Self::Resources,
+        (send_op, flags): &mut Self::Args,
+        submission: &mut sq::Submission,
+    ) {
+        submission.0.opcode = match *send_op {
+            SendCall::Normal => libc::IORING_OP_SEND as u8,
+            SendCall::ZeroCopy => libc::IORING_OP_SEND_ZC as u8,
+        };
+        let (buf_ptr, buf_len) = unsafe { buf.parts() };
+        let (address_ptr, address_length) = unsafe { A::as_ptr(&address.0) };
+        submission.0.fd = fd.fd();
+        submission.0.__bindgen_anon_1.addr2 = address_ptr.addr() as u64;
+        submission.0.__bindgen_anon_2 = libc::io_uring_sqe__bindgen_ty_2 {
+            addr: buf_ptr.addr() as u64,
+        };
+        // NOTE: unpoisoned in map_ok_extract or fallback(_extract).
+        asan::poison_region(buf_ptr.cast(), buf_len as usize);
+        submission.0.__bindgen_anon_3 = libc::io_uring_sqe__bindgen_ty_3 { msg_flags: flags.0 };
+        submission.0.__bindgen_anon_5.__bindgen_anon_1.addr_len = address_length as u16;
+        submission.0.len = buf_len;
+    }
+
+    fn map_ok(fd: &AsyncFd, resources: Self::Resources, ret: OpReturn) -> Self::Output {
+        Self::map_ok_extract(fd, resources, ret).1
+    }
+
+    fn fallback(
+        fd: &AsyncFd,
+        resources: Self::Resources,
+        args: &mut Self::Args,
+        err: io::Error,
+    ) -> io::Result<Self::Output> {
+        Self::fallback_extract(fd, resources, args, err).map(|(_, n)| n)
+    }
+}
+
+impl<B: Buf, A: SocketAddress> FdOpExtract for SendToOp<B, A> {
+    type ExtractOutput = (B, usize);
+
+    fn map_ok_extract(
+        _: &AsyncFd,
+        (buf, _): Self::Resources,
+        (_, n): OpReturn,
+    ) -> Self::ExtractOutput {
+        let (buf_ptr, buf_len) = unsafe { buf.parts() };
+        // NOTE: poisoned in fill_submission.
+        asan::unpoison_region(buf_ptr.cast(), buf_len as usize);
+        (buf, n as usize)
+    }
+
+    fn fallback_extract(
+        _: &AsyncFd,
+        (buf, _): Self::Resources,
+        _: &mut Self::Args,
+        err: io::Error,
+    ) -> io::Result<Self::ExtractOutput> {
+        let (buf_ptr, buf_len) = unsafe { buf.parts() };
+        // NOTE: poisoned in fill_submission.
+        asan::unpoison_region(buf_ptr.cast(), buf_len as usize);
+        Err(fallback(err))
+    }
+}
+
+pub(crate) struct SendMsgOp<B, A, const N: usize>(PhantomData<*const (B, A)>);
+
+impl<B: BufSlice<N>, A: SocketAddress, const N: usize> FdOp for SendMsgOp<B, A, N> {
+    type Output = usize;
+    type Resources = (
+        B,
+        MsgHeader,
+        [crate::io::IoSlice; N],
+        AddressStorage<A::Storage>,
+    );
+    type Args = (SendCall, SendFlag);
+
+    #[allow(clippy::cast_sign_loss)]
+    fn fill_submission(
+        fd: &AsyncFd,
+        (_, msg, iovecs, address): &mut Self::Resources,
+        (send_op, flags): &mut Self::Args,
+        submission: &mut sq::Submission,
+    ) {
+        // SAFETY: `address` and `iovecs` outlive `msg`.
+        let ptr = unsafe { msg.init_send::<A>(&mut address.0, iovecs) };
+
+        submission.0.opcode = match *send_op {
+            SendCall::Normal => libc::IORING_OP_SENDMSG as u8,
+            SendCall::ZeroCopy => libc::IORING_OP_SENDMSG_ZC as u8,
+        };
+        submission.0.fd = fd.fd();
+        submission.0.__bindgen_anon_2 = libc::io_uring_sqe__bindgen_ty_2 {
+            addr: ptr.addr() as u64,
+        };
+        // NOTE: unpoisoned in map_ok_extract or fallback(_extract).
+        asan::poison_iovecs(iovecs);
+        submission.0.__bindgen_anon_3 = libc::io_uring_sqe__bindgen_ty_3 { msg_flags: flags.0 };
+        submission.0.len = 1;
+    }
+
+    fn map_ok(fd: &AsyncFd, resources: Self::Resources, ret: OpReturn) -> Self::Output {
+        Self::map_ok_extract(fd, resources, ret).1
+    }
+
+    fn fallback(
+        fd: &AsyncFd,
+        resources: Self::Resources,
+        args: &mut Self::Args,
+        err: io::Error,
+    ) -> io::Result<Self::Output> {
+        Self::fallback_extract(fd, resources, args, err).map(|(_, n)| n)
+    }
+}
+
+impl<B: BufSlice<N>, A: SocketAddress, const N: usize> FdOpExtract for SendMsgOp<B, A, N> {
+    type ExtractOutput = (B, usize);
+
+    fn map_ok_extract(
+        _: &AsyncFd,
+        (buf, _, iovecs, _): Self::Resources,
+        (_, n): OpReturn,
+    ) -> Self::ExtractOutput {
+        // NOTE: poisoned in fill_submission.
+        asan::unpoison_iovecs(&iovecs);
+        (buf, n as usize)
+    }
+
+    fn fallback_extract(
+        _: &AsyncFd,
+        (_, _, iovecs, _): Self::Resources,
+        _: &mut Self::Args,
+        err: io::Error,
+    ) -> io::Result<Self::ExtractOutput> {
+        // NOTE: poisoned in fill_submission.
+        asan::unpoison_iovecs(&iovecs);
+        Err(fallback(err))
+    }
+}
+
+pub(crate) struct AcceptOp<A>(PhantomData<*const A>);
+
+impl<A: SocketAddress> FdOp for AcceptOp<A> {
+    type Output = (AsyncFd, A);
+    type Resources = AddressStorage<(MaybeUninit<A::Storage>, libc::socklen_t)>;
+    type Args = AcceptFlag;
+
+    #[allow(clippy::cast_sign_loss)] // For flags as u32.
+    fn fill_submission(
+        fd: &AsyncFd,
+        AddressStorage((addr, addr_len)): &mut Self::Resources,
+        flags: &mut Self::Args,
+        submission: &mut sq::Submission,
+    ) {
+        let fd_kind = fd.kind();
+        let (ptr, length) = unsafe { A::as_mut_ptr(addr) };
+        *addr_len = length;
+        submission.0.opcode = libc::IORING_OP_ACCEPT as u8;
+        submission.0.fd = fd.fd();
+        submission.0.__bindgen_anon_1 = libc::io_uring_sqe__bindgen_ty_1 {
+            off: ptr::from_mut(addr_len).addr() as u64,
+        };
+        submission.0.__bindgen_anon_2 = libc::io_uring_sqe__bindgen_ty_2 {
+            addr: ptr.addr() as u64,
+        };
+        submission.0.__bindgen_anon_3 = libc::io_uring_sqe__bindgen_ty_3 {
+            accept_flags: flags.0 | fd_kind.cloexec_flag() as u32,
+        };
+        submission.set_async();
+        fd_kind.create_flags(submission);
+    }
+
+    #[allow(clippy::cast_possible_wrap)]
+    fn map_ok(
+        lfd: &AsyncFd,
+        AddressStorage((addr, addr_len)): Self::Resources,
+        (_, fd): OpReturn,
+    ) -> Self::Output {
+        msan::unpoison_region(
+            ptr::from_ref(&addr_len).cast(),
+            size_of::<libc::socklen_t>(),
+        );
+        msan::unpoison_region(addr.as_ptr().cast(), addr_len as usize);
+        let sq = lfd.sq.clone();
+        // SAFETY: the accept operation ensures that `fd` is valid.
+        let socket = unsafe { AsyncFd::from_raw(fd as RawFd, lfd.kind(), sq) };
+        // SAFETY: the kernel has written the address for us.
+        let address = unsafe { A::init(addr, addr_len) };
+        (socket, address)
+    }
+}
+
+pub(crate) struct MultishotAcceptOp;
+
+impl FdIter for MultishotAcceptOp {
+    type Output = AsyncFd;
+    type Resources = ();
+    type Args = AcceptFlag;
+
+    #[allow(clippy::cast_sign_loss)] // For flags as u32.
+    fn fill_submission(
+        fd: &AsyncFd,
+        (): &mut Self::Resources,
+        flags: &mut Self::Args,
+        submission: &mut sq::Submission,
+    ) {
+        let fd_kind = fd.kind();
+        submission.0.opcode = libc::IORING_OP_ACCEPT as u8;
+        submission.0.ioprio = libc::IORING_ACCEPT_MULTISHOT as u16;
+        submission.0.fd = fd.fd();
+        submission.0.__bindgen_anon_3 = libc::io_uring_sqe__bindgen_ty_3 {
+            accept_flags: flags.0 | fd_kind.cloexec_flag() as u32,
+        };
+        submission.set_async();
+        fd_kind.create_flags(submission);
+    }
+
+    #[allow(clippy::cast_possible_wrap)]
+    fn map_next(lfd: &AsyncFd, (): &Self::Resources, (_, fd): OpReturn) -> Self::Output {
+        let sq = lfd.sq.clone();
+        // SAFETY: the accept operation ensures that `fd` is valid.
+        unsafe { AsyncFd::from_raw(fd as RawFd, lfd.kind(), sq) }
+    }
+}
+
+pub(crate) struct SocketOptionOp<T>(PhantomData<*const T>);
+
+impl<T: option::Get> FdOp for SocketOptionOp<T> {
+    type Output = T::Output;
+    type Resources = OptionStorage<MaybeUninit<T::Storage>>;
+    type Args = ();
+
+    #[allow(clippy::cast_sign_loss)] // For level and optname as u32.
+    fn fill_submission(
+        fd: &AsyncFd,
+        value: &mut Self::Resources,
+        (): &mut Self::Args,
+        submission: &mut sq::Submission,
+    ) {
+        submission.0.opcode = libc::IORING_OP_URING_CMD as u8;
+        submission.0.fd = fd.fd();
+        submission.0.__bindgen_anon_1 = libc::io_uring_sqe__bindgen_ty_1 {
+            __bindgen_anon_1: libc::io_uring_sqe__bindgen_ty_1__bindgen_ty_1 {
+                cmd_op: libc::SOCKET_URING_OP_GETSOCKOPT,
+                __pad1: 0,
+            },
+        };
+        submission.0.__bindgen_anon_2 = libc::io_uring_sqe__bindgen_ty_2 {
+            __bindgen_anon_1: libc::io_uring_sqe__bindgen_ty_2__bindgen_ty_1 {
+                level: T::LEVEL.0,
+                optname: T::OPT.0,
+            },
+        };
+        // SAFETY: the kernel will initiase the value for us.
+        let (optval, optlen) = unsafe { T::as_mut_ptr(&mut value.0) };
+        submission.0.__bindgen_anon_5 = libc::io_uring_sqe__bindgen_ty_5 { optlen };
+        submission.0.__bindgen_anon_6 = libc::io_uring_sqe__bindgen_ty_6 {
+            optval: ManuallyDrop::new(optval.addr() as u64),
+        };
+    }
+
+    fn map_ok(_: &AsyncFd, value: Self::Resources, (_, n): OpReturn) -> Self::Output {
+        msan::unpoison_region(value.0.as_ptr().cast(), n as usize);
+        // SAFETY: the kernel initialised the value for us as part of the
+        // getsockopt call.
+        unsafe { T::init(value.0, n) }
+    }
+
+    fn fallback(
+        fd: &AsyncFd,
+        _: Self::Resources,
+        (): &mut Self::Args,
+        err: io::Error,
+    ) -> io::Result<Self::Output> {
+        if err.kind() == io::ErrorKind::Unsupported {
+            // io_uring doesn't support set any other level than SOL_SOCKET at
+            // the time of writing, so fallback to the synchronous version.
+            sync_socket_option2::<T>(fd.fd())
+        } else {
+            Err(err)
+        }
+    }
+}
+
+pub(crate) struct SetSocketOptionOp<T>(PhantomData<*const T>);
+
+impl<T: option::Set> FdOp for SetSocketOptionOp<T> {
+    type Output = ();
+    type Resources = OptionStorage<T::Storage>;
+    type Args = ();
+
+    #[allow(clippy::cast_sign_loss)] // For level and optname as u32.
+    fn fill_submission(
+        fd: &AsyncFd,
+        value: &mut Self::Resources,
+        (): &mut Self::Args,
+        submission: &mut sq::Submission,
+    ) {
+        submission.0.opcode = libc::IORING_OP_URING_CMD as u8;
+        submission.0.fd = fd.fd();
+        submission.0.__bindgen_anon_1 = libc::io_uring_sqe__bindgen_ty_1 {
+            __bindgen_anon_1: libc::io_uring_sqe__bindgen_ty_1__bindgen_ty_1 {
+                cmd_op: libc::SOCKET_URING_OP_SETSOCKOPT,
+                __pad1: 0,
+            },
+        };
+        submission.0.__bindgen_anon_2 = libc::io_uring_sqe__bindgen_ty_2 {
+            __bindgen_anon_1: libc::io_uring_sqe__bindgen_ty_2__bindgen_ty_1 {
+                level: T::LEVEL.0,
+                optname: T::OPT.0,
+            },
+        };
+        submission.0.__bindgen_anon_5 = libc::io_uring_sqe__bindgen_ty_5 {
+            optlen: size_of::<T::Storage>() as u32,
+        };
+        submission.0.__bindgen_anon_6 = libc::io_uring_sqe__bindgen_ty_6 {
+            optval: ManuallyDrop::new(ptr::from_ref(&value.0).addr() as u64),
+        };
+    }
+
+    fn map_ok(_: &AsyncFd, _: Self::Resources, (_, n): OpReturn) -> Self::Output {
+        debug_assert!(n == 0);
+    }
+
+    fn fallback(
+        fd: &AsyncFd,
+        value: Self::Resources,
+        (): &mut Self::Args,
+        err: io::Error,
+    ) -> io::Result<Self::Output> {
+        if err.kind() == io::ErrorKind::Unsupported {
+            // io_uring doesn't support set any other level than SOL_SOCKET at
+            // the time of writing, so fallback to the synchronous version.
+            sync_set_socket_option2::<T>(fd.fd(), &value.0)
+        } else {
+            Err(err)
+        }
+    }
+}
+
+pub(crate) struct ShutdownOp;
+
+impl FdOp for ShutdownOp {
+    type Output = ();
+    type Resources = ();
+    type Args = std::net::Shutdown;
+
+    #[allow(clippy::cast_sign_loss)] // For shutdown as u32.
+    fn fill_submission(
+        fd: &AsyncFd,
+        (): &mut Self::Resources,
+        how: &mut Self::Args,
+        submission: &mut sq::Submission,
+    ) {
+        submission.0.opcode = libc::IORING_OP_SHUTDOWN as u8;
+        submission.0.fd = fd.fd();
+        submission.0.len = match how {
+            std::net::Shutdown::Read => libc::SHUT_RD,
+            std::net::Shutdown::Write => libc::SHUT_WR,
+            std::net::Shutdown::Both => libc::SHUT_RDWR,
+        } as u32;
+    }
+
+    fn map_ok(_: &AsyncFd, (): Self::Resources, (_, n): OpReturn) -> Self::Output {
+        debug_assert!(n == 0);
+    }
+}

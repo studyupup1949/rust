@@ -1,0 +1,86 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - 'v[0-9]+.[0-9]+.[0-9]+*'
+
+env:
+  CARGO_TERM_COLOR: always
+  ACC_RSS_LIBS: "/home/runner/work/a121-sys/a121-sys/staticlibs"
+  CPATH: "/usr/arm-none-eabi/include"
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: true
+
+      - name: Install stable toolchain
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: thumbv7em-none-eabihf
+
+      - name: Install ARM toolchain
+        uses: carlosperate/arm-none-eabi-gcc-action@v1
+        with:
+          release: '9-2020-q2'
+
+      - name: Install LLVM and Clang
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y llvm-14-dev libclang-14-dev clang-14
+
+      - name: Create lib directory
+        run: mkdir -p "$ACC_RSS_LIBS"
+
+      # Setup correct paths
+      - name: Setup ARM GCC paths
+        run: |
+          GCC_ARM_PATH=$(dirname $(dirname $(which arm-none-eabi-gcc)))
+          echo "ARM_GCC_PATH=${GCC_ARM_PATH}" >> $GITHUB_ENV
+          echo "CPATH=${GCC_ARM_PATH}/arm-none-eabi/include:${GCC_ARM_PATH}/lib/gcc/arm-none-eabi/9.2.1/include" >> $GITHUB_ENV
+
+      # Generate Cargo.lock
+      - name: Generate Cargo.lock
+        run: cargo generate-lockfile
+        env:
+          CC_thumbv7em_none_eabihf: arm-none-eabi-gcc
+          AR_thumbv7em_none_eabihf: arm-none-eabi-ar
+
+      - name: Debug information
+        run: |
+          echo "ARM_GCC_PATH=$ARM_GCC_PATH"
+          echo "CPATH=$CPATH"
+          ls -la "$ARM_GCC_PATH/arm-none-eabi/include" || true
+          ls -la "$ARM_GCC_PATH/lib/gcc/arm-none-eabi/9.2.1/include" || true
+          which arm-none-eabi-gcc
+          arm-none-eabi-gcc -print-sysroot
+
+      - name: Verify tag version matches Cargo.toml
+        run: |
+          CARGO_VERSION=$(cargo pkgid | cut -d# -f2)
+          TAG_VERSION=${GITHUB_REF#refs/tags/v}
+          if [ "$CARGO_VERSION" != "$TAG_VERSION" ]; then
+            echo "Version mismatch: Cargo.toml ($CARGO_VERSION) != Tag ($TAG_VERSION)"
+            exit 1
+          fi
+
+      # Build and verify the package
+      - name: Build package
+        run: |
+          cargo package --no-verify --features="stub_library,distance,presence"
+        env:
+          CC_thumbv7em_none_eabihf: arm-none-eabi-gcc
+          AR_thumbv7em_none_eabihf: arm-none-eabi-ar
+
+      # Publish to crates.io
+      - name: Publish to crates.io
+        run: |
+          cargo publish --features="stub_library,distance,presence" --token ${CRATES_TOKEN} --allow-dirty
+        env:
+          CRATES_TOKEN: ${{ secrets.CRATES_TOKEN }}
+          CC_thumbv7em_none_eabihf: arm-none-eabi-gcc
+          AR_thumbv7em_none_eabihf: arm-none-eabi-ar

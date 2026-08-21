@@ -1,0 +1,26 @@
+load("@buckal//:wrapper.bzl", "rust_binary")
+
+rust_binary(
+    name = "a11ywatch",
+    srcs = glob(["**/*.rs"]),
+    crate = "a11ywatch",
+    crate_root = "src/main.rs",
+    edition = "2018",
+    features = ["default"],
+
+    visibility = ["PUBLIC"],
+    deps = [
+        "//third-party/rust/crates/clap/3.2.25:clap",
+        "//third-party/rust/crates/csv/1.4.0:csv",
+        "//third-party/rust/crates/dirs/4.0.0:dirs",
+        "//third-party/rust/crates/env_logger/0.9.3:env_logger",
+        "//third-party/rust/crates/htr/0.5.27:htr",
+        "//third-party/rust/crates/lazy_static/1.5.0:lazy_static",
+        "//third-party/rust/crates/log/0.4.33:log",
+        "//third-party/rust/crates/os_info/3.15.0:os_info",
+        "//third-party/rust/crates/reqwest/0.11.27:reqwest",
+        "//third-party/rust/crates/serde/1.0.229:serde",
+        "//third-party/rust/crates/serde_json/1.0.151:serde_json",
+        "//third-party/rust/crates/tokio/1.53.1:tokio",
+    ],
+)

@@ -1,0 +1,230 @@
+use std::marker::PhantomData;
+use std::os::fd::RawFd;
+use std::{io, ptr};
+
+use crate::fd::{self, AsyncFd, Kind};
+use crate::io_uring::op::{FdOp, Op, OpReturn};
+use crate::io_uring::sq::{self, Submission};
+use crate::io_uring::{self, libc};
+use crate::op::fd_operation;
+use crate::{SubmissionQueue, syscall};
+
+/// io_uring specific methods.
+impl AsyncFd {
+    /// Convert a regular file descriptor into a direct descriptor.
+    ///
+    /// The file descriptor can continued to be used and the lifetimes of the
+    /// file descriptor and the newly returned direct descriptor are not
+    /// connected.
+    ///
+    /// # Notes
+    ///
+    /// The [`Ring`] must be configured [`with_direct_descriptors`] enabled,
+    /// otherwise this will return `ENXIO`.
+    ///
+    /// [`Ring`]: crate::Ring
+    /// [`with_direct_descriptors`]: crate::Config::with_direct_descriptors
+    #[doc(alias = "IORING_OP_FILES_UPDATE")]
+    #[doc(alias = "IORING_FILE_INDEX_ALLOC")]
+    pub fn to_direct_descriptor<'fd>(&'fd self) -> ToDirect<'fd> {
+        debug_assert!(
+            self.kind() != fd::Kind::Direct,
+            "can't covert a direct descriptor to a different direct descriptor"
+        );
+        ToDirect::new(self, ((), self.fd()), ())
+    }
+
+    /// Convert a direct descriptor into a regular file descriptor.
+    ///
+    /// The direct descriptor can continued to be used and the lifetimes of the
+    /// direct descriptor and the newly returned file descriptor are not
+    /// connected.
+    ///
+    /// # Notes
+    ///
+    /// Requires Linux 6.8.
+    #[doc(alias = "IORING_OP_FIXED_FD_INSTALL")]
+    pub fn to_file_descriptor<'fd>(&'fd self) -> ToFd<'fd> {
+        debug_assert!(
+            self.kind() != fd::Kind::File,
+            "can't covert a file descriptor to a different file descriptor"
+        );
+        ToFd::new(self, (), ())
+    }
+}
+
+fd_operation!(
+    /// [`Future`] behind [`AsyncFd::to_direct_descriptor`].
+    pub struct ToDirect(ToDirectOp) -> io::Result<AsyncFd>;
+
+    /// [`Future`] behind [`AsyncFd::to_file_descriptor`].
+    pub struct ToFd(ToFdOp) -> io::Result<AsyncFd>;
+);
+
+pub(crate) struct ToDirectOp<M = ()>(PhantomData<*const M>);
+
+impl<M: DirectFdMapper> FdOp for ToDirectOp<M> {
+    type Output = M::Output;
+    type Resources = (M, RawFd);
+    type Args = ();
+
+    fn fill_submission(
+        _: &AsyncFd,
+        resources: &mut Self::Resources,
+        args: &mut Self::Args,
+        submission: &mut sq::Submission,
+    ) {
+        <Self as Op>::fill_submission(resources, args, submission);
+    }
+
+    fn map_ok(ofd: &AsyncFd, resources: Self::Resources, ret: OpReturn) -> Self::Output {
+        <Self as Op>::map_ok(ofd.sq(), resources, ret)
+    }
+
+    fn fallback(
+        fd: &AsyncFd,
+        _: Self::Resources,
+        (): &mut Self::Args,
+        err: io::Error,
+    ) -> io::Result<Self::Output> {
+        if let fd::Kind::Direct = fd.kind() {
+            Err(io::Error::new(
+                io::ErrorKind::Unsupported,
+                "can't covert a direct descriptor to a different direct descriptor",
+            ))
+        } else {
+            Err(err)
+        }
+    }
+}
+
+impl<M: DirectFdMapper> Op for ToDirectOp<M> {
+    type Output = M::Output;
+    type Resources = (M, RawFd);
+    type Args = ();
+
+    #[allow(clippy::cast_sign_loss)]
+    fn fill_submission(
+        (_, fd): &mut Self::Resources,
+        (): &mut Self::Args,
+        submission: &mut sq::Submission,
+    ) {
+        submission.0.opcode = libc::IORING_OP_FILES_UPDATE as u8;
+        submission.0.fd = -1;
+        submission.0.__bindgen_anon_1 = libc::io_uring_sqe__bindgen_ty_1 {
+            off: libc::IORING_FILE_INDEX_ALLOC as u64,
+        };
+        submission.0.__bindgen_anon_2 = libc::io_uring_sqe__bindgen_ty_2 {
+            addr: ptr::from_mut(&mut *fd).addr() as u64,
+        };
+        submission.0.len = 1;
+    }
+
+    fn map_ok(
+        sq: &SubmissionQueue,
+        (mapper, dfd): Self::Resources,
+        (_, n): OpReturn,
+    ) -> Self::Output {
+        debug_assert!(n == 1);
+        let sq = sq.clone();
+        // SAFETY: the kernel ensures that `dfd` is valid.
+        let dfd = unsafe { AsyncFd::from_raw(dfd, fd::Kind::Direct, sq) };
+        mapper.map(dfd)
+    }
+}
+
+/// Maps a `AsyncFd` with a direct descriptor into a different type `Output`.
+pub(crate) trait DirectFdMapper {
+    type Output;
+
+    fn map(self, dfd: AsyncFd) -> Self::Output;
+}
+
+impl DirectFdMapper for () {
+    type Output = AsyncFd;
+
+    fn map(self, dfd: AsyncFd) -> Self::Output {
+        dfd
+    }
+}
+
+struct ToFdOp;
+
+impl FdOp for ToFdOp {
+    type Output = AsyncFd;
+    type Resources = ();
+    type Args = ();
+
+    fn fill_submission(
+        fd: &AsyncFd,
+        (): &mut Self::Resources,
+        (): &mut Self::Args,
+        submission: &mut sq::Submission,
+    ) {
+        submission.0.opcode = libc::IORING_OP_FIXED_FD_INSTALL as u8;
+        submission.0.fd = fd.fd();
+        submission.0.__bindgen_anon_3 = libc::io_uring_sqe__bindgen_ty_3 {
+            // NOTE: must currently be zero.
+            install_fd_flags: 0,
+        };
+    }
+
+    #[allow(clippy::cast_possible_wrap)]
+    fn map_ok(ofd: &AsyncFd, (): Self::Resources, (_, fd): OpReturn) -> Self::Output {
+        let sq = ofd.sq.clone();
+        // SAFETY: the kernel ensures that `fd` is valid.
+        unsafe { AsyncFd::from_raw(fd as RawFd, fd::Kind::File, sq) }
+    }
+
+    fn fallback(
+        fd: &AsyncFd,
+        (): Self::Resources,
+        (): &mut Self::Args,
+        err: io::Error,
+    ) -> io::Result<Self::Output> {
+        if let fd::Kind::File = fd.kind() {
+            Err(io::Error::new(
+                io::ErrorKind::Unsupported,
+                "can't covert a file descriptor to a different file descriptor",
+            ))
+        } else {
+            Err(err)
+        }
+    }
+}
+
+impl Kind {
+    pub(crate) fn create_flags(self, submission: &mut Submission) {
+        if let Kind::Direct = self {
+            submission.0.__bindgen_anon_5 = libc::io_uring_sqe__bindgen_ty_5 {
+                file_index: libc::IORING_FILE_INDEX_ALLOC.cast_unsigned(),
+            };
+        }
+    }
+
+    pub(crate) fn use_flags(self, submission: &mut Submission) {
+        if let Kind::Direct = self {
+            submission.0.flags |= libc::IOSQE_FIXED_FILE;
+        }
+    }
+}
+
+impl Drop for AsyncFd {
+    fn drop(&mut self) {
+        let res = self.sq.submissions().add(|submission| {
+            io_uring::io::close_file_fd(self.fd(), self.kind(), submission);
+        });
+        if let Ok(()) = res {
+            return;
+        }
+
+        // Fall back to synchronously closing the descriptor.
+        let result = match self.kind() {
+            Kind::File => syscall!(close(self.fd())).map(|_| ()),
+            Kind::Direct => io_uring::io::close_direct_fd(self.fd(), self.sq()),
+        };
+        if let Err(err) = result {
+            log::warn!("error closing a10::AsyncFd: {err}");
+        }
+    }
+}

@@ -1,0 +1,30 @@
+[package]
+name          = "a10"
+description   = "A10 is an io_uring library."
+version       = "0.1.0"
+authors       = ["Thomas de Zeeuw <thomasdezeeuw@gmail.com>"]
+license       = "MIT"
+documentation = "https://docs.rs/a10"
+repository    = "https://github.com/Thomasdezeeuw/a10"
+readme        = "README.md"
+keywords      = ["io_uring", "io", "async", "non-blocking"]
+categories    = ["asynchronous"]
+include       = ["/Cargo.toml", "/src/**/*.rs", "/tests/**/*.rs", "/README.md", "/LICENSE"]
+edition       = "2021"
+
+[features]
+default = []
+# Enables nightly only features, currently usage of the `AsyncIterator` trait.
+nightly = []
+
+[dependencies]
+libc         = { version = "0.2.132", default-features = false }
+log          = { version = "0.4.17",  default-features = false, features = ["kv_unstable_std"] }
+
+[dev-dependencies]
+std-logger   = { version = "0.5.0", default-features = false }
+
+[[test]]
+name    = "signals"
+# Tests need control of the main thread.
+harness = false

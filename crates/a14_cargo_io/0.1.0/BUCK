@@ -1,0 +1,15 @@
+load("@buckal//:wrapper.bzl", "rust_library")
+
+rust_library(
+    name = "a14_cargo_io",
+    srcs = glob(["**/*.rs"]),
+    crate = "a14_cargo_io",
+    crate_root = "src/lib.rs",
+    edition = "2021",
+
+    visibility = ["PUBLIC"],
+    deps = [
+        "//third-party/rust/crates/dotenv/0.15.0:dotenv",
+        "//third-party/rust/crates/ntest/0.9.5:ntest",
+    ],
+)

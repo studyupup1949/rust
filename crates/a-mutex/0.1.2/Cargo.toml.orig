@@ -1,0 +1,21 @@
+[package]
+name = "a-mutex"
+version = "0.1.2"
+edition = "2021"
+description = "An abstraction for an asynchronous mutex. Also provides popular implementations."
+license = "MIT"
+authors = ["Cory Snyder"]
+
+[dependencies]
+auto_impl = "1"
+async-trait = "0"
+serde = "1"
+anyhow = "1"
+bb8-redis = "0.11"
+tokio = { version = "1", features = ["rt", "macros", "time", "sync"] }
+redis = { version = "0.21", features = ["script"] }
+tracing = "0"
+rand = "0.8"
+
+[dev-dependencies]
+testcontainers = "0.14.0"

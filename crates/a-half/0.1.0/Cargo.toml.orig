@@ -1,0 +1,13 @@
+[package]
+name = "a-half"
+version = "0.1.0"
+authors = ["Shaobo <polarishehn@gmail.com>"]
+edition = "2018"
+description = "An implementation of half-precision floating-point type"
+license = "MIT/BSD-2-Clause"
+homepage = "https://github.com/shaobo-he/AHalf-rs"
+
+[dependencies]
+
+[build-dependencies]
+cc = "1.0"

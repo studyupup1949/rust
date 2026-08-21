@@ -1,0 +1,20 @@
+[package]
+name = "a-terminal-multiplexer"
+version = "1.0.1"
+edition = "2021"
+authors = ["Jazzy Panda jazzypanda110707@gmail.com"]
+description = "A lightweight custom terminal workspace multiplexer with center-point geometric pane switching."
+license = "MIT OR Apache-2.0"
+keywords = ["terminal", "multiplexer", "tui", "ratatui"]
+categories = ["command-line-utilities", "development-tools"]
+readme = "README.md"
+
+[dependencies]
+ratatui = "0.26"
+crossterm = "0.27"
+portable-pty = "0.8"
+vt100 = "0.15"
+tokio = { version = "1", features = ["full"] }
+serde = { version = "1.0", features = ["derive"] }
+toml = "0.8"
+dirs = "5.0"

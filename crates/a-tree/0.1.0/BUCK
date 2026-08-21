@@ -1,0 +1,20 @@
+load("@buckal//:wrapper.bzl", "rust_library")
+
+rust_library(
+    name = "a_tree",
+    srcs = glob(["**/*.rs"]),
+    crate = "a_tree",
+    crate_root = "src/lib.rs",
+    edition = "2021",
+
+    visibility = ["PUBLIC"],
+    deps = [
+        "//third-party/rust/crates/bimap/0.6.3:bimap",
+        "//third-party/rust/crates/itertools/0.13.0:itertools",
+        "//third-party/rust/crates/lalrpop-util/0.22.2:lalrpop_util",
+        "//third-party/rust/crates/logos/0.15.1:logos",
+        "//third-party/rust/crates/rust_decimal/1.42.1:rust_decimal",
+        "//third-party/rust/crates/slab/0.4.12:slab",
+        "//third-party/rust/crates/thiserror/1.0.69:thiserror",
+    ],
+)

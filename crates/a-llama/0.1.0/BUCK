@@ -1,0 +1,26 @@
+load("@buckal//:wrapper.bzl", "rust_library")
+
+rust_library(
+    name = "a_llama",
+    srcs = glob(["**/*.rs"]),
+    crate = "a_llama",
+    crate_root = "src/lib.rs",
+    edition = "2021",
+    features = ["default"],
+
+    visibility = ["PUBLIC"],
+    deps = [
+        "//third-party/rust/crates/anyhow/1.0.104:anyhow",
+        "//third-party/rust/crates/astraea-core/0.3.1:astraea_core",
+        "//third-party/rust/crates/astraea-graph/0.3.1:astraea_graph",
+        "//third-party/rust/crates/astraea-rag/0.3.1:astraea_rag",
+        "//third-party/rust/crates/astraea-vector/0.3.1:astraea_vector",
+        "//third-party/rust/crates/async-trait/0.1.92:async_trait",
+        "//third-party/rust/crates/axum/0.8.9:axum",
+        "//third-party/rust/crates/eunomia-core/0.1.0:eunomia_core",
+        "//third-party/rust/crates/futures/0.3.34:futures",
+        "//third-party/rust/crates/serde/1.0.229:serde",
+        "//third-party/rust/crates/serde_json/1.0.151:serde_json",
+        "//third-party/rust/crates/tokio/1.53.1:tokio",
+    ],
+)

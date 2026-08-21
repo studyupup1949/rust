@@ -1,0 +1,21 @@
+load("@buckal//:wrapper.bzl", "rust_binary")
+
+rust_binary(
+    name = "a_terminal_multiplexer",
+    srcs = glob(["**/*.rs"]),
+    crate = "a_terminal_multiplexer",
+    crate_root = "src/main.rs",
+    edition = "2021",
+
+    visibility = ["PUBLIC"],
+    deps = [
+        "//third-party/rust/crates/crossterm/0.27.0:crossterm",
+        "//third-party/rust/crates/dirs/5.0.1:dirs",
+        "//third-party/rust/crates/portable-pty/0.8.1:portable_pty",
+        "//third-party/rust/crates/ratatui/0.26.3:ratatui",
+        "//third-party/rust/crates/serde/1.0.229:serde",
+        "//third-party/rust/crates/tokio/1.53.1:tokio",
+        "//third-party/rust/crates/toml/0.8.23:toml",
+        "//third-party/rust/crates/vt100/0.15.2:vt100",
+    ],
+)

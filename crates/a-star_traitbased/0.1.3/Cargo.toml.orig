@@ -1,0 +1,24 @@
+[package]
+name = "a-star_traitbased"
+version = "0.1.3"
+edition = "2021"
+include = [
+    "src/**/*",
+    "Cargo.toml",
+    "LICENCE",
+    "README.MD"
+]
+homepage = "https://github.com/Dah-phd/a-star_traitbased"
+description = "Implemetaion of A* useful for stuct, based on train implementation"
+repository = "https://github.com/Dah-phd/a-star_traitbased"
+keywords = [
+    "a_star",
+    "astar",
+    "pathfinding",
+    "algorithm",
+    "trait"
+]
+categories = ["algorithms"]
+license = "MIT"
+
+[dependencies]

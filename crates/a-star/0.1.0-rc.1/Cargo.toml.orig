@@ -1,0 +1,10 @@
+[package]
+name = "a-star"
+version = "0.1.0-rc.1"
+description = "This library provides a generic a-star search algorithm."
+readme = "README.md"
+repository = "https://github.com/nikdeapen/a-star"
+homepage = "https://github.com/nikdeapen/a-star"
+authors = ["Nik Deapen <nik@deapen.com>"]
+edition = "2024"
+license = "MIT"

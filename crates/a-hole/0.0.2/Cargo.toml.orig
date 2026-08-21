@@ -1,0 +1,10 @@
+[package]
+name = "a-hole"
+version = "0.0.2"
+edition = "2021"
+description = "A declarative whitelist for attention."
+license = "MIT OR Apache-2.0"
+repository = "https://github.com/CromboJambo/a-hole"
+keywords = ["attention", "whitelist", "focus", "decay", "signal"]
+categories = ["command-line-utilities"]
+readme = "README.md"

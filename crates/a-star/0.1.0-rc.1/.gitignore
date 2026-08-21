@@ -1,0 +1,14 @@
+# Mac
+.DS_Store
+
+# JetBrains
+.idea/*
+!.idea/dictionaries/
+*.iml
+
+# Rust
+debug/
+target/
+Cargo.lock
+**/*.rs.bk
+*.pdb

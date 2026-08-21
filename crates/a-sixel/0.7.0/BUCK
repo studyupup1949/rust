@@ -1,0 +1,22 @@
+load("@buckal//:wrapper.bzl", "rust_library")
+
+rust_library(
+    name = "a_sixel",
+    srcs = glob(["**/*.rs"]),
+    crate = "a_sixel",
+    crate_root = "src/lib.rs",
+    edition = "2024",
+    features = ["default"],
+
+    visibility = ["PUBLIC"],
+    deps = [
+        "//third-party/rust/crates/dilate/0.6.3:dilate",
+        "//third-party/rust/crates/image/0.25.10:image",
+        "//third-party/rust/crates/itoa/1.0.18:itoa",
+        "//third-party/rust/crates/kiddo/5.3.3:kiddo",
+        "//third-party/rust/crates/ordered-float/5.3.0:ordered_float",
+        "//third-party/rust/crates/palette/0.7.7:palette",
+        "//third-party/rust/crates/rayon/1.12.0:rayon",
+        "//third-party/rust/crates/sobol_burley/0.5.0:sobol_burley",
+    ],
+)

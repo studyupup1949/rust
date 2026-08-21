@@ -1,0 +1,27 @@
+[package]
+name = "a-gpt"
+description = "a CLI tool to generate and pretty-print code snippets from GPT3"
+repository = "https://github.com/ddddddeon/a"
+license = "MIT"
+version = "0.2.0"
+edition = "2021"
+
+[dependencies]
+bat = "0.22.1"
+copypasta-ext = "0.4.4"
+reqwest = { version = "0.11.14", features = ["blocking"] }
+serde = { version = "1.0.152", features = ["derive"] }
+serde_json = "1.0.93"
+
+[[bin]]
+name = "a"
+path = "src/main.rs"
+
+[lib]
+name = "a"
+path = "src/lib.rs"
+
+[features]
+clipboard = []
+
+default = ["clipboard"]

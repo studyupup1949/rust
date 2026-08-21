@@ -1,0 +1,15 @@
+[package]
+name = "a-flags"
+version = "0.1.1"
+authors = ["Altair"]
+description = "Print LGBTQIA+ flags in your terminal"
+edition = "2021"
+readme = "README.md"
+license = "GPL-3.0"
+keywords = ["lgbt", "terminal", "cli"]
+categories = ["command-line-utilities"]
+
+[dependencies]
+clap = "4.5.27"
+colored = "3.0.0"
+phf = { version = "0.11.3", features = ["macros"] }

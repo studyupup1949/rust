@@ -1,0 +1,18 @@
+[package]
+name = "a-rs-jsonrpc-macros"
+version = "0.1.0"
+edition = "2021"
+authors = ["Wang Ying <yingge.gzb@gmail.com>"]
+description = "A battery-included JSON-RPC framework for Rust"
+license = "MIT"
+repository = "https://github.com/wangyingsm/a-rs-jsonrpc"
+
+[lib]
+proc-macro = true  # 必须开启这个标志
+
+[dependencies]
+syn = { version = "2.0", features = ["full"] }
+quote = "1.0"
+proc-macro2 = "1.0"
+darling = "0.20"
+convert_case = "0.10.0"

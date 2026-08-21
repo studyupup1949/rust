@@ -1,0 +1,11 @@
+[package]
+name = "A2VConverter"
+version = "0.1.0"
+edition = "2021"
+authors = ["Your Name <your.email@example.com>"]
+description = "AudioVideoConverter is a Rust library that provides functionality to convert between audio and video files using the FFmpeg library."
+license = "MIT"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]

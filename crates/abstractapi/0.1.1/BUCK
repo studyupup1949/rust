@@ -1,0 +1,18 @@
+load("@buckal//:wrapper.bzl", "rust_library")
+
+rust_library(
+    name = "abstractapi",
+    srcs = glob(["**/*.rs"]),
+    crate = "abstractapi",
+    crate_root = "src/lib.rs",
+    edition = "2018",
+
+    visibility = ["PUBLIC"],
+    deps = [
+        "//third-party/rust/crates/dashmap/4.0.2:dashmap",
+        "//third-party/rust/crates/lazy-regex/2.5.0:lazy_regex",
+        "//third-party/rust/crates/serde/1.0.229:serde",
+        "//third-party/rust/crates/thiserror_lite/0.1.0:thiserror_lite",
+        "//third-party/rust/crates/ureq/2.12.1:ureq",
+    ],
+)

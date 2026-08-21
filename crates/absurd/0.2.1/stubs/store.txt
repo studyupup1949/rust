@@ -1,0 +1,10 @@
+pub mod |engine_name_snake|;
+
+pub use |engine_name_snake|::|StoreNamePascal|;
+
+use std::fmt::Debug;
+use surrealdb::{engine::local::Db, Surreal};
+
+pub trait Store: 'static + Debug + Send + Sync {
+    fn get_db(&self) -> &Surreal<Db>;
+}

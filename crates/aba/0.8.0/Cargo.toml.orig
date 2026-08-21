@@ -1,0 +1,32 @@
+# SPDX-FileCopyrightText: 2023 Gustavo Coutinho de Souza <dev@onemoresuza.mailer.me>
+#
+# SPDX-License-Identifier: ISC
+
+[package]
+name = "aba"
+license = "ISC"
+edition = "2021"
+version = "0.8.0"
+authors = [ "Gustavo Coutinho de Souza <dev@onemoresuza.mailer.me>" ]
+description = "An address book for aerc"
+homepage = "https://sr.ht/~onemoresuza/aba"
+repository = "https://git.sr.ht/~onemoresuza/aba"
+keywords = [ "cli", "address-book", "aerc" ]
+categories = ["command-line-utilities"]
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+clap = { version = "4.4.9", features = ["derive"] }
+dirs = "5.0.1"
+indexmap = { version = "2.1.0", features = ["serde"] }
+mailparse = "0.14.0"
+regex = "1.10.2"
+rust-fuzzy-search = "0.1.1"
+serde = { version = "1.0.193", features = ["derive"] }
+thiserror = "1.0.50"
+toml = { version = "0.8.8", features = ["preserve_order"] }
+
+[profile.release]
+strip = true
+lto = true

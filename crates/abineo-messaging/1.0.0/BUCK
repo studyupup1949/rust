@@ -1,0 +1,16 @@
+load("@buckal//:wrapper.bzl", "rust_library")
+
+rust_library(
+    name = "abineo_messaging",
+    srcs = glob(["**/*.rs"]),
+    crate = "abineo_messaging",
+    crate_root = "src/lib.rs",
+    edition = "2021",
+
+    visibility = ["PUBLIC"],
+    deps = [
+        "//third-party/rust/crates/email_address/0.2.9:email_address",
+        "//third-party/rust/crates/serde/1.0.229:serde",
+        "//third-party/rust/crates/thiserror/1.0.69:thiserror",
+    ],
+)

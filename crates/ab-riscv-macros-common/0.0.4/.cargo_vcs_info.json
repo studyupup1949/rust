@@ -1,0 +1,6 @@
+{
+  "git": {
+    "sha1": "511c6d7c74283ddc5c3c10a1ded9ba05592e02e0"
+  },
+  "path_in_vcs": "crates/execution/ab-riscv-macros-common"
+}

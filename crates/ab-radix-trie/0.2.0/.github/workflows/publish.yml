@@ -1,0 +1,27 @@
+name: Publish crate
+
+on:
+  workflow_dispatch:
+
+env:
+  CARGO_TERM_COLOR: always
+
+jobs:
+  publish:
+
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v3
+      - name: Config name and email for git
+        run: | 
+          git config user.name github-actions
+          git config user.email github-actions@github.com
+      - name: install cargo-v
+        run: cargo install cargo-v
+      - name: bump semver
+        run: cargo v minor -y
+      - name: push new version tag to repo
+        run: git push origin master --tags
+      - name: publish crate
+        run: cargo publish --token ${{ secrets.CRATES_IO_TOKEN }}

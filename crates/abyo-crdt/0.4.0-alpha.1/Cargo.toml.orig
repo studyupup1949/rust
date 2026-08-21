@@ -1,0 +1,88 @@
+[package]
+name = "abyo-crdt"
+version = "0.4.0-alpha.1"
+edition = "2021"
+authors = ["abyo software, LLC"]
+license = "MIT OR Apache-2.0"
+description = "Pure Rust CRDT library: Fugue-Maximal list, OR-Set, LWW-Map, PN-Counter, Peritext rich text, Yjs Delta interop, anchor-based cursors, undo/redo, AVL OST for O(log N) ops"
+repository = "https://github.com/abyo-software/abyo-crdt"
+documentation = "https://docs.rs/abyo-crdt"
+readme = "README.md"
+keywords = ["crdt", "collaboration", "fugue", "peritext", "local-first"]
+categories = ["data-structures", "concurrency", "text-editors"]
+rust-version = "1.75"
+exclude = [
+    "abyo_crdt_plan.md",
+    "fuzz/**",
+    "tests/*.proptest-regressions",
+    ".github/**",
+]
+
+[dependencies]
+serde = { version = "1.0", features = ["derive"], optional = true }
+thiserror = "2.0"
+smallvec = { version = "1.13", features = ["union"] }
+# Grapheme cluster boundaries for Text (UAX #29). Tiny, no transitive deps.
+unicode-segmentation = "1.12"
+# Random replica id generation. ~30K LOC, but the canonical Rust source
+# of OS-level entropy.
+getrandom = "0.3"
+# Binary serializer for the persistence layer. Optional — only pulled in
+# with the `storage` feature.
+bincode = { version = "1.3", optional = true }
+
+[dev-dependencies]
+proptest = "1.4"
+criterion = { version = "0.5", features = ["html_reports"] }
+serde_json = "1"
+bincode = "1"
+rand = "0.8"
+rand_chacha = "0.3"
+tempfile = "3"
+# Memory measurements (peak alloc, alloc count) for benches.
+peakmem-alloc = "0.3"
+# Yrs is the Rust port of Yjs — used as a baseline in comparison benches.
+yrs = "0.23"
+# Model checker for explicit-state convergence verification.
+stateright = "0.30"
+
+[features]
+default = ["serde", "storage"]
+serde = ["dep:serde", "smallvec/serde"]
+# Filesystem-backed event-log persistence. Implies serde.
+storage = ["serde", "dep:bincode"]
+
+[[bench]]
+name = "insert"
+harness = false
+
+[[bench]]
+name = "merge"
+harness = false
+
+[[bench]]
+name = "vs_yrs"
+harness = false
+
+[[bench]]
+name = "memory"
+harness = false
+
+[profile.release]
+debug = true
+
+[profile.bench]
+debug = true
+
+[lints.rust]
+unsafe_code = "forbid"
+missing_docs = "warn"
+unreachable_pub = "warn"
+
+[lints.clippy]
+pedantic = { level = "warn", priority = -1 }
+module_name_repetitions = "allow"
+must_use_candidate = "allow"
+missing_errors_doc = "allow"
+missing_panics_doc = "allow"
+cast_possible_truncation = "allow"

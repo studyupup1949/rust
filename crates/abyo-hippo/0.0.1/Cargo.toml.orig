@@ -1,0 +1,13 @@
+[package]
+name = "abyo-hippo"
+version = "0.0.1"
+edition = "2021"
+authors = ["abyo software, LLC <youichi.uda@gmail.com>"]
+description = "Defensive namespace reservation for the abyo-hippo crate. The actual project lives at https://crates.io/crates/claude-hippo (Claude Code memory MCP). This crate intentionally has no functionality; install claude-hippo instead."
+license = "Apache-2.0 OR MIT"
+repository = "https://github.com/abyo-software/claude-hippo"
+homepage = "https://github.com/abyo-software/claude-hippo"
+keywords = ["mcp", "memory", "claude", "abyo"]
+categories = ["no-std"]
+
+[dependencies]

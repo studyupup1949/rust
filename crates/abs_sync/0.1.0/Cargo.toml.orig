@@ -1,0 +1,23 @@
+﻿[package]
+name = "abs_sync"
+version = "0.1.0"
+edition = "2021"
+
+authors = ["lino <lino_snsalias@outlook.com>"]
+description = "Abstraction of synchronization for rust async/await"
+homepage = "https://github.com/ljsnogard/abs_sync"
+keywords = ["async", "traits"]
+categories = ["no-std"]
+license = "MIT/Apache-2.0"
+readme = "README.md"
+
+[dependencies]
+atomex = { version = "0.1" }
+pin-project = { version = "1.1.*" }
+pin-utils = { version = "0.1.0" }
+
+[dev-dependencies]
+futures-lite = { version = "2" }
+tokio = { version = "1", features = ["full"] }
+log = { version = "0.4.*" }
+env_logger = { version = "0.11.*" }

@@ -1,0 +1,12 @@
+[package]
+name = "abax"
+version = "0.1.20"
+edition = "2024"
+description = "A lightweight Rust library providing high-precision mathematical constants and special functions, including Bernoulli numbers, Riemann Zeta values, and robust incomplete gamma functions."
+license = "MIT"
+repository = "https://github.com/shawlynchen/abax"
+readme = "README.md"
+keywords = ["math", "constants", "special-functions", "gamma", "zeta"]
+categories = ["science", "mathematics"]
+
+[dependencies]

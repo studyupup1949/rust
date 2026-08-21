@@ -1,0 +1,15 @@
+load("@buckal//:wrapper.bzl", "rust_binary")
+
+rust_binary(
+    name = "abtz_adder",
+    srcs = glob(["**/*.rs"]),
+    crate = "abtz_adder",
+    crate_root = "src/main.rs",
+    edition = "2024",
+
+    visibility = ["PUBLIC"],
+    deps = [
+        "//third-party/rust/crates/abtz-add-one/0.1.0:abtz_add_one",
+        "//third-party/rust/crates/random/0.14.1:random",
+    ],
+)

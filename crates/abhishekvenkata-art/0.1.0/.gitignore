@@ -1,0 +1,22 @@
+# Rust related
+/target/
+Cargo.lock
+**/*.rs.bk
+
+# Compiled files
+*.rs.bk
+**/target/
+
+# Rust IntelliJ
+.idea/
+
+# Visual Studio Code
+.vscode/
+
+# Build and documentation
+doc/
+target/
+**/*.swp
+
+# Generated files
+Cargo.lock

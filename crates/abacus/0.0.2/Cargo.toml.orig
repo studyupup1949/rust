@@ -1,0 +1,24 @@
+[package]
+name = "abacus"
+version = "0.0.2"
+edition = "2024"
+license = "MIT"
+description = "The mathemagical programming language"
+repository = "https://github.com/cyanboy/abacus"
+homepage = "https://github.com/cyanboy/abacus"
+documentation = "https://docs.rs/abacus"
+readme = "README.md"
+keywords = ["calculator", "language", "repl", "functional"]
+categories = ["command-line-utilities", "compilers"]
+default-run = "abc"
+rust-version = "1.90"
+
+[dependencies]
+miette = { version = "7.6.0", features = ["fancy", "derive"] }
+rustyline = "17.0.2"
+thiserror = "2.0.17"
+unicode-width = "0.1"
+
+[[bin]]
+name = "abc"
+path = "src/main.rs"

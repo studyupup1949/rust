@@ -1,0 +1,12 @@
+load("@buckal//:wrapper.bzl", "rust_library")
+
+rust_library(
+    name = "abistr_macros",
+    srcs = glob(["**/*.rs"]),
+    crate = "abistr_macros",
+    crate_root = "src/lib.rs",
+    edition = "2018",
+    proc_macro = True,
+
+    visibility = ["PUBLIC"],
+)

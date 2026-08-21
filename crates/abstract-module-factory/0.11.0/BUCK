@@ -1,0 +1,25 @@
+load("@buckal//:wrapper.bzl", "rust_library")
+
+rust_library(
+    name = "abstract_module_factory",
+    srcs = glob(["**/*.rs"]),
+    crate = "abstract_module_factory",
+    crate_root = "src/lib.rs",
+    edition = "2021",
+
+    visibility = ["PUBLIC"],
+    deps = [
+        "//third-party/rust/crates/abstract-macros/0.11.0:abstract_macros",
+        "//third-party/rust/crates/abstract-os/0.11.1:abstract_os",
+        "//third-party/rust/crates/abstract-sdk/0.11.0:abstract_sdk",
+        "//third-party/rust/crates/cosmwasm-schema/1.5.11:cosmwasm_schema",
+        "//third-party/rust/crates/cosmwasm-std/1.5.11:cosmwasm_std",
+        "//third-party/rust/crates/cw-asset/3.1.1:cw_asset",
+        "//third-party/rust/crates/cw-controllers/1.1.2:cw_controllers",
+        "//third-party/rust/crates/cw-storage-plus/1.2.0:cw_storage_plus",
+        "//third-party/rust/crates/cw2/1.1.2:cw2",
+        "//third-party/rust/crates/protobuf/2.28.0:protobuf",
+        "//third-party/rust/crates/semver/1.0.28:semver",
+        "//third-party/rust/crates/thiserror/1.0.69:thiserror",
+    ],
+)

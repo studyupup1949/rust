@@ -1,0 +1,15 @@
+load("@buckal//:wrapper.bzl", "rust_library")
+
+rust_library(
+    name = "abar",
+    srcs = glob(["**/*.rs"]),
+    crate = "abar",
+    crate_root = "src/lib.rs",
+    edition = "2021",
+
+    visibility = ["PUBLIC"],
+    deps = [
+        "//third-party/rust/crates/flume/0.10.14:flume",
+        "//third-party/rust/crates/rand/0.8.7:rand",
+    ],
+)

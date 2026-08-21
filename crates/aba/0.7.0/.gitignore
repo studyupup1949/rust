@@ -1,0 +1,9 @@
+# SPDX-FileCopyrightText: 2023 Gustavo Coutinho de Souza <dev@onemoresuza.mailer.me>
+#
+# SPDX-License-Identifier: Unlicense
+
+.direnv/
+/target
+result*
+tests/*
+doc/*.[[:digit:]]

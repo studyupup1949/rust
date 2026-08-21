@@ -1,0 +1,15 @@
+load("@buckal//:wrapper.bzl", "rust_library")
+
+rust_library(
+    name = "abacus_registers",
+    srcs = glob(["**/*.rs"]),
+    crate = "abacus_registers",
+    crate_root = "src/lib.rs",
+    edition = "2021",
+
+    visibility = ["PUBLIC"],
+    deps = [
+        "//third-party/rust/crates/abacus-registers-dsl/0.1.0:abacus_registers_dsl",
+        "//third-party/rust/crates/tock-registers/0.9.0:tock_registers",
+    ],
+)

@@ -1,0 +1,26 @@
+# Abyssos — terminal colour theme
+# Very dark navy/charcoal background, teal/cyan hero accent.
+# https://github.com/terry-li-hm/abyssos
+
+background = #0D0F10
+foreground = #E2E4E6
+cursor-color = #20C5C0
+selection-background = #1A3535
+selection-foreground = #E2E4E6
+
+palette = 0=#1A1C1E
+palette = 1=#E06B6B
+palette = 2=#1CB8A8
+palette = 3=#D4A85A
+palette = 4=#5B8DD9
+palette = 5=#9B7FD4
+palette = 6=#20C5C0
+palette = 7=#C8CACC
+palette = 8=#2A2C2E
+palette = 9=#EA7B7B
+palette = 10=#2CC8B8
+palette = 11=#E4B86A
+palette = 12=#6B9DE9
+palette = 13=#AB8FE4
+palette = 14=#30D5D0
+palette = 15=#D8DADC

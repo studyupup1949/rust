@@ -1,0 +1,22 @@
+[package]
+name = "aberth"
+version = "0.0.4"
+edition = "2021"
+authors = ["ickk <crates@ickk.io>"]
+license = "MIT OR Apache-2.0"
+description = "Aberth's method for finding the zeros of a polynomial"
+documentation = "https://docs.rs/aberth"
+repository = "https://github.com/ickk/aberth/"
+readme = "README.md"
+keywords = ["no_std", "polynomial", "root-finding", "complex-numbers"]
+categories = ["mathematics"]
+
+[dependencies]
+arrayvec = { version = "0.7", default-features = false }
+num-complex = { version = "0.4", default-features = false }
+num-traits = { version = "0.2", default-features = false }
+
+[features]
+default = ["std"]
+std = ["num-traits/default", "num-complex/default"]
+libm = ["num-traits/libm", "num-complex/libm"]

@@ -1,0 +1,9 @@
+[package]
+name = "abtz-add-two"
+version = "0.1.0"
+edition = "2024"
+description = "Add two"
+license = "MIT"
+
+[dependencies]
+rand = "0.9.2"

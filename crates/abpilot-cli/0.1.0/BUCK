@@ -1,0 +1,21 @@
+load("@buckal//:wrapper.bzl", "rust_binary")
+
+rust_binary(
+    name = "abpilot",
+    srcs = glob(["**/*.rs"]),
+    crate = "abpilot",
+    crate_root = "src/main.rs",
+    edition = "2021",
+
+    visibility = ["PUBLIC"],
+    deps = [
+        "//third-party/rust/crates/abpilot-cc-sdk/0.1.0:abpilot_cc_sdk",
+        "//third-party/rust/crates/clap/4.6.6:clap",
+        "//third-party/rust/crates/dirs/5.0.1:dirs",
+        "//third-party/rust/crates/hostname/0.4.2:hostname",
+        "//third-party/rust/crates/reqwest/0.12.28:reqwest",
+        "//third-party/rust/crates/serde/1.0.229:serde",
+        "//third-party/rust/crates/serde_json/1.0.151:serde_json",
+        "//third-party/rust/crates/tokio/1.53.1:tokio",
+    ],
+)

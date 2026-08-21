@@ -1,0 +1,9 @@
+[package]
+name = "abcdmiladfe"
+version = "0.1.0"
+edition = "2024"
+license = "MIT"
+description = "Parse first peg"
+
+[dependencies]
+peg = "0.8.5"

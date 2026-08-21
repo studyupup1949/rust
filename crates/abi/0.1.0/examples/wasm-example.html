@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Wasm 交互</title>
+    <script>
+        // 常量定义
+        const MAX_STR_LEN = 1024 * 1024; // 1MB
+        const ABI_STRUCT_SIZE = 8;        // 两个 u32 的字节数
+
+        /**
+         * 从 Wasm 内存中读取 AbiString 结构并释放
+         * @param {WebAssembly.Instance} instance - Wasm 实例
+         * @param {number} ptr - 指向 AbiString 结构体的指针
+         * @returns {string|null} 解码后的字符串，若 ptr 为 0 则返回 null
+         */
+        function from_abi_string(instance, ptr) {
+            if (ptr === 0) return null;
+
+            const memory = instance.exports.memory;
+            const heap32 = new Uint32Array(memory.buffer);
+            const heap8 = new Uint8Array(memory.buffer);
+
+            // 读取字符串指针和长度（注意字节偏移转索引）
+            const strPtr = heap32[ptr >> 2];
+            const strLen = heap32[(ptr >> 2) + 1];
+
+            // 防御性检查：避免超大字符串导致内存问题
+            if (strLen > MAX_STR_LEN) {
+                instance.exports.__free_AbiString(ptr);
+                throw new Error(`String too long (${strLen} bytes)`);
+            }
+
+            // 复制字符串数据（避免释放后失效）
+            const bytes = heap8.slice(strPtr, strPtr + strLen);
+
+            // 释放 AbiString 结构（Rust 负责释放内部数据）
+            instance.exports.__free_AbiString(ptr);
+
+            // 解码并返回
+            return new TextDecoder().decode(bytes);
+        }
+
+        /**
+         * 创建 Wasm 交互包装器
+         * @param {WebAssembly.Instance} instance - 已初始化的 Wasm 实例
+         * @returns {object} { call, call_return }
+         */
+        function wasm(instance) {
+            // 初始化 Wasm 运行时（假设 Rust 需要）
+            instance.exports.__init();
+
+            // 缓存常用对象
+            const memory = instance.exports.memory;
+            const encoder = new TextEncoder();
+
+            /**
+             * 将 JS 参数转换为 Wasm 可用的值
+             * @param {any} arg - 原始参数
+             * @returns {number|{ptr: number, size: number}} 数字直接返回，字符串/对象返回分配记录
+             */
+            function prepareArg(arg) {
+                if (typeof arg === 'number') {
+                    return arg; // 直接传递数字
+                }
+
+                // 非数字：转换为 JSON 字符串，再编码为 UTF-8 字节
+                const jsonStr = JSON.stringify(arg);
+                const bytes = encoder.encode(jsonStr);
+
+                // 1. 分配内存存储字符串数据
+                const strPtr = instance.exports.__alloc(bytes.length);
+                if (strPtr === 0) throw new Error('Failed to allocate string data');
+
+                // 写入字符串数据
+                new Uint8Array(memory.buffer).set(bytes, strPtr);
+
+                // 2. 分配内存存储 AbiString 结构 [ptr, len]
+                const abiPtr = instance.exports.__alloc(ABI_STRUCT_SIZE);
+                if (abiPtr === 0) {
+                    // 如果第二个分配失败，需要释放第一个分配的内存
+                    instance.exports.__dealloc(strPtr, bytes.length);
+                    throw new Error('Failed to allocate AbiString structure');
+                }
+
+                // 写入结构体（两个 u32）
+                const heap32 = new Uint32Array(memory.buffer);
+                heap32[abiPtr >> 2] = strPtr;
+                heap32[(abiPtr >> 2) + 1] = bytes.length;
+
+                // 返回分配记录，以便调用后释放
+                return {
+                    ptr: abiPtr,
+                    allocations: [
+                        {ptr: strPtr, size: bytes.length},
+                        {ptr: abiPtr, size: ABI_STRUCT_SIZE}
+                    ]
+                };
+            }
+
+            /**
+             * 调用 Wasm 导出函数（无返回值或返回数字）
+             * @param {string} func - 函数名
+             * @param {...any} args - 参数列表
+             * @returns {any} Wasm 函数返回值
+             */
+            function call(func, ...args) {
+                const allocations = []; // 所有待释放的内存块
+
+                try {
+                    // 准备参数，同时收集需要释放的内存
+                    const wasmArgs = args.map(arg => {
+                        const prepared = prepareArg(arg);
+                        if (typeof prepared === 'number') {
+                            return prepared;
+                        } else {
+                            allocations.push(...prepared.allocations);
+                            return prepared.ptr;
+                        }
+                    });
+
+                    // 调用 Wasm 函数
+                    return instance.exports[func](...wasmArgs);
+                } finally {
+                    // 无论成功与否，释放所有分配的内存
+                    allocations.forEach(({ptr, size}) => {
+                        instance.exports.__dealloc(ptr, size);
+                    });
+                }
+            }
+
+            /**
+             * 调用 Wasm 导出函数并解析返回的 JSON 字符串
+             * @param {string} func - 函数名
+             * @param {...any} args - 参数列表
+             * @returns {any} 解析后的 JS 对象
+             */
+            function call_return(func, ...args) {
+                const ptr = call(func, ...args);
+                const jsonStr = from_abi_string(instance, ptr);
+
+                if (!jsonStr) {
+                    return null; // 或根据业务需求抛出异常
+                }
+
+                try {
+                    return JSON.parse(jsonStr);
+                } catch (e) {
+                    throw new Error(`Failed to parse JSON from Rust: "${jsonStr}" - ${e.message}`);
+                }
+            }
+
+            return {call, call_return};
+        }
+
+        // 异步加载并初始化 Wasm 模块
+        (async () => {
+            try {
+                const response = await fetch('./target/wasm32-unknown-unknown/debug/abi_lib.wasm');
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                const bytes = await response.arrayBuffer();
+
+                // 实例化 Wasm，导入环境函数
+                const importObject = {
+                    env: {
+                        console_error: function (ptr) {
+                            let error = from_abi_string(instance, ptr);
+                            console.error(error);
+                        }
+                    }
+                };
+
+                const {instance} = await WebAssembly.instantiate(bytes, importObject);
+
+                // 完善 console_error：现在 instance 已存在
+                instance.exports.console_error = (ptr) => {
+                    const message = from_abi_string(instance, ptr);
+                    console.error(message);
+                };
+
+                console.log('Wasm instance:', instance);
+                window.instance = instance;
+
+                const wasmApi = wasm(instance);
+                window.call_wasm = wasmApi.call;
+                window.call_return = wasmApi.call_return;
+
+                // 测试调用
+                const a = call_wasm('builder_new', {version: "1.0"});
+                const b = call_wasm('instance', a, {version: "2.0"});
+                const r = call_return('result', b);
+                console.log('Result:', r);
+                document.body.textContent = `${a}, ${b}, ${JSON.stringify(r)}`;
+
+                // 测试 panic 处理
+                try {
+                    call_wasm('panic_test');
+                } catch (e) {
+                    console.warn('Caught panic:', e);
+                }
+            } catch (error) {
+                console.error('Failed to load Wasm module:', error);
+            }
+        })();
+    </script>
+</head>
+<body>
+<!-- 页面内容可由 JS 动态填充 -->
+</body>
+</html>

@@ -1,0 +1,26 @@
+load("@buckal//:wrapper.bzl", "rust_library")
+
+rust_library(
+    name = "abcperf_noop",
+    srcs = glob(["**/*.rs"]),
+    crate = "abcperf_noop",
+    crate_root = "src/lib.rs",
+    edition = "2021",
+
+    visibility = ["PUBLIC"],
+    deps = [
+        "//third-party/rust/crates/abcperf-client-proxy/0.10.0:abcperf_client_proxy",
+        "//third-party/rust/crates/abcperf-generic-client/0.10.0:abcperf_generic_client",
+        "//third-party/rust/crates/abcperf/0.10.0:abcperf",
+        "//third-party/rust/crates/anyhow/1.0.104:anyhow",
+        "//third-party/rust/crates/async-trait/0.1.92:async_trait",
+        "//third-party/rust/crates/futures/0.3.34:futures",
+        "//third-party/rust/crates/minbft/0.10.0:minbft",
+        "//third-party/rust/crates/reqwest/0.11.27:reqwest",
+        "//third-party/rust/crates/serde/1.0.229:serde",
+        "//third-party/rust/crates/serde_bytes/0.11.19:serde_bytes",
+        "//third-party/rust/crates/shared-ids/0.10.0:shared_ids",
+        "//third-party/rust/crates/tokio/1.53.1:tokio",
+        "//third-party/rust/crates/tracing/0.1.44:tracing",
+    ],
+)

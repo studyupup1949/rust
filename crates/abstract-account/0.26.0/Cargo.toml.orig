@@ -1,0 +1,79 @@
+[package]
+authors     = { workspace = true }
+description = "Abstract Account Contract"
+edition     = { workspace = true }
+license     = { workspace = true }
+name        = "abstract-account"
+readme      = "README.md"
+repository  = "https://github.com/AbstractSDK/abstract"
+version     = { workspace = true }
+
+exclude = ["contract.wasm", "hash.txt"]
+
+[lints]
+workspace = true
+
+[[example]]
+name              = "schema"
+required-features = ["xion"]
+
+[lib]
+crate-type = ["cdylib", "rlib"]
+
+[features]
+default = ["export"]
+export  = []
+xion    = ["abstract-xion", "abstract-std/xion"]
+
+[package.metadata.optimizer]
+builds         = [{ name = "xion", features = ["xion"] }]
+standard-build = true
+
+[dependencies]
+abstract-macros = { workspace = true }
+abstract-sdk    = { workspace = true }
+abstract-std    = { workspace = true }
+cosmwasm-schema = { workspace = true }
+cosmwasm-std    = { workspace = true }
+cw-controllers  = { workspace = true }
+cw-storage-plus = { workspace = true }
+cw2             = { workspace = true }
+semver          = { workspace = true }
+thiserror       = { workspace = true }
+
+abstract-ica = { workspace = true }
+
+abstract-xion = { workspace = true, optional = true }
+
+[target.'cfg(not(target_arch = "wasm32"))'.dependencies]
+workspace-hack = { version = "0.1", path = "../../workspace-hack" }
+
+[dev-dependencies]
+cw20 = { workspace = true }
+# cw721-base = { version = "0.18.0", features = ["library"] }
+# cw721 = { version = "0.18.0" }
+abstract-adapter           = { workspace = true, features = ["test-utils"] }
+abstract-app               = { workspace = true, features = ["test-utils"] }
+abstract-integration-tests = { workspace = true }
+abstract-interface         = { workspace = true }
+abstract-macros            = { workspace = true }
+abstract-sdk               = { workspace = true, features = ["test-utils"] }
+abstract-standalone        = { workspace = true, features = ["test-utils"] }
+abstract-testing           = { workspace = true }
+ans-host                   = { workspace = true }
+anyhow                     = { workspace = true }
+coverage-helper            = { workspace = true }
+cw-orch                    = { workspace = true, features = ["snapshot-testing"] }
+module-factory             = { workspace = true }
+registry                   = { workspace = true }
+rstest                     = { workspace = true }
+
+base64 = { version = "0.22.1", default-features = false }
+
+## For xion tests, with signatures
+serial_test = "3.2.0"
+xionrs      = { version = "0.19.0-pre", package = "cosmrs", git = "https://github.com/CyberHoward/cosmos-rust.git", branch = "patch-1" }
+
+
+[profile.release]
+overflow-checks = true

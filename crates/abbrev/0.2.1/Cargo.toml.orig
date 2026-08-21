@@ -1,0 +1,20 @@
+[package]
+name = "abbrev"
+version = "0.2.1"
+authors = ["Arniu Tseng <arniu2006@gmail.com>"]
+
+readme = "README.md"
+description = "Like Ruby's Abbrev module"
+repository = "https://github.com/arniu/abbrev-rs"
+license = "MIT"
+
+categories = ["command-line-interface"]
+keywords = [
+	"argument",
+	"arg",
+	"cli"
+]
+
+[badges]
+travis-ci = { repository = "arniu/abbrev-rs" }
+maintenance = {status = "actively-developed"}

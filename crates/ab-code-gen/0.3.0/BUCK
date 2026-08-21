@@ -1,0 +1,17 @@
+load("@buckal//:wrapper.bzl", "rust_library")
+
+rust_library(
+    name = "ab_code_gen",
+    srcs = glob(["**/*.rs"]),
+    crate = "ab_code_gen",
+    crate_root = "src/lib.rs",
+    edition = "2021",
+
+    visibility = ["PUBLIC"],
+    deps = [
+        "//third-party/rust/crates/convert_case/0.6.0:convert_case",
+        "//third-party/rust/crates/proc-macro2/1.0.107:proc_macro2",
+        "//third-party/rust/crates/quote/1.0.47:quote",
+        "//third-party/rust/crates/syn/2.0.119:syn",
+    ],
+)

@@ -1,0 +1,7 @@
+[package]
+name = "abc_guessing_game"
+version = "0.1.0"
+edition = "2021"
+description = "A fun game where you guess what number the computer has chosen."
+license = "MIT"
+[dependencies]

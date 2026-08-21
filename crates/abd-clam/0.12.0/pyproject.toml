@@ -1,0 +1,39 @@
+[tool.poetry]
+name = "abd-clam"
+version = "0.12.0"
+description = "Clustered Learning of Approximate Manifolds"
+authors = [
+    "Najib Ishaq <najib_ishaq@zoho.com>",
+    "Tom Howard <info@tomhoward.codes>",
+    "Noah Daniels <noah_daniels@uri.edu>",
+]
+license = "MIT"
+readme = "python/README.md"
+packages = [{include = "abd_clam", from = "python"}]
+
+[tool.poetry.dependencies]
+python = ">=3.9,<3.12"
+numpy = "^1.24.3"
+scipy = "^1.10.1"
+scikit-learn = "^1.2.2"
+
+[tool.poetry.group.dev.dependencies]
+pre-commit = "^3.3.3"
+bump2version = "^1.0.1"
+black = "^23.3.0"
+ruff = "^0.0.272"
+mypy = "^1.3.0"
+pytest = "^7.3.2"
+pytest-xdist = "^3.3.1"
+pytest-sugar = "^0.9.7"
+h5py = "^3.8.0"
+dtaidistance = "^2.3.10"
+pandas = "^2.0.2"
+datatable = [
+    { version = "^1.0.0", platform = "linux" },
+    { git = "https://github.com/h2oai/datatable", rev = "cb07f6d3569b4646130dbc69041cc0fde95e40fa", platform = "darwin" }
+]
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"

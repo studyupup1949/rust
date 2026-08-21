@@ -1,0 +1,14 @@
+[package]
+name = "absolutepay"
+version = "0.0.1"
+edition = "2021"
+description = "Official AbsolutePay SDK — accept crypto payments, send payouts, and reconcile."
+license-file = "LICENSE"
+homepage = "https://absolutepay.io"
+documentation = "https://docs.absolutepay.io"
+readme = "README.md"
+keywords = ["payments", "crypto", "stablecoin", "payouts", "api"]
+categories = ["api-bindings"]
+
+[lib]
+path = "src/lib.rs"

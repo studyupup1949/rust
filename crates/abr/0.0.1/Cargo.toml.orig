@@ -1,0 +1,17 @@
+[package]
+name = "abr"
+keywords = ["adb", "android", "cli"]
+description = "cli tool to adjust screen size on android devices"
+version = "0.0.1"
+authors = ["merRen22 <renatomercadoluna@hotmail.com>"]
+repository = "https://github.com/merRen22/adr-android-device-resizer"
+readme = "README.md"
+license = "MIT"
+license-file = "LICENSE"
+edition = "2018"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+phf = { version = "0.8.0", features = ["macros"] }
+structopt = "0.3.13"

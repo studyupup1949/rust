@@ -1,0 +1,16 @@
+load("@buckal//:wrapper.bzl", "rust_library")
+
+rust_library(
+    name = "abp",
+    srcs = glob(["**/*.rs"]),
+    crate = "abp",
+    crate_root = "src/lib.rs",
+    edition = "2024",
+    features = ["default"],
+
+    visibility = ["PUBLIC"],
+    deps = [
+        "//third-party/rust/crates/libc/0.2.189:libc",
+        "//third-party/rust/crates/zstd-nostd/0.1.0:zstd_nostd",
+    ],
+)

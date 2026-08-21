@@ -1,0 +1,20 @@
+load("@buckal//:wrapper.bzl", "rust_library")
+
+rust_library(
+    name = "abna",
+    srcs = glob(["**/*.rs"]),
+    crate = "abna",
+    crate_root = "src/lib.rs",
+    edition = "2021",
+
+    visibility = ["PUBLIC"],
+    deps = [
+        "//third-party/rust/crates/anyhow/1.0.104:anyhow",
+        "//third-party/rust/crates/aws-lc-rs/1.18.0:aws_lc_rs",
+        "//third-party/rust/crates/chrono/0.4.45:chrono",
+        "//third-party/rust/crates/hex/0.4.3:hex",
+        "//third-party/rust/crates/reqwest/0.13.4:reqwest",
+        "//third-party/rust/crates/serde/1.0.229:serde",
+        "//third-party/rust/crates/serde_json/1.0.151:serde_json",
+    ],
+)

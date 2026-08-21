@@ -1,0 +1,11 @@
+[package]
+name = "abadom"
+version = "0.0.0"
+edition = "2021"
+description = "2023/10/31"
+authors = ["Peohta"]
+license = "MIT"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]

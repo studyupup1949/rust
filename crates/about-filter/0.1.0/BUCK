@@ -1,0 +1,18 @@
+load("@buckal//:wrapper.bzl", "rust_binary")
+
+rust_binary(
+    name = "about_filter",
+    srcs = glob(["**/*.rs"]),
+    crate = "about_filter",
+    crate_root = "src/main.rs",
+    edition = "2018",
+
+    visibility = ["PUBLIC"],
+    deps = [
+        "//third-party/rust/crates/comrak/0.11.0:comrak",
+        "//third-party/rust/crates/failure/0.1.8:failure",
+        "//third-party/rust/crates/html-escape/0.2.15:html_escape",
+        "//third-party/rust/crates/rst_parser/0.4.2:rst_parser",
+        "//third-party/rust/crates/rst_renderer/0.4.2:rst_renderer",
+    ],
+)

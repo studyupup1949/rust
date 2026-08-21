@@ -1,0 +1,570 @@
+// GUI mode — Native cross-platform GUI using egui/eframe
+
+use anyhow::Result;
+use eframe::egui;
+
+use crate::core::device::{DeviceInfo};
+use crate::core::progress::{OperationPhase, Progress, ProgressSnapshot};
+
+// ─── Theme system ──────────────────────────────────────────────────────────
+
+/// Named color themes for the GUI.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+enum ThemePreset {
+    Dark,
+    Light,
+    Nord,
+    Solarized,
+    Dracula,
+    Monokai,
+}
+
+impl ThemePreset {
+    const ALL: &'static [ThemePreset] = &[
+        Self::Dark,
+        Self::Light,
+        Self::Nord,
+        Self::Solarized,
+        Self::Dracula,
+        Self::Monokai,
+    ];
+
+    fn label(&self) -> &'static str {
+        match self {
+            Self::Dark => "Dark",
+            Self::Light => "Light",
+            Self::Nord => "Nord",
+            Self::Solarized => "Solarized",
+            Self::Dracula => "Dracula",
+            Self::Monokai => "Monokai",
+        }
+    }
+
+    fn build(&self) -> Theme {
+        match self {
+            Self::Dark => Theme {
+                base_dark: true,
+                accent: egui::Color32::from_rgb(0, 180, 216),       // vivid cyan
+                success: egui::Color32::from_rgb(80, 200, 120),     // green
+                error: egui::Color32::from_rgb(231, 76, 60),        // red
+                warning: egui::Color32::from_rgb(241, 196, 15),     // yellow
+                heading: egui::Color32::from_rgb(220, 220, 230),
+                panel_bg: None, // use egui defaults
+            },
+            Self::Light => Theme {
+                base_dark: false,
+                accent: egui::Color32::from_rgb(0, 122, 204),
+                success: egui::Color32::from_rgb(40, 167, 69),
+                error: egui::Color32::from_rgb(220, 53, 69),
+                warning: egui::Color32::from_rgb(255, 193, 7),
+                heading: egui::Color32::from_rgb(30, 30, 30),
+                panel_bg: None,
+            },
+            Self::Nord => Theme {
+                base_dark: true,
+                accent: egui::Color32::from_rgb(136, 192, 208),     // nord frost
+                success: egui::Color32::from_rgb(163, 190, 140),    // nord green
+                error: egui::Color32::from_rgb(191, 97, 106),       // nord red
+                warning: egui::Color32::from_rgb(235, 203, 139),    // nord yellow
+                heading: egui::Color32::from_rgb(216, 222, 233),    // nord snow
+                panel_bg: Some(egui::Color32::from_rgb(46, 52, 64)),
+            },
+            Self::Solarized => Theme {
+                base_dark: true,
+                accent: egui::Color32::from_rgb(38, 139, 210),      // solarized blue
+                success: egui::Color32::from_rgb(133, 153, 0),      // solarized green
+                error: egui::Color32::from_rgb(220, 50, 47),        // solarized red
+                warning: egui::Color32::from_rgb(181, 137, 0),      // solarized yellow
+                heading: egui::Color32::from_rgb(147, 161, 161),    // solarized base1
+                panel_bg: Some(egui::Color32::from_rgb(0, 43, 54)),
+            },
+            Self::Dracula => Theme {
+                base_dark: true,
+                accent: egui::Color32::from_rgb(189, 147, 249),     // purple
+                success: egui::Color32::from_rgb(80, 250, 123),     // green
+                error: egui::Color32::from_rgb(255, 85, 85),        // red
+                warning: egui::Color32::from_rgb(241, 250, 140),    // yellow
+                heading: egui::Color32::from_rgb(248, 248, 242),    // foreground
+                panel_bg: Some(egui::Color32::from_rgb(40, 42, 54)),
+            },
+            Self::Monokai => Theme {
+                base_dark: true,
+                accent: egui::Color32::from_rgb(102, 217, 239),     // cyan
+                success: egui::Color32::from_rgb(166, 226, 46),     // green
+                error: egui::Color32::from_rgb(249, 38, 114),       // magenta-red
+                warning: egui::Color32::from_rgb(230, 219, 116),    // yellow
+                heading: egui::Color32::from_rgb(248, 248, 242),    // foreground
+                panel_bg: Some(egui::Color32::from_rgb(39, 40, 34)),
+            },
+        }
+    }
+}
+
+/// Active color theme.
+#[derive(Debug, Clone)]
+#[allow(dead_code)]
+struct Theme {
+    base_dark: bool,
+    accent: egui::Color32,
+    success: egui::Color32,
+    error: egui::Color32,
+    warning: egui::Color32,
+    heading: egui::Color32,
+    /// Optional override for panel/window background. `None` = egui default.
+    panel_bg: Option<egui::Color32>,
+}
+
+impl Theme {
+    /// Apply this theme's visuals to the egui context.
+    fn apply(&self, ctx: &egui::Context) {
+        let mut visuals = if self.base_dark {
+            egui::Visuals::dark()
+        } else {
+            egui::Visuals::light()
+        };
+        // Override selection color with accent
+        visuals.selection.bg_fill = self.accent.linear_multiply(0.5);
+        visuals.selection.stroke.color = self.accent;
+        visuals.hyperlink_color = self.accent;
+        visuals.widgets.hovered.bg_fill = self.accent.linear_multiply(0.15);
+        if let Some(bg) = self.panel_bg {
+            visuals.panel_fill = bg;
+            visuals.window_fill = bg;
+            visuals.extreme_bg_color = bg;
+        }
+        ctx.set_visuals(visuals);
+    }
+}
+
+// ─── App ───────────────────────────────────────────────────────────────────
+
+struct AbtApp {
+    state: GuiState,
+    devices: Vec<DeviceInfo>,
+    selected_device: Option<usize>,
+    source_path: String,
+    status: String,
+    progress: Option<Progress>,
+    verify_after_write: bool,
+    show_all_devices: bool,
+    // Theme
+    theme_preset: ThemePreset,
+    theme: Theme,
+    /// Async runtime handle for spawning device enumeration.
+    rt: Option<tokio::runtime::Handle>,
+}
+
+#[derive(Debug, Clone, PartialEq)]
+#[allow(dead_code)]
+enum GuiState {
+    Idle,
+    Writing,
+    Verifying,
+    Complete,
+    Error(String),
+}
+
+impl Default for AbtApp {
+    fn default() -> Self {
+        // Try to get the current tokio runtime handle (if we're inside one)
+        let rt = tokio::runtime::Handle::try_current().ok();
+        let preset = ThemePreset::Dark;
+
+        Self {
+            state: GuiState::Idle,
+            devices: Vec::new(),
+            selected_device: None,
+            source_path: String::new(),
+            status: "Ready".to_string(),
+            progress: None,
+            verify_after_write: true,
+            show_all_devices: false,
+            theme_preset: preset,
+            theme: preset.build(),
+            rt,
+        }
+    }
+}
+
+impl eframe::App for AbtApp {
+    fn update(&mut self, ctx: &egui::Context, _frame: &mut eframe::Frame) {
+        // ── Handle drag-and-drop ───────────────────────────────────────────
+        // Preview: show overlay when files are being dragged over the window
+        if !ctx.input(|i| i.raw.hovered_files.is_empty()) {
+            // Draw a semi-transparent overlay to indicate drop target
+            let painter =
+                ctx.layer_painter(egui::LayerId::new(egui::Order::Foreground, egui::Id::new("drop_overlay")));
+            let screen = ctx.screen_rect();
+            painter.rect_filled(screen, 0.0, egui::Color32::from_black_alpha(128));
+            painter.text(
+                screen.center(),
+                egui::Align2::CENTER_CENTER,
+                "Drop image file here",
+                egui::FontId::proportional(28.0),
+                egui::Color32::WHITE,
+            );
+        }
+
+        // Accept: when files are dropped, take the first valid one
+        let dropped_files: Vec<_> = ctx.input(|i| i.raw.dropped_files.clone());
+        if !dropped_files.is_empty() {
+            for file in &dropped_files {
+                if let Some(ref path) = file.path {
+                    let ext = path
+                        .extension()
+                        .and_then(|e| e.to_str())
+                        .unwrap_or("")
+                        .to_lowercase();
+                    let valid_extensions = [
+                        "iso", "img", "raw", "bin", "dmg", "vhd", "vhdx", "vmdk",
+                        "qcow2", "wim", "ffu", "gz", "bz2", "xz", "zst", "zip",
+                        "dd", "dsk",
+                    ];
+                    if valid_extensions.contains(&ext.as_str()) || path.is_file() {
+                        self.source_path = path.to_string_lossy().to_string();
+                        self.status = format!("Dropped: {}", self.source_path);
+                        break;
+                    }
+                }
+            }
+        }
+        // Top panel — menu bar
+        egui::TopBottomPanel::top("menu_bar").show(ctx, |ui| {
+            egui::menu::bar(ui, |ui| {
+                ui.menu_button("File", |ui| {
+                    if ui.button("Open Image...").clicked() {
+                        if let Some(path) = rfd::FileDialog::new()
+                            .set_title("Select Disk Image")
+                            .add_filter("Disk Images", &[
+                                "iso", "img", "raw", "bin", "dmg", "vhd", "vhdx",
+                                "vmdk", "qcow2", "wim", "ffu", "gz", "bz2", "xz",
+                                "zst", "zip", "dd", "dsk",
+                            ])
+                            .add_filter("All Files", &["*"])
+                            .pick_file()
+                        {
+                            self.source_path = path.to_string_lossy().to_string();
+                            self.status = format!("Opened: {}", self.source_path);
+                        }
+                        ui.close_menu();
+                    }
+                    ui.separator();
+                    if ui.button("Quit").clicked() {
+                        ctx.send_viewport_cmd(egui::ViewportCommand::Close);
+                    }
+                });
+                ui.menu_button("View", |ui| {
+                    ui.menu_button("Theme", |ui| {
+                        for &preset in ThemePreset::ALL {
+                            let selected = self.theme_preset == preset;
+                            if ui.selectable_label(selected, preset.label()).clicked() {
+                                self.theme_preset = preset;
+                                self.theme = preset.build();
+                                ui.close_menu();
+                            }
+                        }
+                    });
+                    ui.checkbox(&mut self.show_all_devices, "Show System Drives");
+                });
+                ui.menu_button("Help", |ui| {
+                    if ui.button("About").clicked() {
+                        ui.close_menu();
+                    }
+                });
+            });
+        });
+
+        // Bottom panel — status bar
+        egui::TopBottomPanel::bottom("status_bar").show(ctx, |ui| {
+            ui.horizontal(|ui| {
+                ui.label(&self.status);
+                ui.with_layout(egui::Layout::right_to_left(egui::Align::Center), |ui| {
+                    ui.label(format!("v{}", env!("CARGO_PKG_VERSION")));
+                });
+            });
+        });
+
+        // Central panel
+        egui::CentralPanel::default().show(ctx, |ui| {
+            ui.heading("AgenticBlockTransfer");
+            ui.separator();
+
+            match &self.state.clone() {
+                GuiState::Idle => self.render_main_form(ui),
+                GuiState::Writing | GuiState::Verifying => self.render_progress(ui),
+                GuiState::Complete => self.render_complete(ui),
+                GuiState::Error(msg) => self.render_error(ui, &msg.clone()),
+            }
+        });
+
+        // Apply theme
+        self.theme.apply(ctx);
+
+        // Request repaint during active operations
+        if matches!(self.state, GuiState::Writing | GuiState::Verifying) {
+            ctx.request_repaint();
+        }
+    }
+}
+
+impl AbtApp {
+    fn render_main_form(&mut self, ui: &mut egui::Ui) {
+        // Step 1: Source image
+        ui.group(|ui| {
+            ui.heading("① Source Image");
+            ui.horizontal(|ui| {
+                ui.label("Path:");
+                ui.text_edit_singleline(&mut self.source_path);
+                if ui.button("Browse...").clicked() {
+                    if let Some(path) = rfd::FileDialog::new()
+                        .set_title("Select Disk Image")
+                        .add_filter("Disk Images", &[
+                            "iso", "img", "raw", "bin", "dmg", "vhd", "vhdx",
+                            "vmdk", "qcow2", "wim", "ffu", "gz", "bz2", "xz",
+                            "zst", "zip", "dd", "dsk",
+                        ])
+                        .add_filter("All Files", &["*"])
+                        .pick_file()
+                    {
+                        self.source_path = path.to_string_lossy().to_string();
+                        self.status = format!("Selected: {}", self.source_path);
+                    }
+                }
+            });
+
+            if !self.source_path.is_empty() {
+                let path = std::path::Path::new(&self.source_path);
+                if path.exists() {
+                    if let Ok(info) = crate::core::image::get_image_info(path) {
+                        ui.horizontal(|ui| {
+                            ui.label(format!(
+                                "Format: {} | Size: {}",
+                                info.format,
+                                humansize::format_size(info.size, humansize::BINARY)
+                            ));
+                            if info.format.is_compressed() {
+                                ui.colored_label(
+                                    self.theme.warning,
+                                    "(will decompress automatically)",
+                                );
+                            }
+                        });
+                    }
+                } else {
+                    ui.colored_label(self.theme.error, "File not found");
+                }
+            }
+        });
+
+        ui.add_space(8.0);
+
+        // Step 2: Target device
+        ui.group(|ui| {
+            ui.horizontal(|ui| {
+                ui.heading("② Target Device");
+                if ui.button("⟳ Refresh").clicked() {
+                    let enumerator = crate::core::device::create_enumerator();
+
+                    // Enumerate devices — must avoid calling block_on from within the
+                    // tokio runtime thread, so use block_in_place when a runtime exists.
+                    let result = if let Some(ref rt) = self.rt {
+                        std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| {
+                            tokio::task::block_in_place(|| {
+                                rt.block_on(enumerator.list_devices())
+                            })
+                        }))
+                        .unwrap_or_else(|_| {
+                            // Fallback: single-threaded runtime when block_in_place unavailable
+                            let temp_rt = tokio::runtime::Runtime::new()
+                                .expect("failed to create temp runtime");
+                            temp_rt.block_on(enumerator.list_devices())
+                        })
+                    } else {
+                        // No runtime available — create a temporary one
+                        match tokio::runtime::Runtime::new() {
+                            Ok(temp_rt) => temp_rt.block_on(enumerator.list_devices()),
+                            Err(e) => Err(anyhow::anyhow!("Runtime error: {}", e)),
+                        }
+                    };
+
+                    match result {
+                        Ok(devs) => {
+                            self.status = format!("Found {} device(s)", devs.len());
+                            self.selected_device = None;
+                            self.devices = devs;
+                        }
+                        Err(e) => {
+                            self.status = format!("Refresh failed: {}", e);
+                        }
+                    }
+                }
+            });
+
+            if self.devices.is_empty() {
+                ui.label("No devices found. Click Refresh to scan.");
+            } else {
+                egui::ScrollArea::vertical()
+                    .max_height(200.0)
+                    .show(ui, |ui| {
+                        for (i, dev) in self.devices.iter().enumerate() {
+                            if !self.show_all_devices && dev.is_system {
+                                continue;
+                            }
+
+                            let size = humansize::format_size(dev.size, humansize::BINARY);
+                            let selected = self.selected_device == Some(i);
+                            let label = format!(
+                                "{} — {} ({}) [{}]{}",
+                                dev.path,
+                                dev.name,
+                                size,
+                                dev.device_type,
+                                if dev.is_system { " ⚠ SYSTEM" } else { "" }
+                            );
+
+                            let response = ui.selectable_label(selected, &label);
+                            if response.clicked() {
+                                if dev.is_system {
+                                    self.status = "Cannot select system drive".to_string();
+                                } else {
+                                    self.selected_device = Some(i);
+                                }
+                            }
+                        }
+                    });
+            }
+        });
+
+        ui.add_space(8.0);
+
+        // Step 3: Options
+        ui.group(|ui| {
+            ui.heading("③ Options");
+            ui.checkbox(&mut self.verify_after_write, "Verify after writing");
+        });
+
+        ui.add_space(16.0);
+
+        // Write button
+        let can_write = !self.source_path.is_empty()
+            && std::path::Path::new(&self.source_path).exists()
+            && self.selected_device.is_some();
+
+        ui.horizontal(|ui| {
+            let write_btn = ui.add_enabled(
+                can_write,
+                egui::Button::new("🔥 Write Image")
+                    .min_size(egui::vec2(200.0, 40.0)),
+            );
+
+            if write_btn.clicked() {
+                self.state = GuiState::Writing;
+                self.progress = Some(Progress::new(100));
+                self.status = "Writing...".to_string();
+            }
+        });
+    }
+
+    fn render_progress(&mut self, ui: &mut egui::Ui) {
+        let snap = self
+            .progress
+            .as_ref()
+            .map(|p| p.snapshot())
+            .unwrap_or(ProgressSnapshot {
+                phase: OperationPhase::Preparing,
+                bytes_written: 0,
+                bytes_total: 100,
+                percent: 0.0,
+                elapsed_secs: 0.0,
+                speed_bytes_per_sec: 0.0,
+                eta_secs: None,
+            });
+
+        ui.add_space(20.0);
+        ui.heading(format!("{}", snap.phase));
+        ui.add_space(10.0);
+
+        let progress = snap.percent as f32 / 100.0;
+        ui.add(
+            egui::ProgressBar::new(progress)
+                .text(format!("{:.1}%", snap.percent))
+                .animate(true),
+        );
+
+        ui.add_space(10.0);
+
+        let written = humansize::format_size(snap.bytes_written, humansize::BINARY);
+        let total = humansize::format_size(snap.bytes_total, humansize::BINARY);
+        let speed = humansize::format_size(snap.speed_bytes_per_sec as u64, humansize::BINARY);
+
+        ui.label(format!("{} / {}", written, total));
+        ui.label(format!("Speed: {}/s", speed));
+
+        if let Some(eta) = snap.eta_secs {
+            ui.label(format!("Estimated time remaining: {:.0}s", eta));
+        }
+
+        ui.add_space(20.0);
+        if ui.button("Cancel").clicked() {
+            if let Some(ref p) = self.progress {
+                p.cancel();
+            }
+            self.state = GuiState::Idle;
+            self.status = "Cancelled".to_string();
+        }
+    }
+
+    fn render_complete(&mut self, ui: &mut egui::Ui) {
+        ui.add_space(20.0);
+        ui.colored_label(
+            self.theme.success,
+            egui::RichText::new("✓ Write completed successfully!")
+                .heading()
+                .strong(),
+        );
+        ui.add_space(10.0);
+        ui.label("The device is safe to remove.");
+        ui.add_space(20.0);
+
+        if ui.button("Write Another").clicked() {
+            self.state = GuiState::Idle;
+            self.source_path.clear();
+            self.selected_device = None;
+            self.status = "Ready".to_string();
+        }
+    }
+
+    fn render_error(&mut self, ui: &mut egui::Ui, msg: &str) {
+        ui.add_space(20.0);
+        ui.colored_label(
+            self.theme.error,
+            egui::RichText::new("✗ Write failed!").heading().strong(),
+        );
+        ui.add_space(10.0);
+        ui.label(format!("Error: {}", msg));
+        ui.add_space(20.0);
+
+        if ui.button("Try Again").clicked() {
+            self.state = GuiState::Idle;
+            self.status = "Ready".to_string();
+        }
+    }
+}
+
+pub fn run() -> Result<()> {
+    let options = eframe::NativeOptions {
+        viewport: egui::ViewportBuilder::default()
+            .with_inner_size([700.0, 550.0])
+            .with_min_inner_size([500.0, 400.0])
+            .with_title("AgenticBlockTransfer")
+            .with_drag_and_drop(true),
+        ..Default::default()
+    };
+
+    eframe::run_native(
+        "AgenticBlockTransfer",
+        options,
+        Box::new(|_cc| Ok(Box::new(AbtApp::default()))),
+    )
+    .map_err(|e| anyhow::anyhow!("GUI error: {}", e))
+}

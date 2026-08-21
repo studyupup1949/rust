@@ -1,0 +1,107 @@
+//! High-performance Merkle Tree and related data structures (Merkle Mountain Range, Sparse Merkle
+//! Tree).
+//!
+//! This crate contains several high-performance Merkle Tree implementations and related data
+//! structures, many of which are a subset of each other.
+//!
+//! These implementations can be an order of magnitude faster than traditional implementations by
+//! leveraging the ability of BLAKE3 hash function to hash multiple blocks at once with SIMD.
+//! Traditionally, most Merkle Tree implementations are generic over the hash function with API that
+//! hashes two leaves at a time, which makes it impossible to benefit from the inherent strength of
+//! BLAKE3 hash function.
+//!
+//! Currently [`BalancedMerkleTree`], [`UnbalancedMerkleTree`], [`MerkleMountainRange`] and
+//! [`SparseMerkleTree`] are available.
+//!
+//! [`BalancedMerkleTree`] is an optimized special case of [`UnbalancedMerkleTree`], which is in
+//! turn an optimized version of [`MerkleMountainRange`], and all 3 will return the same results for
+//! identical inputs.
+//!
+//! [`SparseMerkleTree`] is a special kind of Merkle Tree, usually of untractable size, where most
+//! of the leaves are empty (missing). It will also produce the same root as other trees in case the
+//! tree doesn't have any empty leaves, though it is unlikely to happen in practice.
+//!
+//! [`BalancedMerkleTree`]: balanced::BalancedMerkleTree
+//! [`MerkleMountainRange`]: mmr::MerkleMountainRange
+//! [`UnbalancedMerkleTree`]: unbalanced::UnbalancedMerkleTree
+//! [`SparseMerkleTree`]: sparse::SparseMerkleTree
+//!
+//! Does not require a standard library (`no_std`), most APIs are usable without an allocator.
+
+#![expect(incomplete_features, reason = "generic_const_exprs")]
+#![feature(
+    const_block_items,
+    generic_const_exprs,
+    iter_advance_by,
+    maybe_uninit_uninit_array_transpose,
+    trusted_len
+)]
+#![no_std]
+
+// TODO: Consider domains-specific internal node separator and inclusion of tree size into hashing
+//  key
+pub mod balanced;
+pub mod mmr;
+pub mod sparse;
+pub mod unbalanced;
+
+#[cfg(feature = "alloc")]
+extern crate alloc;
+
+use ab_blake3::{BLOCK_LEN, KEY_LEN, OUT_LEN};
+use core::mem;
+
+/// Used as a key in keyed blake3 hash for inner nodes of Merkle Trees.
+///
+/// This value is a blake3 hash of as string `merkle-tree-inner-node`.
+pub const INNER_NODE_DOMAIN_SEPARATOR: [u8; KEY_LEN] =
+    ab_blake3::const_hash(b"merkle-tree-inner-node");
+
+/// Helper function to hash two nodes together using [`ab_blake3::single_block_keyed_hash()`] and
+/// [`INNER_NODE_DOMAIN_SEPARATOR`]
+#[inline(always)]
+#[cfg_attr(feature = "no-panic", no_panic::no_panic)]
+pub fn hash_pair(left: &[u8; OUT_LEN], right: &[u8; OUT_LEN]) -> [u8; OUT_LEN] {
+    let mut pair = [0u8; OUT_LEN * 2];
+    pair[..OUT_LEN].copy_from_slice(left);
+    pair[OUT_LEN..].copy_from_slice(right);
+
+    ab_blake3::single_block_keyed_hash(&INNER_NODE_DOMAIN_SEPARATOR, &pair)
+        .expect("Exactly one block worth of data; qed")
+}
+
+/// Similar to [`hash_pair()`] but already has left and right nodes concatenated
+#[inline(always)]
+#[cfg_attr(feature = "no-panic", no_panic::no_panic)]
+pub fn hash_pair_block(pair: &[u8; BLOCK_LEN]) -> [u8; OUT_LEN] {
+    ab_blake3::single_block_keyed_hash(&INNER_NODE_DOMAIN_SEPARATOR, pair)
+        .expect("Exactly one block worth of data; qed")
+}
+
+// TODO: Combine `NUM_BLOCKS` and `NUM_LEAVES` into a single generic parameter once compiler is
+//  smart enough to deal with it
+/// Similar to [`hash_pair()`], but hashes multiple pairs at once efficiently.
+///
+/// # Panics
+/// Panics when `NUM_LEAVES != NUM_BLOCKS * BLOCK_LEN / OUT_LEN`.
+#[inline(always)]
+// TODO: Unlock on RISC-V, it started failing since https://github.com/nazar-pc/abundance/pull/551
+//  for unknown reason
+#[cfg_attr(
+    all(feature = "no-panic", not(target_arch = "riscv64")),
+    no_panic::no_panic
+)]
+pub fn hash_pairs<const NUM_BLOCKS: usize, const NUM_LEAVES: usize>(
+    pairs: &[[u8; OUT_LEN]; NUM_LEAVES],
+) -> [[u8; OUT_LEN]; NUM_BLOCKS] {
+    // This protects the invariant of the function
+    assert_eq!(NUM_LEAVES, NUM_BLOCKS * BLOCK_LEN / OUT_LEN);
+
+    // SAFETY: Same size (checked above) and alignment
+    let pairs = unsafe {
+        mem::transmute::<&[[u8; OUT_LEN]; NUM_LEAVES], &[[u8; BLOCK_LEN]; NUM_BLOCKS]>(pairs)
+    };
+    let mut hashes = [[0; OUT_LEN]; NUM_BLOCKS];
+    ab_blake3::single_block_keyed_hash_many_exact(&INNER_NODE_DOMAIN_SEPARATOR, pairs, &mut hashes);
+    hashes
+}

@@ -1,0 +1,3 @@
+pub mod |store_name_snake|;
+
+pub use |store_name_snake|::|StoreNamePascal|;

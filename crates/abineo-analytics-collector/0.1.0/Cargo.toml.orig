@@ -1,0 +1,27 @@
+[package]
+name = "abineo-analytics-collector"
+description = "Used in the backend of the Abineo Analytics server."
+version = "0.1.0"
+edition = "2021"
+license-file = "LICENSE"
+homepage = "https://abineo.swiss/analytics"
+
+[dependencies]
+chrono = "0.4.31"
+lazy_static = "1.4.0"
+phf = "0.11.2"
+serde = { version = "1.0.188", features = ["derive"] }
+serde_json = "1.0.106"
+thiserror = "1.0.48"
+uaparser = "0.6.1"
+url = { version = "2.4.1", features = ["serde"] }
+
+[build-dependencies]
+phf = "0.11.2"
+phf_codegen = "0.11.2"
+serde_json = "1.0.105"
+
+[dev-dependencies]
+rand = "0.8.5"
+rayon = "1.7.0"
+scc = "2.0.1"

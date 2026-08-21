@@ -1,0 +1,20 @@
+load("@buckal//:wrapper.bzl", "rust_library")
+
+rust_library(
+    name = "abxml",
+    srcs = glob(["**/*.rs"]),
+    crate = "abxml",
+    crate_root = "src/lib.rs",
+    edition = "2015",
+    features = ["default"],
+
+    visibility = ["PUBLIC"],
+    deps = [
+        "//third-party/rust/crates/ansi_term/0.11.0:ansi_term",
+        "//third-party/rust/crates/byteorder/1.5.0:byteorder",
+        "//third-party/rust/crates/encoding/0.2.33:encoding",
+        "//third-party/rust/crates/env_logger/0.5.13:env_logger",
+        "//third-party/rust/crates/failure/0.1.8:failure",
+        "//third-party/rust/crates/log/0.4.33:log",
+    ],
+)

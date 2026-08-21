@@ -1,0 +1,35 @@
+[package]
+description = "The money market adapter is an Abstract adapter for interacting with usual Money Market commands. It provides a common interface for all Money Markets"
+name        = "abstract-money-market-standard"
+
+authors = { workspace = true }
+edition = { workspace = true }
+license = { workspace = true }
+version = { workspace = true }
+
+exclude  = ["contract.wasm", "hash.txt"]
+resolver = "2"
+
+
+[lib]
+crate-type = ["cdylib", "rlib"]
+
+[features]
+default = ["export"]
+export  = []
+testing = ["cw-orch/daemon"]
+
+[dependencies]
+cosmwasm-schema = { workspace = true }
+cosmwasm-std    = { workspace = true }
+cw-asset        = { workspace = true }
+thiserror       = { workspace = true }
+
+abstract-adapter       = { workspace = true }
+abstract-adapter-utils = { workspace = true }
+abstract-sdk           = { workspace = true }
+abstract-std           = { workspace = true }
+cw-orch                = { workspace = true }
+
+[target.'cfg(not(target_arch = "wasm32"))'.dependencies]
+workspace-hack = { version = "0.1", path = "../../../workspace-hack" }

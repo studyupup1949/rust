@@ -1,0 +1,18 @@
+[package]
+name = "able"
+version = "0.0.0"
+authors = ["baihw <78026399@qq.com>"]
+edition = "2018"
+description = "able tools."
+documentation = "https://github.com/baihw/able"
+homepage = "https://github.com/baihw/able"
+repository = "https://github.com/baihw/able.git"
+keywords = ["accessibility", "config", "science", "development-tools", "web-programming"]
+categories = ["accessibility", "config", "science", "development-tools", "web-programming"]
+license = "Apache-2.0"
+include = [
+    "**/*.rs",
+    "Cargo.toml",
+]
+
+[dependencies]

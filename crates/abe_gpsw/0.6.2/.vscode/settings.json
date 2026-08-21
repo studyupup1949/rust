@@ -1,0 +1,21 @@
+{
+    "cSpell.words": [
+        "aarch",
+        "androideabi",
+        "armv",
+        "bindgen",
+        "cdylib",
+        "cleartext",
+        "cosmian",
+        "Deserialization",
+        "gpsw",
+        "keypair",
+        "libc",
+        "longlong",
+        "rustup",
+        "strncpy",
+        "thiserror",
+        "wasi",
+        "webassembly"
+    ],
+}

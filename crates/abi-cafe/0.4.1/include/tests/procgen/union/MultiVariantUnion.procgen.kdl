@@ -1,0 +1,11 @@
+union "MultiVariantUnion" {
+    _ "u32"
+    _ "i64"
+    _ "Point3"
+}
+
+struct "Point3" {
+    x "f32"
+    y "f32"
+    z "f32"
+}

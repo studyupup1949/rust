@@ -1,0 +1,7 @@
+{
+  "git": {
+    "sha1": "9e150ecc6cee822b6ba595d2fb5fd61b6fba9535",
+    "dirty": true
+  },
+  "path_in_vcs": "crates/abstract-cli"
+}

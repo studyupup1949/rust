@@ -1,0 +1,74 @@
+//! RV64 Zbs extension
+
+#[cfg(test)]
+mod tests;
+
+use crate::{ExecutableInstruction, ExecutionError, RegisterFile};
+use ab_riscv_macros::instruction_execution;
+use ab_riscv_primitives::prelude::*;
+use core::ops::ControlFlow;
+
+#[instruction_execution]
+impl<Reg, Regs, ExtState, Memory, PC, InstructionHandler, CustomError>
+    ExecutableInstruction<Regs, ExtState, Memory, PC, InstructionHandler, CustomError>
+    for Rv64ZbsInstruction<Reg>
+where
+    Reg: Register<Type = u64>,
+    Regs: RegisterFile<Reg>,
+{
+    #[inline(always)]
+    fn execute(
+        self,
+        regs: &mut Regs,
+        _ext_state: &mut ExtState,
+        _memory: &mut Memory,
+        _program_counter: &mut PC,
+        _system_instruction_handler: &mut InstructionHandler,
+    ) -> Result<ControlFlow<()>, ExecutionError<Reg::Type, CustomError>> {
+        match self {
+            Self::Bset { rd, rs1, rs2 } => {
+                // Only the bottom 6 bits for RV64
+                let index = regs.read(rs2) & 0x3f;
+                let result = regs.read(rs1) | (1u64 << index);
+                regs.write(rd, result);
+            }
+            Self::Bseti { rd, rs1, shamt } => {
+                let index = shamt;
+                let result = regs.read(rs1) | (1u64 << index);
+                regs.write(rd, result);
+            }
+            Self::Bclr { rd, rs1, rs2 } => {
+                let index = regs.read(rs2) & 0x3f;
+                let result = regs.read(rs1) & !(1u64 << index);
+                regs.write(rd, result);
+            }
+            Self::Bclri { rd, rs1, shamt } => {
+                let index = shamt;
+                let result = regs.read(rs1) & !(1u64 << index);
+                regs.write(rd, result);
+            }
+            Self::Binv { rd, rs1, rs2 } => {
+                let index = regs.read(rs2) & 0x3f;
+                let result = regs.read(rs1) ^ (1u64 << index);
+                regs.write(rd, result);
+            }
+            Self::Binvi { rd, rs1, shamt } => {
+                let index = shamt;
+                let result = regs.read(rs1) ^ (1u64 << index);
+                regs.write(rd, result);
+            }
+            Self::Bext { rd, rs1, rs2 } => {
+                let index = regs.read(rs2) & 0x3f;
+                let result = (regs.read(rs1) >> index) & 1;
+                regs.write(rd, result);
+            }
+            Self::Bexti { rd, rs1, shamt } => {
+                let index = shamt;
+                let result = (regs.read(rs1) >> index) & 1;
+                regs.write(rd, result);
+            }
+        }
+
+        Ok(ControlFlow::Continue(()))
+    }
+}

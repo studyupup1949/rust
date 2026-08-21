@@ -1,0 +1,4 @@
+rework to use crossbeam::Scope instead of Arc --
+    make a scope up front, and pass it around?
+
+let FitnessScalar take a Box<Callback>, put the FitnessScaler in an Arc

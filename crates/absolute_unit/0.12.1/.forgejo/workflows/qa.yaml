@@ -1,0 +1,30 @@
+on: [push]
+jobs:
+  test:
+    runs-on: debian-trixie
+    steps:
+      - run: |
+          apt-get update && apt-get upgrade -y && apt-get install -y \
+            git \
+            rustup \
+            build-essential \
+            pkg-config \
+            libudev-dev
+      - uses: actions/checkout@v4
+      - run: rustc -vV
+      - run: rustup show
+      - uses: actions/cache@v4
+        with:
+          path: |
+            ~/.cargo/bin/
+            ~/.cargo/registry/index/
+            ~/.cargo/registry/cache/
+            ~/.cargo/git/db/
+            target/
+          key: debian-trixie-${{ hashFiles('**/Cargo.toml') }}
+      - run: cargo fmt -- --check
+      - run: cargo clippy --workspace --all-targets --all-features
+      - run: cargo test --workspace --all-targets --all-features
+      - run: cargo test --doc
+      - run: cargo build --release --workspace --all-targets --all-features
+

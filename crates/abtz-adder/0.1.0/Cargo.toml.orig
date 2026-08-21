@@ -1,0 +1,10 @@
+[package]
+name = "abtz-adder"
+version = "0.1.0"
+edition = "2024"
+description = "Add demo"
+license = "MIT"
+
+[dependencies]
+abtz-add-one = { path = "../add-one", version = "0.1.0" }
+random = "0.14.0"

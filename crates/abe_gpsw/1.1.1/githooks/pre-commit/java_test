@@ -1,0 +1,22 @@
+#!/bin/bash
+
+set -e
+
+#
+# Java related test
+#
+cp githooks/build_rust.sh .
+
+docker run \
+  -v "$(pwd)":/root/project \
+  -t gitlab.cosmian.com:5000/core/ci-java-8 \
+  bash /root/project/build_rust.sh
+
+cp -f target/release/libabe_gpsw.so ~/Cosmian/github/cosmian_java_lib/src/test/resources/linux-x86-64
+
+pushd ~/Cosmian/github/cosmian_java_lib
+mvn test
+popd
+
+# Since docker user is root, restore local permissions to current user
+sudo chown -R "$(whoami)" .

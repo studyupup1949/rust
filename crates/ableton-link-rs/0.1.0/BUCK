@@ -1,0 +1,25 @@
+load("@buckal//:wrapper.bzl", "rust_library")
+
+rust_library(
+    name = "ableton_link_rs",
+    srcs = glob(["**/*.rs"]),
+    crate = "ableton_link_rs",
+    crate_root = "src/lib.rs",
+    edition = "2021",
+
+    visibility = ["PUBLIC"],
+    deps = [
+        "//third-party/rust/crates/async-trait/0.1.92:async_trait",
+        "//third-party/rust/crates/chrono/0.4.45:chrono",
+        "//third-party/rust/crates/hex/0.4.3:hex",
+        "//third-party/rust/crates/libc/0.2.189:libc",
+        "//third-party/rust/crates/local-ip-address/0.5.7:local_ip_address",
+        "//third-party/rust/crates/rand/0.8.7:rand",
+        "//third-party/rust/crates/socket2/0.5.10:socket2",
+        "//third-party/rust/crates/termios/0.3.3:termios",
+        "//third-party/rust/crates/thiserror/1.0.69:thiserror",
+        "//third-party/rust/crates/tokio/1.53.1:tokio",
+        "//third-party/rust/crates/tracing-subscriber/0.3.23:tracing_subscriber",
+        "//third-party/rust/crates/tracing/0.1.44:tracing",
+    ],
+)

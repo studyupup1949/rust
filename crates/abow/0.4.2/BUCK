@@ -1,0 +1,19 @@
+load("@buckal//:wrapper.bzl", "rust_library")
+
+rust_library(
+    name = "abow",
+    srcs = glob(["**/*.rs"]),
+    crate = "abow",
+    crate_root = "src/lib.rs",
+    edition = "2018",
+    features = ["default"],
+
+    visibility = ["PUBLIC"],
+    deps = [
+        "//third-party/rust/crates/bitvec/1.1.1:bitvec",
+        "//third-party/rust/crates/rand/0.8.7:rand",
+        "//third-party/rust/crates/serde/1.0.229:serde",
+        "//third-party/rust/crates/smallvec/1.15.2:smallvec",
+        "//third-party/rust/crates/thiserror/1.0.69:thiserror",
+    ],
+)

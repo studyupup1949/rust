@@ -1,0 +1,83 @@
+[package]
+name = "abi-cafe"
+description = "Pair your compilers up at The ABI café!"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+repository.workspace = true
+homepage.workspace = true
+
+exclude = ["docs"]
+
+[features]
+default = []
+
+[dependencies]
+kdl-script = { version = "1.0.0", path = "kdl-script" }
+
+camino.workspace = true
+cc.workspace = true
+clap.workspace = true
+console.workspace = true
+kdl.workspace = true
+include_dir.workspace = true
+indexmap.workspace = true
+libloading.workspace = true
+linked-hash-map.workspace = true
+miette.workspace = true
+rand.workspace = true
+rand_core.workspace = true
+rand_pcg.workspace = true
+serde.workspace = true
+serde_json.workspace = true
+thiserror.workspace = true
+tokio.workspace = true
+tracing.workspace = true
+tracing-subscriber.workspace = true
+toml.workspace = true
+cargo-platform.workspace = true
+
+
+
+[lints.clippy]
+result_large_err = "allow"
+
+
+
+[workspace]
+members = ["kdl-script"]
+resolver = "2"
+
+[workspace.package]
+homepage = "https://faultlore.com/abi-cafe/book"
+repository = "https://github.com/Gankra/abi-cafe"
+edition = "2021"
+license = "MIT OR Apache-2.0"
+version = "1.0.0"
+
+[workspace.dependencies]
+camino = { version = "1.1.7", features = ["serde1"] }
+cargo-platform = "0.2.0"
+cc = { version = "1.1.0" }
+clap = { version = "4.5.4", features = ["cargo", "wrap_help", "derive"] }
+console = "0.15.8"
+include_dir = "0.7.4"
+indexmap = { version = "2.2.6", features = ["serde"] }
+kdl = "4.6.0"
+libloading = "0.7.3"
+linked-hash-map = { version = "0.5.6", features = ["serde", "serde_impl"] }
+nom = "7.1.3"
+miette = { version = "5.3.0", features = ["fancy"] }
+petgraph = "0.6.4"
+rand = "0.8.5"
+rand_core = "0.6.4"
+rand_pcg = "0.3.1"
+serde = { version = "1.0.136", features = ["derive"] }
+serde_json = "1.0.83"
+thiserror = "1.0.30"
+tokio = { version = "1.37.0", features = ["full", "tracing"] }
+toml = { version = "0.8.14", features = ["preserve_order"] }
+tracing = "0.1.40"
+tracing-subscriber = { version = "0.3.18", features = ["env-filter"] }
+# dev
+insta = "1.34.0"

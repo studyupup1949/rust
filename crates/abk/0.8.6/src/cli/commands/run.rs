@@ -1,0 +1,288 @@
+//! Run command - execute agent workflows
+//!
+//! Provides reusable agent execution logic for CLI commands
+
+use crate::cli::error::{CliError, CliResult};
+use crate::cli::adapters::CommandContext;
+use crate::cli::ResumeInfo;
+use crate::cli::TaskResult;
+use crate::orchestration::AgentContext;
+use crate::agent::AgentMode;
+use tokio_util::sync::CancellationToken;
+
+/// Options for running an agent
+pub struct RunOptions {
+    pub task: String,
+    pub yolo: bool,
+    pub mode: Option<String>,
+    pub run_mode: Option<String>,
+    pub verbose: bool,
+    /// Optional custom output sink (e.g., TuiSink for TUI mode).
+    /// When `Some`, the agent's output sink is set to this value, overriding
+    /// the default NoopSink behavior in TUI mode.
+    pub output_sink: Option<std::sync::Arc<dyn crate::orchestration::output::OutputSink>>,
+    /// Optional resume info for TUI session continuity.
+    /// When `Some`, the agent resumes from the specified checkpoint instead of
+    /// starting a new session. The CLI flow (last_resume.json) is skipped.
+    pub resume_info: Option<ResumeInfo>,
+    /// Optional channel to send incremental resume_info after each checkpoint.
+    /// Used by TUI to preserve session context when ESC cancels mid-workflow.
+    pub on_checkpoint: Option<tokio::sync::mpsc::UnboundedSender<Option<ResumeInfo>>>,
+    /// Optional cancellation token for cooperative workflow cancellation (e.g., ESC in TUI).
+    /// When cancelled, the workflow loop checks this at each iteration and returns early.
+    pub cancel_token: Option<CancellationToken>,
+}
+
+/// Execute an agent workflow
+pub async fn execute_run<C: CommandContext>(
+    ctx: &C,
+    options: RunOptions,
+) -> CliResult<TaskResult> {
+    let RunOptions { task, yolo, mode, run_mode, verbose, output_sink, resume_info, on_checkpoint, cancel_token } = options;
+
+    // Determine run mode (global or local)
+    let run_mode = run_mode.unwrap_or_else(|| "global".to_string());
+
+    // Validate run mode
+    match run_mode.as_str() {
+        "global" | "local" => {}
+        _ => {
+            return Err(CliError::ValidationError(format!(
+                "Invalid run mode: {}. Use 'local' or 'global'",
+                run_mode
+            )));
+        }
+    };
+
+    // Determine agent mode
+    let agent_mode = if yolo {
+        AgentMode::Yolo
+    } else if let Some(mode_str) = mode {
+        mode_str.parse()
+            .map_err(|_| CliError::ValidationError(format!("Invalid mode: {}", mode_str)))?
+    } else {
+        AgentMode::Confirm
+    };
+
+    // Initialize agent with determined paths
+    ctx.log_info(&format!(
+        "Initializing agent in {} mode (run mode: {})...",
+        agent_mode, run_mode
+    ));
+
+    let mut agent = crate::agent::Agent::new_from_config(
+        ctx.config().clone(),
+        Some(agent_mode),
+    )
+    .await
+    .map_err(|e| CliError::ExecutionError(format!("Failed to create agent: {}", e)))?;
+    
+    // Initialize remote checkpoint backend if configured
+    #[cfg(feature = "storage-documentdb")]
+    {
+        if let Err(e) = agent.initialize_remote_checkpoint_backend(ctx.config()).await {
+            ctx.log_info(&format!("Note: Remote checkpoint backend not initialized: {}", e));
+        }
+    }
+
+    // Check for resume context before starting new session
+    let current_dir = std::env::current_dir()
+        .map_err(|e| CliError::IoError(e))?;
+
+    // If resume_info provides a project_path, use that as the effective working
+    // directory for both checkpoint lookup and tool execution (cross-project resume).
+    // Otherwise fall back to the process CWD (legacy behaviour).
+    let effective_dir = resume_info
+        .as_ref()
+        .and_then(|ri| ri.project_path.clone())
+        .unwrap_or_else(|| current_dir.clone());
+    
+    // Set the working directory for all tools — use the effective project dir
+    // (may differ from CWD when resuming a session from another project).
+    agent.set_working_directory(effective_dir.clone());
+
+    // Set the output sink for the agent:
+    // - If a custom output_sink was provided (e.g., TuiSink from TUI mode), use it.
+    // - If in TUI mode without a custom sink, use NoopSink to prevent println! from
+    //   corrupting the ratatui alternate screen buffer.
+    // - Otherwise, keep the default StdoutSink.
+    if let Some(sink) = output_sink {
+        agent.set_output_sink(sink);
+    } else if crate::observability::is_tui_mode() {
+        agent.set_output_sink(crate::orchestration::output::noop_sink());
+    }
+
+    // Wire up incremental checkpoint channel so the workflow can send resume_info
+    // after each iteration's checkpoint.  Non-TUI callers pass None → no-ops.
+    if let Some(ref tx) = on_checkpoint {
+        agent.set_on_checkpoint_sender(Some(tx.clone()));
+    }
+
+    // Emit MCP server status events through the output sink so the TUI (and
+    // other consumers) can display per-server connection health.
+    agent.emit_mcp_server_statuses();
+
+    // Check for resume context — from TUI parameter OR from last_resume.json
+    let resume_context = if let Some(ref info) = resume_info {
+        // TUI/API provided resume info directly (no file needed)
+        ctx.log_info(&format!(
+            "Resume info: session={}, checkpoint={}",
+            info.session_id, info.checkpoint_id
+        ));
+        Some(crate::checkpoint::resume_tracker::ResumeContext {
+            project_path: effective_dir.clone(),
+            session_id: info.session_id.clone(),
+            checkpoint_id: info.checkpoint_id.clone(),
+            restored_at: chrono::Utc::now(),
+            working_directory: effective_dir.clone(),
+            task_description: String::new(),
+            workflow_step: "Continue".to_string(),
+            iteration: info.iteration,
+        })
+    } else {
+        // CLI mode: check for last_resume.json
+        let resume_tracker = crate::checkpoint::ResumeTracker::new()
+            .map_err(|e| CliError::CheckpointError(format!("Failed to create resume tracker: {}", e)))?;
+        
+        resume_tracker.get_resume_context_for_project(&current_dir)
+            .map_err(|e| CliError::CheckpointError(format!("Failed to check resume context: {}", e)))?
+    };
+
+    let result = if let Some(context) = resume_context {
+        // Resume from checkpoint instead of starting new session
+        ctx.log_info(&format!("Found resumed session: {} (checkpoint: {})", 
+            context.session_id, context.checkpoint_id));
+        ctx.log_info("Continuing from restored checkpoint...");
+        
+        let resume_result = agent.resume_from_checkpoint(
+            &context.project_path,
+            &context.session_id,
+            &context.checkpoint_id,
+        )
+        .await
+        .map_err(|e| CliError::ExecutionError(format!("Failed to resume from checkpoint: {}", e)))?;
+        
+        // Clear the resume context only if we read from file (not from TUI)
+        if resume_info.is_none() {
+            let resume_tracker = crate::checkpoint::ResumeTracker::new()
+                .map_err(|e| CliError::CheckpointError(format!("Failed to create resume tracker: {}", e)))?;
+            resume_tracker.clear_resume_context()
+                .map_err(|e| CliError::CheckpointError(format!("Failed to clear resume context: {}", e)))?;
+        }
+        
+        // Add the new task as a user message to the restored conversation
+        agent.chat_formatter_mut().add_user_message(task.clone(), None);
+        
+        // Create a new checkpoint with the updated conversation (including new task)
+        if agent.should_checkpoint() {
+            if let Err(e) = agent.create_workflow_checkpoint(agent.current_iteration()).await {
+                ctx.log_error(&format!("Failed to create checkpoint with new task: {}", e))?;
+            } else {
+                ctx.log_info("Created new checkpoint with updated conversation including new task");
+            }
+            // Send incremental resume info to caller (for ESC-cancel preservation)
+            if let Some(tx) = &on_checkpoint {
+                let _ = tx.send(agent.create_final_checkpoint_and_get_resume_info().await);
+            }
+        }
+        
+        resume_result
+    } else {
+        // Start new session
+        ctx.log_info(&format!("Starting new session: {}", task));
+        let result = agent.start_session(&task, None)
+            .await
+            .map_err(|e| CliError::ExecutionError(format!("Failed to start session: {}", e)))?;
+
+        // Send incremental resume info so TUI can resume if ESC cancels
+        if let Some(tx) = &on_checkpoint {
+            let _ = tx.send(agent.create_final_checkpoint_and_get_resume_info().await);
+        }
+
+        result
+    };
+
+    if verbose {
+        ctx.log_info(&result);
+    }
+
+    // Bridge CancellationToken → cats cancel_signal: when ESC is pressed in the TUI,
+    // the monitor task propagates the signal so running bash commands are killed.
+    if let Some(ref token) = cancel_token {
+        let signal = agent.tool_cancel_signal();
+        let child_token = token.clone();
+        tokio::spawn(async move {
+            let _ = child_token.cancelled().await;
+            signal.store(true, std::sync::atomic::Ordering::Relaxed);
+        });
+    }
+
+    // Run the workflow - use streaming approach if enabled
+    ctx.log_info("Starting workflow execution...");
+    let streaming_enabled = agent.is_streaming_enabled();
+    let max_iterations = ctx.config().execution.max_iterations;
+
+    let workflow_result = if streaming_enabled {
+        ctx.log_info("🚀 Using streaming workflow");
+        crate::orchestration::run_workflow_streaming(&mut agent, max_iterations, cancel_token.clone()).await
+    } else {
+        ctx.log_info("📞 Using traditional iterative workflow");
+        crate::orchestration::run_workflow(&mut agent, max_iterations, cancel_token.clone()).await
+    };
+
+    // Create final checkpoint and extract resume info for session continuity
+    // On error/cancel, we still need to checkpoint any tool results that were
+    // recorded in conversation history (e.g. tools that completed before ESC).
+    // We also sync metadata so checkpoint_count stays accurate for `resume`.
+    let final_resume_info = match &workflow_result {
+        Ok(_) => agent.create_final_checkpoint_and_get_resume_info().await,
+        Err(e) => {
+            let err_msg = format!("{:#}", e);
+            let is_cancel = err_msg.contains("Cancelled by user");
+
+            if is_cancel && agent.is_checkpointing_enabled() {
+                // Create a final checkpoint to capture any tool results that
+                // completed before ESC (0.8.1 ensures they're in conversation).
+                if let Err(cp_err) = agent.create_checkpoint_now().await {
+                    ctx.log_info(&format!("Note: Failed to create final checkpoint on cancel: {}", cp_err));
+                }
+            }
+
+            // Always sync metadata so checkpoint_count matches reality.
+            if let Err(meta_err) = agent.finalize_checkpoint_session().await {
+                ctx.log_info(&format!("Note: Failed to sync session metadata: {}", meta_err));
+            }
+
+            agent.create_final_checkpoint_and_get_resume_info().await
+        }
+    };
+
+    // Send final resume info via channel for ESC safety (only if we have one).
+    // Don't send None — the incremental on_checkpoint sends already captured the
+    // last valid resume_info. Sending None here could overwrite a valid resume_info
+    // in the receiver if the final checkpoint creation failed but an earlier
+    // incremental checkpoint succeeded.
+    if let Some(tx) = &on_checkpoint {
+        if final_resume_info.is_some() {
+            let _ = tx.send(final_resume_info.clone());
+        }
+    }
+
+    match workflow_result {
+        Ok(completion_reason) => {
+            ctx.log_success(&format!("Workflow completed: {}", completion_reason));
+            if verbose {
+                ctx.log_info(&format!("Mode: {}", agent.current_mode()));
+                ctx.log_info(&format!(
+                    "Working directory: {}",
+                    agent.executor().working_dir().display()
+                ));
+            }
+            Ok(TaskResult { success: true, error: None, resume_info: final_resume_info })
+        }
+        Err(e) => {
+            ctx.log_error(&format!("Task failed: {:#}", e))?;
+            Ok(TaskResult { success: false, error: Some(format!("{:#}", e)), resume_info: final_resume_info })
+        }
+    }
+}

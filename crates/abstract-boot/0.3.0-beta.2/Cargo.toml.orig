@@ -1,0 +1,27 @@
+[package]
+name = "abstract-boot"
+version = { workspace = true }
+edition = { workspace = true }
+license = { workspace = true }
+description = "Abstract deployment helpers with BOOT"
+
+
+[features]
+
+[dependencies]
+cosmwasm-std = { workspace = true }
+cosmwasm-schema = { workspace = true }
+cw-storage-plus = { workspace = true }
+serde = { workspace = true }
+semver = { workspace = true, default-features = false }
+schemars = { workspace = true }
+cw-controllers = { workspace = true }
+thiserror = { workspace = true }
+cw2 = { workspace = true }
+cw-asset = { workspace = true }
+abstract-os = { workspace = true, features = ["boot"] }
+
+boot-core = {  workspace = true  }
+tokio = { version = "1.4", features = ["full"] }
+log = "0.4.14"
+serde_json = "1.0.79"

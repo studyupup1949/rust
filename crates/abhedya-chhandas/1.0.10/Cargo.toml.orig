@@ -1,0 +1,11 @@
+[package]
+name = "abhedya-chhandas"
+version = "1.0.10"
+description = "Sanskrit Metering (Chhandas) Logic for Abhedya PQC"
+license = "MIT"
+repository = "https://github.com/ParamTatva-org/abhedyam"
+authors = ["ParamTatva <bot@paramtatva.org>"]
+readme = "README.md"
+edition = "2024"
+
+[dependencies]

@@ -1,0 +1,15 @@
+[package]
+name = "abnf-rfc5234"
+description = "Augumented Backus-Naur Form (ABNF) in accordance with RFC 5234"
+license = "ISC"
+readme = "README.md"
+repository = "https://git.nstr.no/nstr-sw/abnf-rfc5234"
+authors = ["Nstr Software AS"]
+keywords  = ["rfc5234", "abnf", "bnf", "backus-naur"]
+version = "0.1.0-dev.0"
+edition = "2021"
+
+[dependencies]
+pest = { version = "2", features = ["miette-error", "pretty-print"] }
+pest_derive = { version = "2", features = ["grammar-extras"] }
+thiserror = "2"

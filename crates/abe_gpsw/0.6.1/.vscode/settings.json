@@ -1,0 +1,18 @@
+{
+    "cSpell.words": [
+        "bindgen",
+        "cdylib",
+        "cleartext",
+        "cosmian",
+        "Deserialization",
+        "gpsw",
+        "keypair",
+        "libc",
+        "longlong",
+        "rustup",
+        "strncpy",
+        "thiserror",
+        "wasi",
+        "webassembly"
+    ],
+}

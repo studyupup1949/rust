@@ -1,0 +1,31 @@
+name: Generate cargo docs
+
+on:
+  push:
+    branches:
+      - main
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}-${{ github.event_name }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v3
+      - name: Build docs
+        run: cargo doc --no-deps --all-features --target-dir="/tmp/cargo-doc"
+      - name: Publish docs
+        run: |
+          set -ex
+          git fetch origin gh-pages
+          git checkout gh-pages
+          git clean -f -d -x
+          rsync -av /tmp/cargo-doc/doc/ .
+          git add .
+          git config user.name "GitHub Actions"
+          git config user.email "<action@github.com>"
+          git commit --allow-empty -m "cargo docs for $GITHUB_SHA"
+          git push origin gh-pages

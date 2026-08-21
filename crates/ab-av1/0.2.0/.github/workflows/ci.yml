@@ -1,0 +1,34 @@
+name: Rust
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    env:
+      RUST_BACKTRACE: 1
+    steps:
+    - uses: actions/checkout@v2
+    - run: cargo test
+    # check print-completions don't fail
+    - run: cargo run -- print-completions bash
+    - run: cargo run -- print-completions fish
+    - run: cargo run -- print-completions zsh
+
+  test-windows:
+    runs-on: windows-latest
+    env:
+      RUST_BACKTRACE: 1
+    steps:
+    - uses: actions/checkout@v2
+    - run: cargo check
+
+  rustfmt:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v2
+    - run: cargo fmt -- --check

@@ -1,0 +1,44 @@
+name: Test suite
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  tests_debug:
+    name: Run tests
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        rust:
+          - beta
+          - nightly
+          - 1.85.0  # Minimum supported version
+    steps:
+      - name: Checkout branch
+        uses: actions/checkout@v5
+      - name: Setup Rust toolchain
+        uses: dtolnay/rust-toolchain@master
+        with:
+          toolchain: ${{ matrix.rust }}
+      - name: Run tests
+        run: cargo +${{ matrix.rust }} test
+
+  test_windows:
+    name: Run tests on windows
+    runs-on: windows-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        rust:
+          - stable
+    steps:
+      - name: Checkout branch
+        uses: actions/checkout@v5
+      - name: Setup Rust toolchain
+        uses: dtolnay/rust-toolchain@stable
+      - name: Run tests
+        run: cargo test

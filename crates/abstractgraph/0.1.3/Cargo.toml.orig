@@ -1,0 +1,15 @@
+[package]
+description = "Abstract Graph Algorithms"
+name = "abstractgraph"
+version = "0.1.3"
+authors = ["David Gibson <david@gibson.dropbear.id.au>"]
+license = "LGPL-2.1-or-later"
+repository = "https://gitlab.com/dgibson/abstractgraph.git"
+categories = ["algorithms"]
+keywords = ["graph", "algorithm", "library"]
+edition = '2018'
+readme = "README.md"
+
+[dependencies]
+num = "0.2"
+priority-queue = "0.5"

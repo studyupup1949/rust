@@ -1,0 +1,9 @@
+[package]
+name = "ab"
+version = "0.1.0"
+edition = "2021"
+readme = "README.md"
+license-file = "LICENSE"
+description = "lightweight antibot library for http servers"
+repository = "https://github.com/redcloudvg/ab"
+documentation = "https://docs.rs/ab"

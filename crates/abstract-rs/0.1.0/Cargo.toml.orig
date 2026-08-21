@@ -1,0 +1,7 @@
+[package]
+name = "abstract-rs"
+version = "0.1.0"
+edition = "2021"
+description = "Reserved crate name for future project"
+license = "MIT"
+repository = "https://github.com/Lordhacker756/abstract-rs"

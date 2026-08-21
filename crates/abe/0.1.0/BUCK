@@ -1,0 +1,18 @@
+load("@buckal//:wrapper.bzl", "rust_library")
+
+rust_library(
+    name = "abe",
+    srcs = glob(["**/*.rs"]),
+    crate = "abe",
+    crate_root = "src/lib.rs",
+    edition = "2021",
+
+    visibility = ["PUBLIC"],
+    deps = [
+        "//third-party/rust/crates/anyhow/1.0.104:anyhow",
+        "//third-party/rust/crates/arrayvec/0.7.8:arrayvec",
+        "//third-party/rust/crates/hex/0.4.3:hex",
+        "//third-party/rust/crates/serde/1.0.229:serde",
+        "//third-party/rust/crates/thiserror/1.0.69:thiserror",
+    ],
+)

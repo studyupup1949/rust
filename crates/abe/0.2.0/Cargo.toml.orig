@@ -1,0 +1,22 @@
+[package]
+
+name = "abe"
+
+version.workspace =true
+authors.workspace = true
+edition.workspace = true
+license.workspace = true
+homepage.workspace = true
+documentation.workspace = true
+repository.workspace = true
+
+categories = ["encoding","parsing"]
+keywords = ["ascii-byte-expr", "ascii-byte","abe"]
+description = "Ascii-byte-expression : a tiny byte templating language"
+
+[dependencies]
+thiserror = "1.0.31"
+hex = "0.4.3"
+serde = { version = "1.0.139", features = ["derive"] }
+arrayvec = "0.7.2"
+anyhow = "1.0.69"

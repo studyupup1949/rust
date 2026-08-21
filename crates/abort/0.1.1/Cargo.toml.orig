@@ -1,0 +1,9 @@
+[package]
+name = "abort"
+version = "0.1.1"
+authors = ["M Farkas-Dyck <strake888@gmail.com>"]
+description = "Abnormal Termination"
+license = "MIT OR Apache-2.0"
+
+[build-dependencies]
+cc = "1.0"

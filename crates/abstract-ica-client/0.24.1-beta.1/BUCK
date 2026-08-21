@@ -1,0 +1,24 @@
+load("@buckal//:wrapper.bzl", "rust_library")
+
+rust_library(
+    name = "abstract_ica_client",
+    srcs = glob(["**/*.rs"]),
+    crate = "abstract_ica_client",
+    crate_root = "src/lib.rs",
+    edition = "2021",
+    features = ["default"],
+
+    visibility = ["PUBLIC"],
+    deps = [
+        "//third-party/rust/crates/cosmwasm-schema/2.3.4:cosmwasm_schema",
+        "//third-party/rust/crates/cosmwasm-std/2.3.4:cosmwasm_std",
+        "//third-party/rust/crates/cw-ownable/2.1.0:cw_ownable",
+        "//third-party/rust/crates/cw-storage-plus/2.0.0:cw_storage_plus",
+        "//third-party/rust/crates/cw2/2.0.0:cw2",
+        "//third-party/rust/crates/evm-note/0.1.0:evm_note",
+        "//third-party/rust/crates/polytone-evm/0.1.0:polytone_evm",
+        "//third-party/rust/crates/semver/1.0.28:semver",
+        "//third-party/rust/crates/serde/1.0.229:serde",
+        "//third-party/rust/crates/thiserror/1.0.69:thiserror",
+    ],
+)

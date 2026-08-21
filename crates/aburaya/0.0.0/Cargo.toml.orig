@@ -1,0 +1,11 @@
+[package]
+name = "aburaya"
+version = "0.0.0"
+edition = "2021"
+authors = ["yah <human@yah.dev>"]
+license = "MIT OR Apache-2.0"
+repository = "https://github.com/yah-ai"
+description = "yah cluster node / host image — the bathhouse a yubaba runs in (name reservation)"
+readme = "README.md"
+
+[dependencies]

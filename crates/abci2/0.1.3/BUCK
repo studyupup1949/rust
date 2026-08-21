@@ -1,0 +1,17 @@
+load("@buckal//:wrapper.bzl", "rust_library")
+
+rust_library(
+    name = "abci2",
+    srcs = glob(["**/*.rs"]),
+    crate = "abci2",
+    crate_root = "src/lib.rs",
+    edition = "2018",
+
+    visibility = ["PUBLIC"],
+    deps = [
+        "//third-party/rust/crates/log/0.4.33:log",
+        "//third-party/rust/crates/prost/0.10.4:prost",
+        "//third-party/rust/crates/tendermint-proto/0.23.9:tendermint_proto",
+        "//third-party/rust/crates/thiserror/1.0.69:thiserror",
+    ],
+)

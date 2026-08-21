@@ -1,0 +1,49 @@
+//! RV32 Zbkx extension
+
+pub mod rv32_zbkx_helpers;
+// TODO: Portable SIMD attempts to use unsupported intrinsics under Miri:
+//  https://github.com/rust-lang/portable-simd/issues/524
+#[cfg(not(all(miri, target_arch = "aarch64")))]
+#[cfg(test)]
+mod tests;
+
+use crate::{ExecutableInstruction, ExecutionError, RegisterFile};
+use ab_riscv_macros::instruction_execution;
+use ab_riscv_primitives::prelude::*;
+use core::ops::ControlFlow;
+
+#[instruction_execution]
+impl<Reg, Regs, ExtState, Memory, PC, InstructionHandler, CustomError>
+    ExecutableInstruction<Regs, ExtState, Memory, PC, InstructionHandler, CustomError>
+    for Rv32ZbkxInstruction<Reg>
+where
+    Reg: Register<Type = u32>,
+    Regs: RegisterFile<Reg>,
+{
+    #[inline(always)]
+    fn execute(
+        self,
+        regs: &mut Regs,
+        _ext_state: &mut ExtState,
+        _memory: &mut Memory,
+        _program_counter: &mut PC,
+        _system_instruction_handler: &mut InstructionHandler,
+    ) -> Result<ControlFlow<()>, ExecutionError<Reg::Type, CustomError>> {
+        match self {
+            Self::Xperm4 { rd, rs1, rs2 } => {
+                let rs1_value = regs.read(rs1);
+                let rs2_value = regs.read(rs2);
+
+                regs.write(rd, rv32_zbkx_helpers::xperm4(rs1_value, rs2_value));
+            }
+            Self::Xperm8 { rd, rs1, rs2 } => {
+                let rs1_value = regs.read(rs1);
+                let rs2_value = regs.read(rs2);
+
+                regs.write(rd, rv32_zbkx_helpers::xperm8(rs1_value, rs2_value));
+            }
+        }
+
+        Ok(ControlFlow::Continue(()))
+    }
+}

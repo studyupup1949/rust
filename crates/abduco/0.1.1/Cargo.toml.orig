@@ -1,0 +1,16 @@
+[package]
+name = "abduco"
+version = "0.1.1"
+edition = "2021"
+authors = ["Syed Fasiuddin <syed.fasiuddin@icloud.com>"]
+license = "MIT"
+description = "Placeholder for abduco rewrite in Rust"
+homepage = "https://git.sr.ht/~sfasi/abduco"
+documentation = "https://docs.rs/abduco"
+repository = "https://git.sr.ht/~sfasi/abduco"
+readme = "README"
+keywords = ["abduco"]
+
+[dependencies]
+nix = { version = "0.28", features = ["hostname", "term"] }
+time = { version = "0.3.36", features = ["formatting", "macros", "local-offset"] }

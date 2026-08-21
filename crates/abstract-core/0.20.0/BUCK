@@ -1,0 +1,31 @@
+load("@buckal//:wrapper.bzl", "rust_library")
+
+rust_library(
+    name = "abstract_core",
+    srcs = glob(["**/*.rs"]),
+    crate = "abstract_core",
+    crate_root = "src/lib.rs",
+    edition = "2021",
+
+    visibility = ["PUBLIC"],
+    deps = [
+        "//third-party/rust/crates/abstract-polytone/1.0.5:abstract_polytone",
+        "//third-party/rust/crates/cosmwasm-schema/1.5.11:cosmwasm_schema",
+        "//third-party/rust/crates/cosmwasm-std/1.5.11:cosmwasm_std",
+        "//third-party/rust/crates/cw-address-like/1.0.4:cw_address_like",
+        "//third-party/rust/crates/cw-asset/3.1.1:cw_asset",
+        "//third-party/rust/crates/cw-clearable/0.1.2:cw_clearable",
+        "//third-party/rust/crates/cw-controllers/1.1.2:cw_controllers",
+        "//third-party/rust/crates/cw-ownable/0.5.1:cw_ownable",
+        "//third-party/rust/crates/cw-semver/1.0.14:cw_semver",
+        "//third-party/rust/crates/cw-storage-plus/1.1.0:cw_storage_plus",
+        "//third-party/rust/crates/cw-utils/1.0.3:cw_utils",
+        "//third-party/rust/crates/cw2/1.1.2:cw2",
+        "//third-party/rust/crates/cw20/1.1.2:cw20",
+        "//third-party/rust/crates/schemars/0.8.22:schemars",
+        "//third-party/rust/crates/semver/1.0.28:semver",
+        "//third-party/rust/crates/serde/1.0.229:serde",
+        "//third-party/rust/crates/sha256/1.6.0:sha256",
+        "//third-party/rust/crates/thiserror/1.0.69:thiserror",
+    ],
+)

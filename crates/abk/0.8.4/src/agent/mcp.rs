@@ -1,0 +1,522 @@
+//! MCP tool integration for the agent.
+//!
+//! This module provides functionality to load tools from MCP servers
+//! and convert them to OpenAI function schemas for LLM consumption.
+
+#[cfg(feature = "registry-mcp")]
+use crate::config::{McpConfig, McpCredentialConfig};
+#[cfg(feature = "registry-mcp")]
+use crate::registry::{McpClient, McpServerConfig as RegistryServerConfig, ToolRegistry};
+#[cfg(feature = "registry-mcp")]
+use anyhow::Result;
+#[cfg(feature = "registry-mcp")]
+use std::collections::HashMap;
+
+/// Status of a single MCP server connection after initialization.
+#[cfg(feature = "registry-mcp")]
+#[derive(Debug, Clone)]
+pub struct McpServerInfo {
+    /// Server name from config
+    pub name: String,
+    /// Whether the server connected successfully
+    pub connected: bool,
+    /// Number of tools loaded from this server
+    pub tool_count: usize,
+    /// Error message if the server failed to connect
+    pub error: Option<String>,
+}
+
+/// MCP tools container that can be merged with CATS tools.
+#[cfg(feature = "registry-mcp")]
+pub struct McpToolLoader {
+    /// Registry holding the loaded MCP tools
+    pub registry: ToolRegistry,
+    /// Number of tools loaded
+    pub tool_count: usize,
+    /// Server configurations indexed by server name
+    server_configs: HashMap<String, RegistryServerConfig>,
+    /// HTTP client for making tool calls
+    client: McpClient,
+    /// Per-server connection status collected during `new()`.
+    /// Used by the agent to emit `OutputEvent::McpServerStatus` events
+    /// through the output sink.
+    pub server_statuses: Vec<McpServerInfo>,
+}
+
+#[cfg(feature = "registry-mcp")]
+impl McpToolLoader {
+    /// Create a new MCP tool loader and fetch tools from configured servers.
+    ///
+    /// # Arguments
+    /// * `config` - The MCP configuration from the agent config
+    ///
+    /// # Returns
+    /// A new McpToolLoader with tools fetched from all configured servers.
+    pub async fn new(config: &McpConfig) -> Result<Self> {
+        let registry = ToolRegistry::new();
+        let mut total_tools = 0;
+        let mut server_configs = HashMap::new();
+        let client = McpClient::new();
+
+        if !config.enabled {
+            return Ok(Self {
+                registry,
+                tool_count: 0,
+                server_configs,
+                client,
+                server_statuses: Vec::new(),
+            });
+        }
+
+        let mut server_statuses = Vec::new();
+
+        for server in &config.servers {
+            // Skip non-HTTP transports for now
+            if server.transport != "http" {
+                crate::observability::tee_eprintln(
+                    &format!("Warning: MCP server '{}' uses unsupported transport '{}', skipping",
+                    server.name, server.transport)
+                );
+                continue;
+            }
+
+            // Build registry config from server config + credentials
+            let client_config = build_registry_config(
+                &server.name,
+                &server.url,
+                server.auth_token.as_deref(),
+                server.credentials.as_deref(),
+                &config.credentials,
+            ).await;
+
+            // Store the server config for later tool calls
+            server_configs.insert(server.name.clone(), client_config.clone());
+
+            // Fetch tools from server
+            let result = if server.auto_init {
+                client.fetch_tools_with_init(&client_config).await
+            } else {
+                client.fetch_tools(&client_config).await
+            };
+
+            match result {
+                Ok(tools) => {
+                    match registry.register_mcp_batch(tools, &server.name) {
+                        Ok(registered) => {
+                            total_tools += registered;
+                            crate::observability::tee_println(
+                                &format!("✓ Loaded {} tools from MCP server '{}'",
+                                registered, server.name)
+                            );
+                            server_statuses.push(McpServerInfo {
+                                name: server.name.clone(),
+                                connected: true,
+                                tool_count: registered,
+                                error: None,
+                            });
+                        }
+                        Err(e) => {
+                            let err_msg = format!("Failed to register tools: {}", e);
+                            crate::observability::tee_eprintln(
+                                &format!("Warning: Failed to register tools from '{}': {}",
+                                server.name, e)
+                            );
+                            server_statuses.push(McpServerInfo {
+                                name: server.name.clone(),
+                                connected: false,
+                                tool_count: 0,
+                                error: Some(err_msg),
+                            });
+                        }
+                    }
+                }
+                Err(e) => {
+                    let err_msg = format!("{}", e);
+                    crate::observability::tee_eprintln(
+                        &format!("Warning: Failed to fetch tools from MCP server '{}': {}",
+                        server.name, e)
+                    );
+                    server_statuses.push(McpServerInfo {
+                        name: server.name.clone(),
+                        connected: false,
+                        tool_count: 0,
+                        error: Some(err_msg),
+                    });
+                }
+            }
+        }
+
+        Ok(Self {
+            registry,
+            tool_count: total_tools,
+            server_configs,
+            client,
+            server_statuses,
+        })
+    }
+
+    /// Get all MCP tools as OpenAI function schemas.
+    ///
+    /// This converts the internal tool format to OpenAI's function calling format
+    /// for consumption by the LLM.
+    pub fn get_openai_schemas(&self) -> Vec<serde_json::Value> {
+        self.registry
+            .to_internal_tools()
+            .into_iter()
+            .map(|tool| {
+                serde_json::json!({
+                    "type": "function",
+                    "function": {
+                        "name": tool.name,
+                        "description": tool.description,
+                        "parameters": tool.parameters
+                    }
+                })
+            })
+            .collect()
+    }
+
+    /// Check if any tools were loaded.
+    pub fn has_tools(&self) -> bool {
+        self.tool_count > 0
+    }
+
+    /// Check if a tool is an MCP tool (exists in this registry).
+    pub fn is_mcp_tool(&self, tool_name: &str) -> bool {
+        self.registry.contains(tool_name)
+    }
+
+    /// Get the server name for a tool.
+    pub fn get_tool_server(&self, tool_name: &str) -> Option<String> {
+        self.registry.find(tool_name).and_then(|t| t.origin().map(String::from))
+    }
+
+    /// Execute an MCP tool by calling the remote server.
+    ///
+    /// # Arguments
+    /// * `tool_name` - The name of the tool to execute
+    /// * `arguments` - The arguments as a JSON string
+    ///
+    /// # Returns
+    /// The tool result containing content and success status.
+    pub async fn execute_tool(
+        &self,
+        tool_name: &str,
+        arguments: &str,
+    ) -> Result<McpToolExecutionResult> {
+        // Find which server this tool belongs to
+        let server_name = self
+            .get_tool_server(tool_name)
+            .ok_or_else(|| anyhow::anyhow!("Tool '{}' not found in MCP registry", tool_name))?;
+
+        // Get the server config
+        let server_config = self
+            .server_configs
+            .get(&server_name)
+            .ok_or_else(|| anyhow::anyhow!("Server config for '{}' not found", server_name))?;
+
+        // Parse arguments
+        let args: serde_json::Value = serde_json::from_str(arguments)
+            .unwrap_or_else(|_| serde_json::json!({}));
+
+        // Call the tool
+        let result = self
+            .client
+            .call_tool(server_config, tool_name, args)
+            .await
+            .map_err(|e| anyhow::anyhow!("MCP tool call failed: {}", e))?;
+
+        Ok(McpToolExecutionResult {
+            content: result.content,
+            success: !result.is_error,
+        })
+    }
+}
+
+/// Result from executing an MCP tool.
+#[cfg(feature = "registry-mcp")]
+pub struct McpToolExecutionResult {
+    /// The text content of the result.
+    pub content: String,
+    /// Whether the execution was successful.
+    pub success: bool,
+}
+
+// ---------------------------------------------------------------------------
+// Credential resolution
+// ---------------------------------------------------------------------------
+
+/// Build a `RegistryServerConfig` from server config fields and the credentials registry.
+///
+/// Priority:
+/// 1. `credentials` reference (if found in registry):
+///    - `service-account`: **eagerly exchanges** service token → access token via
+///      RFC 8693, then stores the result as a static `auth_token` (uses the proven
+///      old code path).
+///    - `static`: resolves env vars and stores as `auth_token`.
+/// 2. `auth_token` → static token
+/// 3. neither → no auth
+#[cfg(feature = "registry-mcp")]
+async fn build_registry_config(
+    name: &str,
+    url: &str,
+    auth_token: Option<&str>,
+    credentials_ref: Option<&str>,
+    credentials_map: &HashMap<String, McpCredentialConfig>,
+) -> RegistryServerConfig {
+    let mut config = RegistryServerConfig::new(name, url);
+
+    // Check for named credential reference first
+    if let Some(cred_name) = credentials_ref {
+        if let Some(cred) = credentials_map.get(cred_name) {
+            match cred {
+                McpCredentialConfig::Static { token } => {
+                    let resolved = resolve_env_var(token);
+                    config = config.with_auth(resolved);
+                }
+                McpCredentialConfig::ServiceAccount {
+                    service_token,
+                    issuer_url,
+                    client_id,
+                    client_secret,
+                    audience,
+                    scope,
+                } => {
+                    let svc_token = resolve_env_var(service_token);
+                    let issuer = resolve_env_var(issuer_url);
+                    let cid = resolve_env_var(client_id);
+                    let cs = client_secret.as_ref().map(|s| resolve_env_var(s));
+                    let aud = resolve_env_var(audience);
+                    let scp = scope.as_ref().map(|s| resolve_env_var(s));
+
+                    #[cfg(feature = "registry-mcp-token")]
+                    {
+                        use pep::token_provider::{ServiceAccountConfig, ServiceAccountTokenProvider, TokenProviderEnum};
+                        let provider = ServiceAccountTokenProvider::new(ServiceAccountConfig {
+                            service_token: svc_token,
+                            issuer_url: issuer,
+                            client_id: cid,
+                            client_secret: cs,
+                            audience: aud,
+                            scope: scp,
+                        });
+
+                        crate::observability::tee_eprintln(
+                            &format!("[MCP] Service account token provider attached for '{}' (audience={}). Token will be exchanged lazily with automatic refresh.", name, &config.name)
+                        );
+
+                        config = config.with_token_provider(TokenProviderEnum::ServiceAccount(provider));
+                    }
+                    #[cfg(not(feature = "registry-mcp-token"))]
+                    {
+                        let _ = (svc_token, issuer, cid, cs, aud, scp);
+                        crate::observability::tee_eprintln(
+                            &format!("Warning: Server '{}' uses service-account credentials but registry-mcp-token feature is disabled. Compile with --features registry-mcp-token", name)
+                        );
+                    }
+                }
+                McpCredentialConfig::Interactive {
+                    issuer_url,
+                    client_id,
+                    client_secret,
+                    scope,
+                    redirect_port,
+                } => {
+                    #[cfg(feature = "registry-mcp-token")]
+                    {
+                        use pep::token_provider::{
+                            InteractiveConfig, InteractiveTokenProvider,
+                            TokenProviderEnum,
+                        };
+                        use pep::token_store::{FileTokenStore, TokenStore};
+                        use std::sync::Arc;
+
+                        let agent_name = std::env::var("ABK_AGENT_NAME")
+                            .unwrap_or_else(|_| "trustee".into());
+
+                        let token_store: Arc<dyn TokenStore> =
+                            Arc::new(FileTokenStore::new(&agent_name));
+
+                        let provider = InteractiveTokenProvider::with_store(
+                            InteractiveConfig {
+                                issuer_url: resolve_env_var(issuer_url),
+                                client_id: resolve_env_var(client_id),
+                                client_secret: client_secret.as_ref().map(|s| resolve_env_var(s)),
+                                redirect_uri: format!("http://localhost:{}/callback", redirect_port),
+                                scope: resolve_env_var(scope),
+                                credential_name: cred_name.to_string(),
+                            },
+                            token_store,
+                        );
+
+                        crate::observability::tee_eprintln(
+                            &format!("[MCP] Interactive token provider attached for '{}' (credential={}).", name, cred_name)
+                        );
+
+                        config = config.with_token_provider(TokenProviderEnum::Interactive(provider));
+                    }
+                    #[cfg(not(feature = "registry-mcp-token"))]
+                    {
+                        let _ = (issuer_url, client_id, client_secret, scope, redirect_port);
+                        crate::observability::tee_eprintln(
+                            &format!("Warning: Server '{}' uses interactive credentials but registry-mcp-token feature is disabled.", name)
+                        );
+                    }
+                }
+                McpCredentialConfig::WebSession { .. } => {
+                    #[cfg(feature = "registry-mcp-token")]
+                    {
+                        use pep::token_provider::{
+                            InteractiveConfig, InteractiveTokenProvider,
+                            TokenProviderEnum,
+                        };
+                        use pep::token_store::{FileTokenStore, TokenStore};
+                        use std::sync::Arc;
+
+                        let agent_name = std::env::var("ABK_AGENT_NAME")
+                            .unwrap_or_else(|_| "trustee".into());
+
+                        let token_store: Arc<dyn TokenStore> =
+                            Arc::new(FileTokenStore::new(&agent_name));
+
+                        // Reserved credential name — trustee-web writes the session
+                        // token here before each agent command.
+                        const SESSION_CRED_NAME: &str = "__web_session";
+
+                        let provider = InteractiveTokenProvider::with_store(
+                            InteractiveConfig {
+                                issuer_url: String::new(),
+                                client_id: String::new(),
+                                client_secret: None,
+                                redirect_uri: String::new(),
+                                scope: String::new(),
+                                credential_name: SESSION_CRED_NAME.to_string(),
+                            },
+                            token_store,
+                        );
+
+                        crate::observability::tee_eprintln(
+                            &format!("[MCP] Web session token provider attached for '{}' (reads __web_session from token store).", name)
+                        );
+
+                        config = config.with_token_provider(TokenProviderEnum::Interactive(provider));
+                    }
+                    #[cfg(not(feature = "registry-mcp-token"))]
+                    {
+                        crate::observability::tee_eprintln(
+                            &format!("Warning: Server '{}' uses web-session credentials but registry-mcp-token feature is disabled.", name)
+                        );
+                    }
+                }
+                McpCredentialConfig::WebInteractive {
+                    issuer_url,
+                    client_id,
+                    client_secret,
+                    scope,
+                } => {
+                    #[cfg(feature = "registry-mcp-token")]
+                    {
+                        use pep::token_provider::{
+                            InteractiveConfig, InteractiveTokenProvider,
+                            TokenProviderEnum,
+                        };
+                        use pep::token_store::{FileTokenStore, TokenStore};
+                        use std::sync::Arc;
+
+                        let agent_name = std::env::var("ABK_AGENT_NAME")
+                            .unwrap_or_else(|_| "trustee".into());
+
+                        let token_store: Arc<dyn TokenStore> =
+                            Arc::new(FileTokenStore::new(&agent_name));
+
+                        let provider = InteractiveTokenProvider::with_store(
+                            InteractiveConfig {
+                                issuer_url: resolve_env_var(issuer_url),
+                                client_id: resolve_env_var(client_id),
+                                client_secret: client_secret.as_ref().map(|s| resolve_env_var(s)),
+                                redirect_uri: String::new(),
+                                scope: resolve_env_var(scope),
+                                credential_name: cred_name.to_string(),
+                            },
+                            token_store,
+                        );
+
+                        crate::observability::tee_eprintln(
+                            &format!("[MCP] Web interactive token provider attached for '{}' (credential={}). Login via trustee-web UI.", name, cred_name)
+                        );
+
+                        config = config.with_token_provider(TokenProviderEnum::Interactive(provider));
+                    }
+                    #[cfg(not(feature = "registry-mcp-token"))]
+                    {
+                        let _ = (issuer_url, client_id, client_secret, scope);
+                        crate::observability::tee_eprintln(
+                            &format!("Warning: Server '{}' uses web-interactive credentials but registry-mcp-token feature is disabled.", name)
+                        );
+                    }
+                }
+            }
+            return config;
+        } else {
+            crate::observability::tee_eprintln(
+                &format!("Warning: Server '{}' references credential '{}' but it was not found in [mcp.credentials]", name, cred_name)
+            );
+        }
+    }
+
+    // Fall back to static auth_token
+    if let Some(token) = auth_token {
+        let resolved = resolve_env_var(token);
+        config = config.with_auth(resolved);
+    }
+
+    config
+}
+
+/// Resolve environment variable references in a string.
+///
+/// Supports patterns like `${VAR_NAME}` and replaces them with
+/// the corresponding environment variable value.
+#[cfg(feature = "registry-mcp")]
+fn resolve_env_var(value: &str) -> String {
+    if value.starts_with("${") && value.ends_with('}') {
+        let var_name = &value[2..value.len() - 1];
+        std::env::var(var_name).unwrap_or_else(|_| value.to_string())
+    } else {
+        value.to_string()
+    }
+}
+
+#[cfg(all(test, feature = "registry-mcp"))]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_resolve_env_var() {
+        std::env::set_var("TEST_MCP_VAR", "test_value");
+
+        assert_eq!(resolve_env_var("${TEST_MCP_VAR}"), "test_value");
+        assert_eq!(resolve_env_var("plain_value"), "plain_value");
+        assert_eq!(
+            resolve_env_var("${NONEXISTENT_VAR}"),
+            "${NONEXISTENT_VAR}"
+        );
+
+        std::env::remove_var("TEST_MCP_VAR");
+    }
+
+    #[tokio::test]
+    async fn test_mcp_loader_disabled() {
+        use crate::config::McpConfig;
+        let config = McpConfig {
+            enabled: false,
+            timeout_seconds: 30,
+            credentials: HashMap::new(),
+            servers: vec![],
+        };
+
+        let loader = McpToolLoader::new(&config).await.unwrap();
+        assert_eq!(loader.tool_count, 0);
+        assert!(!loader.has_tools());
+    }
+}

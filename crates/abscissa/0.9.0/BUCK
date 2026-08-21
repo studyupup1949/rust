@@ -1,0 +1,18 @@
+load("@buckal//:wrapper.bzl", "rust_library")
+
+rust_library(
+    name = "abscissa",
+    srcs = glob(["**/*.rs"]),
+    crate = "abscissa",
+    crate_root = "src/lib.rs",
+    edition = "2024",
+
+    visibility = ["PUBLIC"],
+    deps = [
+        "//third-party/rust/crates/abscissa_core/0.9.0:abscissa_core",
+        "//third-party/rust/crates/clap/4.6.6:clap",
+        "//third-party/rust/crates/handlebars/6.4.4:handlebars",
+        "//third-party/rust/crates/ident_case/1.0.1:ident_case",
+        "//third-party/rust/crates/serde/1.0.229:serde",
+    ],
+)

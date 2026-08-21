@@ -1,0 +1,22 @@
+[package]
+name = "abpilot-cli"
+version = "0.1.0"
+edition = "2021"
+authors = ["ABPilot Team"]
+description = "ABPilot Cli"
+license = "MIT OR Apache-2.0"
+repository = "https://github.com/abpilot-cc/cli"
+
+[[bin]]
+name = "abpilot"
+path = "src/main.rs"
+
+[dependencies]
+clap = { version = "4.5", features = ["derive"] }
+tokio = { version = "1.40", features = ["full"] }
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
+dirs = "5.0"
+abpilot-cc-sdk = { version = "0.1", default-features = false, features = ["mp"] }
+hostname = "0.4"
+reqwest = { version = "0.12", features = ["multipart"] }

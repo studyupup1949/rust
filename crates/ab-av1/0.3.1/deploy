@@ -1,0 +1,12 @@
+#!/usr/bin/env bash
+set -eu
+dir="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+cd "$dir"
+
+cargo fmt -- --check
+
+cargo build --release
+
+cp "${CARGO_TARGET_DIR:-./target}/release/ab-av1" ~/bin/ab-av1
+
+ls -lh ~/bin/ab-av1

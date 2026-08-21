@@ -1,0 +1,11 @@
+[package]
+name = "abbrev-tree"
+version = "0.1.0"
+authors = ["ashtneoi <ashtneoi@gmail.com>"]
+edition = "2018"
+license = "MIT"
+description = "highly inefficient data structure for text completion"
+homepage = "https://github.com/ashtneoi/abbrev-tree"
+repository = "https://github.com/ashtneoi/abbrev-tree"
+keywords = ["completion"]
+categories = ["data-structures"]

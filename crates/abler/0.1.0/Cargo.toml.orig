@@ -1,0 +1,29 @@
+[package]
+name = "abler"
+version = "0.1.0"
+edition = "2021"
+authors = ["Artyom Sakharilenko <kryvashek@gmail.com>"]
+description = "Tiny type to process various ablers/flags/etc as one"
+repository = "https://github.com/kryvashek/abler"
+license = "MIT"
+categories = ["no-std"]
+
+[lib]
+crate-type = ["staticlib", "rlib"]
+
+[dependencies]
+phf = "0.11"
+phf_shared = "0.11"
+serde_with = { version = "3.9", features = ["macros"], optional = true }
+strum = { version = "0.26", features = ["derive"] }
+thiserror = "1.0.63"
+
+[build-dependencies]
+phf = "0.11"
+phf_codegen = "0.11"
+phf_shared = "0.11"
+strum = { version = "0.26", features = ["derive"] }
+
+[features]
+default = []
+serde = ["serde_with"]

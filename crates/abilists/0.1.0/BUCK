@@ -1,0 +1,20 @@
+load("@buckal//:wrapper.bzl", "rust_library")
+
+rust_library(
+    name = "abilists",
+    srcs = glob(["**/*.rs"]),
+    crate = "abilists",
+    crate_root = "src/lib.rs",
+    edition = "2021",
+
+    visibility = ["PUBLIC"],
+    deps = [
+        "//third-party/rust/crates/arcstr/1.2.0:arcstr",
+        "//third-party/rust/crates/arrayvec/0.7.8:arrayvec",
+        "//third-party/rust/crates/ascii/1.1.0:ascii",
+        "//third-party/rust/crates/color-eyre/0.6.5:color_eyre",
+        "//third-party/rust/crates/eio/0.1.2:eio",
+        "//third-party/rust/crates/log/0.4.33:log",
+        "//third-party/rust/crates/thiserror/1.0.69:thiserror",
+    ],
+)

@@ -1,0 +1,18 @@
+load("@buckal//:wrapper.bzl", "rust_library")
+
+rust_library(
+    name = "abax_contracts",
+    srcs = glob(["**/*.rs"]),
+    crate = "abax_contracts",
+    crate_root = "lib.rs",
+    edition = "2021",
+    features = ["default"],
+
+    visibility = ["PUBLIC"],
+    deps = [
+        "//third-party/rust/crates/abax_library/0.3.0:abax_library",
+        "//third-party/rust/crates/ink/5.1.1:ink",
+        "//third-party/rust/crates/parity-scale-codec/3.7.5:parity_scale_codec",
+        "//third-party/rust/crates/pendzl/0.2.4:pendzl",
+    ],
+)

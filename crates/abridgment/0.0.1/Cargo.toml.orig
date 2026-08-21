@@ -1,0 +1,8 @@
+[package]
+name = "abridgment"
+version = "0.0.1"
+edition = "2021"
+description = "Abridge float number digits."
+license = "MIT OR Apache-2.0"
+keywords = ["cast", "data", "float", "format", "utility"]
+categories = ["data-structures", "mathematics", "value-formatting"]

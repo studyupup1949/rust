@@ -1,0 +1,17 @@
+load("@buckal//:wrapper.bzl", "rust_library")
+
+rust_library(
+    name = "abomonation_derive",
+    srcs = glob(["**/*.rs"]),
+    crate = "abomonation_derive",
+    crate_root = "src/lib.rs",
+    edition = "2015",
+    proc_macro = True,
+
+    visibility = ["PUBLIC"],
+    deps = [
+        "//third-party/rust/crates/quote/0.3.15:quote",
+        "//third-party/rust/crates/syn/0.11.11:syn",
+        "//third-party/rust/crates/synstructure/0.6.1:synstructure",
+    ],
+)

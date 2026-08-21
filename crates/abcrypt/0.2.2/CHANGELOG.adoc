@@ -1,0 +1,56 @@
+// SPDX-FileCopyrightText: 2022 Shun Sakai
+//
+// SPDX-License-Identifier: Apache-2.0 OR MIT
+
+= Changelog
+:toc: preamble
+:project-url: https://github.com/sorairolake/abcrypt
+:compare-url: {project-url}/compare
+:issue-url: {project-url}/issues
+:pull-request-url: {project-url}/pull
+:keepachangelog: https://keepachangelog.com/[Keep a Changelog]
+:semver: https://semver.org/[Semantic Versioning]
+
+All notable changes to this project will be documented in this file.
+
+The format is based on {keepachangelog}, and this project adheres to {semver}.
+
+== {compare-url}/abcrypt-v0.2.1\...abcrypt-v0.2.2[0.2.2] - 2023-09-11
+
+=== Added
+
+* Add the `homepage` field to `Cargo.toml` ({pull-request-url}/50[#50])
+* Add the book ({pull-request-url}/56[#56])
+
+=== Changed
+
+* Rename test file ({pull-request-url}/52[#52])
+
+== {compare-url}/abcrypt-v0.2.0\...abcrypt-v0.2.1[0.2.1] - 2023-09-05
+
+=== Changed
+
+* Change `Params::m_cost`, `Params::t_cost` and `Params::p_cost` to `const fn`
+  ({pull-request-url}/44[#44])
+
+== {compare-url}/abcrypt-v0.1.0\...abcrypt-v0.2.0[0.2.0] - 2023-09-03
+
+=== Added
+
+* Add a specialized `Result` type for read and write operations for the abcrypt
+  encrypted data format ({pull-request-url}/21[#21])
+* Add convenience functions for using `Encryptor` and `Decryptor`
+  ({pull-request-url}/22[#22])
+
+=== Changed
+
+* Change to store the plaintext and the ciphertext as `slice` in `Encryptor`
+  and `Decryptor` ({pull-request-url}/25[#25])
+* Make `alloc` optional and add `alloc` feature for enables functionality
+  requiring an allocator ({pull-request-url}/26[#26])
+
+== {project-url}/releases/tag/abcrypt-v0.1.0[0.1.0] - 2023-08-25
+
+=== Added
+
+* Initial release

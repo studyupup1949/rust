@@ -1,0 +1,8 @@
+[package]
+name = "about_me"
+version = "0.1.0"
+edition = "2024"
+description = "A simple about me example crate."
+license = "MIT"
+
+[dependencies]

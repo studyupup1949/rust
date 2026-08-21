@@ -1,0 +1,21 @@
+load("@buckal//:wrapper.bzl", "rust_binary")
+
+rust_binary(
+    name = "abn_gpm",
+    srcs = glob(["**/*.rs"]),
+    crate = "abn_gpm",
+    crate_root = "src/main.rs",
+    edition = "2024",
+
+    visibility = ["PUBLIC"],
+    deps = [
+        "//third-party/rust/crates/confy/1.0.0:confy",
+        "//third-party/rust/crates/crossterm/0.29.0:crossterm",
+        "//third-party/rust/crates/directories/6.0.0:directories",
+        "//third-party/rust/crates/ratatui/0.29.0:ratatui",
+        "//third-party/rust/crates/serde/1.0.229:serde",
+        "//third-party/rust/crates/tui-input/0.14.0:tui_input",
+        "//third-party/rust/crates/tui-tree-widget/0.23.1:tui_tree_widget",
+        "//third-party/rust/crates/uuid/1.24.0:uuid",
+    ],
+)

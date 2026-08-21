@@ -1,0 +1,13 @@
+[package]
+name = "abbrev-num"
+version = "0.1.0"
+edition = "2021"
+license = "MIT"
+authors = ["zignis <velociraptorm77@gmail.com>"]
+description = "Abbreviate numbers into a human-friendly format"
+keywords = ["formatting", "abbreviation"]
+repository = "https://github.com/zignis/abbrev-num.git"
+
+[dependencies]
+lazy_static = "1.4.0"
+rust_decimal = { version = "1.35.0", default-features = false }

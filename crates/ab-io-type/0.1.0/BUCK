@@ -1,0 +1,14 @@
+load("@buckal//:wrapper.bzl", "rust_library")
+
+rust_library(
+    name = "ab_io_type",
+    srcs = glob(["**/*.rs"]),
+    crate = "ab_io_type",
+    crate_root = "src/lib.rs",
+    edition = "2024",
+
+    visibility = ["PUBLIC"],
+    deps = [
+        "//third-party/rust/crates/ab-io-type-derive/0.1.0:ab_io_type_derive",
+    ],
+)

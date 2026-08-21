@@ -1,0 +1,13 @@
+[package]
+name = "ab-testing"
+version = "0.1.0"
+edition = "2021"
+description = "A/B testing with chi-squared and Welch's t-test — Rust port of ab-testing"
+license = "MIT"
+keywords = ["statistics", "ab-testing", "chi-squared", "t-test", "experiment"]
+categories = ["mathematics", "science"]
+repository = "https://github.com/SuperInstance/ab-testing-rs"
+
+[dependencies]
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"

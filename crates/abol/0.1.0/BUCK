@@ -1,0 +1,17 @@
+load("@buckal//:wrapper.bzl", "rust_library")
+
+rust_library(
+    name = "abol",
+    srcs = glob(["**/*.rs"]),
+    crate = "abol",
+    crate_root = "src/lib.rs",
+    edition = "2024",
+
+    visibility = ["PUBLIC"],
+    deps = [
+        "//third-party/rust/crates/abol-codegen/0.1.0:abol_codegen",
+        "//third-party/rust/crates/abol-core/0.1.0:abol_core",
+        "//third-party/rust/crates/abol-rt/0.1.0:abol_rt",
+        "//third-party/rust/crates/abol-server/0.1.0:abol_server",
+    ],
+)

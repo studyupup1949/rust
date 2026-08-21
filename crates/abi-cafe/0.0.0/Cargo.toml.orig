@@ -1,0 +1,32 @@
+[package]
+name = "abi-cafe"
+description = "Pair your compilers up at The ABI café!"
+repository = "https://github.com/Gankra/abi-cafe"
+edition = "2021"
+license = "MIT OR Apache-2.0"
+version = "0.0.0"
+exclude = ["generated_impls/", "handwritten_impls/", "tests/"]
+
+[features]
+default = []
+# Doesn't actually work yet...
+parallel = ["rayon"]
+
+
+[dependencies]
+cc = { version = "1.0.73" }
+clap = { version = "3.1.6", features = ["cargo", "wrap_help"] }
+libloading = "0.7.3"
+linked-hash-map = { version = "0.5.6", features = ["serde", "serde_impl"] }
+log = "0.4.14"
+rayon = { version = "1.5.3", optional = true }
+ron = "0.7.0"
+serde = { version = "1.0.136", features = ["derive"] }
+serde_json = "1.0.83"
+simplelog = "0.11.2"
+thiserror = "1.0.30"
+
+
+
+[build-dependencies]
+built = "0.5.1"

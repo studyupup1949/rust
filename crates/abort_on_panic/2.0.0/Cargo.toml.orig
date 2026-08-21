@@ -1,0 +1,18 @@
+[package]
+
+name = "abort_on_panic"
+version = "2.0.0"
+authors = ["Eric Kidd <git@randomhacks.net>", "Benjamin Herr <ben@0x539.de>"]
+
+description = "Intercept panic! from unsafe locations and abort the process"
+license = "CC0-1.0"
+readme = "README.md"
+
+homepage = "https://github.com/emk/abort_on_panic-rs"
+repository = "https://github.com/emk/abort_on_panic-rs"
+documentation = "http://docs.rs/abort_on_panic"
+
+[badges]
+maintenance = { status = "passively-maintained" }
+travis-ci = { repository = "emk/abort_on_panic-rs", branch = "master" }
+

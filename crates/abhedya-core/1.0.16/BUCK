@@ -1,0 +1,16 @@
+load("@buckal//:wrapper.bzl", "rust_library")
+
+rust_library(
+    name = "abhedya_core",
+    srcs = glob(["**/*.rs"]),
+    crate = "abhedya_core",
+    crate_root = "src/lib.rs",
+    edition = "2024",
+
+    visibility = ["PUBLIC"],
+    deps = [
+        "//third-party/rust/crates/abhedya-chhandas/1.0.24:abhedya_chhandas",
+        "//third-party/rust/crates/abhedya-kem/1.0.24:abhedya_kem",
+        "//third-party/rust/crates/rand/0.9.5:rand",
+    ],
+)

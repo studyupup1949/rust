@@ -1,0 +1,37 @@
+[package]
+name = "ab1024-ega"
+version = "0.1.0"
+authors = ["Tommy G <7865781+tommy-gilligan@users.noreply.github.com>"]
+edition = "2021"
+license = "LGPL-3.0-or-later"
+description = "An embedded-hal SPI driver for AB1024-EGA/AC057TC1 (as used in Inkplate 6 COLOR)"
+repository = "https://github.com/tommy-gilligan/ab1024-ega"
+homepage = "https://github.com/tommy-gilligan/ab1024-ega"
+keywords = ["ab1024-ega", "ac057tc1", "inkplate", "embedded-graphics", "driver"]
+categories = ["embedded", "no-std", "hardware-support"]
+
+[dependencies]
+embed-doc-image = "0.1.4"
+embedded-graphics-core = { version = "0.4.0", optional = true }
+embedded-hal = "1.0.0"
+num_enum = { version = "0.7.2", default-features = false }
+
+[dev-dependencies]
+tinybmp = "0.5.0"
+embedded-graphics = "0.8.1"
+
+# test
+[target.'cfg(not(target_os="none"))'.dev-dependencies]
+embedded-hal-mock = { git = "https://github.com/tommy-gilligan/embedded-hal-mock.git", branch = "top-level" }
+
+# examples
+[target.'cfg(target_os="none")'.dev-dependencies]
+esp-backtrace = { version = "0.10.0", features = ["esp32", "panic-handler", "exception-handler", "print-uart"] }
+esp-println = { version = "0.7.0", features = ["esp32"] }
+hal = { package = "esp32-hal", version = "0.18.0", features = ["eh1"] }
+dither = { git = "https://github.com/tommy-gilligan/dither.git" }
+embedded-hal-bus = "0.1.0"
+
+[features]
+default = ["graphics"]
+graphics = ["dep:embedded-graphics-core"]

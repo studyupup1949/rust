@@ -1,0 +1,10 @@
+[package]
+name        = "abscissa_api"
+description = "Primordial Abscissa component"
+version     = "0.0.0"
+license     = "Apache-2.0"
+authors     = ["Tony Arcieri <tony@iqlusion.io>"]
+homepage    = "https://github.com/iqlusioninc/abscissa/"
+readme      = "README.md"
+
+[dependencies]

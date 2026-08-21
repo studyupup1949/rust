@@ -1,0 +1,11 @@
+[package]
+name = "abyssos"
+version = "0.1.0"
+edition = "2021"
+description = "Abyssos terminal colour theme — very dark navy/charcoal with teal/cyan hero accent"
+license = "MIT"
+repository = "https://github.com/terry-li-hm/abyssos"
+homepage = "https://github.com/terry-li-hm/abyssos"
+keywords = ["terminal", "theme", "colour", "ghostty", "blink"]
+categories = ["command-line-interface"]
+readme = "README.md"

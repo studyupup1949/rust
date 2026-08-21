@@ -1,0 +1,34 @@
+load("@buckal//:wrapper.bzl", "rust_library")
+
+rust_library(
+    name = "absurder_sql",
+    srcs = glob(["**/*.rs"]),
+    crate = "absurder_sql",
+    crate_root = "src/lib.rs",
+    edition = "2024",
+    features = ["default"],
+
+    visibility = ["PUBLIC"],
+    deps = [
+        "//third-party/rust/crates/crc32fast/1.5.0:crc32fast",
+        "//third-party/rust/crates/futures-channel/0.3.34:futures_channel",
+        "//third-party/rust/crates/futures/0.3.34:futures",
+        "//third-party/rust/crates/getrandom/0.2.17:getrandom",
+        "//third-party/rust/crates/indexed_db_futures/0.5.0:indexed_db_futures",
+        "//third-party/rust/crates/js-sys/0.3.104:js_sys",
+        "//third-party/rust/crates/log/0.4.33:log",
+        "//third-party/rust/crates/parking_lot/0.12.5:parking_lot",
+        "//third-party/rust/crates/serde-wasm-bindgen/0.6.5:serde_wasm_bindgen",
+        "//third-party/rust/crates/serde/1.0.229:serde",
+        "//third-party/rust/crates/serde_json/1.0.151:serde_json",
+        "//third-party/rust/crates/sqlite-wasm-rs/0.4.8:sqlite_wasm_rs",
+        "//third-party/rust/crates/sqlparser/0.53.0:sqlparser",
+        "//third-party/rust/crates/thiserror/1.0.69:thiserror",
+        "//third-party/rust/crates/time/0.3.55:time",
+        "//third-party/rust/crates/tsify/0.4.5:tsify",
+        "//third-party/rust/crates/wasm-bindgen-futures/0.4.77:wasm_bindgen_futures",
+        "//third-party/rust/crates/wasm-bindgen/0.2.127:wasm_bindgen",
+        "//third-party/rust/crates/web-sys/0.3.104:web_sys",
+        "//third-party/rust/crates/weblocks/0.1.0:weblocks",
+    ],
+)

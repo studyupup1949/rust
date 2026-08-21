@@ -1,0 +1,25 @@
+[package]
+name = "abrase-cli"
+description = "CLI for the Abrase language."
+keywords = ["cli", "compiler", "interpreter", "language", "abrase"]
+categories = ["command-line-utilities", "compilers"]
+readme = "README.md"
+version.workspace      = true
+edition.workspace      = true
+rust-version.workspace = true
+license.workspace      = true
+authors.workspace      = true
+repository.workspace   = true
+homepage.workspace     = true
+
+[[bin]]
+name = "abrase"
+path = "src/main.rs"
+
+[lib]
+doctest = false
+
+[dependencies]
+abrase = { path = "../abrase", version = "=0.1.0" }
+myriad = { package = "myriad-rs", path = "../myriad", version = "=0.1.0" }
+polka  = { package = "polka-rs", path = "../polka", version = "=0.1.0" }

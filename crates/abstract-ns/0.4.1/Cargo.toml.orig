@@ -1,0 +1,34 @@
+[package]
+name = "abstract-ns"
+description = """
+    Abstract name service traits for use with futures (and tokio)
+"""
+license = "MIT/Apache-2.0"
+readme = "README.md"
+keywords = ["dns", "tokio", "name", "service", "discovery"]
+categories = ["asynchronous", "network-programming"]
+homepage = "http://github.com/tailhook/abstract-ns"
+documentation = "http://tailhook.github.io/abstract-ns"
+version = "0.4.1"
+authors = ["paul@colomiets.name"]
+
+[dependencies]
+futures = "0.1.15"
+quick-error = "1.2.0"
+rand = "0.3.14"
+void = "1.0.2"
+
+[dev-dependencies]
+futures-cpupool = "0.1.2"
+argparse = "0.2.1"
+# TODO(tailhook) for the time of refactoring
+# ns-std-threaded = { path = "ns-std-threaded", version = "0.2.0" }
+# ns-dns-tokio = { path = "ns-dns-tokio", version = "0.3.0" }
+domain = "0.2.0"
+tokio-core = "0.1.6"
+
+[lib]
+name = "abstract_ns"
+
+[workspace]
+members = ["ns-std-threaded", "ns-dns-tokio"]

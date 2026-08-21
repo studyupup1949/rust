@@ -1,0 +1,15 @@
+load("@buckal//:wrapper.bzl", "rust_library")
+
+rust_library(
+    name = "abpoa_rs",
+    srcs = glob(["**/*.rs"]),
+    crate = "abpoa_rs",
+    crate_root = "src/lib.rs",
+    edition = "2021",
+
+    visibility = ["PUBLIC"],
+    deps = [
+        "//third-party/rust/crates/abpoa-sys/0.1.1:abpoa_sys",
+        "//third-party/rust/crates/libc/0.2.189:libc",
+    ],
+)

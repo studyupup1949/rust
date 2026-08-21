@@ -1,0 +1,23 @@
+load("@buckal//:wrapper.bzl", "rust_library")
+
+rust_library(
+    name = "abode",
+    srcs = glob(["**/*.rs"]),
+    crate = "abode",
+    crate_root = "src/lib.rs",
+    edition = "2021",
+
+    visibility = ["PUBLIC"],
+    deps = [
+        "//third-party/rust/crates/actix-web/4.14.1:actix_web",
+        "//third-party/rust/crates/anyhow/1.0.104:anyhow",
+        "//third-party/rust/crates/clap/4.6.6:clap",
+        "//third-party/rust/crates/futures/0.3.34:futures",
+        "//third-party/rust/crates/opendal/0.27.2:opendal",
+        "//third-party/rust/crates/percent-encoding/2.3.2:percent_encoding",
+        "//third-party/rust/crates/sluice/0.5.5:sluice",
+        "//third-party/rust/crates/tokio/1.53.1:tokio",
+        "//third-party/rust/crates/tracing-subscriber/0.3.23:tracing_subscriber",
+        "//third-party/rust/crates/tracing/0.1.44:tracing",
+    ],
+)

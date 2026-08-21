@@ -1,0 +1,32 @@
+[package]
+name = "ab-io-type"
+description = "Infrastructure for zero-cost zero-copy serialization/deserialization"
+keywords = ["serialization", "zero-cost", "zero-copy", "metadata", "no-std"]
+repository = "https://github.com/nazar-pc/abundance"
+license = "0BSD"
+version = "0.1.0"
+authors = ["Nazar Mokrynskyi <nazar@mokrynskyi.com>"]
+edition = "2024"
+include = [
+    "/src",
+    "/Cargo.toml",
+]
+
+[package.metadata.docs.rs]
+all-features = true
+
+[dependencies]
+ab-io-type-derive = { workspace = true }
+parity-scale-codec = { workspace = true, features = ["bytes", "derive", "max-encoded-len"], optional = true }
+serde = { workspace = true, features = ["derive"], optional = true }
+
+[features]
+scale-codec = [
+    "dep:parity-scale-codec",
+]
+serde = [
+    "dep:serde",
+]
+
+[lints]
+workspace = true

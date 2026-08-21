@@ -1,0 +1,15 @@
+[package]
+name = "absurd-future"
+version = "0.1.0"
+edition = "2021"
+license = "MIT"
+description = "A future adapter that turns a future that never resolves (returns Infallible) into a future that can resolve to any type."
+repository = "https://github.com/user/absurd-future"
+keywords = ["future", "async", "infallible", "never"]
+categories = ["asynchronous"]
+
+[dependencies]
+
+[dev-dependencies]
+tokio = { version = "1.48.0", features = ["rt", "time", "macros", "rt-multi-thread"] }
+anyhow = "1.0.100"

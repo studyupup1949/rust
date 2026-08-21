@@ -1,0 +1,14 @@
+[book]
+authors = []
+language = "en"
+multilingual = false
+src = "src"
+title = "ABI Cafe"
+
+[output.html]
+git-repository-url = "https://github.com/Gankra/abi-cafe"
+edit-url-template = "https://github.com/Gankra/abi-cafe/edit/main/docs/{path}"
+search.use-boolean-and = true
+
+# [output.linkcheck]
+# warning-policy = "error"

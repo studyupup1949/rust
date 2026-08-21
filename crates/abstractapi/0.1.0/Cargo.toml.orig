@@ -1,0 +1,23 @@
+[package]
+name = "abstractapi"
+version = "0.1.0"
+description = "Rust API bindings for the Abstract HTTP API"
+authors = ["Orhun Parmaksız <orhunparmaksiz@gmail.com>"]
+license = "MIT OR Apache-2.0"
+readme = "README.md"
+homepage = "https://github.com/orhun/abstractapi-rs"
+repository = "https://github.com/orhun/abstractapi-rs"
+keywords = ["abstract", "v1", "api"]
+categories = ["api-bindings"]
+include = ["src/**/*", "Cargo.*", "LICENSE-*", "README.md", "CHANGELOG.md"]
+edition = "2018"
+
+[dependencies]
+ureq = { version = "2.3", features = ["json"] }
+serde = { version = "1.0", features = ["derive"] }
+thiserror_lite = "0.1"
+dashmap = "4.0"
+lazy-regex = "2.2"
+
+[dev-dependencies]
+pretty_assertions = "1.0.0"

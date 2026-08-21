@@ -1,0 +1,11 @@
+load("@buckal//:wrapper.bzl", "rust_library")
+
+rust_library(
+    name = "abscissa_crossbeam",
+    srcs = glob(["**/*.rs"]),
+    crate = "abscissa_crossbeam",
+    crate_root = "src/lib.rs",
+    edition = "2015",
+
+    visibility = ["PUBLIC"],
+)

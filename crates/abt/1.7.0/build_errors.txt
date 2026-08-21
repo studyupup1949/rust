@@ -1,0 +1,652 @@
+warning: unused import: `std::io::Cursor`
+ --> src\cli\commands\ffu.rs:2:5
+  |
+2 | use std::io::Cursor;
+  |     ^^^^^^^^^^^^^^^
+  |
+  = note: `#[warn(unused_imports)]` (part of `#[warn(unused)]`) on by default
+
+warning: unused import: `Context`
+  --> src\core\restore.rs:19:20
+   |
+19 | use anyhow::{bail, Context, Result};
+   |                    ^^^^^^^
+
+warning: unused import: `error`
+  --> src\core\restore.rs:20:18
+   |
+20 | use log::{debug, error, info, warn};
+   |                  ^^^^^
+
+warning: unused imports: `PathBuf` and `Path`
+  --> src\core\restore.rs:22:17
+   |
+22 | use std::path::{Path, PathBuf};
+   |                 ^^^^  ^^^^^^^
+
+warning: unused import: `Context`
+  --> src\core\secureboot.rs:16:20
+   |
+16 | use anyhow::{bail, Context, Result};
+   |                    ^^^^^^^
+
+warning: unused imports: `error`, `info`, and `warn`
+  --> src\core\secureboot.rs:17:18
+   |
+17 | use log::{debug, error, info, warn};
+   |                  ^^^^^  ^^^^  ^^^^
+
+warning: unused import: `PathBuf`
+  --> src\core\secureboot.rs:19:23
+   |
+19 | use std::path::{Path, PathBuf};
+   |                       ^^^^^^^
+
+warning: unused import: `SystemTime`
+  --> src\core\telemetry.rs:22:36
+   |
+22 | use std::time::{Duration, Instant, SystemTime};
+   |                                    ^^^^^^^^^^
+
+warning: unused imports: `error` and `warn`
+  --> src\core\wim_extract.rs:17:18
+   |
+17 | use log::{debug, error, info, warn};
+   |                  ^^^^^        ^^^^
+
+warning: unused import: `std::collections::HashMap`
+  --> src\core\wim_extract.rs:19:5
+   |
+19 | use std::collections::HashMap;
+   |     ^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: unused imports: `SeekFrom` and `Seek`
+  --> src\core\wim_extract.rs:20:21
+   |
+20 | use std::io::{Read, Seek, SeekFrom};
+   |                     ^^^^  ^^^^^^^^
+
+warning: unused import: `PathBuf`
+  --> src\core\wim_extract.rs:21:23
+   |
+21 | use std::path::{Path, PathBuf};
+   |                       ^^^^^^^
+
+warning: unused import: `anyhow::Result`
+ --> src\core\drive_constraints.rs:6:5
+  |
+6 | use anyhow::Result;
+  |     ^^^^^^^^^^^^^^
+
+warning: unused imports: `Read`, `SeekFrom`, and `Seek`
+ --> src\core\syslinux.rs:9:15
+  |
+9 | use std::io::{Read, Seek, SeekFrom};
+  |               ^^^^  ^^^^  ^^^^^^^^
+
+warning: unused imports: `PathBuf` and `Path`
+  --> src\core\syslinux.rs:10:17
+   |
+10 | use std::path::{Path, PathBuf};
+   |                 ^^^^  ^^^^^^^
+
+warning: unused imports: `SeekFrom` and `Seek`
+ --> src\core\wintogo.rs:9:21
+  |
+9 | use std::io::{Read, Seek, SeekFrom};
+  |                     ^^^^  ^^^^^^^^
+
+warning: unused import: `PathBuf`
+  --> src\core\wintogo.rs:10:23
+   |
+10 | use std::path::{Path, PathBuf};
+   |                       ^^^^^^^
+
+warning: unused import: `bail`
+  --> src\core\elevate.rs:20:14
+   |
+20 | use anyhow::{bail, Context, Result};
+   |              ^^^^
+
+warning: unused imports: `LittleEndian` and `ReadBytesExt`
+  --> src\core\isohybrid.rs:23:17
+   |
+23 | use byteorder::{LittleEndian, ReadBytesExt};
+   |                 ^^^^^^^^^^^^  ^^^^^^^^^^^^
+
+warning: unused import: `self`
+  --> src\core\optical.rs:19:15
+   |
+19 | use std::io::{self, Read, Seek, SeekFrom, Write};
+   |               ^^^^
+
+warning: unused import: `Context`
+  --> src\core\proclock.rs:18:14
+   |
+18 | use anyhow::{Context, Result};
+   |              ^^^^^^^
+
+warning: unused imports: `PathBuf` and `Path`
+  --> src\core\proclock.rs:20:17
+   |
+20 | use std::path::{Path, PathBuf};
+   |                 ^^^^  ^^^^^^^
+
+warning: unused variable: `drive_path`
+   --> src\core\optical.rs:285:17
+    |
+285 |             let drive_path = format!("\\\\.\\{}:", letter as char);
+    |                 ^^^^^^^^^^ help: if this is intentional, prefix it with an underscore: `_drive_path`
+    |
+    = note: `#[warn(unused_variables)]` (part of `#[warn(unused)]`) on by default
+
+warning: unused variable: `config`
+   --> src\core\proclock.rs:397:31
+    |
+397 | fn scan_windows(target: &str, config: &LockScanConfig, result: &mut LockScanResult) -> Result<()> {
+    |                               ^^^^^^ help: if this is intentional, prefix it with an underscore: `_config`
+
+warning: field `border_glow` is never read
+   --> src\gui\mod.rs:175:5
+    |
+160 | struct Theme {
+    |        ----- field in this struct
+...
+175 |     border_glow: egui::Color32,
+    |     ^^^^^^^^^^^
+    |
+    = note: `Theme` has derived impls for the traits `Clone` and `Debug`, but these are intentionally ignored during dead code analysis
+    = note: `#[warn(dead_code)]` (part of `#[warn(unused)]`) on by default
+
+warning: `abt` (lib) generated 25 warnings (run `cargo fix --lib -p abt` to apply 24 suggestions)
+warning: method `to_json` is never used
+   --> src\core\backup.rs:150:12
+    |
+117 | impl BackupResult {
+    | ----------------- method in this implementation
+...
+150 |     pub fn to_json(&self) -> Result<String> {
+    |            ^^^^^^^
+    |
+    = note: `#[warn(dead_code)]` (part of `#[warn(unused)]`) on by default
+
+warning: field `max_size` is never read
+  --> src\core\cache.rs:86:5
+   |
+83 | pub struct ImageCache {
+   |            ---------- field in this struct
+...
+86 |     max_size: u64,
+   |     ^^^^^^^^
+
+warning: methods `set_max_size`, `lookup`, `get_path`, `insert`, and `cache_dir` are never used
+   --> src\core\cache.rs:118:12
+    |
+ 89 | impl ImageCache {
+    | --------------- methods in this implementation
+...
+118 |     pub fn set_max_size(&mut self, max_bytes: u64) {
+    |            ^^^^^^^^^^^^
+...
+123 |     pub fn lookup(&self, url: &str) -> Option<&CacheEntry> {
+    |            ^^^^^^
+...
+134 |     pub fn get_path(&self, url: &str) -> Option<PathBuf> {
+    |            ^^^^^^^^
+...
+145 |     pub fn insert(&mut self, url: &str, local_path: &Path, sha256: &str, etag: Option<&str>) -> Result<()> {
+    |            ^^^^^^
+...
+320 |     pub fn cache_dir(&self) -> &Path {
+    |            ^^^^^^^^^
+
+warning: method `hex_len` is never used
+  --> src\core\checksum_file.rs:33:12
+   |
+31 | impl HashAlgorithm {
+   | ------------------ method in this implementation
+32 |     /// Expected hex string length for this algorithm.
+33 |     pub fn hex_len(&self) -> usize {
+   |            ^^^^^^^
+
+warning: methods `as_map` and `is_empty` are never used
+   --> src\core\checksum_file.rs:134:12
+    |
+114 | impl ChecksumFile {
+    | ----------------- methods in this implementation
+...
+134 |     pub fn as_map(&self) -> HashMap<String, String> {
+    |            ^^^^^^
+...
+147 |     pub fn is_empty(&self) -> bool {
+    |            ^^^^^^^^
+
+warning: associated items `with_hostname`, `add_user`, `set_wifi`, and `enable_ssh` are never used
+   --> src\core\customize.rs:156:12
+    |
+154 | impl OsCustomization {
+    | -------------------- associated items in this implementation
+155 |     /// Create a new customization with hostname.
+156 |     pub fn with_hostname(hostname: &str) -> Self {
+    |            ^^^^^^^^^^^^^
+...
+164 |     pub fn add_user(&mut self, user: UserAccount) {
+    |            ^^^^^^^^
+...
+169 |     pub fn set_wifi(&mut self, ssid: &str, psk: Option<&str>, security: WifiSecurity) {
+    |            ^^^^^^^^
+...
+180 |     pub fn enable_ssh(&mut self, keys: Vec<String>) {
+    |            ^^^^^^^^^^
+
+warning: fields `total_bytes`, `resume_count`, and `was_resumed` are never read
+  --> src\core\download_resume.rs:72:9
+   |
+68 | pub struct DownloadResult {
+   |            -------------- fields in this struct
+...
+72 |     pub total_bytes: u64,
+   |         ^^^^^^^^^^^
+73 |     /// Number of resume attempts that were needed.
+74 |     pub resume_count: u32,
+   |         ^^^^^^^^^^^^
+75 |     /// Whether the download was resumed from a partial file.
+76 |     pub was_resumed: bool,
+   |         ^^^^^^^^^^^
+   |
+   = note: `DownloadResult` has derived impls for the traits `Clone` and `Debug`, but these are intentionally ignored during dead code analysis
+
+warning: function `get_partial_status` is never used
+   --> src\core\download_resume.rs:413:14
+    |
+413 | pub async fn get_partial_status(output_dir: &Path, url: &str) -> Option<PartialDownloadMeta> {
+    |              ^^^^^^^^^^^^^^^^^^
+
+warning: function `cleanup_partial` is never used
+   --> src\core\download_resume.rs:421:14
+    |
+421 | pub async fn cleanup_partial(output_dir: &Path, url: &str) -> Result<()> {
+    |              ^^^^^^^^^^^^^^^
+
+warning: constant `FAT32_SIGNATURE` is never used
+  --> src\core\fat32.rs:25:7
+   |
+25 | const FAT32_SIGNATURE: u16 = 0xAA55;
+   |       ^^^^^^^^^^^^^^^
+
+warning: constant `FAT32_FSINFO_SIGNATURE_1` is never used
+  --> src\core\fat32.rs:26:7
+   |
+26 | const FAT32_FSINFO_SIGNATURE_1: u32 = 0x41615252;
+   |       ^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: constant `FAT32_FSINFO_SIGNATURE_2` is never used
+  --> src\core\fat32.rs:27:7
+   |
+27 | const FAT32_FSINFO_SIGNATURE_2: u32 = 0x61417272;
+   |       ^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: constant `FAT32_FSINFO_SIGNATURE_3` is never used
+  --> src\core\fat32.rs:28:7
+   |
+28 | const FAT32_FSINFO_SIGNATURE_3: u32 = 0xAA550000;
+   |       ^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: constant `FAT_MEDIA_FIXED` is never used
+  --> src\core\fat32.rs:29:7
+   |
+29 | const FAT_MEDIA_FIXED: u8 = 0xF8;
+   |       ^^^^^^^^^^^^^^^
+
+warning: constant `FAT_MEDIA_REMOVABLE` is never used
+  --> src\core\fat32.rs:30:7
+   |
+30 | const FAT_MEDIA_REMOVABLE: u8 = 0xF0;
+   |       ^^^^^^^^^^^^^^^^^^^
+
+warning: constant `BS_OEM_NAME` is never used
+  --> src\core\fat32.rs:31:7
+   |
+31 | const BS_OEM_NAME: &[u8; 8] = b"ABT     ";
+   |       ^^^^^^^^^^^
+
+warning: constant `MAX_FAT32_SIZE` is never used
+  --> src\core\fat32.rs:34:11
+   |
+34 | pub const MAX_FAT32_SIZE: u64 = 2 * 1024 * 1024 * 1024 * 1024; // 2 TiB
+   |           ^^^^^^^^^^^^^^
+
+warning: enum `ClusterSize` is never used
+  --> src\core\fat32.rs:38:10
+   |
+38 | pub enum ClusterSize {
+   |          ^^^^^^^^^^^
+
+warning: associated items `bytes` and `from_str_lossy` are never used
+  --> src\core\fat32.rs:61:12
+   |
+59 | impl ClusterSize {
+   | ---------------- associated items in this implementation
+60 |     /// Size in bytes.
+61 |     pub fn bytes(&self) -> u32 {
+   |            ^^^^^
+...
+76 |     pub fn from_str_lossy(s: &str) -> Self {
+   |            ^^^^^^^^^^^^^^
+
+warning: struct `Fat32FormatOpts` is never constructed
+   --> src\core\fat32.rs:111:12
+    |
+111 | pub struct Fat32FormatOpts {
+    |            ^^^^^^^^^^^^^^^
+
+warning: struct `Fat32FormatResult` is never constructed
+   --> src\core\fat32.rs:144:12
+    |
+144 | pub struct Fat32FormatResult {
+    |            ^^^^^^^^^^^^^^^^^
+
+warning: function `auto_cluster_size` is never used
+   --> src\core\fat32.rs:172:8
+    |
+172 | pub fn auto_cluster_size(total_bytes: u64) -> ClusterSize {
+    |        ^^^^^^^^^^^^^^^^^
+
+warning: function `available_cluster_sizes` is never used
+   --> src\core\fat32.rs:199:8
+    |
+199 | pub fn available_cluster_sizes(total_bytes: u64) -> Vec<(ClusterSize, bool)> {
+    |        ^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: function `calculate_fat32_params` is never used
+   --> src\core\fat32.rs:225:8
+    |
+225 | pub fn calculate_fat32_params(opts: &Fat32FormatOpts) -> Result<Fat32FormatResult> {
+    |        ^^^^^^^^^^^^^^^^^^^^^^
+
+warning: function `build_boot_sector` is never used
+   --> src\core\fat32.rs:290:8
+    |
+290 | pub fn build_boot_sector(opts: &Fat32FormatOpts, params: &Fat32FormatResult) -> Vec<u8> {
+    |        ^^^^^^^^^^^^^^^^^
+
+warning: function `build_fsinfo_sector` is never used
+   --> src\core\fat32.rs:352:8
+    |
+352 | pub fn build_fsinfo_sector(params: &Fat32FormatResult) -> Vec<u8> {
+    |        ^^^^^^^^^^^^^^^^^^^
+
+warning: function `build_fat_initial_sector` is never used
+   --> src\core\fat32.rs:367:8
+    |
+367 | pub fn build_fat_initial_sector(media_byte: u8) -> Vec<u8> {
+    |        ^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: function `validate_fat32_format` is never used
+   --> src\core\fat32.rs:385:8
+    |
+385 | pub fn validate_fat32_format(opts: &Fat32FormatOpts) -> Result<()> {
+    |        ^^^^^^^^^^^^^^^^^^^^^
+
+warning: function `format_fat32` is never used
+   --> src\core\fat32.rs:444:8
+    |
+444 | pub fn format_fat32<W: Write + Seek>(
+    |        ^^^^^^^^^^^^
+
+warning: function `humanize_size` is never used
+   --> src\core\fat32.rs:540:4
+    |
+540 | fn humanize_size(bytes: u64) -> String {
+    |    ^^^^^^^^^^^^^
+
+warning: method `pass_count` is never used
+  --> src\core\health.rs:41:12
+   |
+27 | impl TestPattern {
+   | ---------------- method in this implementation
+...
+41 |     pub fn pass_count(&self) -> usize {
+   |            ^^^^^^^^^^
+
+warning: enum `InhibitReason` is never used
+  --> src\core\inhibit.rs:10:10
+   |
+10 | pub enum InhibitReason {
+   |          ^^^^^^^^^^^^^
+
+warning: struct `SleepInhibitor` is never constructed
+  --> src\core\inhibit.rs:35:12
+   |
+35 | pub struct SleepInhibitor {
+   |            ^^^^^^^^^^^^^^
+
+warning: associated items `new` and `reason` are never used
+  --> src\core\inhibit.rs:47:12
+   |
+45 | impl SleepInhibitor {
+   | ------------------- associated items in this implementation
+46 |     /// Create a new sleep inhibitor. The OS will not sleep while this object exists.
+47 |     pub fn new(reason: InhibitReason) -> Result<Self> {
+   |            ^^^
+...
+87 |     pub fn reason(&self) -> &InhibitReason {
+   |            ^^^^^^
+
+warning: function `windows_inhibit_sleep` is never used
+   --> src\core\inhibit.rs:172:4
+    |
+172 | fn windows_inhibit_sleep() -> u32 {
+    |    ^^^^^^^^^^^^^^^^^^^^^
+
+warning: function `windows_restore_sleep` is never used
+   --> src\core\inhibit.rs:185:4
+    |
+185 | fn windows_restore_sleep(_prev: u32) {
+    |    ^^^^^^^^^^^^^^^^^^^^^
+
+warning: function `with_sleep_inhibited` is never used
+   --> src\core\inhibit.rs:195:8
+    |
+195 | pub fn with_sleep_inhibited<F, T>(reason: InhibitReason, f: F) -> Result<T>
+    |        ^^^^^^^^^^^^^^^^^^^^
+
+warning: function `is_supported` is never used
+   --> src\core\inhibit.rs:204:8
+    |
+204 | pub fn is_supported() -> bool {
+    |        ^^^^^^^^^^^^
+
+warning: associated items `available_count`, `reset_failures`, and `mirror_url` are never used
+   --> src\core\mirror.rs:96:12
+    |
+ 75 | impl MirrorList {
+    | --------------- associated items in this implementation
+...
+ 96 |     pub fn available_count(&self) -> usize {
+    |            ^^^^^^^^^^^^^^^
+...
+124 |     pub fn reset_failures(&mut self) {
+    |            ^^^^^^^^^^^^^^
+...
+131 |     pub fn mirror_url(mirror: &Mirror, relative_path: &str) -> String {
+    |            ^^^^^^^^^^
+
+warning: methods `mkfs_command`, `default_label`, and `supports_casper` are never used
+  --> src\core\persist.rs:30:12
+   |
+28 | impl PersistFs {
+   | -------------- methods in this implementation
+29 |     /// mkfs command for this filesystem.
+30 |     pub fn mkfs_command(&self) -> &str {
+   |            ^^^^^^^^^^^^
+...
+42 |     pub fn default_label(&self) -> &str {
+   |            ^^^^^^^^^^^^^
+...
+50 |     pub fn supports_casper(&self) -> bool {
+   |            ^^^^^^^^^^^^^^^
+
+warning: associated function `detect_from_distro` is never used
+   --> src\core\persist.rs:103:12
+    |
+ 81 | impl PersistenceMode {
+    | -------------------- associated function in this implementation
+...
+103 |     pub fn detect_from_distro(name: &str) -> Self {
+    |            ^^^^^^^^^^^^^^^^^^
+
+warning: struct `PersistResult` is never constructed
+   --> src\core\persist.rs:165:12
+    |
+165 | pub struct PersistResult {
+    |            ^^^^^^^^^^^^^
+
+warning: method `format_text` is never used
+   --> src\core\persist.rs:185:12
+    |
+184 | impl PersistResult {
+    | ------------------ method in this implementation
+185 |     pub fn format_text(&self) -> String {
+    |            ^^^^^^^^^^^
+
+warning: function `is_update_dismissed` is never used
+   --> src\core\update.rs:352:8
+    |
+352 | pub fn is_update_dismissed(version: &str, state_path: &Path) -> bool {
+    |        ^^^^^^^^^^^^^^^^^^^
+
+warning: associated function `from_linux_speed` is never used
+  --> src\core\usb_speed.rs:54:12
+   |
+38 | impl UsbSpeed {
+   | ------------- associated function in this implementation
+...
+54 |     pub fn from_linux_speed(speed_mbps: u32) -> Self {
+   |            ^^^^^^^^^^^^^^^^
+
+warning: function `check_and_warn_speed` is never used
+   --> src\core\usb_speed.rs:337:8
+    |
+337 | pub fn check_and_warn_speed(device_path: &str) -> Option<String> {
+    |        ^^^^^^^^^^^^^^^^^^^^
+
+warning: methods `is_valid` and `by_severity` are never used
+   --> src\core\drive_constraints.rs:106:12
+    |
+104 | impl ValidationReport {
+    | --------------------- methods in this implementation
+105 |     /// Whether all constraints passed.
+106 |     pub fn is_valid(&self) -> bool {
+    |            ^^^^^^^^
+...
+116 |     pub fn by_severity(&self, severity: ConstraintSeverity) -> Vec<&ConstraintResult> {
+    |            ^^^^^^^^^^^
+
+warning: function `is_drive_locked` is never used
+   --> src\core\drive_constraints.rs:239:8
+    |
+239 | pub fn is_drive_locked(device: &DeviceInfo) -> bool {
+    |        ^^^^^^^^^^^^^^^
+
+warning: methods `name` and `enumerate` are never used
+  --> src\core\drive_scan.rs:67:8
+   |
+65 | pub trait DeviceAdapter: Send + Sync {
+   |           ------------- methods in this trait
+66 |     /// Name of this adapter (for logging/events).
+67 |     fn name(&self) -> &str;
+   |        ^^^^
+...
+70 |     fn enumerate(&self) -> Result<Vec<DeviceInfo>>;
+   |        ^^^^^^^^^
+
+warning: field `config` is never read
+   --> src\core\drive_scan.rs:215:5
+    |
+214 | pub struct DriveScanner {
+    |            ------------ field in this struct
+215 |     config: ScannerConfig,
+    |     ^^^^^^
+
+warning: multiple associated items are never used
+   --> src\core\drive_scan.rs:242:12
+    |
+221 | impl DriveScanner {
+    | ----------------- associated items in this implementation
+...
+242 |     pub fn with_adapters(
+    |            ^^^^^^^^^^^^^
+...
+267 |     pub fn scan_once(&self) -> Result<Vec<DriveEvent>> {
+    |            ^^^^^^^^^
+...
+377 |     pub fn is_running(&self) -> bool {
+    |            ^^^^^^^^^^
+...
+385 |     pub fn stop(&self) -> Result<()> {
+    |            ^^^^
+...
+392 |     fn filter_device(&self, device: &DeviceInfo) -> bool {
+    |        ^^^^^^^^^^^^^
+...
+420 |     pub fn adapter_count(&self) -> usize {
+    |            ^^^^^^^^^^^^^
+...
+425 |     pub fn adapter_names(&self) -> Vec<String> {
+    |            ^^^^^^^^^^^^^
+
+warning: field `state` is never read
+   --> src\core\drive_scan.rs:432:5
+    |
+431 | pub struct ScanHandle {
+    |            ---------- field in this struct
+432 |     state: Arc<Mutex<ScannerState>>,
+    |     ^^^^^
+
+warning: methods `stop` and `is_running` are never used
+   --> src\core\drive_scan.rs:437:12
+    |
+435 | impl ScanHandle {
+    | --------------- methods in this implementation
+436 |     /// Stop the scanner.
+437 |     pub fn stop(&self) -> Result<()> {
+    |            ^^^^
+...
+444 |     pub fn is_running(&self) -> bool {
+    |            ^^^^^^^^^^
+
+warning: methods `is_fat` and `is_ext` are never used
+   --> src\core\fs_detect.rs:103:12
+    |
+ 75 | impl FsType {
+    | ----------- methods in this implementation
+...
+103 |     pub fn is_fat(&self) -> bool {
+    |            ^^^^^^
+...
+108 |     pub fn is_ext(&self) -> bool {
+    |            ^^^^^^
+
+warning: method `is_newer_than` is never used
+   --> src\core\syslinux.rs:152:12
+    |
+140 | impl SyslinuxVersion {
+    | -------------------- method in this implementation
+...
+152 |     pub fn is_newer_than(&self, other: &SyslinuxVersion) -> bool {
+    |            ^^^^^^^^^^^^^
+
+warning: field `border_glow` is never read
+   --> src\gui\mod.rs:175:5
+    |
+160 | struct Theme {
+    |        ----- field in this struct
+...
+175 |     border_glow: egui::Color32,
+    |     ^^^^^^^^^^^
+    |
+    = note: `Theme` has derived impls for the traits `Clone` and `Debug`, but these are intentionally ignored during dead code analysis
+
+warning: `abt` (bin "abt") generated 80 warnings (24 duplicates)
+    Finished `release` profile [optimized] target(s) in 0.93s

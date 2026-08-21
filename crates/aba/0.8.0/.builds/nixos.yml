@@ -1,0 +1,62 @@
+# SPDX-FileCopyrightText: 2023 Gustavo Coutinho de Souza <dev@onemoresuza.mailer.me>
+#
+# SPDX-License-Identifier: ISC
+
+image: nixos/unstable
+
+environment:
+  NIX_CONFIG: "experimental-features = nix-command flakes"
+  PROJECT_NAME: "aba"
+  GIT_PUSH_URL: "git@git.sr.ht:~onemoresuza/aba"
+  NIX_ARTIFACTS_PACKAGE: "hutArtifacts"
+  CACHIX_BIN_CACHE: "rust-deps"
+
+secrets:
+  - b9d05891-f72c-4697-a908-d0f9c5334d60 # ssh key
+  - f1895886-cbc7-46a8-b70f-797e1b707946 # cachix token for rust-deps
+  - dcf7c4b1-8471-4d3d-97b6-370095811a3e # crates.io update crate token
+
+oauth: "git.sr.ht/OBJECTS:RW git.sr.ht/REPOSITORIES:RO git.sr.ht/PROFILE:RO"
+
+tasks:
+  - setup-cachix: |
+      cd "${PROJECT_NAME}"
+      nix develop .#ci --command cachix use nix-community
+      nix develop .#ci --command cachix use "${CACHIX_BIN_CACHE}"
+  - reuse-lint: |
+      cd "${PROJECT_NAME}"
+      nix develop .#ci --command reuse lint
+  # For the build VM constraints, see:
+  # https://lists.sr.ht/~sircmpwn/sr.ht-discuss/%3Cbd2d0a26cf75d7f906e28dc0584f1d58%40onemoresuza.mailer.me%3E#%3Ce38371c6-436e-440b-a550-cea2504c5342@devcara.com%3E
+  - run-nix-flake-check: |
+      cd "${PROJECT_NAME}"
+      for attr in checks packages devShells; do
+        nix develop .#ci --command \
+          nix-fast-build --no-nom --no-link --skip-cached \
+            --eval-workers 2 --eval-max-memory-size 1536 \
+            --flake ".#${attr}"
+      done
+      nix flake check
+  - test-basic-functionality: |
+      cd "${PROJECT_NAME}"
+      nix run . -- --help
+      nix run . -- --version
+  - push-to-cachix: |
+      cd "${PROJECT_NAME}"
+      nix develop .#ci --command pushToCachix -- .#artifacts .#default
+  - generate-git-tag: |
+      cd "${PROJECT_NAME}"
+      VERSION="$(nix develop .#ci --command get-version)" \
+        nix develop .#ci --command genGitTagAndChangelog
+  - upload-artifacts: |
+      if [ -n "${GIT_TAG_GENERATED}" ]; then
+        cd "${PROJECT_NAME}"
+        nix develop .#ci --command cargo publish
+        nix develop .#ci --command uploadArtifacts
+        nix develop .#ci --command pushToCachix -- .#abaMusl
+      fi
+
+triggers:
+  - action: email
+    condition: failure
+    to: srht1@onemoresuza.mailer.me

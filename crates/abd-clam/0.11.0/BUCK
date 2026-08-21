@@ -1,0 +1,22 @@
+load("@buckal//:wrapper.bzl", "rust_library")
+
+rust_library(
+    name = "abd_clam",
+    srcs = glob(["**/*.rs"]),
+    crate = "abd_clam",
+    crate_root = "src/lib.rs",
+    edition = "2021",
+
+    visibility = ["PUBLIC"],
+    deps = [
+        "//third-party/rust/crates/automl/0.2.9:automl",
+        "//third-party/rust/crates/bitvec/1.1.1:bitvec",
+        "//third-party/rust/crates/libm/0.2.16:libm",
+        "//third-party/rust/crates/num-traits/0.2.19:num_traits",
+        "//third-party/rust/crates/priority-queue/1.4.0:priority_queue",
+        "//third-party/rust/crates/rand/0.8.7:rand",
+        "//third-party/rust/crates/rand_chacha/0.3.1:rand_chacha",
+        "//third-party/rust/crates/rayon/1.12.0:rayon",
+        "//third-party/rust/crates/smartcore/0.2.1:smartcore",
+    ],
+)

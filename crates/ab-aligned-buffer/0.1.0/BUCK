@@ -1,0 +1,15 @@
+load("@buckal//:wrapper.bzl", "rust_library")
+
+rust_library(
+    name = "ab_aligned_buffer",
+    srcs = glob(["**/*.rs"]),
+    crate = "ab_aligned_buffer",
+    crate_root = "src/lib.rs",
+    edition = "2024",
+
+    visibility = ["PUBLIC"],
+    deps = [
+        "//third-party/rust/crates/stable_deref_trait/1.2.1:stable_deref_trait",
+        "//third-party/rust/crates/yoke/0.8.3:yoke",
+    ],
+)

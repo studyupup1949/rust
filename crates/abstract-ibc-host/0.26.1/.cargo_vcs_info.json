@@ -1,0 +1,7 @@
+{
+  "git": {
+    "sha1": "c734c011d62f44cd04af3bd7ae006634528d0f5d",
+    "dirty": true
+  },
+  "path_in_vcs": "framework/contracts/native/ibc-host"
+}

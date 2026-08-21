@@ -1,0 +1,43 @@
+# SPDX-FileCopyrightText: 2022 Shun Sakai
+#
+# SPDX-License-Identifier: GPL-3.0-or-later
+
+[package]
+name = "abcrypt-cli"
+version = "0.3.3"
+authors.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+description = "An utility for encrypt and decrypt files"
+readme = "README.md"
+homepage.workspace = true
+repository.workspace = true
+license = "GPL-3.0-or-later"
+keywords = ["abcrypt"]
+categories = ["command-line-utilities"]
+include = ["/LICENSES", "/README.md", "/src"]
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[[bin]]
+name = "abcrypt"
+path = "src/main.rs"
+
+[dependencies]
+abcrypt = { version = "0.3.6", path = "../abcrypt", features = ["serde"] }
+anyhow.workspace = true
+byte-unit = "5.1.4"
+clap = { workspace = true, features = ["wrap_help"] }
+clap_complete = "4.5.12"
+clap_complete_nushell = "4.5.3"
+dialoguer.workspace = true
+serde_json = { version = "1.0.122", optional = true }
+sysexits = "0.8.1"
+
+[dev-dependencies]
+assert_cmd = "2.0.15"
+predicates = "3.1.2"
+
+[features]
+default = ["json"]
+json = ["dep:serde_json"]

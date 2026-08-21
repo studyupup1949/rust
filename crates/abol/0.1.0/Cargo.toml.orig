@@ -1,0 +1,76 @@
+[package]
+name = "abol"
+version = "0.1.0"
+description = "A high-performance, asynchronous, dictionary-driven RADIUS framework."
+readme = "README.md"
+keywords = ["async", "radius"]
+categories = ["network-programming", "authentication", "encoding"]
+edition = { workspace = true }
+rust-version = { workspace = true }
+authors = { workspace = true }
+license = { workspace = true }
+
+[workspace.package]
+edition = "2024"
+rust-version = "1.87"
+license = "MIT OR Apache-2.0"
+authors = ["Abel W. Shimeles <abel.wen0@gmail.com>"]
+repository = "https://github.com/Abel981/abol"
+
+[workspace]
+resolver = "3"
+members = [
+    "abol-server", 
+    "abol-rt", 
+    "abol-core", 
+    "abol-parser", 
+    "abol-codegen",
+    "fuzz", 
+    "abol-util",
+]
+
+[workspace.dependencies]
+abol-core = {version = "0.1.0", path = "abol-core" }
+abol-parser = {version = "0.1.0", path = "abol-parser" }
+abol-codegen = {version = "0.1.0", path = "abol-codegen" }
+abol-rt = {version = "0.1.0", path = "abol-rt" }
+abol-server = {version = "0.1.0", path = "abol-server" }
+
+anyhow = "1.0"
+thiserror = "2.0"
+byteorder = "1.5"
+md-5 = "0.10"
+bytes = "1.11"
+rand = "0.9"
+quote = "1.0"
+proc-macro2 = "1.0"
+heck = "0.5"
+moka = { version = "0.12", features = ["future"] }
+zeroize = "1.8"
+dashmap = "6.1"
+
+[dependencies]
+abol-rt = { workspace = true }
+abol-core = { workspace = true }
+abol-codegen = { workspace = true }
+abol-server = { workspace = true }
+
+[dev-dependencies]
+tokio = { version = "1", features = ["full"] }
+smol = { version = "2" }
+abol-util = {version = "0.1.0", path = "./abol-util" }
+bytes = "1.11"
+
+[features]
+tokio = ["abol-util/tokio"]
+smol = ["abol-util/smol"]
+
+[[example]]
+name = "tokio-server"
+path = "examples/tokio-server.rs"
+required-features = ["tokio"]
+
+[[example]]
+name = "smol-server"
+path = "examples/smol-server.rs"
+required-features = ["smol"]

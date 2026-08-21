@@ -1,0 +1,19 @@
+load("@buckal//:wrapper.bzl", "rust_library")
+
+rust_library(
+    name = "abyss_lang",
+    srcs = glob(["**/*.rs"]),
+    crate = "abyss_lang",
+    crate_root = "src/lib.rs",
+    edition = "2021",
+
+    visibility = ["PUBLIC"],
+    deps = [
+        "//third-party/rust/crates/clap/4.6.6:clap",
+        "//third-party/rust/crates/colored/2.2.0:colored",
+        "//third-party/rust/crates/dirs/5.0.1:dirs",
+        "//third-party/rust/crates/pest/2.8.8:pest",
+        "//third-party/rust/crates/pest_derive/2.8.8:pest_derive",
+        "//third-party/rust/crates/rustyline/14.0.0:rustyline",
+    ],
+)

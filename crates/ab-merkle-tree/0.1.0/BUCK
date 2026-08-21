@@ -1,0 +1,14 @@
+load("@buckal//:wrapper.bzl", "rust_library")
+
+rust_library(
+    name = "ab_merkle_tree",
+    srcs = glob(["**/*.rs"]),
+    crate = "ab_merkle_tree",
+    crate_root = "src/lib.rs",
+    edition = "2024",
+
+    visibility = ["PUBLIC"],
+    deps = [
+        "//third-party/rust/crates/ab-blake3/0.1.0:ab_blake3",
+    ],
+)

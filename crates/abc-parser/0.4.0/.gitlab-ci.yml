@@ -1,0 +1,42 @@
+image: rust:slim
+
+stages:
+  - test
+  - publish
+
+# Make sure CI fails on all warnings, including Clippy lints
+variables:
+  RUSTFLAGS: "-Dwarnings"
+
+test:
+  stage: test
+  script:
+    - cargo test --all-features
+  only:
+    - merge_requests
+    - tags
+
+lint:fmt:
+  stage: test
+  script:
+    - rustup component add rustfmt
+    - cargo fmt --check
+  only:
+    - merge_requests
+    - tags
+
+lint:clippy:
+  stage: test
+  script:
+    - rustup component add clippy
+    - cargo clippy --all-targets --all-features
+  only:
+    - merge_requests
+    - tags
+
+crates-upload:
+  stage: publish
+  script:
+    - cargo publish
+  only:
+    - tags

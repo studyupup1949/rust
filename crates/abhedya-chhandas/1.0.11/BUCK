@@ -1,0 +1,11 @@
+load("@buckal//:wrapper.bzl", "rust_library")
+
+rust_library(
+    name = "abhedya_chhandas",
+    srcs = glob(["**/*.rs"]),
+    crate = "abhedya_chhandas",
+    crate_root = "src/lib.rs",
+    edition = "2024",
+
+    visibility = ["PUBLIC"],
+)

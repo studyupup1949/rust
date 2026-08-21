@@ -1,0 +1,27 @@
+load("@buckal//:wrapper.bzl", "rust_library")
+
+rust_library(
+    name = "abstract_standalone",
+    srcs = glob(["**/*.rs"]),
+    crate = "abstract_standalone",
+    crate_root = "src/lib.rs",
+    edition = "2021",
+
+    visibility = ["PUBLIC"],
+    deps = [
+        "//third-party/rust/crates/abstract-interface/0.24.1:abstract_interface",
+        "//third-party/rust/crates/abstract-sdk/0.24.1:abstract_sdk",
+        "//third-party/rust/crates/abstract-std/0.24.1:abstract_std",
+        "//third-party/rust/crates/cosmwasm-schema/2.3.4:cosmwasm_schema",
+        "//third-party/rust/crates/cosmwasm-std/2.3.4:cosmwasm_std",
+        "//third-party/rust/crates/cw-asset/4.0.0:cw_asset",
+        "//third-party/rust/crates/cw-controllers/2.0.0:cw_controllers",
+        "//third-party/rust/crates/cw-orch/0.27.0:cw_orch",
+        "//third-party/rust/crates/cw-storage-plus/2.0.0:cw_storage_plus",
+        "//third-party/rust/crates/cw2/2.0.0:cw2",
+        "//third-party/rust/crates/schemars/0.8.22:schemars",
+        "//third-party/rust/crates/semver/1.0.28:semver",
+        "//third-party/rust/crates/serde/1.0.229:serde",
+        "//third-party/rust/crates/thiserror/1.0.69:thiserror",
+    ],
+)

@@ -1,0 +1,6 @@
+{
+  "git": {
+    "sha1": "db582c302bb6fd6d549fd8971bdcce4f810d4a69"
+  },
+  "path_in_vcs": "crates/execution/ab-riscv-primitives"
+}

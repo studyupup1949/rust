@@ -1,0 +1,23 @@
+load("@buckal//:wrapper.bzl", "rust_binary")
+
+rust_binary(
+    name = "abusctl",
+    srcs = glob(["**/*.rs"]),
+    crate = "abusctl",
+    crate_root = "src/main.rs",
+    edition = "2024",
+
+    visibility = ["PUBLIC"],
+    deps = [
+        "//third-party/rust/crates/abus/0.0.3:abus",
+        "//third-party/rust/crates/anyhow/1.0.104:anyhow",
+        "//third-party/rust/crates/bytes/1.12.1:bytes",
+        "//third-party/rust/crates/futures-util/0.3.34:futures_util",
+        "//third-party/rust/crates/sap/0.2.0:sap",
+        "//third-party/rust/crates/tokio-stream/0.1.19:tokio_stream",
+        "//third-party/rust/crates/tokio-util/0.7.19:tokio_util",
+        "//third-party/rust/crates/tokio/1.53.1:tokio",
+        "//third-party/rust/crates/tracing-subscriber/0.3.23:tracing_subscriber",
+        "//third-party/rust/crates/tracing/0.1.44:tracing",
+    ],
+)

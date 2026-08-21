@@ -1,0 +1,18 @@
+load("@buckal//:wrapper.bzl", "rust_library")
+
+rust_library(
+    name = "abler",
+    srcs = glob(["**/*.rs"]),
+    crate = "abler",
+    crate_root = "src/lib.rs",
+    edition = "2021",
+    features = ["default"],
+
+    visibility = ["PUBLIC"],
+    deps = [
+        "//third-party/rust/crates/phf/0.11.3:phf",
+        "//third-party/rust/crates/phf_shared/0.11.3:phf_shared",
+        "//third-party/rust/crates/strum/0.26.3:strum",
+        "//third-party/rust/crates/thiserror/1.0.69:thiserror",
+    ],
+)

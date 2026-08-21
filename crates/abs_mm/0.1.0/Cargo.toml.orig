@@ -1,0 +1,20 @@
+﻿[package]
+name = "abs_mm"
+version = "0.1.0"
+edition = "2021"
+
+authors = ["lino <lino_snsalias@outlook.com>"]
+description = "Abstract Memory Management"
+homepage = "https://github.com/ljsnogard/abs_mm"
+keywords = ["traits"]
+categories = ["no-std"]
+license = "MIT/Apache-2.0"
+readme = "README.md"
+
+[features]
+support-std = []
+default = []
+
+[dev-dependencies]
+log = { version = "0.4.*" }
+env_logger = { version = "0.11.*" }

@@ -1,0 +1,36 @@
+name: Rust Tests
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  test:
+    name: Run Rust Tests (OS = ${{ matrix.os }})
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [ubuntu-latest, macos-latest, windows-latest]
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Install Rust
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Run tests
+        run: cargo test --workspace --verbose
+
+      - name: Run tests within a workspace member (cd into directory)
+        run: |
+          cd test-workspace-1
+          cargo test --verbose
+        shell: bash
+        # This step explicitly runs tests from within a workspace member to verify that 
+        # `abs_file!()` correctly resolves absolute file paths in different execution contexts.
+        # `cargo test --workspace` tests all crates together, but changing directories ensures 
+        # the macro is exercised both from the workspace root and from within an individual crate.
+        # This helps catch cases where path resolution might differ based on the working directory.

@@ -1,0 +1,62 @@
+# SPDX-FileCopyrightText: 2023 Gustavo Coutinho de Souza <dev@onemoresuza.mailer.me>
+#
+# SPDX-License-Identifier: ISC
+
+DOCDIR := "doc"
+PREFIX := "/usr/local"
+PROFILE := "release"
+MANIFEST_OPTS := "--profile=" + PROFILE + " --locked"
+BUILD_OPTS := ""
+INSTALL_OPTS := ""
+
+# Compile binary
+build *opts=(BUILD_OPTS):
+    cargo build {{ opts }} {{ MANIFEST_OPTS }}
+
+# Install compiled binary
+install-bin *opts=(INSTALL_OPTS): build
+    cargo install {{ opts }} {{ MANIFEST_OPTS }} --root "{{ PREFIX }}" --path .
+
+# Generate man pages
+doc:
+    #!/bin/sh
+    set -eu
+    for f in "{{ DOCDIR }}/"*.[[:digit:]].scd; do
+      manpage="${f%.scd}"
+      scdoc <"${f}" 1>"${manpage}"
+      printf 'doc: Turn \033[1m%s\033[m into \033[1m%s\033[m\n' "${f}" "${manpage}"
+    done
+
+# Install documentation
+install-doc: doc
+    #!/bin/sh
+    set -eu
+    mandir="{{ PREFIX }}/share/man"
+    for f in "{{ DOCDIR }}/"*.[[:digit:]]; do
+      nmandir="${mandir}/man${f##*.}"
+      mkdir -p "${nmandir}"
+      cp "${f}" "${nmandir}"
+      printf 'install-doc: Install \033[1m%s\033[m at \033[1m%s\033[m\n' \
+        "${f}" "${nmandir}/${f##*/}"
+    done
+
+# Install the program
+install *bin-opts: (install-bin bin-opts) install-doc
+
+# Generate, archive and compress artifacts (binary, manpages)
+artifacts archive=("aba-"
+    + `cargo metadata --no-deps --format-version=1 | jq -r '."packages"[0]."version"'`
+    + "-"
+    + arch()
+    + "-unknown-" + os() + "-musl"
+) +compressor=(`command -v gzip`): (install INSTALL_OPTS + " --no-track")
+    mkdir {{ PREFIX }}/{{ archive }}
+    mv {{ PREFIX }}/bin/aba {{ PREFIX }}/{{ archive }}
+    rm -r {{ PREFIX }}/bin
+    mv {{ PREFIX }}/share/man/man1/aba.1 {{ PREFIX }}/{{ archive }}
+    mv {{ PREFIX }}/share/man/man5/aba.5 {{ PREFIX }}/{{ archive }}
+    rm -r {{ PREFIX }}/share
+    cd {{ PREFIX }}/{{ archive }} && sha256sum * 1>../artifacts.SHA256
+    cd {{ PREFIX }} && tar cvf {{ archive }}.tar ./{{ archive }}
+    rm -r {{ PREFIX }}/{{ archive }}
+    cd {{ PREFIX }} && {{ compressor }} {{ archive }}.tar

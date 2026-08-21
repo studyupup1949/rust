@@ -1,0 +1,19 @@
+load("@buckal//:wrapper.bzl", "rust_library")
+
+rust_library(
+    name = "abstract_cw_orch_polytone",
+    srcs = glob(["**/*.rs"]),
+    crate = "abstract_cw_orch_polytone",
+    crate_root = "src/lib.rs",
+    edition = "2021",
+
+    visibility = ["PUBLIC"],
+    deps = [
+        "//third-party/rust/crates/abstract-polytone-note/4.0.1:abstract_polytone_note",
+        "//third-party/rust/crates/abstract-polytone-proxy/4.0.1:abstract_polytone_proxy",
+        "//third-party/rust/crates/abstract-polytone-voice/4.0.1:abstract_polytone_voice",
+        "//third-party/rust/crates/cosmwasm-std/2.3.4:cosmwasm_std",
+        "//third-party/rust/crates/cw-orch-interchain/0.7.2:cw_orch_interchain",
+        "//third-party/rust/crates/cw-orch/0.26.0:cw_orch",
+    ],
+)

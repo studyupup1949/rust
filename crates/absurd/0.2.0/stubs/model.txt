@@ -1,0 +1,12 @@
+use serde::{de::DeserializeOwned, Serialize};
+use surrealdb::sql::Id;
+
+pub trait Model: DeserializeOwned + Serialize + Send + Sync {
+    // The entity is the ID, and can be None in the event that you want to use
+    // the default IDs.
+    const TABLE: &'static str;
+    const ENTITY: Option<&'static str>;
+
+    #[allow(unused)]
+    fn get_id(&self) -> Option<Id>;
+}

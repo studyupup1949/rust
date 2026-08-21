@@ -1,0 +1,22 @@
+fn div(a: Int, b: Int) -> <exn<Int>> Int {
+  if b == 0 { throw 99 } else { a / b }
+}
+
+fn pipeline(a: Int, b: Int) -> <exn<Int>> Int {
+  let v = div(a, b)?;
+  v + 1
+}
+
+fn main() -> Int {
+  let ok = match pipeline(20, 4) {
+    Ok(v) => v
+    Err(_) => -1
+    _ => 0
+  };
+  let err = match pipeline(10, 0) {
+    Ok(_) => 0
+    Err(_) => 1
+    _ => -1
+  };
+  ok + err
+}

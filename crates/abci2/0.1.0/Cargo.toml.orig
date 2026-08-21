@@ -1,0 +1,24 @@
+[package]
+name = "abci2"
+description = "Low-level ABCI protocol server"
+version = "0.1.0"
+authors = ["Matt Bell <mappum@gmail.com>"]
+edition = "2018"
+license = "MIT"
+
+[dependencies]
+protobuf = "2.8.1"
+integer-encoding = "1.0.7"
+protobuf-codegen-pure = { version = "2.8.1", optional = true }
+
+[features]
+codegen = ["protobuf-codegen-pure"]
+
+[[bin]]
+name = "codegen"
+path = "./codegen.rs"
+required-features = ["codegen"]
+
+[[example]]
+name = "simple"
+path = "./examples/simple.rs"

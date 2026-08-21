@@ -1,0 +1,41 @@
+# SPDX-FileCopyrightText: 2023 Gustavo Coutinho de Souza <dev@onemoresuza.mailer.me>
+#
+# SPDX-License-Identifier: Unlicense
+
+root = true
+
+[*]
+end_of_line = lf
+charset = utf-8
+trim_trailing_whitespace = true
+insert_final_newline = true
+max_line_length = 80
+
+[**.nix]
+indent_style = space
+indent_size = 2
+
+[.envrc]
+indent_style = space
+indent_size = 2
+
+[justfile]
+indent_style = space
+indent_size = 4
+
+[README.md]
+indent_style = tab
+indent_size = 4
+max_line_length = 80
+
+[doc/*.scd]
+indent_style = tab
+indent_size = 4
+max_line_length = 80
+# comments need a space after the ';'
+trim_trailing_whitespace = false
+
+[**.rs]
+indent_style = space
+indent_size = 4
+max_line_length = 100

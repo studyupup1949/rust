@@ -1,0 +1,15 @@
+load("@buckal//:wrapper.bzl", "rust_library")
+
+rust_library(
+    name = "ablescript",
+    srcs = glob(["**/*.rs"]),
+    crate = "ablescript",
+    crate_root = "src/lib.rs",
+    edition = "2021",
+
+    visibility = ["PUBLIC"],
+    deps = [
+        "//third-party/rust/crates/logos/0.12.1:logos",
+        "//third-party/rust/crates/rand/0.8.7:rand",
+    ],
+)

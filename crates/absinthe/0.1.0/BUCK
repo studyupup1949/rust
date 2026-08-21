@@ -1,0 +1,17 @@
+load("@buckal//:wrapper.bzl", "rust_library")
+
+rust_library(
+    name = "absinthe",
+    srcs = glob(["**/*.rs"]),
+    crate = "absinthe",
+    crate_root = "src/lib.rs",
+    edition = "2021",
+    features = ["default"],
+
+    visibility = ["PUBLIC"],
+    deps = [
+        "//third-party/rust/crates/absinthe-macros/0.1.0:absinthe_macros",
+        "//third-party/rust/crates/async-channel/1.9.0:async_channel",
+        "//third-party/rust/crates/async-trait/0.1.92:async_trait",
+    ],
+)

@@ -1,0 +1,116 @@
+# .github/workflows/build-tock.yml
+name: Build Tock OS (Abacus CI)
+
+on:
+  push:
+    branches: ["**"]   # any branch push
+  pull_request:
+    branches: [main]   # PRs into main
+  schedule:
+    - cron: "0 6 * * *"  # nightly
+  workflow_dispatch:
+
+jobs:
+  determine-matrix:
+    runs-on: ubuntu-latest
+    outputs:
+      matrix: ${{ steps.set-matrix.outputs.matrix }}
+    steps:
+      - id: set-matrix
+        run: |
+          echo "Event: ${{ github.event_name }}"
+          echo "Ref: ${{ github.ref_name }}"
+
+          if [[ "${{ github.event_name }}" == "push" ]]; then
+            # Only test the pushed branch (fast dev loop)
+            echo 'matrix={"source":["ci-branch"]}' >> $GITHUB_OUTPUT
+
+          elif [[ "${{ github.event_name }}" == "pull_request" ]]; then
+            # Full integration test for merges into main
+            echo 'matrix={"source":["ci-branch","main"]}' >> $GITHUB_OUTPUT
+
+          elif [[ "${{ github.event_name }}" == "schedule" ]]; then
+            # Nightly stability check, including the published crate
+            echo 'matrix={"source":["main","crate"]}' >> $GITHUB_OUTPUT
+
+          else
+            # Manual dispatch = full test
+            echo 'matrix={"source":["ci-branch","main"]}' >> $GITHUB_OUTPUT
+          fi
+
+  build-tock:
+    needs: determine-matrix
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix: ${{ fromJson(needs.determine-matrix.outputs.matrix) }}
+
+    name: nrf52840dk (abacus = ${{ matrix.source }})
+
+    steps:
+      - name: Checkout abacus-registers repo (current branch)
+        uses: actions/checkout@v4
+
+      - name: Install Rust + ARM target
+        run: |
+          rustup toolchain install stable
+          rustup default stable
+          rustup target add thumbv7em-none-eabihf
+
+      - name: Install system dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y llvm clang make
+
+      - name: Clone Tock
+        run: |
+          git clone https://github.com/abacus-rs/tock.git
+          cd tock
+          git checkout master
+          git submodule update --init --recursive
+
+      # -------------------------------------------------
+      # Variant 1: Use CURRENT CI branch (local checkout)
+      # -------------------------------------------------
+      - name: Patch abacus_registers -> local CI checkout
+        if: matrix.source == 'ci-branch'
+        run: |
+          cd tock
+          mkdir -p .cargo
+          printf '%s\n' \
+            '[patch.crates-io]' \
+            'abacus-registers = { path = "../" }' \
+            > .cargo/config.toml
+
+      # -------------------------------------------------
+      # Variant 2: Force main branch of abacus_registers
+      # -------------------------------------------------
+      - name: Patch abacus_registers -> git main
+        if: matrix.source == 'main'
+        run: |
+          cd tock
+          mkdir -p .cargo
+          printf '%s\n' \
+            '[patch.crates-io]' \
+            'abacus-registers = { git = "https://github.com/abacus-rs/abacus-registers", branch = "main" }' \
+            > .cargo/config.toml
+
+      # -------------------------------------------------
+      # Variant 3: published crates.io release
+      # -------------------------------------------------
+      - name: Use published abacus_registers crate
+        if: matrix.source == 'crate'
+        run: |
+          cd tock
+          # Ensure no previous source override is active so Cargo resolves from crates.io.
+          rm -f .cargo/config.toml
+
+      - name: Show resolved abacus source
+        run: |
+          cd tock
+          cargo tree -i abacus_registers || true
+
+      - name: Build nrf52840dk
+        run: |
+          cd tock
+          make -C boards/nordic/nrf52840dk

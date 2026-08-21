@@ -1,0 +1,23 @@
+load("@buckal//:wrapper.bzl", "rust_library")
+
+rust_library(
+    name = "abci",
+    srcs = glob(["**/*.rs"]),
+    crate = "abci",
+    crate_root = "src/lib.rs",
+    edition = "2018",
+    features = ["default"],
+
+    visibility = ["PUBLIC"],
+    deps = [
+        "//third-party/rust/crates/async-trait/0.1.92:async_trait",
+        "//third-party/rust/crates/bytes/1.12.1:bytes",
+        "//third-party/rust/crates/cfg-if/1.0.4:cfg_if",
+        "//third-party/rust/crates/integer-encoding/3.0.4:integer_encoding",
+        "//third-party/rust/crates/prost-types/0.7.0:prost_types",
+        "//third-party/rust/crates/prost/0.7.0:prost",
+        "//third-party/rust/crates/tendermint-proto/0.18.1:tendermint_proto",
+        "//third-party/rust/crates/tracing-futures/0.2.5:tracing_futures",
+        "//third-party/rust/crates/tracing/0.1.44:tracing",
+    ],
+)

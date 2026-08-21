@@ -1,0 +1,111 @@
+#![cfg(test)]
+extern crate abstract_cw_multi_test as cw_multi_test;
+
+mod test_api;
+mod test_app;
+mod test_app_builder;
+mod test_attributes;
+mod test_bank;
+mod test_contract_storage;
+mod test_ibc;
+mod test_module;
+mod test_prefixed_storage;
+#[cfg(feature = "staking")]
+mod test_staking;
+mod test_wasm;
+
+mod test_contracts {
+
+    pub mod counter {
+        use cosmwasm_std::{
+            ensure_eq, from_json, to_json_binary, Binary, Deps, DepsMut, Empty, Env, MessageInfo,
+            Reply, Response, StdError, SubMsg, WasmMsg,
+        };
+        use cw_multi_test::{Contract, ContractWrapper};
+        use cw_storage_plus::Item;
+        use serde::{Deserialize, Serialize};
+
+        const COUNTER: Item<u64> = Item::new("counter");
+        pub const REPLY_WITH_PAYLOAD_ID: u64 = 56;
+        pub const REPLY_WITH_PAYLOAD_PAYLOAD: &str = "This is my favorite payload";
+
+        #[derive(Debug, Clone, Serialize, Deserialize)]
+        #[serde(rename_all = "snake_case")]
+        pub enum CounterQueryMsg {
+            Counter {},
+        }
+
+        #[derive(Debug, Clone, Serialize, Deserialize)]
+        pub struct CounterResponseMsg {
+            pub value: u64,
+        }
+
+        fn instantiate(
+            deps: DepsMut,
+            _env: Env,
+            _info: MessageInfo,
+            _msg: Empty,
+        ) -> Result<Response, StdError> {
+            COUNTER.save(deps.storage, &1).unwrap();
+            Ok(Response::default())
+        }
+
+        fn execute(
+            deps: DepsMut,
+            env: Env,
+            _info: MessageInfo,
+            _msg: WasmMsg,
+        ) -> Result<Response, StdError> {
+            if let Some(mut counter) = COUNTER.may_load(deps.storage).unwrap() {
+                counter += 1;
+                COUNTER.save(deps.storage, &counter).unwrap();
+            }
+            // Adds a reply with payload
+            let msg = WasmMsg::ClearAdmin {
+                contract_addr: env.contract.address.to_string(),
+            };
+
+            let sub_msg = SubMsg::reply_always(msg, REPLY_WITH_PAYLOAD_ID);
+
+            #[cfg(feature = "cosmwasm_2_0")]
+            let sub_msg = sub_msg.with_payload(to_json_binary(REPLY_WITH_PAYLOAD_PAYLOAD)?);
+            Ok(Response::default().add_submessage(sub_msg))
+        }
+
+        fn query(deps: Deps, _env: Env, msg: CounterQueryMsg) -> Result<Binary, StdError> {
+            match msg {
+                CounterQueryMsg::Counter { .. } => Ok(to_json_binary(&CounterResponseMsg {
+                    value: COUNTER.may_load(deps.storage).unwrap().unwrap(),
+                })?),
+            }
+        }
+
+        fn reply(_deps: DepsMut, _env: Env, reply: Reply) -> Result<Response, StdError> {
+            let Reply { payload, .. } = reply;
+
+            #[cfg(feature = "cosmwasm_2_0")]
+            let decoded_payload: String = from_json(payload)?;
+            #[cfg(feature = "cosmwasm_2_0")]
+            ensure_eq!(
+                decoded_payload,
+                REPLY_WITH_PAYLOAD_PAYLOAD,
+                StdError::generic_err("Payload doesn't match")
+            );
+
+            Ok(Response::new())
+        }
+
+        pub fn contract() -> Box<dyn Contract<Empty>> {
+            Box::new(ContractWrapper::new_with_empty(execute, instantiate, query).with_reply(reply))
+        }
+
+        #[cfg(feature = "cosmwasm_1_2")]
+        pub fn contract_with_checksum() -> Box<dyn Contract<Empty>> {
+            Box::new(
+                ContractWrapper::new_with_empty(execute, instantiate, query).with_checksum(
+                    cosmwasm_std::Checksum::generate(&[1, 2, 3, 4, 5, 6, 7, 8, 9]),
+                ),
+            )
+        }
+    }
+}

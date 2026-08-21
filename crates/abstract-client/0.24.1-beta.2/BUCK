@@ -1,0 +1,20 @@
+load("@buckal//:wrapper.bzl", "rust_library")
+
+rust_library(
+    name = "abstract_client",
+    srcs = glob(["**/*.rs"]),
+    crate = "abstract_client",
+    crate_root = "src/lib.rs",
+    edition = "2021",
+    features = ["default"],
+
+    visibility = ["PUBLIC"],
+    deps = [
+        "//third-party/rust/crates/cosmwasm-std/2.3.4:cosmwasm_std",
+        "//third-party/rust/crates/cw-orch/0.26.0:cw_orch",
+        "//third-party/rust/crates/rand/0.8.7:rand",
+        "//third-party/rust/crates/semver/1.0.28:semver",
+        "//third-party/rust/crates/serde/1.0.229:serde",
+        "//third-party/rust/crates/thiserror/1.0.69:thiserror",
+    ],
+)

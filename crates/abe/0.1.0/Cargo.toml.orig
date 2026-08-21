@@ -1,0 +1,20 @@
+[package]
+
+name = "abe"
+version = "0.1.0"
+license = "MPL-2.0"
+edition = "2021"
+homepage = "https://antonsol919.github.io/linkspace/"
+documentation = "https://antonsol919.github.io/linkspace/docs/guide/index.html#ABE"
+authors = ["Azon <AntonSol919@gmail.com>"]
+repository = "https://github.com/AntonSol919/linkspace"
+categories = ["encoding","parsing"]
+keywords = ["ascii-byte-expr", "ascii-byte","abe"]
+description = "Ascii-byte-expression : a tiny byte templating language"
+
+[dependencies]
+thiserror = "1.0.31"
+hex = "0.4.3"
+serde = { version = "1.0.139", features = ["derive"] }
+arrayvec = "0.7.2"
+anyhow = "1.0.69"

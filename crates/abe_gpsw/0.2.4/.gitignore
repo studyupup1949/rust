@@ -1,0 +1,4 @@
+.cargo_check
+target
+Cargo.lock
+*nix

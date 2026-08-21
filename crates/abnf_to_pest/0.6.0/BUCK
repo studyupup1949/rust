@@ -1,0 +1,17 @@
+load("@buckal//:wrapper.bzl", "rust_library")
+
+rust_library(
+    name = "abnf_to_pest",
+    srcs = glob(["**/*.rs"]),
+    crate = "abnf_to_pest",
+    crate_root = "src/lib.rs",
+    edition = "2018",
+
+    visibility = ["PUBLIC"],
+    deps = [
+        "//third-party/rust/crates/abnf/0.13.0:abnf",
+        "//third-party/rust/crates/indexmap/1.9.3:indexmap",
+        "//third-party/rust/crates/itertools/0.10.5:itertools",
+        "//third-party/rust/crates/pretty/0.11.3:pretty",
+    ],
+)

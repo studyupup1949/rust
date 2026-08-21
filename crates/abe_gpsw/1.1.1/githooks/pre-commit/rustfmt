@@ -1,0 +1,6 @@
+#!/bin/bash
+
+set -e
+
+cargo +stable fmt --all
+cargo +stable format

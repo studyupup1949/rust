@@ -1,0 +1,22 @@
+[package]
+name = "absolute_unit"
+description = "A system of scalars with units."
+version = "0.9.0"
+authors = ["Terrence Cole <terrence.d.cole@gmail.com>"]
+edition = "2021"
+readme = "README.md"
+homepage = "https://github.com/terrence2/absolute_unit"
+documentation = "https://github.com/terrence2/absolute_unit"
+repository = "https://github.com/terrence2/absolute_unit"
+license = "MIT"
+
+[dependencies]
+anyhow = { version = "1", features = ["backtrace"] }
+approx = "0.5"
+glam = { version = "0.29", features = ["approx"] }
+hashbag = "0.1"
+num-traits = "0.2"
+ordered-float = "4"
+
+# TODO: create a feature for these conversions
+nalgebra = { version = "= 0.33.2", features = ["glam029"] }

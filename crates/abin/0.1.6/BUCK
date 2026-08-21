@@ -1,0 +1,14 @@
+load("@buckal//:wrapper.bzl", "rust_library")
+
+rust_library(
+    name = "abin",
+    srcs = glob(["**/*.rs"]),
+    crate = "abin",
+    crate_root = "src/lib.rs",
+    edition = "2018",
+
+    visibility = ["PUBLIC"],
+    deps = [
+        "//third-party/rust/crates/smallvec/1.15.2:smallvec",
+    ],
+)

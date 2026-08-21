@@ -1,0 +1,19 @@
+load("@buckal//:wrapper.bzl", "rust_library")
+
+rust_library(
+    name = "abci_storage",
+    srcs = glob(["**/*.rs"]),
+    crate = "abci_storage",
+    crate_root = "src/lib.rs",
+    edition = "2018",
+
+    visibility = ["PUBLIC"],
+    deps = [
+        "//third-party/rust/crates/chrono/0.4.45:chrono",
+        "//third-party/rust/crates/kvdb-rocksdb/0.9.1:kvdb_rocksdb",
+        "//third-party/rust/crates/kvdb/0.7.0:kvdb",
+        "//third-party/rust/crates/lazy_static/1.5.0:lazy_static",
+        "//third-party/rust/crates/mockall/0.8.3:mockall",
+        "//third-party/rust/crates/owning_ref/0.4.1:owning_ref",
+    ],
+)

@@ -1,0 +1,5 @@
+`BytesOf` trait cannot be derived for types that contain fields that are not `BytesOf`.
+
+Every field in the struct must be `BytesOf`.
+
+To rectify this problem, you must implement `BytesOf` for your type.

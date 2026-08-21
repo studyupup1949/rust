@@ -1,0 +1,9 @@
+[package]
+name = "abtz-add-one"
+version = "0.1.0"
+edition = "2024"
+description = "Add one to a number"
+license = "MIT"
+
+[dependencies]
+rand = "0.8.5"

@@ -1,0 +1,7 @@
+{
+  "git": {
+    "sha1": "4594c48c0be0be8eb3eda3bff3f8cd04666fd286",
+    "dirty": true
+  },
+  "path_in_vcs": "crates/abac-rs"
+}

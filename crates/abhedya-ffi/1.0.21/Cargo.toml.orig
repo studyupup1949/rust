@@ -1,0 +1,17 @@
+[package]
+name = "abhedya-ffi"
+version = "1.0.21"
+edition = "2024"
+description = "C/FFI Bindings for Abhedya PQC"
+license = "MIT"
+repository = "https://github.com/ParamTatva-org/abhedyam"
+authors = ["ParamTatva <bot@paramtatva.org>"]
+readme = "README.md"
+
+[lib]
+crate-type = ["cdylib", "staticlib"]
+
+[dependencies]
+abhedya-core = { version = "1.0.5", path = "../abhedya-core" }
+libc = "0.2"
+rand = "0.9"

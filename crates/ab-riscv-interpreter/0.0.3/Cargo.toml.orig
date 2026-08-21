@@ -1,0 +1,32 @@
+[package]
+name = "ab-riscv-interpreter"
+description = "Composable and generic RISC-V interpreter"
+keywords = ["riscv", "risc-v", "interpreter", "no-std"]
+repository = "https://github.com/nazar-pc/abundance"
+homepage = "https://github.com/nazar-pc/abundance/tree/main/crates/execution/ab-riscv-interpreter"
+license = "0BSD"
+version = "0.0.3"
+authors = ["Nazar Mokrynskyi <nazar@mokrynskyi.com>"]
+edition = "2024"
+include = [
+    "/src",
+    "/build.rs",
+    "/Cargo.toml",
+    "/CHANGELOG.md",
+    "/README.md",
+]
+links = "ab-riscv-interpreter"
+
+[package.metadata.docs.rs]
+all-features = true
+
+[dependencies]
+ab-riscv-macros = { workspace = true, features = ["proc-macro"] }
+ab-riscv-primitives = { workspace = true }
+thiserror = { workspace = true }
+
+[build-dependencies]
+ab-riscv-macros = { workspace = true, features = ["build"] }
+
+[lints]
+workspace = true

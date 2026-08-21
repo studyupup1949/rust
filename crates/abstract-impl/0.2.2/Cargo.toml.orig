@@ -1,0 +1,25 @@
+[package]
+name = "abstract-impl"
+description = "Create abstract implementations for traits"
+homepage = "https://github.com/Aras14HD/abstract-impl"
+repository = "https://github.com/Aras14HD/abstract-impl"
+readme = "README.md"
+keywords = ["abstract", "generic", "implementation", "traits", "macro"]
+categories = ["development-tools", "rust-patterns"]
+license = "MIT"
+version = "0.2.2"
+edition = "2021"
+
+[dependencies]
+proc-macro2 = "1.0.93"
+quote = "1.0.38"
+syn = { version = "2.0.96", features = ["full", "fold"] }
+
+[lib]
+proc-macro = true
+
+[features]
+default = ["dummy", "macro"]
+dummy = []
+macro = []
+

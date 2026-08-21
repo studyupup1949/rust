@@ -1,0 +1,15 @@
+load("@buckal//:wrapper.bzl", "rust_library")
+
+rust_library(
+    name = "abyss_interpreter",
+    srcs = glob(["**/*.rs"]),
+    crate = "abyss_interpreter",
+    crate_root = "src/lib.rs",
+    edition = "2024",
+
+    visibility = ["PUBLIC"],
+    deps = [
+        "//third-party/rust/crates/abyss-core/0.6.1:abyss_core",
+        "//third-party/rust/crates/ariadne/0.6.0:ariadne",
+    ],
+)

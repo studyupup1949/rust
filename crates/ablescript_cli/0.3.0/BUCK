@@ -1,0 +1,16 @@
+load("@buckal//:wrapper.bzl", "rust_binary")
+
+rust_binary(
+    name = "ablescript_cli",
+    srcs = glob(["**/*.rs"]),
+    crate = "ablescript_cli",
+    crate_root = "src/main.rs",
+    edition = "2021",
+
+    visibility = ["PUBLIC"],
+    deps = [
+        "//third-party/rust/crates/ablescript/0.3.0:ablescript",
+        "//third-party/rust/crates/clap/3.2.25:clap",
+        "//third-party/rust/crates/rustyline/9.1.2:rustyline",
+    ],
+)

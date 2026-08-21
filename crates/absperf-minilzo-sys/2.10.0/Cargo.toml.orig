@@ -1,0 +1,16 @@
+[package]
+name = "absperf-minilzo-sys"
+version = "2.10.0"
+authors = ["Taylor C. Richberger <taywee@gmx.com>"]
+edition = "2018"
+description = "crate that statically links minilzo and exposes all its symbols and functions"
+readme = "README.md"
+repository = "https://gitlab.com/Taywee/absperf-minilzo-sys"
+license = "GPL-2.0"
+keywords = ["compression", "lzo", "minilzo"]
+categories = ["compression", "external-ffi-bindings"]
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[build-dependencies]
+cc = "1.0"

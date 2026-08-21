@@ -1,0 +1,15 @@
+load("@buckal//:wrapper.bzl", "rust_binary")
+
+rust_binary(
+    name = "abi",
+    srcs = glob(["**/*.rs"]),
+    crate = "abi",
+    crate_root = "src/main.rs",
+    edition = "2021",
+
+    visibility = ["PUBLIC"],
+    deps = [
+        "//third-party/rust/crates/abitious-decmpfs/0.1.0:abitious_decmpfs",
+        "//third-party/rust/crates/abitious-producer/0.1.0:abitious_producer",
+    ],
+)

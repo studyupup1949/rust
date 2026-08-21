@@ -1,0 +1,17 @@
+load("@buckal//:wrapper.bzl", "rust_library")
+
+rust_library(
+    name = "abyssiniandb",
+    srcs = glob(["**/*.rs"]),
+    crate = "abyssiniandb",
+    crate_root = "src/lib.rs",
+    edition = "2021",
+    features = ["default"],
+
+    visibility = ["PUBLIC"],
+    deps = [
+        "//third-party/rust/crates/itertools/0.13.0:itertools",
+        "//third-party/rust/crates/rabuf/0.1.20:rabuf",
+        "//third-party/rust/crates/vu64/0.1.11:vu64",
+    ],
+)

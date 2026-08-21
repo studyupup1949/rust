@@ -1,0 +1,32 @@
+use std;
+
+use abstractgraph;
+use abstractgraph::graphs::SimpleOutboundEdge;
+use abstractgraph::graphs::SimpleOutboundEdges;
+use abstractgraph::DirectedGraph;
+
+// Full graph
+//
+// n nodes with an edge from every node to every other node (including
+// itself)
+//
+#[derive(Debug)]
+pub struct Full {
+    nnodes: usize,
+}
+
+impl Full {
+    pub fn new(nnodes: usize) -> Full {
+        Full { nnodes: nnodes }
+    }
+}
+
+impl DirectedGraph for Full {
+    type Node = usize;
+    type Edge = SimpleOutboundEdge<Self::Node>;
+    type Edges = SimpleOutboundEdges<std::ops::Range<Self::Node>>;
+
+    fn edges_from(&self, _: &Self::Node) -> Self::Edges {
+        SimpleOutboundEdges::new(0..self.nnodes)
+    }
+}

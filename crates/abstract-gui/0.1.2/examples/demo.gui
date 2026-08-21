@@ -1,0 +1,73 @@
+app: Demo
+
+drill:
+  Home:
+    Products:
+      ProductDetail:
+        ProductReviews:
+        ProductRelated:
+    AdminRoot:
+      AdminUsers:
+
+inherit:
+  RootLayout:
+    Home:
+    Products:
+    ProductDetail:
+    ProductReviews:
+    ProductRelated:
+    AdminShell:
+      AdminRoot:
+        AdminUsers:
+
+nav:
+  GlobalNav:
+    - Home
+    - Products
+    - AdminRoot
+
+  ProductTabs:
+    - ProductDetail
+    - ProductReviews
+    - ProductRelated
+
+node:
+  RootLayout:
+    nav: [GlobalNav]
+
+  Home:
+    title: Top
+    path: /
+
+  Products:
+    title: Products
+    path: /products
+
+  ProductDetail:
+    title: Product Detail
+    path: /products/:id
+    nav: [ProductTabs]
+
+  ProductReviews:
+    title: Product Reviews
+    path: /products/:id/reviews
+    nav: [ProductTabs]
+
+  ProductRelated:
+    title: Related Products
+    path: /products/:id/related
+    nav: [ProductTabs]
+
+  AdminRoot:
+    title: Admin
+    path: /admin
+
+  AdminUsers:
+    title: User Admin
+    path: /admin/users
+
+groups:
+  - id: CommerceFlow
+    members: [Products, ProductDetail, ProductReviews, ProductRelated]
+  - id: AdminFlow
+    members: [AdminRoot, AdminUsers]

@@ -1,0 +1,30 @@
+load("@buckal//:wrapper.bzl", "rust_library")
+
+rust_library(
+    name = "abstract_ibc_client",
+    srcs = glob(["**/*.rs"]),
+    crate = "abstract_ibc_client",
+    crate_root = "src/lib.rs",
+    edition = "2021",
+    features = ["default"],
+
+    visibility = ["PUBLIC"],
+    deps = [
+        "//third-party/rust/crates/abstract-macros/0.23.0:abstract_macros",
+        "//third-party/rust/crates/abstract-polytone-note/3.0.0:abstract_polytone_note",
+        "//third-party/rust/crates/abstract-polytone/1.0.5:abstract_polytone",
+        "//third-party/rust/crates/abstract-sdk/0.23.0:abstract_sdk",
+        "//third-party/rust/crates/abstract-std/0.23.0:abstract_std",
+        "//third-party/rust/crates/cosmwasm-std/1.5.11:cosmwasm_std",
+        "//third-party/rust/crates/cw-ownable/0.5.1:cw_ownable",
+        "//third-party/rust/crates/cw-paginate/0.2.1:cw_paginate",
+        "//third-party/rust/crates/cw-semver/1.0.14:cw_semver",
+        "//third-party/rust/crates/cw-storage-plus/1.2.0:cw_storage_plus",
+        "//third-party/rust/crates/cw-utils/1.0.3:cw_utils",
+        "//third-party/rust/crates/cw2/1.1.2:cw2",
+        "//third-party/rust/crates/ibc-proto/0.46.0:ibc_proto",
+        "//third-party/rust/crates/prost/0.12.6:prost",
+        "//third-party/rust/crates/serde/1.0.229:serde",
+        "//third-party/rust/crates/thiserror/1.0.69:thiserror",
+    ],
+)

@@ -1,0 +1,24 @@
+use surrealdb::{engine::local::{Db, |EngineNamePascal|}, Surreal};
+
+use crate::error::Result;
+use crate::store::Store;
+
+#[derive(Debug)]
+pub struct |StoreNamePascal| {
+    pub db: Surreal<Db>,
+}
+
+impl Store for |StoreNamePascal| {
+    fn get_db(&self) -> &Surreal<Db> {
+        &self.db
+    }
+}
+
+impl |StoreNamePascal| {
+    pub async fn new() -> Result<Self> {
+        let db = Surreal::new::<|EngineNamePascal|>().await?;
+        db.use_ns("|store_name_snake|").use_db("|store_name_snake|").await?;
+
+        Ok(|StoreNamePascal| { db })
+    }
+}

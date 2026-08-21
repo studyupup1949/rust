@@ -1,0 +1,77 @@
+[package]
+description = "Abstract deployment helpers with cw-orchestrator"
+edition     = { workspace = true }
+license     = { workspace = true }
+name        = "abstract-interface"
+repository  = "https://github.com/AbstractSDK/abstract"
+version     = { workspace = true }
+
+[lints]
+workspace = true
+
+[[example]]
+name              = "mock-ibc-deploy"
+required-features = ["interchain"]
+
+[[example]]
+name              = "starship-ibc-deploy"
+required-features = ["interchain"]
+
+[features]
+daemon     = ["cw-orch/daemon"]
+interchain = ["dep:cw-orch-interchain", "dep:cw-orch-polytone"]
+# Disables `security_enable` on registry
+testing = []
+
+[target.'cfg(not(target_arch = "wasm32"))'.dependencies]
+abstract-std    = { workspace = true }
+cosmwasm-schema = { workspace = true }
+cosmwasm-std    = { workspace = true }
+cw-address-like = { workspace = true }
+cw-asset        = { workspace = true }
+cw-controllers  = { workspace = true }
+cw-storage-plus = { workspace = true }
+cw2             = { workspace = true }
+cw20            = { workspace = true }
+schemars        = { workspace = true }
+semver          = { workspace = true }
+serde           = { workspace = true }
+thiserror       = { workspace = true }
+
+bip32              = { version = "0.5.2" }
+cw-orch            = { workspace = true }
+cw-orch-interchain = { workspace = true, optional = true }
+cw-orch-polytone   = { workspace = true, optional = true }
+
+log        = "0.4.14"
+serde_json = "1.0.79"
+
+# Embed state.json in binary in release mode
+rust-embed = { version = "8.3.0", features = ["include-exclude"] }
+
+# Keep these here. Default features only works on the workspace Cargo.toml, so using workspace = true is not possible here
+account        = { version = "0.26.0", package = "abstract-account", path = "../../contracts/account", default-features = false }
+ans-host       = { version = "0.26.0", package = "abstract-ans-host", path = "../../contracts/native/ans-host", default-features = false }
+ibc-client     = { version = "0.26.0", package = "abstract-ibc-client", path = "../../contracts/native/ibc-client", default-features = false }
+ibc-host       = { version = "0.26.0", package = "abstract-ibc-host", path = "../../contracts/native/ibc-host", default-features = false }
+module-factory = { version = "0.26.0", package = "abstract-module-factory", path = "../../contracts/native/module-factory", default-features = false }
+registry       = { version = "0.26.0", package = "abstract-registry", path = "../../contracts/native/registry", default-features = false }
+workspace-hack = { version = "0.1", path = "../../workspace-hack" }
+
+# Predictable abstract addresses
+cosmrs  = { version = "0.19.0" }
+cw-blob = { workspace = true }
+
+[build-dependencies]
+serde_json = "1.0.79"
+
+[dev-dependencies]
+abstract-app     = { workspace = true }
+abstract-sdk     = { workspace = true }
+abstract-testing = { workspace = true }
+coverage-helper  = { workspace = true }
+
+cw-orch            = { workspace = true, features = ["daemon"] }
+cw-orch-interchain = { workspace = true, features = ["daemon"] }
+dotenv             = "0.15.0"
+env_logger         = "0.11.3"

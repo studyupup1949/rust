@@ -1,0 +1,44 @@
+[package]
+name = "abax_library"
+version = "1.0.0"
+authors = ["Łukasz Łakomy", "Konrad Wierzbik"]
+edition = "2021"
+description = "Library for the Abax Protocol containing shared logic and data structures"
+license = "BUSL-1.1"
+
+[dependencies]
+ink = { version = "5.0.0", default-features = false }
+scale = { package = "parity-scale-codec", version = "3.6.9", default-features = false, features = [
+    "derive",
+] }
+scale-info = { version = "2.11", default-features = false, features = [
+    "derive",
+], optional = true }
+
+pendzl = { version = "1.0.1-v1calls", default-features = false, features = [
+    "psp22",
+    "ownable",
+    "pausable",
+    "access_control",
+] }
+primitive-types = { version = "0.12.1", default-features = false, features = [
+    "codec",
+] }
+
+[lib]
+name = "abax_library"
+path = "lib.rs"
+crate-type = ["rlib"]
+
+[features]
+default = ["std"]
+std = [
+    "ink/std",
+    "scale/std",
+    "scale-info/std",
+
+    # These dependencies
+    "pendzl/std",
+    "primitive-types/std",
+    "primitive-types/scale-info",
+]

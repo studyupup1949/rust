@@ -1,0 +1,41 @@
+unveil("Simple loop:");
+orbit(i = 0..=10) {
+    unveil(i);
+};
+
+// #region Infinite loop
+unveil("Infinite loop:");
+forge morph i:arcana = 0;
+orbit {
+    oracle(i == 100) {
+        (boon) => eject;
+    };
+    i += 1;
+};
+unveil(i);
+// #endregion
+
+unveil("Nested loop:");
+orbit(i = 0..3, j = 0..3) {
+    unveil(i, " ", j);
+};
+
+unveil("Continue:");
+orbit(i = 0..3, j = 0..3) {
+    oracle(i==j) {
+        // 内側のループをスキップ
+        (boon) => resume j;
+    };
+    unveil(i, " ", j);
+};
+
+unveil("Break outer loop:");
+orbit(i = 0..3) {
+    orbit(j = 0..3) {
+        unveil(i, " ", j);
+        oracle(i==2) {
+            // 外側のループを抜ける
+            (boon) => eject i;
+        };
+    };
+};

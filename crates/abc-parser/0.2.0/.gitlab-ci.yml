@@ -1,0 +1,19 @@
+stages:
+  - test
+  - deploy
+
+test:
+  image: rust:latest
+  stage: test
+  script:
+    - cargo test
+
+deploy:
+  image: rust:latest
+  stage: deploy
+  only:
+    - master
+  environment: prod
+  script:
+    - cargo login $CRATES_IO_TOKEN
+    - cargo publish

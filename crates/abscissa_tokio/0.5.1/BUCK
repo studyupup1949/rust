@@ -1,0 +1,15 @@
+load("@buckal//:wrapper.bzl", "rust_library")
+
+rust_library(
+    name = "abscissa_tokio",
+    srcs = glob(["**/*.rs"]),
+    crate = "abscissa_tokio",
+    crate_root = "src/lib.rs",
+    edition = "2018",
+
+    visibility = ["PUBLIC"],
+    deps = [
+        "//third-party/rust/crates/abscissa_core/0.5.2:abscissa_core",
+        "//third-party/rust/crates/tokio/0.2.25:tokio",
+    ],
+)

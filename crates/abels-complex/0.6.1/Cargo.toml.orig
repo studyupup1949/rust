@@ -1,0 +1,36 @@
+[package]
+name = "abels-complex"
+version = "0.6.1"
+edition = "2024"
+license = "MIT"
+readme = "README.md"
+repository = "https://github.com/abel465/abels-complex-rs"
+description = "Complex numbers with rectangular and polar representations"
+keywords = ["math", "complex"]
+
+[features]
+default = ["std", "rand", "approx", "glam"]
+std = ["glam?/std", "num-traits/std"]
+libm = ["num-traits/libm", "glam?/libm"]
+rand = ["dep:rand"]
+approx = ["dep:approx"]
+glam = ["dep:glam"]
+
+[dependencies]
+glam = { version = "0.33.1", default-features = false, features = ["f64"], optional = true }
+approx = { version = "0.5.1", optional = true }
+num-traits = { version = "0.2.19", default-features = false }
+rand = { version = "0.10.0", default-features = false, optional = true }
+
+[dev-dependencies]
+rand = { version = "0.10.0", default-features = false, features = ["std_rng"] }
+approx = "0.5.1"
+
+[lints.rust]
+unexpected_cfgs = { level = "warn", check-cfg = [
+  'cfg(target_arch, values("spirv"))',
+] }
+
+[lints.clippy]
+suspicious_arithmetic_impl = "allow"
+suspicious_op_assign_impl = "allow"

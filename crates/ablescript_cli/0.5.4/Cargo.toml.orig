@@ -1,0 +1,15 @@
+[package]
+name = "ablescript_cli"
+version = "0.5.4"
+authors = ["AbleScript Developers"]
+edition = "2021"
+
+description   = "The best programming language"
+license       = "MIT"
+documentation = "https://gblecorp.github.io/able-script-the-book"
+repository    = "https://git.ablecorp.us/AbleScript/able-script"
+
+[dependencies]
+ablescript = { version = "0.5.3", path = "../ablescript" }
+clap       = { version = "4.2", features = ["derive"] }
+rustyline  = "11.0"

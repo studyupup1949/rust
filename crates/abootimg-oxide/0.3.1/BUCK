@@ -1,0 +1,16 @@
+load("@buckal//:wrapper.bzl", "rust_library")
+
+rust_library(
+    name = "abootimg_oxide",
+    srcs = glob(["**/*.rs"]),
+    crate = "abootimg_oxide",
+    crate_root = "src/lib.rs",
+    edition = "2021",
+    features = ["default"],
+
+    visibility = ["PUBLIC"],
+    deps = [
+        "//third-party/rust/crates/binrw/0.15.2:binrw",
+        "//third-party/rust/crates/document-features/0.2.12:document_features",
+    ],
+)

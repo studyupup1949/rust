@@ -1,0 +1,17 @@
+load("@buckal//:wrapper.bzl", "rust_library")
+
+rust_library(
+    name = "aberth",
+    srcs = glob(["**/*.rs"]),
+    crate = "aberth",
+    crate_root = "src/lib.rs",
+    edition = "2021",
+    features = ["default"],
+
+    visibility = ["PUBLIC"],
+    deps = [
+        "//third-party/rust/crates/arrayvec/0.7.8:arrayvec",
+        "//third-party/rust/crates/num-complex/0.4.6:num_complex",
+        "//third-party/rust/crates/num-traits/0.2.19:num_traits",
+    ],
+)

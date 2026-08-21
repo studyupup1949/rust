@@ -1,0 +1,5 @@
+default_job = "clippy"
+
+[jobs.clippy]
+command = ["cargo", "clippy", "--color", "always"]
+need_stdout = false

@@ -1,0 +1,9 @@
+
+[package]
+name = "abakadabra"
+description = "abakadabra"
+version = "0.0.0"
+license-file = "LICENSE"
+
+[lib]
+path = "lib.rs"

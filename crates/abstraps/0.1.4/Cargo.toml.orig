@@ -1,0 +1,22 @@
+[package]
+name = "abstraps"
+version = "0.1.4"
+edition = "2021"
+authors = ["McCoy R. Becker"]
+description = "Extensible compiler middle layer with abstract interpretation and code generation to MLIR."
+repository = "https://github.com/femtomc/abstraps"
+readme = "README.md"
+license-file = "LICENSE"
+
+[dependencies]
+indenter = "0.3.3"
+serde = { version = "1.0", default-features = false, features = ["derive", "alloc"] }
+serde_json = { version = "1.0" }
+
+[build-dependencies]
+bindgen = "0.59.1"
+
+[features]
+defaults = ["std"]
+std = []
+mlir = []

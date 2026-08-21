@@ -1,0 +1,14 @@
+[package]
+name    = "ablescript"
+version = "0.5.3"
+authors = ["AbleScript Developers"]
+edition = "2021"
+
+description   = "The best programming language"
+license       = "MIT"
+documentation = "https://ablecorp.us/able-script-the-book/"
+repository    = "https://git.ablecorp.us/AbleScript/able-script"
+
+[dependencies]
+logos = "0.13"
+rand  = "0.8"

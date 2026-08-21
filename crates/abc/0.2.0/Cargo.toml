@@ -1,0 +1,20 @@
+[package]
+name = "abc"
+version = "0.2.0"
+authors = ["David Donna <davidadonna@gmail.com>"]
+description = "An implementation of Karaboga's Artificial Bee Colony algorithm."
+documentation = "https://daviddonna.github.io/abc-rs"
+repository = "https://github.com/daviddonna/abc-rs"
+readme = "README.md"
+keywords = ["AI", "optimization"]
+license = "MIT"
+
+[lib]
+name = "abc"
+path = "src/lib.rs"
+
+[dependencies]
+num_cpus = "0.2"
+rand = "0.3"
+crossbeam = "0.2"
+itertools = "0.4"

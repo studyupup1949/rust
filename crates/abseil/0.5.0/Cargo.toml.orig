@@ -1,0 +1,23 @@
+[package]
+name = "abseil"
+version = "0.5.0"
+edition = "2024"
+description = "An easy app storage provider."
+homepage = "https://github.com/archer884/abseil"
+repository = "https://github.com/archer884/abseil"
+license = "MIT/Apache-2.0"
+
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+directories = "6.0.0"
+serde = { version = "1.0.228", features = ["derive"] }
+serde_json = { version = "1.0.150", optional = true }
+tempfile = "3"
+toml = { version = "1.1.2", optional = true }
+
+[features]
+default = ["json"]
+json = ["dep:serde_json"]
+toml = ["dep:toml"]

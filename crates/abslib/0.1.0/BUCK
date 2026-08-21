@@ -1,0 +1,15 @@
+load("@buckal//:wrapper.bzl", "rust_library")
+
+rust_library(
+    name = "abslib",
+    srcs = glob(["**/*.rs"]),
+    crate = "abslib",
+    crate_root = "src/lib.rs",
+    edition = "2021",
+
+    visibility = ["PUBLIC"],
+    deps = [
+        "//third-party/rust/crates/arc-swap/1.9.2:arc_swap",
+        "//third-party/rust/crates/tokio/1.53.1:tokio",
+    ],
+)

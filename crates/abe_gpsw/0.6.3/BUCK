@@ -1,0 +1,28 @@
+load("@buckal//:wrapper.bzl", "rust_library")
+
+rust_library(
+    name = "abe_gpsw",
+    srcs = glob(["**/*.rs"]),
+    crate = "abe_gpsw",
+    crate_root = "src/lib.rs",
+    edition = "2018",
+
+    visibility = ["PUBLIC"],
+    deps = [
+        "//third-party/rust/crates/cosmian_bls12_381/0.4.1:cosmian_bls12_381",
+        "//third-party/rust/crates/eyre/0.6.14:eyre",
+        "//third-party/rust/crates/ff/0.9.0:ff",
+        "//third-party/rust/crates/getrandom/0.2.17:getrandom",
+        "//third-party/rust/crates/group/0.9.0:group",
+        "//third-party/rust/crates/hex/0.4.3:hex",
+        "//third-party/rust/crates/lazy_static/1.5.0:lazy_static",
+        "//third-party/rust/crates/rand/0.8.7:rand",
+        "//third-party/rust/crates/rand_core/0.5.1:rand_core",
+        "//third-party/rust/crates/rand_hc/0.3.2:rand_hc",
+        "//third-party/rust/crates/regex/1.13.1:regex",
+        "//third-party/rust/crates/serde/1.0.229:serde",
+        "//third-party/rust/crates/serde_json/1.0.151:serde_json",
+        "//third-party/rust/crates/sha3/0.10.9:sha3",
+        "//third-party/rust/crates/thiserror/1.0.69:thiserror",
+    ],
+)

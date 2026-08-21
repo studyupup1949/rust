@@ -1,0 +1,14 @@
+# https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[package]
+name            = "abistr-macros"
+version         = "0.1.0"
+authors         = ["MaulingMonkey <git@maulingmonkey.com>"]
+edition         = "2018"
+repository      = "https://github.com/MaulingMonkey/abistr"
+documentation   = "https://docs.rs/abistr"
+license         = "Apache-2.0 OR MIT"
+description     = "proc macro implementations for abistr"
+
+[lib]
+proc-macro      = true

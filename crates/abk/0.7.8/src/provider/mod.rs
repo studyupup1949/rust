@@ -1,0 +1,29 @@
+//! LLM Provider abstraction module
+//!
+//! This module provides provider traits, WASM-based provider implementation,
+//! and utilities for working with different LLM providers.
+
+pub mod traits;
+pub mod factory;
+pub mod types;
+pub mod adapters;
+pub mod openai;
+#[cfg(feature = "provider-wasm")]
+pub mod wasm;
+#[cfg(feature = "extension")]
+pub mod extension;
+
+// Re-export main types
+pub use traits::{LlmProvider, GenerateResponse, ToolInvocation, StreamingResponse};
+pub use factory::ProviderFactory;
+pub use types::{InternalMessage, GenerateConfig, InternalToolDefinition, ToolChoice, ToolResult};
+pub use adapters::{ChatMLAdapter, ToolAdapter};
+pub use openai::OpenAIProvider;
+#[cfg(feature = "extension")]
+pub use extension::ExtensionProvider;
+
+// Re-export streaming types from umf
+pub use umf::StreamChunk;
+
+// Re-export tool types from umf
+pub use umf::{ToolCall, FunctionCall, Function, Tool};

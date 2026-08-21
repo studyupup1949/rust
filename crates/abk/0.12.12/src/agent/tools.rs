@@ -1,0 +1,186 @@
+//! Tool execution - delegates to cats crate or MCP servers
+
+use crate::agent::types::ToolExecutionResult;
+use std::sync::atomic::{AtomicBool, Ordering};
+use std::sync::Arc;
+use umf::ToolCall;
+use anyhow::Result;
+
+struct LoggerCallback<'a> {
+    logger: &'a crate::observability::Logger,
+}
+
+impl<'a> cats::ExecutionCallback for LoggerCallback<'a> {
+    fn on_tool_start(&mut self, _: &str, _: &str) {}
+    fn on_tool_complete(&mut self, name: &str, args: &str, result: &str, success: bool) {
+        let _ = self.logger.log_tool_execution(name, args, result, success);
+    }
+    fn on_compact_log(&mut self, json: &str) {
+        let _ = self.logger.log_compact_tool_call(json);
+    }
+}
+
+impl super::Agent {
+    pub async fn execute_tool_calls(&mut self, tool_calls: Vec<ToolCall>) -> Result<String> {
+        let mut results = Vec::new();
+
+        for tc in &tool_calls {
+            let result = self.execute_single_tool(tc).await?;
+            results.push(result);
+        }
+
+        // Format results as combined string
+        let mut output = String::new();
+        for r in results {
+            output.push_str(&format!("[{}] {}\n", r.tool_name, r.content));
+        }
+        Ok(output)
+    }
+
+    pub async fn execute_tool_calls_structured(&mut self, tool_calls: Vec<ToolCall>) -> Result<Vec<ToolExecutionResult>> {
+        let mut results = Vec::new();
+
+        for tc in &tool_calls {
+            let result = self.execute_single_tool(tc).await?;
+            results.push(result);
+        }
+
+        Ok(results)
+    }
+
+    /// Execute a single tool call, routing to MCP or CATS as appropriate.
+    async fn execute_single_tool(&mut self, tc: &ToolCall) -> Result<ToolExecutionResult> {
+        // ── Execution guard: reject tools not in the allowed list ──
+        // This is the security layer — even if the LLM hallucinates or is
+        // prompt-injected into calling a hidden tool, the dispatch is blocked
+        // here before reaching cats or MCP.
+        if !self.is_tool_allowed(&tc.function.name) {
+            let msg = format!(
+                "Tool '{}' is not allowed. It has been blocked by the tool filter configuration.",
+                tc.function.name
+            );
+            crate::observability::tee_eprintln(&format!("[BLOCKED] {}", msg));
+            return Ok(ToolExecutionResult {
+                tool_call_id: tc.id.clone(),
+                tool_name: tc.function.name.clone(),
+                content: msg,
+                success: false,
+                description: None,
+            });
+        }
+
+        // Check if this is an MCP tool
+        #[cfg(feature = "registry-mcp")]
+        if let Some(ref mcp_tools) = self.mcp_tools {
+            if mcp_tools.is_mcp_tool(&tc.function.name) {
+                // Execute via MCP
+                let mcp_result = mcp_tools
+                    .execute_tool(&tc.function.name, &tc.function.arguments)
+                    .await;
+
+                let (content, success) = match mcp_result {
+                    Ok(r) => (r.content, r.success),
+                    Err(e) => (format!("MCP tool error: {}", e), false),
+                };
+
+                // Log the execution
+                let _ = self.logger.log_tool_execution(
+                    &tc.function.name,
+                    &tc.function.arguments,
+                    &content,
+                    success,
+                );
+
+                // Extract description from MCP tool arguments
+                let description: Option<String> = serde_json::from_str::<serde_json::Value>(&tc.function.arguments)
+                    .ok()
+                    .and_then(|v| v.get("description").and_then(|d| d.as_str()).map(String::from));
+
+                return Ok(ToolExecutionResult {
+                    tool_call_id: tc.id.clone(),
+                    tool_name: tc.function.name.clone(),
+                    content,
+                    success,
+                    description,
+                });
+            }
+        }
+
+        // Execute via CATS (local tool)
+        self.execute_cats_tool(tc).await
+    }
+
+    /// Execute a tool via CATS (local tool registry).
+    async fn execute_cats_tool(&mut self, tc: &ToolCall) -> Result<ToolExecutionResult> {
+        let mut cb = LoggerCallback { logger: &self.logger };
+        let req = cats::ToolCallRequest::new(&tc.id, &tc.function.name, &tc.function.arguments);
+        let cfg = cats::ResultHandlerConfig {
+            max_size_bytes: self.config.get_u64("tools.max_tool_result_size_bytes").unwrap_or(256000) as usize,
+            truncate_enabled: self.config.get_bool("tools.truncate_large_results").unwrap_or(true),
+        };
+
+        let cats_results = cats::execute_tool_calls_structured(
+            &mut self.tool_registry,
+            vec![req],
+            &cfg,
+            &mut cb,
+        )?;
+
+        let cr = cats_results.into_iter().next().ok_or_else(|| {
+            anyhow::anyhow!("No result from CATS tool execution")
+        })?;
+
+        // Handle classify_task special case
+        if cr.tool_name == "classify_task" && !self.classification_done {
+            if let Ok(args) = serde_json::from_str::<serde_json::Value>(&tc.function.arguments) {
+                if let Some(tt) = args.get("task_type").and_then(|v| v.as_str()) {
+                    self.logger.info(&format!("Task classified as: {}", tt));
+                    self.classification_done = true;
+                    self.classified_task_type = Some(tt.to_string());
+                }
+            }
+        }
+
+        // Extract description from tool call arguments
+        let description: Option<String> = serde_json::from_str::<serde_json::Value>(&tc.function.arguments)
+            .ok()
+            .and_then(|v| v.get("description").and_then(|d| d.as_str()).map(String::from));
+
+        Ok(ToolExecutionResult {
+            tool_call_id: cr.tool_call_id,
+            tool_name: cr.tool_name,
+            content: cr.content,
+            success: cr.success,
+            description,
+        })
+    }
+
+    pub fn generate_assistant_content_for_tools(&self, tool_calls: &[ToolCall]) -> String {
+        let infos: Vec<_> = tool_calls.iter().map(|tc| 
+            cats::ToolCallInfo::new(&tc.function.name, &tc.function.arguments)
+        ).collect();
+        cats::generate_assistant_content(&infos)
+    }
+
+    /// Request cancellation of the currently running tool (e.g., bash command).
+    /// Sets the cancel signal in the tool registry's shared `ToolState`.
+    /// Request cancellation of the currently running tool (e.g., bash command).
+    /// Sets the cancel signal in the tool registry's shared `ToolState`.
+    pub fn cancel_tool_execution(&self) {
+        let state = self.tool_registry.get_state();
+        if let Ok(guard) = state.lock() {
+            guard.request_cancel();
+        };
+    }
+
+    /// Return a clone of the `Arc<AtomicBool>` cancel signal from the tool
+    /// registry's `ToolState`.  The caller can `.store(true, Relaxed)` on it
+    /// to kill a running bash child process without holding the Mutex.
+    pub fn tool_cancel_signal(&self) -> Arc<AtomicBool> {
+        let state = self.tool_registry.get_state();
+        state
+            .lock()
+            .map(|g| g.cancel_signal())
+            .unwrap_or_else(|_| Arc::new(AtomicBool::new(false)))
+    }
+}

@@ -1,0 +1,15 @@
+[package]
+name = "abstract-gui"
+version = "0.1.0"
+edition = "2021"
+description = "Declarative GUI structure language and CLI"
+license = "MIT"
+repository = "https://github.com/genki/gui"
+
+[[bin]]
+name = "gui"
+path = "src/main.rs"
+
+[dependencies]
+serde = { version = "1", features = ["derive"] }
+serde_yaml = "0.9"

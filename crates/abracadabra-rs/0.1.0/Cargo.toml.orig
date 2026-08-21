@@ -1,0 +1,10 @@
+[package]
+name = "abracadabra-rs"
+version = "0.1.0"
+edition = "2024"
+authors = ["Janis Jendraß <janis@janis.io>"]
+description = "yrs crdt server framework"
+homepage = "https://janis.io"
+license = "MIT"
+
+[dependencies]

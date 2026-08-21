@@ -1,0 +1,18 @@
+[package]
+name = "abstract-ica"
+version = {workspace = true}
+authors = {workspace = true}
+edition = {workspace = true}
+license = {workspace = true}
+description = "Abstract ICA struct and protocol version definitions"
+
+[features]
+default = []
+backtraces = ["cosmwasm-std/backtraces"]
+
+[dependencies]
+cosmwasm-std = { workspace = true, features = ["ibc3"] }
+schemars = {workspace = true}
+serde = {workspace = true}
+thiserror = {workspace = true}
+cosmwasm-schema = { workspace = true }

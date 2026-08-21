@@ -1,0 +1,46 @@
+[package]
+name = "ab-merkle-tree"
+description = "High-performance Merkle Tree and related data structures (Merkle Mountain Range, Sparse Merkle Tree)"
+keywords = ["crypto", "merkle-tree", "mmr", "blake3", "no-std"]
+repository = "https://github.com/nazar-pc/abundance"
+license = "0BSD"
+version = "0.1.0"
+authors = ["Nazar Mokrynskyi <nazar@mokrynskyi.com>"]
+edition = "2024"
+include = [
+    "/src",
+    "/tests",
+    "/Cargo.toml",
+]
+
+[package.metadata.docs.rs]
+all-features = true
+
+[lib]
+# Necessary for CLI options to work on benches
+bench = false
+
+[[bench]]
+name = "merkle_tree"
+harness = false
+
+[dependencies]
+ab-blake3 = { workspace = true }
+# NOTE: `blake3` is here only for `no-panic` feature
+blake3 = { workspace = true, optional = true }
+no-panic = { workspace = true, optional = true }
+
+[dev-dependencies]
+chacha20 = { workspace = true, features = ["rng"] }
+criterion = { workspace = true }
+
+[features]
+alloc = []
+no-panic = [
+    "dep:no-panic",
+    # Helps with testing on CPUs without AVX512 support
+    "blake3/no_avx512",
+]
+
+[lints]
+workspace = true

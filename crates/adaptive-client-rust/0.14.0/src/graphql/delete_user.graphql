@@ -1,0 +1,9 @@
+mutation DeleteUser($user: IdOrKey!) {
+    deleteUser(user: $user) {
+        id
+        email
+        name
+        deleted
+        deletedAt
+    }
+}

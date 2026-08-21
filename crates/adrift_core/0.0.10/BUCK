@@ -1,0 +1,27 @@
+load("@buckal//:wrapper.bzl", "rust_library")
+
+rust_library(
+    name = "adrift_core",
+    srcs = glob(["**/*.rs"]),
+    crate = "adrift_core",
+    crate_root = "src/lib.rs",
+    edition = "2021",
+
+    visibility = ["PUBLIC"],
+    deps = [
+        "//third-party/rust/crates/anyhow/1.0.104:anyhow",
+        "//third-party/rust/crates/async-trait/0.1.92:async_trait",
+        "//third-party/rust/crates/clap/4.6.6:clap",
+        "//third-party/rust/crates/convert_case/0.6.0:convert_case",
+        "//third-party/rust/crates/dotenv/0.15.0:dotenv",
+        "//third-party/rust/crates/job_queue/0.0.19:job_queue",
+        "//third-party/rust/crates/log/0.4.33:log",
+        "//third-party/rust/crates/rocket/0.5.1:rocket",
+        "//third-party/rust/crates/rocket_dyn_templates/0.1.0:rocket_dyn_templates",
+        "//third-party/rust/crates/serde/1.0.229:serde",
+        "//third-party/rust/crates/serde_json/1.0.151:serde_json",
+        "//third-party/rust/crates/silhouette/0.1.0:silhouette",
+        "//third-party/rust/crates/tokio/1.53.1:tokio",
+        "//third-party/rust/crates/tracing-subscriber/0.3.23:tracing_subscriber",
+    ],
+)

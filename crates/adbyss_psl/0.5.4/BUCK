@@ -1,0 +1,17 @@
+load("@buckal//:wrapper.bzl", "rust_library")
+
+rust_library(
+    name = "adbyss_psl",
+    srcs = glob(["**/*.rs"]),
+    crate = "adbyss_psl",
+    crate_root = "src/lib.rs",
+    edition = "2021",
+    features = ["default"],
+
+    visibility = ["PUBLIC"],
+    deps = [
+        "//third-party/rust/crates/ahash/0.7.8:ahash",
+        "//third-party/rust/crates/idna/0.2.3:idna",
+        "//third-party/rust/crates/once_cell/1.9.0:once_cell",
+    ],
+)

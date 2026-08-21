@@ -1,0 +1,6 @@
+{
+    "rust-analyzer.linkedProjects": [
+        "./adf-template-lib/Cargo.toml",
+        "./adf-template-macro/Cargo.toml"
+    ]
+}

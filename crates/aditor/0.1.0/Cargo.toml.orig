@@ -1,0 +1,11 @@
+[package]
+name = "aditor"
+version = "0.1.0"
+edition = "2021"
+description = "一个简单的时间计算工具库，支持时间加减和差值计算。"
+authors = ["aditor <zch1234qq@gmail.com>"]
+license = "MIT OR Apache-2.0"
+repository = "https://github.com/zch1234qq/aditor"
+readme = "README.md"
+
+[dependencies]

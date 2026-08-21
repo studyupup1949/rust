@@ -1,0 +1,8 @@
+[package]
+name = "add-simple"
+version = "0.1.0"
+edition = "2021"
+description = "A simple adder for different nums"
+license = "MIT OR Apache-2.0"
+
+[dependencies]

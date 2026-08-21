@@ -1,0 +1,65 @@
+# Copyright Jeron Lau 2017 - 2018.
+# Dual-licensed under either the MIT License or the Boost Software License, Version 1.0.
+# (See accompanying file LICENSE_1_0.txt or copy at https://www.boost.org/LICENSE_1_0.txt)
+
+# XXXX  X                    /5\——————/5\       XXXX      X           X
+# X   X X   XXX   XXXX      |   0    0   |     X      XXX   XXXX XXXX X X   X
+# X   X X  X   X  X   X  /"\|     <>     |/"\  X      X   X    X    X X X   X
+# XXXX  X  X   X  X   X  \  \\_  ====  _//  /  X   XX X   X   X    X  X  X X
+# X     X  X   X  XXXX    \_              _/   X    X X   X  X    X   X   X
+# X     X   XXX   X       / \            / \    XXXX  X   X XXXX XXXX X   X
+#                 X       \                /                            XX
+#                          --____________--
+
+[package]
+name = "adi"
+version = "0.13.0-pre2"
+authors = [
+	"Jeron Lau <jeron.lau@plopgrizzly.com>",
+]
+edition = "2018"
+license = "MIT / BSL-1.0"
+documentation = "https://docs.rs/adi"
+homepage = "https://free.plopgrizzly.com/adi"
+repository = "https://github.com/plopgrizzly/adi"
+readme = "README.md"
+description = "Ultra-portable hardware interface for platform-agnostic applications."
+keywords = ["graphics", "input", "hardware", "audio", "peripheral"]
+categories = ["gui", "game-engines", "hardware-support", "multimedia",
+    "rendering::graphics-api"]
+
+[features]
+default = ["screen", "speaker", "mic", "hid"]
+screen = ["hid", "ami", "afi", "dl_api", "barg"]
+speaker = ["dl_api"]
+mic = []
+hid = []
+net = []
+drive = []
+usb = []
+bluetooth = []
+cam = []
+gps = []
+sensor = []
+gpio = []
+# Vulkan validation layers
+checks = []
+
+[dependencies.libc]
+version = "0.2"
+
+[dependencies.ami]
+version = "0.13"
+optional = true
+
+[dependencies.afi]
+version = "0.8.0-pre0"
+optional = true
+
+[dependencies.dl_api]
+version = "0.2"
+optional = true
+
+[dependencies.barg]
+version = "0.0.3"
+optional = true

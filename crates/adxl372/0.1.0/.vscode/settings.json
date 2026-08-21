@@ -1,0 +1,11 @@
+{
+  // --- GitHub Copilot: Commit Message Generation Rules ---
+  "github.copilot.chat.commitMessageGeneration.instructions": [
+    {"text": "Generate commit messages in English."},
+    {"text": "Use Conventional Commits format: type(scope): short description."},
+    {"text": "Use imperative mood (e.g., 'add', 'fix', 'refactor')."},
+    {"text": "Include scope when it adds clarity (e.g. driver, config, fifo, ci)."},
+    {"text": "Keep the subject line concise (around 50 characters) and technical."},
+    {"text": "Only include an extended commit body when it adds meaningful context: rationale behind the change, architectural implications, trade-offs, or non-obvious design decisions. Avoid extended bodies when they do not provide clear additional value."}
+  ]
+}

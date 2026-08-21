@@ -1,0 +1,296 @@
+[workspace]
+resolver = "3"
+members = [".", "adk-rs-macros"]
+
+[workspace.lints.rust]
+unsafe_code = "forbid"
+rust_2018_idioms = { level = "warn", priority = -1 }
+unused_must_use = "deny"
+unused_lifetimes = "warn"
+
+[workspace.lints.clippy]
+pedantic = { level = "warn", priority = -1 }
+nursery = { level = "warn", priority = -1 }
+todo = "warn"
+dbg_macro = "warn"
+unwrap_used = "allow"
+expect_used = "allow"
+panic = "allow"
+print_stdout = "allow"
+print_stderr = "allow"
+missing_const_for_fn = "allow"
+doc_markdown = "allow"
+derive_partial_eq_without_eq = "allow"
+needless_for_each = "allow"
+map_unwrap_or = "allow"
+items_after_statements = "allow"
+cast_precision_loss = "allow"
+cast_possible_truncation = "allow"
+cast_sign_loss = "allow"
+cast_possible_wrap = "allow"
+cast_lossless = "allow"
+needless_pass_by_value = "allow"
+redundant_closure_for_method_calls = "allow"
+ignored_unit_patterns = "allow"
+unused_self = "allow"
+needless_collect = "allow"
+missing_fields_in_debug = "allow"
+match_same_arms = "allow"
+trivially_copy_pass_by_ref = "allow"
+unnested_or_patterns = "allow"
+manual_let_else = "allow"
+or_fun_call = "allow"
+redundant_else = "allow"
+inefficient_to_string = "allow"
+unreadable_literal = "allow"
+implicit_hasher = "allow"
+unnecessary_wraps = "allow"
+assigning_clones = "allow"
+no_effect_underscore_binding = "allow"
+explicit_iter_loop = "allow"
+mut_mut = "allow"
+ref_option = "allow"
+naive_bytecount = "allow"
+single_match_else = "allow"
+unused_async = "allow"
+uninlined_format_args = "allow"
+manual_string_new = "allow"
+redundant_closure_call = "allow"
+redundant_clone = "allow"
+needless_continue = "allow"
+match_wildcard_for_single_variants = "allow"
+needless_raw_string_hashes = "allow"
+equatable_if_let = "allow"
+must_use_unit = "allow"
+let_underscore_must_use = "allow"
+let_underscore_untyped = "allow"
+borrow_as_ptr = "allow"
+ptr_as_ptr = "allow"
+needless_lifetimes = "allow"
+match_bool = "allow"
+default_trait_access = "allow"
+trait_duplication_in_bounds = "allow"
+type_repetition_in_bounds = "allow"
+literal_string_with_formatting_args = "allow"
+self_named_module_files = "allow"
+mod_module_files = "allow"
+unsafe_derive_deserialize = "allow"
+multiple_inherent_impl = "allow"
+empty_enum_variants_with_brackets = "allow"
+empty_drop = "allow"
+single_call_fn = "allow"
+branches_sharing_code = "allow"
+or_then_unwrap = "allow"
+unwrap_in_result = "allow"
+result_large_err = "allow"
+large_enum_variant = "allow"
+unnecessary_literal_bound = "allow"
+semicolon_if_nothing_returned = "allow"
+unnecessary_struct_initialization = "allow"
+match_like_matches_macro = "allow"
+inconsistent_struct_constructor = "allow"
+module_inception = "allow"
+should_implement_trait = "allow"
+too_long_first_doc_paragraph = "allow"
+field_reassign_with_default = "allow"
+# Existing allows
+module_name_repetitions = "allow"
+missing_errors_doc = "allow"
+missing_panics_doc = "allow"
+must_use_candidate = "allow"
+return_self_not_must_use = "allow"
+too_many_lines = "allow"
+similar_names = "allow"
+multiple_crate_versions = "allow"
+struct_field_names = "allow"
+significant_drop_tightening = "allow"
+significant_drop_in_scrutinee = "allow"
+option_if_let_else = "allow"
+use_self = "allow"
+redundant_pub_crate = "allow"
+future_not_send = "allow"
+cognitive_complexity = "allow"
+
+[package]
+name = "adk-rs"
+version = "0.4.0"
+edition = "2024"
+rust-version = "1.85"
+license = "Apache-2.0"
+repository = "https://github.com/skundu42/adk-rs"
+homepage = "https://github.com/skundu42/adk-rs"
+authors = ["Sandipan Kundu <sandipank.dev@gmail.com>"]
+readme = "README.md"
+exclude = ["/docs", "/adk-python-src-code", "/.claude"]
+keywords = ["agent", "llm", "ai", "adk", "ai-sdk"]
+categories = ["api-bindings", "asynchronous"]
+description = "Rust port of the Google Agent Development Kit (ADK)."
+
+[package.metadata.docs.rs]
+all-features = true
+
+[lints]
+workspace = true
+
+[features]
+default = []
+# Providers
+gemini = ["dep:reqwest", "dep:eventsource-stream", "dep:url"]
+anthropic = ["dep:reqwest", "dep:eventsource-stream", "dep:url"]
+openai = ["dep:reqwest"]
+# Gemini Live API: bidirectional WebSocket streaming (text + audio).
+live = ["gemini", "dep:tokio-tungstenite"]
+# Storage backends
+fs = []
+sqlite = ["dep:sqlx", "sqlx/sqlite"]
+postgres = ["dep:sqlx", "sqlx/postgres"]
+# Subsystems
+mcp = ["dep:reqwest", "dep:eventsource-stream", "dep:url"]
+telemetry = ["dep:tracing-subscriber"]
+otel = ["telemetry", "dep:opentelemetry", "dep:opentelemetry_sdk", "dep:opentelemetry-otlp", "dep:tracing-opentelemetry"]
+eval = []
+server = ["dep:axum", "dep:tower", "dep:tower-http", "dep:http"]
+cli = ["dep:clap", "telemetry", "server", "eval"]
+macros = ["dep:adk-rs-macros"]
+# Auth + tool catalog + code executors (v0.2)
+auth = ["dep:reqwest", "dep:url", "dep:oauth2", "dep:jsonwebtoken", "dep:rand"]
+openapi = ["dep:reqwest", "dep:url", "dep:openapiv3", "dep:serde_yaml"]
+code-exec = []
+code-exec-docker = ["code-exec"]
+# Agent-to-Agent JSON-RPC client + server bridge.
+a2a = ["dep:reqwest", "dep:url", "dep:eventsource-stream", "dep:axum", "dep:tower", "dep:tower-http", "dep:http"]
+# Test-only helpers
+testing = []
+# Convenience: everything on
+full = [
+    "gemini", "anthropic", "openai", "live",
+    "fs", "sqlite",
+    "mcp", "telemetry", "eval", "server", "cli", "macros",
+    "auth", "openapi", "code-exec", "code-exec-docker",
+    "a2a", "testing",
+]
+
+[dependencies]
+# Always-on core deps
+thiserror = "2"
+serde = { version = "1", features = ["derive", "rc"] }
+serde_json = { version = "1", features = ["preserve_order"] }
+serde_with = "3"
+indexmap = { version = "2", features = ["serde"] }
+schemars = { version = "0.8", features = ["preserve_order"] }
+tokio = { version = "1", features = ["rt-multi-thread", "macros", "sync", "fs", "io-util", "time", "process", "signal", "net"] }
+tokio-stream = { version = "0.1", features = ["sync"] }
+futures = "0.3"
+async-trait = "0.1"
+async-stream = "0.3"
+pin-project-lite = "0.2"
+tracing = "0.1"
+uuid = { version = "1", features = ["v4", "v7", "serde"] }
+chrono = { version = "0.4", default-features = false, features = ["clock", "serde", "std"] }
+base64 = "0.22"
+bytes = "1"
+dashmap = "6"
+parking_lot = "0.12"
+arc-swap = "1"
+globset = "0.4"
+sha2 = "0.10"
+
+# Provider deps (feature-gated)
+reqwest = { version = "0.12", default-features = false, features = ["rustls-tls", "json", "stream", "gzip", "http2"], optional = true }
+eventsource-stream = { version = "0.2", optional = true }
+url = { version = "2", optional = true }
+tokio-tungstenite = { version = "0.26", features = ["rustls-tls-webpki-roots"], optional = true }
+
+# Storage deps
+sqlx = { version = "0.8", default-features = false, features = ["runtime-tokio-rustls", "macros", "json", "chrono", "uuid", "migrate"], optional = true }
+
+# Telemetry deps
+tracing-subscriber = { version = "0.3", features = ["env-filter", "fmt", "json"], optional = true }
+opentelemetry = { version = "0.27", optional = true }
+opentelemetry_sdk = { version = "0.27", features = ["rt-tokio"], optional = true }
+opentelemetry-otlp = { version = "0.27", features = ["http-proto", "reqwest-client"], optional = true }
+tracing-opentelemetry = { version = "0.28", optional = true }
+
+# Server deps
+axum = { version = "0.7", features = ["macros", "ws", "multipart"], optional = true }
+tower = { version = "0.5", features = ["util"], optional = true }
+tower-http = { version = "0.6", features = ["trace", "cors", "fs", "compression-gzip", "request-id"], optional = true }
+http = { version = "1", optional = true }
+
+# CLI deps
+clap = { version = "4", features = ["derive", "env", "wrap_help"], optional = true }
+
+# Proc-macro
+adk-rs-macros = { path = "adk-rs-macros", version = "0.3.0", optional = true }
+
+# Auth deps (feature = "auth")
+oauth2 = { version = "5", default-features = false, features = ["reqwest", "rustls-tls"], optional = true }
+jsonwebtoken = { version = "10", default-features = false, features = ["use_pem"], optional = true }
+rand = { version = "0.8", optional = true }
+
+# OpenAPI deps (feature = "openapi")
+openapiv3 = { version = "2", optional = true }
+serde_yaml = { version = "0.9", optional = true }
+
+# (Docker code executor uses the `docker` CLI on $PATH; no Rust dep needed.)
+
+[dev-dependencies]
+tokio = { version = "1", features = ["macros", "rt-multi-thread", "test-util"] }
+similar-asserts = "1"
+tempfile = "3"
+wiremock = "=0.6.4"
+reqwest = { version = "0.12", default-features = false, features = ["rustls-tls", "json"] }
+tower = "0.5"
+http-body-util = "0.1"
+trybuild = "1"
+
+[[example]]
+name = "gemini_chat"
+required-features = ["gemini"]
+
+[[example]]
+name = "weather_agent"
+required-features = ["gemini", "macros"]
+
+[[example]]
+name = "three_providers"
+required-features = ["gemini", "anthropic", "openai"]
+
+[[example]]
+name = "code_agent"
+required-features = ["code-exec", "testing"]
+
+[[test]]
+name = "server_http"
+required-features = ["server", "testing"]
+
+[[test]]
+name = "macro_expansion"
+required-features = ["macros", "testing"]
+
+[[test]]
+name = "auth_oauth2"
+required-features = ["auth"]
+
+[[test]]
+name = "openapi_petstore"
+required-features = ["openapi", "auth", "testing"]
+
+[[test]]
+name = "a2a_roundtrip"
+required-features = ["a2a", "testing"]
+
+[profile.release]
+opt-level = 3
+lto = "thin"
+codegen-units = 1
+strip = "symbols"
+debug = false
+
+[profile.dev]
+opt-level = 0
+debug = "limited"
+incremental = true
+
+[profile.test]
+opt-level = 1

@@ -1,0 +1,6 @@
+{
+  "git": {
+    "sha1": "44eef68cc6371feb672b6e0bd157d1adf6d593a3"
+  },
+  "path_in_vcs": "crates/concurrency-init-rayon-core"
+}

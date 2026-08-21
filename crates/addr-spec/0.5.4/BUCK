@@ -1,0 +1,14 @@
+load("@buckal//:wrapper.bzl", "rust_library")
+
+rust_library(
+    name = "addr_spec",
+    srcs = glob(["**/*.rs"]),
+    crate = "addr_spec",
+    crate_root = "src/lib.rs",
+    edition = "2021",
+
+    visibility = ["PUBLIC"],
+    deps = [
+        "//third-party/rust/crates/unicode-normalization/0.1.25:unicode_normalization",
+    ],
+)

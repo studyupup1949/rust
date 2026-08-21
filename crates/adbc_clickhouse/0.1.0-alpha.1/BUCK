@@ -1,0 +1,24 @@
+load("@buckal//:wrapper.bzl", "rust_library")
+
+rust_library(
+    name = "adbc_clickhouse",
+    srcs = glob(["**/*.rs"]),
+    crate = "adbc_clickhouse",
+    crate_root = "src/lib.rs",
+    edition = "2024",
+
+    visibility = ["PUBLIC"],
+    deps = [
+        "//third-party/rust/crates/adbc_core/0.22.0:adbc_core",
+        "//third-party/rust/crates/arrow-array/57.3.1:arrow_array",
+        "//third-party/rust/crates/arrow-buffer/57.3.1:arrow_buffer",
+        "//third-party/rust/crates/arrow-ipc/57.3.1:arrow_ipc",
+        "//third-party/rust/crates/arrow-schema/57.3.1:arrow_schema",
+        "//third-party/rust/crates/chrono/0.4.45:chrono",
+        "//third-party/rust/crates/clickhouse-types/0.1.2:clickhouse_types",
+        "//third-party/rust/crates/clickhouse/0.14.3:clickhouse",
+        "//third-party/rust/crates/rand/0.9.5:rand",
+        "//third-party/rust/crates/serde/1.0.229:serde",
+        "//third-party/rust/crates/tokio/1.53.1:tokio",
+    ],
+)

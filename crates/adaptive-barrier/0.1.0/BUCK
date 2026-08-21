@@ -1,0 +1,11 @@
+load("@buckal//:wrapper.bzl", "rust_library")
+
+rust_library(
+    name = "adaptive_barrier",
+    srcs = glob(["**/*.rs"]),
+    crate = "adaptive_barrier",
+    crate_root = "src/lib.rs",
+    edition = "2015",
+
+    visibility = ["PUBLIC"],
+)

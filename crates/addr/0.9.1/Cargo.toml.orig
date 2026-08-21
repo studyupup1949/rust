@@ -1,0 +1,30 @@
+[package]
+name = "addr"
+description = "A library for parsing domain names"
+version = "0.9.1"
+license = "MIT/Apache-2.0"
+repository = "https://github.com/addr-rs/addr"
+documentation = "https://docs.rs/addr"
+readme = "README.md"
+keywords = ["tld", "gtld", "cctld", "domain", "no_std"]
+authors = ["rushmorem <rushmore@webenchanter.com>"]
+edition = "2018"
+
+[features]
+default = ["net", "std"]
+net = ["no-std-net"]
+serde-net = ["serde", "no-std-net/serde"]
+std = []
+
+[dependencies]
+psl = "1.0.5"
+no-std-net = { version = "0.5.0", default-features = false, optional = true }
+serde = { version = "1.0.124", default-features = false, optional = true }
+
+[dev-dependencies]
+rspec = "1.0.0"
+criterion = "0.3.4"
+
+[[bench]]
+name = "list_benchmark"
+harness = false

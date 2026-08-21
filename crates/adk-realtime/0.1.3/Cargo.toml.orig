@@ -1,0 +1,61 @@
+[package]
+name = "adk-realtime"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+authors.workspace = true
+description = "Real-time bidirectional audio/video streaming for Rust Agent Development Kit (ADK-Rust) agents"
+repository = "https://github.com/zavora-ai/adk-rust"
+documentation = "https://docs.rs/adk-realtime"
+keywords = ["adk", "ai", "agents", "realtime", "voice"]
+categories = ["api-bindings", "asynchronous"]
+readme = "README.md"
+
+[dependencies]
+# Core ADK dependencies
+adk-core = { path = "../adk-core", version = "0.1.3" }
+
+# Async runtime
+tokio = { version = "1.0", features = ["rt-multi-thread", "sync", "macros"] }
+async-trait = "0.1"
+futures = "0.3"
+async-stream = "0.3"
+
+# Serialization
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
+
+# WebSocket
+tokio-tungstenite = { version = "0.24", features = ["native-tls"], optional = true }
+
+# Error handling
+thiserror = "1.0"
+
+# Logging
+tracing = "0.1"
+
+# Base64 for audio encoding
+base64 = "0.22"
+
+# UUID for session IDs
+uuid = { version = "1.0", features = ["v4"] }
+
+# Random number generation
+getrandom = "0.2"
+
+# OpenAI realtime types (optional)
+async-openai = { version = "0.27", optional = true }
+
+[dev-dependencies]
+tokio = { version = "1.0", features = ["full"] }
+dotenvy = "0.15"
+
+[features]
+default = []
+# Enable OpenAI Realtime API support
+openai = ["dep:async-openai", "dep:tokio-tungstenite"]
+# Enable Gemini Live API support
+gemini = ["dep:tokio-tungstenite"]
+# Enable all providers
+full = ["openai", "gemini"]

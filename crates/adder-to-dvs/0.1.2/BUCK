@@ -1,0 +1,17 @@
+load("@buckal//:wrapper.bzl", "rust_binary")
+
+rust_binary(
+    name = "adder_to_dvs",
+    srcs = glob(["**/*.rs"]),
+    crate = "adder_to_dvs",
+    crate_root = "src/main.rs",
+    edition = "2021",
+
+    visibility = ["PUBLIC"],
+    deps = [
+        "//third-party/rust/crates/adder-codec-rs/0.2.7:adder_codec_rs",
+        "//third-party/rust/crates/clap/4.6.6:clap",
+        "//third-party/rust/crates/ndarray/0.15.6:ndarray",
+        "//third-party/rust/crates/opencv/0.66.0:opencv",
+    ],
+)

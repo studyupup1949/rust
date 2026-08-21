@@ -1,0 +1,15 @@
+load("@buckal//:wrapper.bzl", "rust_library")
+
+rust_library(
+    name = "ada_judge_public_models",
+    srcs = glob(["**/*.rs"]),
+    crate = "ada_judge_public_models",
+    crate_root = "src/lib.rs",
+    edition = "2024",
+
+    visibility = ["PUBLIC"],
+    deps = [
+        "//third-party/rust/crates/chrono/0.4.45:chrono",
+        "//third-party/rust/crates/serde/1.0.229:serde",
+    ],
+)

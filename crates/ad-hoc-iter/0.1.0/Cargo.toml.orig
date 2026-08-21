@@ -1,0 +1,16 @@
+[package]
+name = "ad-hoc-iter"
+version = "0.1.0"
+description = "Ad-hoc exact size owning iterator macro and other optional utils"
+keywords = ["iterator", "macro", "iter"]
+authors = ["Avril <flanchan@cumallover.me>"]
+edition = "2018"
+license = "MIT"
+
+[features]
+default = ["maybe-many"]
+
+# Enable the `maybe` module
+maybe-many = []
+
+[dependencies]

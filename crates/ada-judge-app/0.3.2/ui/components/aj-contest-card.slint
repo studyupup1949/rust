@@ -1,0 +1,461 @@
+import { AJTheme } from "../aj-theme.slint";
+import { AJAppState } from "../aj-state.slint";
+import { AJContest, AJContestStatus } from "../models/contests.slint";
+import { AJHomeCallbacks, AJAppCallbacks } from "../aj-callbacks.slint";
+import { AJText, AJTextType } from "aj-text.slint";
+import { AJDateTimeText } from "aj-datetime-text.slint";
+import { AJInput, AJInputType } from "aj-input.slint";
+import { AJDateTimeInput } from "aj-datetime-input.slint";
+import { AJButton } from "aj-button.slint";
+import { AJCheckbox } from "aj-checkbox.slint";
+import { AJIcon } from "aj-icon.slint";
+
+export component AJContestCard inherits Rectangle {
+    in property <int> index;
+    in property <bool> show-enter-button;
+
+    property <AJContest> contest: AJAppState.contests[index];
+
+    width: self.min-width + AJTheme.fit-space;
+    height: 200px;
+
+    background: {
+        if contest.status == AJContestStatus.BeforeStart {
+            AJTheme.contest-before-start
+        } else if contest.status == AJContestStatus.Ongoing {
+            AJTheme.contest-ongoing
+        } else if contest.status == AJContestStatus.Finished {
+            AJTheme.contest-finished
+        } else {
+            AJTheme.contest-upsolving
+        }
+    };
+
+    border-radius: AJTheme.border-radius;
+
+    VerticalLayout {
+        alignment: start;
+        padding: AJTheme.padding;
+        spacing: AJTheme.spacing;
+
+        HorizontalLayout {
+            AJText {
+                text: "#\{contest.id} \{contest.name}";
+                type: AJTextType.Heading;
+                horizontal-stretch: 1;
+                horizontal-alignment: left;
+                vertical-alignment: center;
+                color: {
+                    if contest.status == AJContestStatus.BeforeStart {
+                        AJTheme.contest-before-start-text
+                    } else if contest.status == AJContestStatus.Ongoing {
+                        AJTheme.contest-ongoing-text
+                    } else if contest.status == AJContestStatus.Finished {
+                        AJTheme.contest-finished-text
+                    } else {
+                        AJTheme.contest-upsolving-text;
+                    }
+                }
+            }
+
+            AJText {
+                text: {
+                    if contest.status == AJContestStatus.BeforeStart {
+                        @tr("не начался")
+                    } else if contest.status == AJContestStatus.Ongoing {
+                        @tr("идёт")
+                    } else if contest.status == AJContestStatus.Finished {
+                        @tr("завершён")
+                    } else {
+                        @tr("дорешка")
+                    }
+                };
+                horizontal-stretch: 1;
+                horizontal-alignment: right;
+                vertical-alignment: center;
+                color: AJTheme.contest-status-text;
+            }
+        }
+
+        if !contest.statements-url.is-empty || !contest.editorial-url.is-empty:
+        HorizontalLayout {
+            spacing: AJTheme.spacing;
+
+            if !contest.statements-url.is-empty:
+            AJButton {
+                text: @tr("условия задач");
+                background: {
+                    if contest.status == AJContestStatus.Finished {
+                        AJTheme.secondary-container
+                    } else {
+                        AJTheme.button
+                    }
+                };
+                text-halign: left;
+
+                AJIcon {
+                    source: @image-url("../../radix-icons/file-text.svg");
+                    x: parent.width - self.width - AJTheme.fit-space;
+                    y: (parent.height - self.height) / 2;
+                }
+                clicked => {
+                    AJAppCallbacks.open-link(contest.statements-url)
+                }
+            }
+
+            if !contest.editorial-url.is-empty:
+            AJButton {
+                text: @tr("разбор задач");
+                background: {
+                    if contest.status == AJContestStatus.Finished {
+                        AJTheme.secondary-container
+                    } else {
+                        AJTheme.button
+                    }
+                };
+                text-halign: left;
+
+                AJIcon {
+                    source: @image-url("../../radix-icons/file-text.svg");
+                    x: parent.width - self.width - AJTheme.fit-space;
+                    y: (parent.height - self.height) / 2;
+                }
+                clicked => {
+                    AJAppCallbacks.open-link(contest.editorial-url)
+                }
+            }
+        }
+
+        HorizontalLayout {
+            AJText {
+                text: @tr("начало в");
+                horizontal-stretch: 1;
+                horizontal-alignment: left;
+                vertical-alignment: center;
+                color: {
+                    if contest.status == AJContestStatus.BeforeStart {
+                        AJTheme.contest-before-start-text
+                    } else if contest.status == AJContestStatus.Ongoing {
+                        AJTheme.contest-ongoing-text
+                    } else if contest.status == AJContestStatus.Finished {
+                        AJTheme.contest-finished-text
+                    } else {
+                        AJTheme.contest-upsolving-text;
+                    }
+                }
+            }
+
+            AJDateTimeText {
+                date-time: contest.starts-at;
+                font-italic: true;
+                horizontal-stretch: 1;
+                horizontal-alignment: right;
+                vertical-alignment: center;
+                color: {
+                    if contest.status == AJContestStatus.BeforeStart {
+                        AJTheme.contest-before-start-text
+                    } else if contest.status == AJContestStatus.Ongoing {
+                        AJTheme.contest-ongoing-text
+                    } else if contest.status == AJContestStatus.Finished {
+                        AJTheme.contest-finished-text
+                    } else {
+                        AJTheme.contest-upsolving-text;
+                    }
+                }
+            }
+        }
+
+        HorizontalLayout {
+            AJText {
+                text: @tr("конец в");
+                horizontal-stretch: 1;
+                horizontal-alignment: left;
+                vertical-alignment: center;
+                color: {
+                    if contest.status == AJContestStatus.BeforeStart {
+                        AJTheme.contest-before-start-text
+                    } else if contest.status == AJContestStatus.Ongoing {
+                        AJTheme.contest-ongoing-text
+                    } else if contest.status == AJContestStatus.Finished {
+                        AJTheme.contest-finished-text
+                    } else {
+                        AJTheme.contest-upsolving-text;
+                    }
+                }
+            }
+
+            AJDateTimeText {
+                date-time: contest.ends-at;
+                font-italic: true;
+                horizontal-stretch: 1;
+                horizontal-alignment: right;
+                vertical-alignment: center;
+                color: {
+                    if contest.status == AJContestStatus.BeforeStart {
+                        AJTheme.contest-before-start-text
+                    } else if contest.status == AJContestStatus.Ongoing {
+                        AJTheme.contest-ongoing-text
+                    } else if contest.status == AJContestStatus.Finished {
+                        AJTheme.contest-finished-text
+                    } else {
+                        AJTheme.contest-upsolving-text;
+                    }
+                }
+            }
+        }
+
+        HorizontalLayout {
+            spacing: AJTheme.spacing;
+
+            if (contest.status != AJContestStatus.BeforeStart || contest.can-manage) && show-enter-button:
+            AJButton {
+                text: @tr("войти");
+                background: {
+                    if contest.status == AJContestStatus.Finished {
+                        AJTheme.secondary-container
+                    } else {
+                        AJTheme.button
+                    }
+                };
+
+                text-halign: left;
+
+                AJIcon {
+                    source: @image-url("../../radix-icons/enter.svg");
+                    x: parent.width - self.width - AJTheme.fit-space;
+                    y: (parent.height - self.height) / 2;
+                }
+
+                clicked => {
+                    AJAppState.in-contest = true;
+                    AJHomeCallbacks.enter-contest(index);
+                }
+            }
+
+            if contest.can-manage:
+            AJButton {
+                text: @tr("изменить");
+                background: {
+                    if contest.status == AJContestStatus.Finished {
+                        AJTheme.secondary-container
+                    } else {
+                        AJTheme.button
+                    }
+                };
+                text-halign: left;
+
+                AJIcon {
+                    source: @image-url("../../radix-icons/pencil-1.svg");
+                    x: parent.width - self.width - AJTheme.fit-space;
+                    y: (parent.height - self.height) / 2;
+                }
+                edit-contest-popup := PopupWindow {
+                    close-policy: PopupClosePolicy.close-on-click-outside;
+
+                    function close-popup() {
+                        self.close()
+                    }
+
+                    Rectangle {
+                        background: AJTheme.secondary-container;
+
+                        border-radius: AJTheme.border-radius;
+
+                        VerticalLayout {
+                            padding: AJTheme.padding;
+                            spacing: AJTheme.spacing;
+
+                            name := AJInput {
+                                text: contest.name;
+                                placeholder: @tr("название");
+                            }
+
+                            AJText {
+                                text: @tr("начало в");
+                                color: AJTheme.container-text;
+                            }
+
+                            starts-at := AJDateTimeInput {
+                                default-date-time: contest.starts-at;
+                            }
+
+                            AJText {
+                                text: @tr("конец в");
+                                color: AJTheme.container-text;
+                            }
+
+                            ends-at := AJDateTimeInput {
+                                default-date-time: contest.ends-at;
+                            }
+
+                            statements-url := AJInput {
+                                text: contest.statements-url;
+                                placeholder: @tr("ссылка на условия");
+                            }
+
+                            editorial-url := AJInput {
+                                text: contest.editorial-url;
+                                placeholder: @tr("ссылка на разбор");
+                            }
+
+                            hidden := AJCheckbox {
+                                value: contest.hidden;
+                                text: @tr("скрыть");
+                            }
+
+                            upsolving-opened := AJCheckbox {
+                                value: contest.upsolving-opened;
+                                text: @tr("открыть дорешку");
+                            }
+
+                            hide-solutions := AJCheckbox {
+                                value: contest.hide-solutions;
+                                text: @tr("скрыть решения");
+                            }
+
+                            AJButton {
+                                text: @tr("изменить");
+                                text-halign: left;
+
+                                AJIcon {
+                                    source: {
+                                        if !name.text.is-empty {
+                                            @image-url("../../radix-icons/pencil-1.svg")
+                                        } else {
+                                            @image-url("../../radix-icons/circle-backslash.svg")
+                                        }
+                                    };
+                                    x: parent.width - self.width - AJTheme.fit-space;
+                                    y: (parent.height - self.height) / 2;
+                                }
+                                clicked => {
+                                    if !name.text.is-empty {
+                                        AJHomeCallbacks.update-contest(contest.id, name.text, starts-at.date-time, ends-at.date-time, statements-url.text, editorial-url.text, hidden.value, upsolving-opened.value, hide-solutions.value);
+                                    }
+                                }
+                            }
+
+                            AJButton {
+                                text: @tr("отменить");
+                                text-halign: right;
+
+                                AJIcon {
+                                    source: @image-url("../../radix-icons/reset.svg");
+                                    x: AJTheme.fit-space;
+                                    y: (parent.height - self.height) / 2;
+                                }
+                                clicked => {
+                                    close-popup()
+                                }
+                            }
+                        }
+                    }
+                }
+                clicked => {
+                    edit_contest_popup.show()
+                }
+            }
+
+            if contest.can-manage:
+            AJButton {
+                visible: contest.can-manage;
+                text: @tr("удалить");
+                background: AJTheme.container-error;
+                text-color: AJTheme.error-text;
+                text-halign: left;
+
+                AJIcon {
+                    source: @image-url("../../radix-icons/trash.svg");
+                    color: AJTheme.error-text;
+                    x: parent.width - self.width - AJTheme.fit-space;
+                    y: (parent.height - self.height) / 2;
+                }
+                delete-contest-popup := PopupWindow {
+                    close-policy: PopupClosePolicy.close-on-click-outside;
+
+                    function close-popup() {
+                        self.close()
+                    }
+
+                    Rectangle {
+                        background: AJTheme.secondary-container;
+
+                        border-radius: AJTheme.border-radius;
+
+                        VerticalLayout {
+                            padding: AJTheme.padding;
+                            spacing: AJTheme.spacing;
+
+                            AJText {
+                                text: @tr("Требуется рут-доступ");
+                                type: AJTextType.Medium;
+                                color: AJTheme.container-text;
+                            }
+
+                            login := AJInput {
+                                placeholder: @tr("логин");
+                            }
+
+                            password := AJInput {
+                                placeholder: @tr("пароль");
+                                type: AJInputType.Password;
+                            }
+
+                            password-confirmation := AJInput {
+                                placeholder: @tr("подтвердите пароль");
+                                type: AJInputType.Password;
+                            }
+
+                            deletion-confirmation := AJCheckbox {
+                                text: @tr("подтвердите удаление");
+                            }
+
+                            AJButton {
+                                text: @tr("удалить");
+                                background: AJTheme.container-error;
+                                text-color: AJTheme.error-text;
+                                text-halign: left;
+
+                                AJIcon {
+                                    source: {
+                                        if !login.text.is-empty && !password.text.is-empty && password.text == password-confirmation.text && deletion-confirmation.value {
+                                            @image-url("../../radix-icons/trash.svg")
+                                        } else {
+                                            @image-url("../../radix-icons/circle-backslash.svg")
+                                        }
+                                    };
+                                    color: AJTheme.error-text;
+                                    x: parent.width - self.width - AJTheme.fit-space;
+                                    y: (parent.height - self.height) / 2;
+                                }
+                                clicked => {
+                                    if !login.text.is-empty && !password.text.is-empty && password.text == password-confirmation.text && deletion-confirmation.value {
+                                        AJHomeCallbacks.delete-contest(contest.id, login.text, password.text, password-confirmation.text, deletion-confirmation.value);
+                                    }
+                                }
+                            }
+
+                            AJButton {
+                                text: @tr("отменить");
+                                text-halign: right;
+
+                                AJIcon {
+                                    source: @image-url("../../radix-icons/reset.svg");
+                                    x: AJTheme.fit-space;
+                                    y: (parent.height - self.height) / 2;
+                                }
+                                clicked => {
+                                    close-popup()
+                                }
+                            }
+                        }
+                    }
+                }
+
+                clicked => {
+                    delete-contest-popup.show()
+                }
+            }
+        }
+    }
+}

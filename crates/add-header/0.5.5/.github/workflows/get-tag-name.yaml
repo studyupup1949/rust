@@ -1,0 +1,41 @@
+name: Get Latest Tag
+
+on:
+  workflow_call:
+    inputs:
+      tag-version:
+        type: string
+        description: "Tag version: (e.g. -> v3.6.1)"
+      bump-version-input:
+        type: string
+        description: "Tag version: (e.g. -> v3.6.1)"
+    outputs:
+      tag: 
+        value: ${{ jobs.tag-name.outputs.tag }}
+      bump-version-output:
+        value: ${{ jobs.get-bump-version.outputs.bump-version }}
+             
+jobs:
+  tag-name:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - id: get-latest-tag  
+        if: ${{ inputs.tag-version == '' && inputs.bump-version-input == ''}}
+        uses: WyriHaximus/github-action-get-previous-tag@v1
+    outputs:
+      tag: ${{ steps.get-latest-tag.outputs.tag || inputs.tag-version ||  github.ref_name }}
+      current_tag: ${{ steps.get-latest-tag.outputs.tag }}
+        
+  get-bump-version: 
+    needs: tag-name
+    runs-on: ubuntu-latest
+    steps:
+      - id: version
+        run: |
+          tag="${{  needs.tag-name.outputs.current_tag || inputs.bump-version-input }}"
+          echo "bump=${tag##v}" >> $GITHUB_OUTPUT
+    outputs:
+      bump-version: ${{ steps.version.outputs.bump }}

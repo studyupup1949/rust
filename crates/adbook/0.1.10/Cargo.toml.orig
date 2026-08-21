@@ -1,0 +1,36 @@
+[package]
+name = "adbook"
+version = "0.1.10"
+authors = ["toyboot4e <toyboot4e@gmail.com>"]
+edition = "2018"
+exclude = ["/demo/*"]
+keywords = ["book", "ssg", "asciidoc"]
+license = "MIT"
+repository = "https://github.com/toyboot4e/adbook"
+description = "Creates a book from AsciiDoc files"
+
+[dependencies]
+# basic
+log = "0.4.14"
+anyhow = "1.0.41"
+thiserror = "1.0.25"
+
+# implementation
+async-std = "1.9.0"
+colored = "2.0.0"
+futures = { version = "0.3.15", features = [] }
+handlebars = "4.0.0"
+serde = { version = "1.0.126", features = ["derive"] }
+ron = "0.6.4"
+
+# CLI
+clap = { version = "3.0.0-rc.4", features = ["derive"] }
+
+# main
+fern = { version = "0.6.0", features = ["colored"] }
+chrono = "0.4.19"
+
+# progress bar
+indicatif = "0.16.2"
+bincode = "1.3.3"
+

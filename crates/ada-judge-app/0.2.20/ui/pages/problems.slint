@@ -1,0 +1,100 @@
+import { AJTheme } from "../aj-theme.slint";
+import { AJAppState, AJProblemsState, AJUserState } from "../aj-state.slint";
+import { AJProblemsCallbacks, AJAppCallbacks } from "../aj-callbacks.slint";
+import { AJAdminLevel } from "../models/users.slint";
+import { ScrollView } from "std-widgets.slint";
+import { AJText, AJTextType } from "../components/aj-text.slint";
+import { AJInput, AJInputType } from "../components/aj-input.slint";
+import { AJButton } from "../components/aj-button.slint";
+import { AJDropdown } from "../components/aj-dropdown.slint";
+import { AJProblemCard } from "../components/aj-problem-card.slint";
+import { AJCheckbox } from "../components/aj-checkbox.slint";
+
+export component ProblemsPage {
+    VerticalLayout {
+        alignment: start;
+        spacing: AJTheme.spacing;
+
+        AJButton {
+            text: "<< назад";
+            clicked => {
+                AJAppState.page = 3;
+            }
+        }
+
+        HorizontalLayout {
+            spacing: AJTheme.spacing;
+
+            AJText {
+                text: "Задачи";
+                width: self.min-width;
+                type: AJTextType.Heading;
+            }
+
+            AJButton {
+                text: AJProblemsState.problem-picked ? "изменить задачу для добавления... (\{AJProblemsState.problem-archive-name})" : "выбрать задачу для добавления...";
+                clicked => {
+                    AJProblemsCallbacks.pick-problem-archive()
+                }
+            }
+
+            AJButton {
+                text: "создать +";
+                clicked => {
+                    AJProblemsCallbacks.create-problem()
+                }
+            }
+        }
+
+        Rectangle {
+            background: AJTheme.primary-container;
+
+            width: 130px;
+
+            border-radius: AJTheme.border-radius;
+
+            AJCheckbox {
+                visible: AJUserState.user.admin-level == AJAdminLevel.Owner;
+                text: "все задачи";
+                value <=> AJProblemsState.all-problems;
+                changed value => {
+                    AJAppCallbacks.reload()
+                }
+            }
+        }
+
+        if AJProblemsState.problems.length == 0:
+        AJText {
+            text: "Задач пока что нет";
+            type: AJTextType.Medium;
+            font-italic: true;
+        }
+
+        if AJProblemsState.problems.length != 0:
+        Rectangle {
+            clip: true;
+            border-radius: AJTheme.border-radius;
+            width: 700px;
+            height: 600px;
+
+            ScrollView {
+                VerticalLayout {
+                    spacing: AJTheme.spacing;
+
+                    for problem in AJProblemsState.problems: AJProblemCard {
+                        show-id: true;
+                        problem: problem;
+                    }
+                }
+            }
+
+            Rectangle {
+                x: 0;
+                y: parent.height - self.height;
+                width: parent.width;
+                height: 64px;
+                background: @linear-gradient(180deg, AJTheme.background.transparentize(100%), AJTheme.background.transparentize(50%));
+            }
+        }
+    }
+}

@@ -1,0 +1,15 @@
+load("@buckal//:wrapper.bzl", "rust_library")
+
+rust_library(
+    name = "adafruit_led_backpack",
+    srcs = glob(["**/*.rs"]),
+    crate = "adafruit_led_backpack",
+    crate_root = "src/lib.rs",
+    edition = "2018",
+
+    visibility = ["PUBLIC"],
+    deps = [
+        "//third-party/rust/crates/embedded-hal/0.2.7:embedded_hal",
+        "//third-party/rust/crates/ht16k33/0.4.0:ht16k33",
+    ],
+)

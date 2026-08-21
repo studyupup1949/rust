@@ -1,0 +1,87 @@
+import { AJTheme } from "../aj-theme.slint";
+import { AJContestState } from "../aj-state.slint";
+import { AJTestResult, AJSubgroupVerdict } from "../models/testing.slint";
+import { AJText, AJTextType } from "aj-text.slint";
+
+export component AJTestResultCard inherits Rectangle {
+    in property <int> index;
+
+    property <AJTestResult> test-result: AJContestState.submissions[AJContestState.current-submission-index].tests-results[index];
+
+    width: self.min-width + AJTheme.fit-space;
+    height: self.min-height + AJTheme.fit-space;
+
+    background: AJTheme.secondary-container;
+
+    border-radius: AJTheme.border-radius;
+
+    VerticalLayout {
+        padding: AJTheme.padding;
+        spacing: AJTheme.spacing;
+
+        AJText {
+            text: "#\{index}";
+            type: AJTextType.Medium;
+            color: AJTheme.container-text;
+        }
+
+        HorizontalLayout {
+            AJText {
+                text: "вердикт";
+                horizontal-stretch: 1;
+                horizontal-alignment: left;
+                vertical-alignment: center;
+                color: AJTheme.container-text;
+            }
+
+            AJText {
+                text: {
+                    if test-result.test-verdict == AJSubgroupVerdict.Ok {
+                        @tr("пройден")
+                    } else if test-result.test-verdict == AJSubgroupVerdict.RuntimeError {
+                        @tr("ошибка выполнения")
+                    } else if test-result.test-verdict == AJSubgroupVerdict.TimeLimitExceeded {
+                        @tr("превышено ограничение по времени")
+                    } else if test-result.test-verdict == AJSubgroupVerdict.MemoryLimitExceeded {
+                        @tr("превышено ограничение по памяти")
+                    } else if test-result.test-verdict == AJSubgroupVerdict.SecurityError {
+                        @tr("ошибка безопасности")
+                    } else if test-result.test-verdict == AJSubgroupVerdict.WrongAnswer {
+                        @tr("неправильный ответ")
+                    } else if test-result.test-verdict == AJSubgroupVerdict.PresentationError {
+                        @tr("неправильный формат вывода")
+                    } else if test-result.test-verdict == AJSubgroupVerdict.Skipped {
+                        @tr("пропущен")
+                    } else {
+                        @tr("тестируется")
+                    }
+                };
+                font-italic: true;
+                horizontal-stretch: 1;
+                horizontal-alignment: right;
+                vertical-alignment: center;
+                color: AJTheme.container-text;
+            }
+        }
+
+        if test-result.score != -1:
+        HorizontalLayout {
+            AJText {
+                text: @tr("баллы");
+                horizontal-stretch: 1;
+                horizontal-alignment: left;
+                vertical-alignment: center;
+                color: AJTheme.container-text;
+            }
+
+            AJText {
+                text: test-result.score;
+                font-italic: true;
+                horizontal-stretch: 1;
+                horizontal-alignment: right;
+                vertical-alignment: center;
+                color: AJTheme.container-text;
+            }
+        }
+    }
+}

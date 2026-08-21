@@ -1,0 +1,15 @@
+load("@buckal//:wrapper.bzl", "rust_library")
+
+rust_library(
+    name = "ads111x",
+    srcs = glob(["**/*.rs"]),
+    crate = "ads111x",
+    crate_root = "src/lib.rs",
+    edition = "2015",
+
+    visibility = ["PUBLIC"],
+    deps = [
+        "//third-party/rust/crates/byteorder/1.5.0:byteorder",
+        "//third-party/rust/crates/i2cdev/0.3.2:i2cdev",
+    ],
+)

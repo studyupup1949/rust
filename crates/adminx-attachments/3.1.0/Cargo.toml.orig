@@ -1,0 +1,28 @@
+[package]
+name = "adminx-attachments"
+description = "Pluggable file attachments for the adminx admin-panel framework. Attach files to any resource, stored on local disk (S3/object-store backends to follow), with metadata over SeaORM or MongoDB and attach/serve/detach routes in the panel."
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+authors.workspace = true
+license.workspace = true
+repository.workspace = true
+documentation = "https://docs.rs/adminx-attachments"
+homepage = "https://github.com/srotas-space/adminx"
+readme = "README.md"
+keywords = ["admin", "upload", "attachment", "actix", "axum"]
+categories = ["web-programming", "database"]
+
+[dependencies]
+adminx-core.workspace = true
+async-trait.workspace = true
+serde_json.workspace = true
+tracing.workspace = true
+once_cell.workspace = true
+chrono = { version = "0.4", default-features = false, features = ["clock", "std"] }
+tokio = { workspace = true }
+nanoid = "0.4"
+
+[dev-dependencies]
+tokio = { workspace = true }
+async-trait.workspace = true

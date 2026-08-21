@@ -1,0 +1,74 @@
+import { AJTheme } from "aj-theme.slint";
+export { AJAppState, AJContestState, AJUserState, AJProblemsState } from "aj-state.slint";
+import { AJAppState } from "aj-state.slint";
+export {
+    AJAppCallbacks,
+    AJWelcomeCallbacks,
+    AJHomeCallbacks,
+    AJContestCallbacks,
+    AJProblemsCallbacks
+} from "aj-callbacks.slint";
+import { AJAppCallbacks } from "aj-callbacks.slint";
+import { WelcomePage } from "pages/welcome.slint";
+import { LoginPage } from "pages/login.slint";
+import { RegisterPage } from "pages/register.slint";
+import { HomePage } from "pages/home.slint";
+import { AccountProfilePage } from "pages/account-profile.slint";
+import { ContestPage } from "pages/contest.slint";
+import { ProblemsPage } from "pages/problems.slint";
+import { AJAlert, AJAlertType } from "components/aj-alert.slint";
+import { AJButton } from "components/aj-button.slint";
+import { UserProfilePage } from "pages/user-profile.slint";
+import { UserPrivateProfilePage } from "pages/user-private-profile.slint";
+import { AJText } from "components/aj-text.slint";
+import { AJIcon } from "components/aj-icon.slint";
+
+export component AJMainWindow inherits Window {
+    title: "ada-judge";
+    background: AJTheme.background;
+    full-screen: true;
+
+    public function show-alert(text: string, type: AJAlertType) {
+        alert.text = text;
+        alert.type = type;
+        alert.show();
+    }
+
+    VerticalLayout {
+        alignment: start;
+        padding: AJTheme.padding;
+        spacing: AJTheme.spacing;
+
+        alert := AJAlert {
+            opacity: 0%;
+        }
+
+        AJText {
+            text: "v\{AJAppState.version}";
+        }
+
+        AJButton {
+            text: @tr("обновить");
+            text-halign: right;
+
+            AJIcon {
+                source: @image-url("../radix-icons/update.svg");
+                x: AJTheme.fit-space;
+                y: (parent.height - self.height) / 2;
+            }
+            clicked => {
+                AJAppCallbacks.reload()
+            }
+        }
+
+        if AJAppState.page == 0: WelcomePage { }
+        if AJAppState.page == 1: LoginPage { }
+        if AJAppState.page == 2: RegisterPage { }
+        if AJAppState.page == 3: HomePage { }
+        if AJAppState.page == 4: AccountProfilePage { }
+        if AJAppState.page == 5: ContestPage { }
+        if AJAppState.page == 6: ProblemsPage { }
+        if AJAppState.page == 7: UserProfilePage { }
+        if AJAppState.page == 8: UserPrivateProfilePage { }
+    }
+}

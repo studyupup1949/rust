@@ -1,0 +1,15 @@
+load("@buckal//:wrapper.bzl", "rust_binary")
+
+rust_binary(
+    name = "add_calc",
+    srcs = glob(["**/*.rs"]),
+    crate = "add_calc",
+    crate_root = "src/main.rs",
+    edition = "2021",
+
+    visibility = ["PUBLIC"],
+    deps = [
+        "//third-party/rust/crates/ext/0.0.0:ext",
+        "//third-party/rust/crates/itertools/0.14.0:itertools",
+    ],
+)

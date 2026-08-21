@@ -1,0 +1,54 @@
+# Aldaron's Device Interface / Clock                                           #
+# Copyright (c) 2017-2018 Jeron Lau <jeron.lau@plopgrizzly.com>                #
+# Licensed under the MIT LICENSE                                               #
+#                             _        _                                       #
+#                            /@\——————/@\                                      #
+# .———  .                   |   o    o   |     .————      .            .       #
+# |   | |  .———   .———   .——.     []     .——.  |      .——    ———: ———: | .   . #
+# |   | |  |   |  |   |  \   \   <##>   /   /  |      |   |    /    /  | |   | #
+# |———  |  |   |  |   |   |   ¯        ¯   |   |   -- |   |   /    /   |  \ /  #
+# |     |  |   |  |———    |                |   |    | |   |  /    /    |   |   #
+# |     |   ———   |       |                |    ————  |   | :——— :———  |   |   #
+#                 |        \              /                              __/   #
+#                           ¯————————————¯                                     #
+# Cargo.toml                                                                   #
+
+################################################################################
+
+[package]
+name = "adi_clock"
+version = "0.3.0"
+authors = ["Jeron Aldaron Lau <jeron.lau@plopgrizzly.com>"]
+
+################################################################################
+
+license = "MIT"
+documentation = "https://docs.rs/adi_clock"
+homepage = "http://plopgrizzly.com/adi_clock"
+repository = "https://github.com/plopgrizzly/adi_clock"
+
+################################################################################
+
+readme = "README.md"
+description = """
+    Aldaron's Device Interface / Clock is a library developed by Plop Grizzly
+    for measuring / getting time, sleeping with precision, and smooth animation.
+"""
+keywords = [ "animation", "date", "clock", "timer", "hardware" ]
+categories = [
+	"date-and-time", "hardware-support", "multimedia::audio",
+	"multimedia::video"
+]
+
+################################################################################
+
+exclude = [
+	"examples/*", "CODE_OF_CONDUCT.md", "CONTRIBUTING.md", ".gitignore",
+	"_config.yml", "ISSUE_TEMPLATE.md", "icon.png", "icon.ico"
+]
+
+################################################################################
+
+[dependencies]
+
+################################################################################

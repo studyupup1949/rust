@@ -1,0 +1,14 @@
+load("@buckal//:wrapper.bzl", "rust_library")
+
+rust_library(
+    name = "addr_of_enum",
+    srcs = glob(["**/*.rs"]),
+    crate = "addr_of_enum",
+    crate_root = "lib.rs",
+    edition = "2021",
+
+    visibility = ["PUBLIC"],
+    deps = [
+        "//third-party/rust/crates/addr_of_enum_macro/0.1.5:addr_of_enum_macro",
+    ],
+)

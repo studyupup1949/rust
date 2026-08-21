@@ -1,0 +1,19 @@
+[package]
+name = "add-gitignore-cli"
+version = "1.0.0"
+edition = "2021"
+authors = ["Josue <josuebarretogit@gmail.com>"]
+readme = "README.md"
+homepage = "https://github.com/josueBarretogit/add-gitignore-cli"
+repository = "https://github.com/josueBarretogit/add-gitignore-cli"
+description = "A simple command line that gets you a .gitignore"
+keywords = ["cli", "command-line", "developer-tools", "gitignore"]
+categories = ["utilities", "development-tools" , "command-line"]
+license = "MIT"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+inquire = "0.7.5"
+reqwest = { version = "0.12", features = ["json"] }
+tokio = { version = "1", features = ["full"] }

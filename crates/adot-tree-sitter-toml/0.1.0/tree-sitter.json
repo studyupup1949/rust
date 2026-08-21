@@ -1,0 +1,38 @@
+{
+  "$schema": "https://tree-sitter.github.io/tree-sitter/assets/schemas/config.schema.json",
+  "grammars": [
+    {
+      "name": "toml",
+      "camelcase": "Toml",
+      "title": "Toml",
+      "scope": "source.toml",
+      "file-types": [
+        "toml"
+      ],
+      "injection-regex": "^toml$",
+      "class-name": "TreeSitterToml"
+    }
+  ],
+  "metadata": {
+    "version": "0.1.0",
+    "license": "MIT",
+    "description": "Toml grammar for tree-sitter",
+    "authors": [
+      {
+        "name": "Ikatyang"
+      }
+    ],
+    "links": {
+      "repository": "https://codeberg.org/adot/tree-sitter-toml"
+    }
+  },
+  "bindings": {
+    "c": true,
+    "go": true,
+    "node": true,
+    "python": true,
+    "rust": true,
+    "swift": true,
+    "zig": false
+  }
+}

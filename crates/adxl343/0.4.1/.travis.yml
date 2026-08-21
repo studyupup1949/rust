@@ -1,0 +1,34 @@
+language: rust
+os: linux
+cache: cargo
+
+branches:
+  only:
+    - develop
+
+rust:
+  - 1.32.0
+  - stable
+
+install:
+  - rustup component add rustfmt
+  - rustup component add clippy
+  - rustup target add thumbv7em-none-eabihf
+
+matrix:
+  include:
+    - name: rustfmt
+      script:
+        - cargo fmt -- --check
+    - name: clippy
+      script:
+        - cargo clippy
+    - name: build
+      script:
+        - cargo build --release
+    - name: build (thumbv7em-none-eabihf target)
+      script:
+        - cargo build --target thumbv7em-none-eabihf --release
+    - name: test
+      script:
+        - cargo test --release

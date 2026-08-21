@@ -1,0 +1,17 @@
+[package]
+name = "adventage-macros"
+version = "0.1.0"
+edition = "2021"
+repository = "https://www.github.com/3ach/adventage"
+license = "MIT"
+description = "Advent of Code, easier!"
+
+[lib]
+proc-macro = true
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+quote = "1.0.33"
+reqwest = { version = "0.11.22", features = ["blocking"] }
+syn = { version = "2.0.41", features = ["full", "parsing", "extra-traits"] }

@@ -1,0 +1,37 @@
+
+fields = {
+    (field | invalid_field) ~
+    (whitespace? ~ "," ~ whitespace? ~ (field | invalid_field))*
+    ~ (whitespace? ~ comment)?
+}
+
+field = {
+    phone_number | identifier | date
+}
+
+phone_number = {
+    ASCII_DIGIT{3} ~ "-" ~ ASCII_DIGIT{3} ~ "-" ~ ASCII_DIGIT{4}
+}
+identifier = {
+    ASCII_ALPHANUMERIC{5,}
+}
+date = {
+    ASCII_DIGIT{4} ~ "-" ~ ASCII_DIGIT{2} ~ "-" ~ ASCII_DIGIT{2}
+}
+whitespace = _{
+    " " | "\t"
+}
+
+invalid_field = _{
+    (!phone_number ~ !identifier ~ !date ~ (!"," ~ ANY)+)
+}
+
+comment = {
+    "#" ~ (!"\n" ~ ANY)*
+}
+email = {
+    ASCII_ALPHANUMERIC+ ~ "@" ~ ASCII_ALPHANUMERIC+ ~ "." ~ ASCII_ALPHANUMERIC+
+}
+url = {
+    "http" ~ "://" ~ (ASCII_ALPHANUMERIC+ ~ "." ~ ASCII_ALPHANUMERIC+)+ ~ ("/" ~ ASCII_ALPHANUMERIC*)*
+}

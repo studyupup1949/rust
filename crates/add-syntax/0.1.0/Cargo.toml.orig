@@ -1,0 +1,15 @@
+[package]
+name = "add-syntax"
+version = "0.1.0"
+edition = "2018"
+description = """Attribute macros that prepend or append arbitrary syntax. \
+    Useful with `cfg_attr`."""
+documentation = "https://docs.rs/add-syntax"
+readme = "misc/crate-readme.md"
+repository = "https://github.com/taylordotfish/add-syntax"
+license = "Apache-2.0"
+keywords = ["macro", "attribute", "syntax", "token", "conditional"]
+categories = ["development-tools::build-utils", "rust-patterns"]
+
+[lib]
+proc-macro = true

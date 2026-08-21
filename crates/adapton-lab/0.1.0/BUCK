@@ -1,0 +1,17 @@
+load("@buckal//:wrapper.bzl", "rust_library")
+
+rust_library(
+    name = "adapton_lab",
+    srcs = glob(["**/*.rs"]),
+    crate = "adapton_lab",
+    crate_root = "src/lib.rs",
+    edition = "2015",
+
+    visibility = ["PUBLIC"],
+    deps = [
+        "//third-party/rust/crates/adapton/0.3.31:adapton",
+        "//third-party/rust/crates/clap/1.3.2:clap",
+        "//third-party/rust/crates/rand/0.3.23:rand",
+        "//third-party/rust/crates/time/0.1.45:time",
+    ],
+)

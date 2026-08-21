@@ -1,0 +1,11 @@
+load("@buckal//:wrapper.bzl", "rust_library")
+
+rust_library(
+    name = "asi_core0",
+    srcs = glob(["**/*.rs"]),
+    crate = "asi_core0",
+    crate_root = "src/lib.rs",
+    edition = "2015",
+
+    visibility = ["PUBLIC"],
+)

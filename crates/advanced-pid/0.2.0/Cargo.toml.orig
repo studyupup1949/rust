@@ -1,0 +1,25 @@
+[package]
+name = "advanced-pid"
+version = "0.2.0"
+authors = ["teruyamato0731"]
+edition = "2021"
+description = "An advanced PID control library implemented in Rust"
+documentation = "https://docs.rs/advanced-pid/"
+readme = "README.md"
+repository = "https://github.com/teruyamato0731/advanced-pid-rs"
+license = "MIT"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[lib]
+name = "advanced_pid"
+path = "src/lib.rs"
+
+[features]
+default = ["std"]
+std = []
+f64 = []
+
+[dependencies]
+
+[dev-dependencies]

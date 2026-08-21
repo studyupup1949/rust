@@ -1,0 +1,27 @@
+[package]
+name = "adv_linalg"
+version = "0.1.0"
+edition = "2021"
+
+categories = ["mathematics", "development-tools::procedural-macro-helpers"]
+keywords = ["vector", "matrix", "linear", "algebra", "transformations"]
+repository = "https://github.com/Adv-LinAlg/adv_linalg"
+
+description = "A small type system and an attribute macro automatically optimizing behind-the-scenes for working in linear algebra."
+documentation = "https://docs.rs/adv_linalg"
+
+license = "MIT OR Apache-2.0"
+include = [
+    "/src",
+    "LICENSE.md",
+    "LICENSE-MIT",
+    "LICENSE-APACHE",
+    "README.md"
+]
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[lib]
+proc-macro = true
+
+[dependencies]
+adv_linalg_lib = "0.1"

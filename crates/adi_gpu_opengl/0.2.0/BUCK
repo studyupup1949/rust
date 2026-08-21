@@ -1,0 +1,16 @@
+load("@buckal//:wrapper.bzl", "rust_library")
+
+rust_library(
+    name = "adi_gpu_opengl",
+    srcs = glob(["**/*.rs"]),
+    crate = "adi_gpu_opengl",
+    crate_root = "src/lib.rs",
+    edition = "2015",
+
+    visibility = ["PUBLIC"],
+    deps = [
+        "//third-party/rust/crates/adi_gpu_base/0.4.0:adi_gpu_base",
+        "//third-party/rust/crates/ami/0.6.0:ami",
+        "//third-party/rust/crates/asi_opengl/0.1.0:asi_opengl",
+    ],
+)

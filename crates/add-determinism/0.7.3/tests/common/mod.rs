@@ -1,0 +1,51 @@
+/* SPDX-License-Identifier: GPL-3.0-or-later */
+
+#![allow(dead_code)]
+
+use add_determinism::simplelog;
+
+use anyhow::Result;
+use executable_path::executable_path;
+use std::ffi::OsStr;
+use std::fs;
+use std::path::{Path, PathBuf};
+use std::process;
+use std::sync::Once;
+use tempfile::TempDir;
+
+static INIT: Once = Once::new();
+
+pub fn init() {
+    INIT.call_once(|| {
+        simplelog::init(log::LevelFilter::Debug, true).unwrap();
+    })
+}
+
+pub fn empty_dir() -> Result<Box<TempDir>> {
+    init();
+
+    Ok(Box::new(TempDir::new()?))
+}
+
+pub fn prepare_dir(path: &str) -> Result<(Box<TempDir>, Box<PathBuf>)> {
+    init();
+
+    let dir = TempDir::new()?;
+    let input_path = dir.path().join(Path::new(path).file_name().unwrap());
+    fs::copy(path, &input_path)?;
+    Ok((Box::new(dir), Box::new(input_path)))
+}
+
+pub fn invoke<I, S>(args: I) -> process::Output
+where
+    I: IntoIterator<Item = S>,
+    S: AsRef<OsStr>,
+{
+    let exe = executable_path("add-det");
+    process::Command::new(exe)
+        .args(args)
+        .env_remove("SOURCE_DATE_EPOCH")  // make sure that $SOURCE_DATE_EPOCH is
+                                          // not inherited from the environment
+        .output()
+        .expect("failed to execute add-det")
+}

@@ -1,0 +1,49 @@
+[package]
+workspace = ".."
+name = "adventure"
+version = "0.5.0"
+description = "Helps your great adventure for the various type of requests."
+repository = "https://github.com/spoqa/adventure"
+readme = "../README.md"
+categories = [
+    "asynchronous",
+    "network-programming",
+    "rust-patterns",
+]
+authors = ["Eunchong Yu <gracie@spoqa.com>"]
+license = "MIT OR Apache-2.0"
+edition = "2018"
+
+[features]
+default = ["backoff-tokio", "std", "futures01"]
+std = ["alloc", "futures/std"]
+alloc = ["futures/alloc"]
+futures01 = ["futures_01", "std", "futures/compat"]
+tokio-timer = ["tokio/time"]
+backoff-tokio = ["backoff", "tokio-timer"]
+
+[dependencies]
+pin-utils = "0.1.0-alpha.4"
+
+[dependencies.backoff]
+version = "0.1.5"
+optional = true
+
+[dependencies.futures_01]
+version = "0.1"
+package = "futures"
+default-features = false
+optional = true
+
+[dependencies.futures]
+version = "0.3.1"
+default-features = false
+
+[dependencies.reqwest]
+version = "0.10.0"
+optional = true
+
+[dependencies.tokio]
+version = "0.2.6"
+default-features = false
+optional = true

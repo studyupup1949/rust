@@ -1,0 +1,343 @@
+{
+  "id": "patterns/payslip-viewer",
+  "title": "Payslip Viewer with Period Navigation",
+  "description": "Centered formal header, net pay emphasis highlight, data-bound sections for earnings/deductions/taxes with right-aligned amounts, previous/next period navigation buttons.",
+  "category": "patterns",
+  "tags": [
+    "payslip",
+    "salary",
+    "HR",
+    "finance",
+    "earnings",
+    "deductions",
+    "navigation"
+  ],
+  "use_cases": [
+    "Payslip display",
+    "Financial statement",
+    "Earnings breakdown",
+    "Period-based document"
+  ],
+  "host_targets": [
+    "generic",
+    "teams",
+    "web_chat"
+  ],
+  "complexity": "intermediate",
+  "card": {
+    "type": "AdaptiveCard",
+    "$schema": "http://adaptivecards.io/schemas/adaptive-card.json",
+    "version": "1.2",
+    "body": [
+      {
+        "type": "TextBlock",
+        "text": "${last_pay_date}",
+        "wrap": true,
+        "horizontalAlignment": "Center",
+        "size": "ExtraLarge",
+        "fontType": "Default",
+        "weight": "Bolder"
+      },
+      {
+        "type": "TextBlock",
+        "text": "Period covered ${pay_period}",
+        "wrap": true,
+        "size": "Small",
+        "weight": "Bolder",
+        "horizontalAlignment": "Center",
+        "fontType": "Default"
+      },
+      {
+        "type": "ColumnSet",
+        "columns": [
+          {
+            "type": "Column",
+            "width": "stretch",
+            "items": [
+              {
+                "type": "TextBlock",
+                "text": "\n\nNet Pay",
+                "wrap": true,
+                "weight": "Bolder",
+                "size": "Large",
+                "color": "Default",
+                "spacing": "ExtraLarge"
+              }
+            ]
+          },
+          {
+            "type": "Column",
+            "width": "stretch",
+            "items": [
+              {
+                "type": "TextBlock",
+                "text": "$${net_pay}",
+                "wrap": true,
+                "weight": "Bolder",
+                "size": "Large",
+                "color": "Good",
+                "horizontalAlignment": "Right",
+                "spacing": "ExtraLarge"
+              }
+            ]
+          }
+        ],
+        "style": "emphasis",
+        "bleed": true,
+        "spacing": "Medium"
+      },
+      {
+        "type": "Container",
+        "items": [
+          {
+            "type": "ColumnSet",
+            "columns": [
+              {
+                "type": "Column",
+                "width": "stretch",
+                "items": [
+                  {
+                    "type": "TextBlock",
+                    "text": "Earnings",
+                    "wrap": true,
+                    "spacing": "ExtraLarge",
+                    "weight": "Bolder"
+                  }
+                ]
+              },
+              {
+                "type": "Column",
+                "width": "stretch",
+                "items": [
+                  {
+                    "type": "TextBlock",
+                    "text": "$${earnings_total}",
+                    "wrap": true,
+                    "spacing": "ExtraLarge",
+                    "weight": "Bolder",
+                    "horizontalAlignment": "Right"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "type": "ColumnSet",
+            "columns": [
+              {
+                "type": "Column",
+                "width": "stretch",
+                "items": [
+                  {
+                    "type": "TextBlock",
+                    "text": "${name}",
+                    "wrap": true,
+                    "spacing": "Small"
+                  }
+                ]
+              },
+              {
+                "type": "Column",
+                "width": "stretch",
+                "items": [
+                  {
+                    "type": "TextBlock",
+                    "text": "$${amount}",
+                    "wrap": true,
+                    "spacing": "Small",
+                    "horizontalAlignment": "Right"
+                  }
+                ]
+              }
+            ],
+            "spacing": "Small",
+            "$data": "${earnings}"
+          }
+        ],
+        "spacing": "Medium"
+      },
+      {
+        "type": "Container",
+        "items": [
+          {
+            "type": "ColumnSet",
+            "columns": [
+              {
+                "type": "Column",
+                "width": "stretch",
+                "items": [
+                  {
+                    "type": "TextBlock",
+                    "text": "Deductions",
+                    "wrap": true,
+                    "weight": "Bolder"
+                  }
+                ]
+              },
+              {
+                "type": "Column",
+                "width": "stretch",
+                "items": [
+                  {
+                    "type": "TextBlock",
+                    "text": "$${deductions_total}",
+                    "wrap": true,
+                    "weight": "Bolder",
+                    "spacing": "ExtraLarge",
+                    "horizontalAlignment": "Right"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "type": "ColumnSet",
+            "columns": [
+              {
+                "type": "Column",
+                "width": "stretch",
+                "items": [
+                  {
+                    "type": "TextBlock",
+                    "text": "${name}",
+                    "wrap": true,
+                    "spacing": "Small"
+                  }
+                ]
+              },
+              {
+                "type": "Column",
+                "width": "stretch",
+                "items": [
+                  {
+                    "type": "TextBlock",
+                    "text": "${amount}",
+                    "wrap": true,
+                    "spacing": "Small",
+                    "horizontalAlignment": "Right"
+                  }
+                ]
+              }
+            ],
+            "$data": "${deductions}",
+            "spacing": "Small"
+          }
+        ],
+        "spacing": "ExtraLarge",
+        "separator": true
+      },
+      {
+        "type": "Container",
+        "items": [
+          {
+            "type": "ColumnSet",
+            "columns": [
+              {
+                "type": "Column",
+                "width": "stretch",
+                "items": [
+                  {
+                    "type": "TextBlock",
+                    "text": "Taxes",
+                    "wrap": true,
+                    "spacing": "ExtraLarge",
+                    "weight": "Bolder"
+                  }
+                ]
+              },
+              {
+                "type": "Column",
+                "width": "stretch",
+                "items": [
+                  {
+                    "type": "TextBlock",
+                    "text": "$${taxes_total}",
+                    "wrap": true,
+                    "spacing": "ExtraLarge",
+                    "weight": "Bolder",
+                    "horizontalAlignment": "Right"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "type": "ColumnSet",
+            "columns": [
+              {
+                "type": "Column",
+                "width": "stretch",
+                "items": [
+                  {
+                    "type": "TextBlock",
+                    "text": "${name}",
+                    "wrap": true,
+                    "spacing": "Small"
+                  }
+                ]
+              },
+              {
+                "type": "Column",
+                "width": "stretch",
+                "items": [
+                  {
+                    "type": "TextBlock",
+                    "text": "$${amount}",
+                    "wrap": true,
+                    "spacing": "Small",
+                    "horizontalAlignment": "Right"
+                  }
+                ]
+              }
+            ],
+            "$data": "${taxes}",
+            "spacing": "Small"
+          }
+        ],
+        "spacing": "ExtraLarge",
+        "separator": true
+      },
+      {
+        "type": "ColumnSet",
+        "columns": [
+          {
+            "type": "Column",
+            "width": "stretch",
+            "items": [
+              {
+                "type": "ActionSet",
+                "actions": [
+                  {
+                    "type": "Action.Submit",
+                    "title": "\u21e6  ${previous_period}"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "type": "Column",
+            "width": "stretch",
+            "items": [
+              {
+                "type": "ActionSet",
+                "actions": [
+                  {
+                    "type": "Action.Submit",
+                    "title": "${next_period} \u21e8"
+                  }
+                ],
+                "horizontalAlignment": "Right"
+              }
+            ]
+          }
+        ],
+        "spacing": "Large"
+      }
+    ],
+    "backgroundImage": {
+      "horizontalAlignment": "Center"
+    }
+  },
+  "notes": ""
+}

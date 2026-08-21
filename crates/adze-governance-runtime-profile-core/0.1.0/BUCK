@@ -1,0 +1,15 @@
+load("@buckal//:wrapper.bzl", "rust_library")
+
+rust_library(
+    name = "adze_governance_runtime_profile_core",
+    srcs = glob(["**/*.rs"]),
+    crate = "adze_governance_runtime_profile_core",
+    crate_root = "src/lib.rs",
+    edition = "2024",
+    features = ["default"],
+
+    visibility = ["PUBLIC"],
+    deps = [
+        "//third-party/rust/crates/adze-governance-matrix-contract/0.1.0:adze_governance_matrix_contract",
+    ],
+)

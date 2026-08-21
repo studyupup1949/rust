@@ -1,0 +1,389 @@
+syntax = "proto3";
+
+package ada.v1;
+
+import "ada/v1/events.proto";
+import "google/protobuf/struct.proto";
+import "google/protobuf/timestamp.proto";
+
+option go_package = "github.com/eleven-am/ada-sdk/go/gen/ada/v1;adav1";
+
+enum IngestMode {
+  INGEST_MODE_UNSPECIFIED = 0;
+  INGEST_MODE_DOCUMENT = 1;
+}
+
+enum DocumentStatus {
+  DOCUMENT_STATUS_UNSPECIFIED = 0;
+  DOCUMENT_STATUS_PENDING = 1;
+  DOCUMENT_STATUS_PROCESSING = 2;
+  DOCUMENT_STATUS_COMPLETED = 3;
+  DOCUMENT_STATUS_FAILED = 4;
+}
+
+enum IngestJobStatus {
+  INGEST_JOB_STATUS_UNSPECIFIED = 0;
+  INGEST_JOB_STATUS_PENDING = 1;
+  INGEST_JOB_STATUS_RUNNING = 2;
+  INGEST_JOB_STATUS_COMPLETED = 3;
+  INGEST_JOB_STATUS_FAILED = 4;
+  INGEST_JOB_STATUS_CANCELED = 5;
+  INGEST_JOB_STATUS_RETRYING = 6;
+}
+
+enum IngestJobStage {
+  INGEST_JOB_STAGE_UNSPECIFIED = 0;
+  INGEST_JOB_STAGE_DOCUMENT_REGISTRATION = 1;
+  INGEST_JOB_STAGE_CONTENT_EXTRACTION = 2;
+  INGEST_JOB_STAGE_CHUNKING = 3;
+  INGEST_JOB_STAGE_EMBEDDING = 4;
+  INGEST_JOB_STAGE_ENTITY_EXTRACTION = 5;
+  INGEST_JOB_STAGE_RELATION_EXTRACTION = 6;
+  INGEST_JOB_STAGE_ATOM_EXTRACTION = 7;
+  INGEST_JOB_STAGE_DEDUPLICATION = 8;
+  INGEST_JOB_STAGE_CONFLICT_RESOLUTION = 9;
+  INGEST_JOB_STAGE_GRAPH_PERSISTENCE = 10;
+  INGEST_JOB_STAGE_VECTOR_PERSISTENCE = 11;
+  INGEST_JOB_STAGE_COMMUNITY_DETECTION = 12;
+  INGEST_JOB_STAGE_TEMPORAL_GRAPH = 13;
+  INGEST_JOB_STAGE_COMPLETION = 14;
+  INGEST_JOB_STAGE_DISTILLING = 15;
+  INGEST_JOB_STAGE_RECALLING = 16;
+  INGEST_JOB_STAGE_RETRYING = 17;
+}
+
+enum IngestAccountingStatus {
+  INGEST_ACCOUNTING_STATUS_UNSPECIFIED = 0;
+  INGEST_ACCOUNTING_STATUS_PENDING = 1;
+  INGEST_ACCOUNTING_STATUS_COMPUTED = 2;
+  INGEST_ACCOUNTING_STATUS_FAILED = 3;
+}
+
+message AccountingContext {
+  string organization_id = 1;
+  string project_id = 2;
+  string principal_id = 3;
+  string invocation_id = 4;
+  string run_id = 5;
+  string tool_invocation_id = 6;
+  string tool_attempt_id = 7;
+  string application_name = 8;
+  string resource_name = 9;
+  string tool_name = 10;
+  string source_id = 11;
+}
+
+message DocumentPayload {
+  string title = 1;
+
+  string text = 2;
+}
+
+message GetDocumentStatusRequest {
+  string document_id = 1;
+
+  string source_id = 2;
+
+  string principal_id = 100;
+}
+
+message GetDocumentStatusResponse {
+  bool found = 1;
+
+  string document_id = 2;
+
+  string source_id = 3;
+
+  DocumentStatus status = 4;
+
+  int32 version = 5;
+
+  int64 size_bytes = 6;
+
+  int32 chunk_count = 7;
+
+  google.protobuf.Timestamp created_at = 8;
+
+  google.protobuf.Timestamp updated_at = 9;
+
+  string name = 10;
+
+  string mime_type = 11;
+}
+
+message GetJobStatusRequest {
+  string job_id = 1;
+
+  string principal_id = 100;
+}
+
+message GetJobStatusResponse {
+  bool found = 1;
+
+  JobStatus job = 2;
+}
+
+message GetIngestAccountingRequest {
+  string job_id = 1;
+
+  string principal_id = 100;
+}
+
+message IngestAccounting {
+  string job_id = 1;
+
+  string document_id = 2;
+
+  IngestAccountingStatus status = 3;
+
+  int32 accounting_version = 4;
+
+  int64 document_size_bytes = 5;
+
+  int64 chunk_count = 6;
+
+  int64 postgres_bytes = 7;
+
+  int64 postgres_row_count = 8;
+
+  int64 qdrant_estimated_bytes = 9;
+
+  int64 qdrant_point_count = 10;
+
+  int32 qdrant_vector_dimensions = 11;
+
+  int64 neo4j_estimated_bytes = 12;
+
+  int64 neo4j_statement_count = 13;
+
+  int64 object_store_bytes = 14;
+
+  int64 total_estimated_bytes = 15;
+
+  google.protobuf.Struct details = 16;
+
+  string error = 17;
+
+  google.protobuf.Timestamp computed_at = 18;
+
+  google.protobuf.Timestamp created_at = 19;
+
+  google.protobuf.Timestamp updated_at = 20;
+}
+
+message GetIngestAccountingResponse {
+  bool found = 1;
+
+  IngestAccounting accounting = 2;
+}
+
+message GetLatestJobByDocumentRequest {
+  string document_id = 1;
+
+  string principal_id = 100;
+}
+
+message IngestAcceptedResponse {
+  IngestMode mode = 1;
+
+  string document_id = 2;
+
+  string extraction_model = 3;
+
+  string job_id = 4;
+
+  IngestJobStatus job_status = 5;
+}
+
+message IngestRequest {
+  IngestMode mode = 1;
+
+  DocumentPayload document = 4;
+
+  SourcePayload source = 5;
+
+  // Caller metadata persisted (sanitized) onto the ingest job identically on
+  // every transport. Reserved keys: "document_id" targets an existing
+  // document; "message_ref_id" is platform-owned and stripped; platform
+  // usage-counter keys (llm_*/embedding_*/distill_*/ingest_* token fields)
+  // are stripped. Not a scope source and not an accounting-context source;
+  // use accounting_context for correlation fields.
+  map<string, string> metadata = 6;
+
+  // Not supported for async ingest. Requests with include_details=true are
+  // rejected with a validation error on every transport.
+  optional bool include_details = 7;
+
+  optional google.protobuf.Timestamp reference_time_utc = 8;
+
+  optional string extraction_model = 9;
+
+  optional string distill_model = 10;
+
+  int64 available_tokens = 12;
+
+  AccountingContext accounting_context = 13;
+
+  string principal_id = 100;
+
+  reserved 2, 3;
+
+  reserved "conversation_id", "messages";
+}
+
+message EstimateIngestRequest {
+  string text = 1;
+
+  string principal_id = 100;
+}
+
+message EstimateIngestResponse {
+  int64 estimated_tokens = 1;
+
+  bool sufficient = 2;
+
+  int64 available_tokens = 3;
+}
+
+message JobProgress {
+  IngestJobStage stage = 1;
+
+  int32 percentage = 2;
+
+  int32 overall_percentage = 3;
+
+  string message = 4;
+}
+
+message JobStatus {
+  string id = 1;
+
+  string document_id = 2;
+
+  string source_id = 3;
+
+  string content_type = 4;
+
+  IngestJobStatus status = 5;
+
+  JobProgress progress = 6;
+
+  string error = 7;
+
+  int32 retry_count = 8;
+
+  int32 max_retries = 9;
+
+  bool partial_failure = 10;
+
+  repeated string partial_failure_causes = 11;
+
+  string extraction_model = 12;
+
+  google.protobuf.Timestamp created_at = 13;
+
+  google.protobuf.Timestamp updated_at = 14;
+
+  google.protobuf.Timestamp started_at = 15;
+
+  google.protobuf.Timestamp completed_at = 16;
+
+  int64 llm_call_count = 17;
+
+  int64 llm_input_tokens = 18;
+
+  int64 llm_output_tokens = 19;
+
+  int64 llm_total_tokens = 20;
+
+  AccountingContext accounting_context = 24;
+
+  reserved 21 to 23;
+}
+
+message JobStarted {
+  JobStatus job = 1;
+}
+
+message JobProgressed {
+  JobStatus job = 1;
+}
+
+message JobFinished {
+  JobStatus job = 1;
+}
+
+message JobStatusStreamEvent {
+  string job_id = 3;
+
+  google.protobuf.Timestamp timestamp = 4;
+
+  string event_id = 6;
+
+  string principal_id = 100;
+
+  oneof event {
+    JobStarted started = 20;
+    JobProgressed progressed = 21;
+    JobFinished finished = 22;
+  }
+
+  reserved 1, 2, 5;
+  reserved "event_type", "job", "error";
+}
+
+message SourcePayload {
+  string type = 1;
+
+  string id = 2;
+}
+
+message StreamJobsRequest {
+  string after_event_id = 1;
+
+  int32 replay_limit = 2;
+
+  string principal_id = 100;
+
+  StreamScopeMode scope_mode = 101;
+}
+
+message SetMeEntityRequest {
+  string entity_id = 1;
+
+  string principal_id = 100;
+}
+
+message SetMeEntityResponse {
+  bool ok = 1;
+  string entity_id = 2;
+}
+
+message GetMeEntityRequest {
+  string principal_id = 100;
+}
+
+message GetMeEntityResponse {
+  bool found = 1;
+  string entity_id = 2;
+}
+
+service IngestService {
+  rpc GetDocumentStatus(GetDocumentStatusRequest) returns (GetDocumentStatusResponse);
+
+  rpc GetJobStatus(GetJobStatusRequest) returns (GetJobStatusResponse);
+
+  rpc GetIngestAccounting(GetIngestAccountingRequest) returns (GetIngestAccountingResponse);
+
+  rpc GetLatestJobByDocument(GetLatestJobByDocumentRequest) returns (GetJobStatusResponse);
+
+  rpc EstimateIngest(EstimateIngestRequest) returns (EstimateIngestResponse);
+
+  rpc Ingest(IngestRequest) returns (IngestAcceptedResponse);
+
+  rpc StreamJobs(StreamJobsRequest) returns (stream JobStatusStreamEvent);
+
+  rpc SetMeEntity(SetMeEntityRequest) returns (SetMeEntityResponse);
+
+  rpc GetMeEntity(GetMeEntityRequest) returns (GetMeEntityResponse);
+}

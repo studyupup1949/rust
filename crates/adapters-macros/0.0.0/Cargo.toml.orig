@@ -1,0 +1,20 @@
+[package]
+name              = "adapters-macros"
+version.workspace = true
+edition.workspace = true
+authors.workspace = true
+license.workspace = true
+repository.workspace = true
+homepage.workspace = true
+description       = "Procedural macros for the adapters library — derive Schema, Serialize, Deserialize, Validate, and Adapter."
+keywords          = ["schema", "macros", "derive", "adapters", "validation"]
+categories        = ["development-tools", "rust-patterns"]
+readme            = "README.md"
+
+[lib]
+proc-macro = true
+
+[dependencies]
+proc-macro2.workspace = true
+quote.workspace = true
+syn.workspace = true

@@ -1,0 +1,42 @@
+// The WHITESPACE rule matches any whitespace character: space, tab, or newline.
+WHITESPACE = _{ " " | "\t" | "\n" }
+
+// The DIGIT rule matches any ASCII digit (0-9).
+DIGIT = _{ ASCII_DIGIT }
+
+// The HEX rule matches any hexadecimal digit (0-9, a-f, A-F).
+HEX = _{ ASCII_HEX_DIGIT }
+
+// The date rule matches a date in the format YYYY-MM-DD, where:
+// - YYYY is 4 digits,
+// - MM is 2 digits,
+// - DD is 2 digits.
+date = @{ DIGIT{4} ~ "-" ~ DIGIT{2} ~ "-" ~ DIGIT{2} }
+
+// The time rule matches a time in the format HH:MM:SS, where:
+// - HH is 2 digits,
+// - MM is 2 digits,
+// - SS is 2 digits.
+time = @{ DIGIT{2} ~ ":" ~ DIGIT{2} ~ ":" ~ DIGIT{2} }
+
+// The uuid rule matches a UUID (Universally Unique Identifier) in the format:
+// XXXXXXXX-XXXX-XXXX-XXXX-XXXXXXXXXXXX where X is a hexadecimal digit.
+uuid = @{ HEX{8} ~ "-" ~ HEX{4} ~ "-" ~ HEX{4} ~ "-" ~ HEX{4} ~ "-" ~ HEX{12} }
+
+// The ip rule matches an IP address in the format:
+// XXX.XXX.XXX.XXX, where each XXX is between 0 and 255.
+ip = @{ DIGIT{1,3} ~ "." ~ DIGIT{1,3} ~ "." ~ DIGIT{1,3} ~ "." ~ DIGIT{1,3} }
+
+// The price rule matches a price in the format:
+// $ followed by one or more digits, optionally with two decimal places.
+price = @{ "$"? ~ DIGIT+ ~ ("." ~ DIGIT{2})? }
+
+
+// The ad_event rule matches an entire event, consisting of:
+// - A date,
+// - A time,
+// - A UUID,
+// - An IP address,
+// - A price.
+// These elements are separated by whitespace.
+ad_event = { date ~ WHITESPACE* ~ time ~ WHITESPACE* ~ uuid ~ WHITESPACE* ~ ip ~ WHITESPACE* ~ price }

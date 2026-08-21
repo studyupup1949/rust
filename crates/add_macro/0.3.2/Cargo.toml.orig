@@ -1,0 +1,19 @@
+[package]
+name = "add_macro"
+description = "This crate provides the more additional macros to help you write code faster!"
+version = "0.3.2"
+edition = "2021"
+authors = ["DrakeN-inc <t.me/DrakeN_inc>"]
+license = "MIT"
+repository = "https://github.com/DrakeN-inc/crate-add-macro"
+
+[features]
+tests = ["dep:regex"]
+
+[dependencies]
+regex = { version = "1.10.5", optional = true }
+add-macro-impl-display = "0.1.1"
+add-macro-impl-error = "0.1.0"
+add-macro-impl-from = "0.1.1"
+add-macro-impl-into = "0.1.1"
+add-macro-impl-fromstr = "0.1.0"

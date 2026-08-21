@@ -1,0 +1,17 @@
+load("@buckal//:wrapper.bzl", "rust_library")
+
+rust_library(
+    name = "adam_core_rs_kernel_data",
+    srcs = glob(["**/*.rs"]),
+    crate = "adam_core_rs_kernel_data",
+    crate_root = "src/lib.rs",
+    edition = "2021",
+    features = ["default"],
+
+    visibility = ["PUBLIC"],
+    deps = [
+        "//third-party/rust/crates/sha2/0.10.9:sha2",
+        "//third-party/rust/crates/ureq/2.12.1:ureq",
+        "//third-party/rust/crates/zip/2.4.2:zip",
+    ],
+)

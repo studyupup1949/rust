@@ -1,0 +1,28 @@
+[package]
+name = "adk-runner"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+authors.workspace = true
+description = "Agent execution runtime for Rust Agent Development Kit (ADK-Rust) agents"
+repository = "https://github.com/zavora-ai/adk-rust"
+documentation = "https://docs.rs/adk-runner"
+keywords = ["ai", "agent", "adk", "runtime", "executor"]
+categories = ["api-bindings", "asynchronous"]
+readme = "README.md"
+
+[dependencies]
+adk-core.workspace = true
+adk-artifact.workspace = true
+adk-session.workspace = true
+async-trait.workspace = true
+tokio.workspace = true
+futures.workspace = true
+async-stream.workspace = true
+uuid.workspace = true
+serde_json.workspace = true
+tracing.workspace = true
+
+[dev-dependencies]
+chrono = "0.4"

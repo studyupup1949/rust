@@ -1,0 +1,82 @@
+# SPDX-License-Identifier: MIT
+name: ci
+
+on:
+  push:
+  pull_request:
+  schedule:
+    - cron: "0 4 * * *"
+
+permissions:
+  contents: read
+
+env:
+  CARGO_TERM_COLOR: always
+
+jobs:
+  test:
+    name: Build and run tests (rust ${{ matrix.rust }})
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        rust:
+          - stable
+          - beta
+          - nightly
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+      - name: Install Rust
+        run: |
+          rm -f ~/.cargo/bin/*fmt ~/.cargo/bin/rust-analyzer
+          curl https://sh.rustup.rs -sSf | sh -s -- -y
+      - name: Install toolchain
+        run: |
+          rustup toolchain install ${{ matrix.rust }}
+          rustup default ${{ matrix.rust }}
+      - name: Build
+        run: cargo build --release --verbose
+      - name: Run check
+        run: cargo check --release --verbose
+      - name: Run tests
+        # Tests started failing with rustc 1.81.0-nightly (5affbb171 2024-07-18)
+        #     previously was ok with rustc 1.81.0-nightly (fcc325f1b 2024-07-17)
+        # Initialized logging with log level DEBUG
+        # fatal runtime error: thread::set_current should only be called once per thread
+        if: ${{ matrix.rust == 'stable' }}
+        run: cargo test --release --verbose
+
+      # Do a tests with and without -j, because the internal modes of operation are quite different
+      - name: Simulate package processing without -j
+        if: ${{ matrix.rust == 'nightly' }}
+        run: |
+          mkdir /var/tmp/buildroot-1
+          cp -a tests/cases /var/tmp/buildroot-1
+          RPM_BUILD_ROOT=/var/tmp/buildroot-1 target/release/add-determinism --brp /var/tmp/buildroot-1/ --handler=-pyc
+      - name: Simulate package processing with -j
+        if: ${{ matrix.rust == 'stable' }}
+        run: |
+          mkdir /var/tmp/buildroot-2
+          cp -a tests/cases /var/tmp/buildroot-2
+          RPM_BUILD_ROOT=/var/tmp/buildroot-2 target/release/add-determinism -j4 --brp /var/tmp/buildroot-2
+      - name: Simulate package processing with --check
+        if: ${{ matrix.rust == 'stable' }}
+        run: |
+          RPM_BUILD_ROOT=/var/tmp/buildroot-2 target/release/add-determinism -j4 --brp /var/tmp/buildroot-2 --check
+
+  clippy:
+    name: clippy
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+      - name: Install Rust
+        run: |
+          rm -f ~/.cargo/bin/*fmt ~/.cargo/bin/rust-analyzer
+          curl https://sh.rustup.rs -sSf | sh -s -- -y
+      - name: Install toolchain
+        run: |
+          rustup toolchain install nightly
+          rustup default nightly
+      - name: Validate clippy
+        run: cargo clippy -- -D warnings

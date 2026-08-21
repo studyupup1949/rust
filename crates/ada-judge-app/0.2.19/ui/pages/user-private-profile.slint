@@ -1,0 +1,104 @@
+import { AJTheme } from "../aj-theme.slint";
+import { AJAppState, AJUserState } from "../aj-state.slint";
+import { AJHomeCallbacks, AJContestCallbacks } from "../aj-callbacks.slint";
+import { AJAccountData, AJAdminLevel } from "../models/users.slint";
+import { AJText, AJTextType } from "../components/aj-text.slint";
+import { AJInput, AJInputType } from "../components/aj-input.slint";
+import { AJAdminBadge } from "../components/aj-admin-badge.slint";
+import { AJButton } from "../components/aj-button.slint";
+import { AJDateTimeText } from "../components/aj-datetime-text.slint";
+import { AJDropdown } from "../components/aj-dropdown.slint";
+
+export component UserPrivateProfilePage {
+    property <AJAccountData> user: AJAppState.opened-user-private-profile;
+    property <AJAdminLevel> admin-level: {
+        if admin-level-dropdown.current-index == 0 {
+            AJAdminLevel.NotAdmin
+        } else if admin-level-dropdown.current-index == 1 {
+            AJAdminLevel.BetaTester
+        } else if admin-level-dropdown.current-index == 2 {
+            AJAdminLevel.Admin
+        } else {
+            AJAdminLevel.Owner
+        }
+    };
+
+    VerticalLayout {
+        alignment: start;
+        spacing: AJTheme.spacing;
+
+        AJText {
+            text: "Профиль";
+            type: AJTextType.Heading;
+        }
+
+        AJText {
+            text: "id";
+            type: AJTextType.Medium;
+        }
+
+        AJText {
+            text: user.id;
+            font-italic: true;
+        }
+
+        AJText {
+            text: "логин";
+            type: AJTextType.Medium;
+        }
+
+        AJText {
+            text: user.login;
+            font-italic: true;
+        }
+
+        AJText {
+            text: "уровень админа";
+            type: AJTextType.Medium;
+        }
+
+        AJAdminBadge {
+            level: user.admin-level;
+        }
+
+        HorizontalLayout {
+            spacing: AJTheme.spacing;
+
+            admin-level-dropdown := AJDropdown {
+                variants: ["не админ", "бета-тестер", "админ", "владелец"];
+            }
+
+            AJButton {
+                text: "изменить";
+                clicked => {
+                    AJContestCallbacks.change-user-admin-level(user.id, admin-level)
+                }
+            }
+        }
+
+        AJText {
+            text: "аккаунт был создан";
+            type: AJTextType.Medium;
+        }
+
+        AJDateTimeText {
+            date-time: user.created-at;
+            font-italic: true;
+        }
+
+        AJButton {
+            text: "удалить аккаунт";
+            background: AJTheme.contest-finished;
+            clicked => {
+                AJContestCallbacks.delete-user-account(user.id)
+            }
+        }
+
+        AJButton {
+            text: "<< назад";
+            clicked => {
+                AJAppState.page = 5
+            }
+        }
+    }
+}

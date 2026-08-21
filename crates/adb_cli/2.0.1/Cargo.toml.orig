@@ -1,0 +1,19 @@
+[package]
+description = "Rust ADB (Android Debug Bridge) CLI"
+edition.workspace = true
+keywords.workspace = true
+license.workspace = true
+name = "adb_cli"
+readme = "README.md"
+repository.workspace = true
+version.workspace = true
+
+[dependencies]
+adb_client = { version = "2.0.1" }
+anyhow = { version = "1.0.89" }
+clap = { version = "4.5.18", features = ["derive"] }
+env_logger = { version = "0.11.5" }
+log = { version = "0.4.22" }
+
+[target.'cfg(unix)'.dependencies]
+termios = { version = "0.3.3" }

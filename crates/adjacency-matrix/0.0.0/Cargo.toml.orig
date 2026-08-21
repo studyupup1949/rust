@@ -1,0 +1,23 @@
+[package]
+name = "adjacency-matrix"
+version = "0.0.0"
+authors = ["Aster <192607617@qq.com>"]
+description = "..."
+repository = "https://github.com/oovm/graph-rs"
+documentation = "https://docs.rs/sub_projects"
+readme = "Readme.md"
+license = "MPL-2.0"
+edition = "2021"
+exclude = ["package.json", "tests/**"]
+
+[dependencies]
+ndarray = "0.15.6"
+
+[dependencies.graph-types]
+version = "0.0.*"
+path = "../graph-types"
+
+[dev-dependencies]
+
+[features]
+default = []

@@ -1,0 +1,14 @@
+[package]
+name = "adxl345-eh-driver"
+version = "0.2.1"
+edition = "2021"
+description = "Rust embedded-hal device driver for the ADXL345 Analog Devices Digital Accelerometer"
+authors = ["Xabier Crespo <x.crespo@scrobotics.es>"]
+repository = "https://gitlab.com/scrobotics/embedded-rs/adxl234-rs"
+license = "MIT"
+keywords = ["adxl345", "accelerometer", "I2C", "interrupts"]
+categories = ["embedded-hal"]
+
+[dependencies]
+embedded-hal = "1.0.0"
+bitfield = "0.15.0"

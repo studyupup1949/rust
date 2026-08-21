@@ -1,0 +1,5 @@
+allow-branch = ["main"]
+sign-tag = true
+pre-release-commit-message = "chore(release): prepare for v{{version}}"
+tag-message = "Release v{{version}}"
+pre-release-hook = ["git", "cliff", "-o", "--tag", "{{version}}"]

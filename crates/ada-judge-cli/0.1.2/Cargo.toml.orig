@@ -1,0 +1,18 @@
+[package]
+name = "ada-judge-cli"
+version = "0.1.2"
+description = "Cli for ada-judge"
+license = "MIT"
+edition = "2024"
+
+[dependencies]
+clap = { version = "4.6.0", features = ["derive"] }
+directories = "6.0.0"
+serde = { version = "1.0.228", features = ["derive"] }
+sqlx = { version = "0.8.6", features = ["chrono", "postgres", "runtime-tokio"] }
+toml = "1.1.2"
+tokio = { version = "1.50.0", features = ["rt-multi-thread", "process", "macros"] }
+chrono = "0.4.44"
+anyhow = "1.0.102"
+colored = "3.1.1"
+ada-judge-public-models = { version = "0.7.0", features = ["sqlx"] }

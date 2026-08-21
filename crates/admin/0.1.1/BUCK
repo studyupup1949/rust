@@ -1,0 +1,16 @@
+load("@buckal//:wrapper.bzl", "rust_binary")
+
+rust_binary(
+    name = "admin",
+    srcs = glob(["**/*.rs"]),
+    crate = "admin",
+    crate_root = "src/main.rs",
+    edition = "2018",
+
+    visibility = ["PUBLIC"],
+    deps = [
+        "//third-party/rust/crates/log/0.4.33:log",
+        "//third-party/rust/crates/ra_common/0.0.5:ra_common",
+        "//third-party/rust/crates/rocket/0.4.11:rocket",
+    ],
+)

@@ -1,0 +1,21 @@
+[package]
+name = "adk-mcp-github"
+version = "1.1.0"
+edition = "2021"
+authors = ["James Karanja <james.karanja@zavora.ai>"]
+description = "GitHub MCP Server — repositories, files, branches, issues, PRs, diffs, reviews, and releases for ADK-Rust Enterprise agents"
+license = "Apache-2.0"
+repository = "https://github.com/zavora-ai/mcp-github"
+homepage = "https://enterprise.adk-rust.com"
+keywords = ["mcp", "github", "adk", "enterprise", "developer-tools"]
+categories = ["development-tools"]
+readme = "README.md"
+
+[dependencies]
+adk-mcp-sdk = "0.1"
+rmcp = { version = "1.7", features = ["server", "transport-io", "macros"] }
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+tokio = { version = "1", features = ["full"] }
+reqwest = { version = "0.12", features = ["json", "rustls-tls"], default-features = false }
+anyhow = "1"

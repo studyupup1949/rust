@@ -1,0 +1,284 @@
+import { AJTheme } from "../aj-theme.slint";
+import { AJAppState } from "../aj-state.slint";
+import { AJContestState } from "../aj-state.slint";
+import {
+    AJSubmission,
+    AJTotalVerdict,
+    AJLanguage,
+} from "../models/testing.slint";
+import { AJContest } from "../models/contests.slint";
+import { AJProblem } from "../models/problems.slint";
+import { AJContestCallbacks, AJAppCallbacks } from "../aj-callbacks.slint";
+import { ListView, ScrollView, HorizontalBox } from "std-widgets.slint";
+import { AJText, AJTextType } from "aj-text.slint";
+import { AJButton } from "aj-button.slint";
+import { AJCheckbox } from "aj-checkbox.slint";
+import { AJIcon } from "aj-icon.slint";
+import { AJDateTimeText } from "aj-datetime-text.slint";
+
+export component AJSubmissions inherits Rectangle {
+    property <[AJSubmission]> submissions: AJContestState.submissions;
+    property <AJContest> contest: AJAppState.contests[AJContestState.index];
+    property <AJProblem> problem: AJContestState.problems[AJContestState.current-problem-index];
+
+    width: 715px;
+    height: 420px;
+
+    background: AJTheme.primary-container;
+
+    border-radius: AJTheme.border-radius;
+
+    VerticalLayout {
+        padding: AJTheme.padding;
+        spacing: AJTheme.spacing;
+
+        HorizontalBox {
+            spacing: AJTheme.spacing;
+
+            AJText {
+                text: "Посылки";
+                type: AJTextType.Heading;
+                color: AJTheme.container-text;
+            }
+
+            AJCheckbox {
+                visible: AJAppState.contests[AJContestState.index].can-manage;
+                value <=> AJContestState.all-submissions;
+                text: "все посылки";
+                changed value => {
+                    AJAppCallbacks.reload()
+                }
+            }
+        }
+
+        AJText {
+            visible: submissions.length == 0;
+            text: "Посылок пока что нет";
+            type: AJTextType.Medium;
+            font-italic: true;
+            color: AJTheme.container-text;
+        }
+
+        Rectangle {
+            visible: submissions.length != 0;
+            clip: true;
+            border-radius: AJTheme.border-radius;
+
+            scroll := ScrollView {
+                GridLayout {
+                    spacing: 4 * AJTheme.spacing;
+
+                    Row {
+                        AJText {
+                            text: "#";
+                            font-italic: true;
+                            horizontal-alignment: center;
+                            vertical-alignment: center;
+                            color: AJTheme.container-text;
+                        }
+
+                        AJText {
+                            text: "когда";
+                            font-italic: true;
+                            horizontal-alignment: center;
+                            vertical-alignment: center;
+                            color: AJTheme.container-text;
+                        }
+
+                        AJText {
+                            text: "кто";
+                            font-italic: true;
+                            horizontal-alignment: center;
+                            vertical-alignment: center;
+                            color: AJTheme.container-text;
+                        }
+
+                        AJText {
+                            text: "язык";
+                            font-italic: true;
+                            horizontal-alignment: center;
+                            vertical-alignment: center;
+                            color: AJTheme.container-text;
+                        }
+
+                        AJText {
+                            text: "вердикт";
+                            font-italic: true;
+                            horizontal-alignment: center;
+                            vertical-alignment: center;
+                            color: AJTheme.container-text;
+                        }
+
+                        AJText {
+                            text: "баллы";
+                            font-italic: true;
+                            horizontal-alignment: center;
+                            vertical-alignment: center;
+                            color: AJTheme.container-text;
+                        }
+                    }
+
+                    for submission[index] in submissions: Row {
+                        AJText {
+                            text: submission.id;
+                            font-weight: submission.total-verdict == AJTotalVerdict.Ok ? AJTheme.font-weight-heading : AJTheme.font-weight-paragraph;
+                            horizontal-alignment: center;
+                            vertical-alignment: center;
+                            color: AJTheme.container-text;
+                        }
+
+                        AJDateTimeText {
+                            date-time: submission.created-at;
+                            font-weight: submission.total-verdict == AJTotalVerdict.Ok ? AJTheme.font-weight-heading : AJTheme.font-weight-paragraph;
+                            horizontal-alignment: center;
+                            vertical-alignment: center;
+                            color: AJTheme.container-text;
+                        }
+
+                        AJButton {
+                            text: submission.username;
+                            text-font-weight: submission.total-verdict == AJTotalVerdict.Ok ? AJTheme.font-weight-heading : AJTheme.font-weight-paragraph;
+                            background: AJTheme.secondary-container;
+                            text-halign: right;
+
+                            AJIcon {
+                                source: submission.total-verdict == AJTotalVerdict.Ok ? @image-url("../../radix-icons/person-bold.svg") : @image-url("../../radix-icons/person.svg");
+                                x: AJTheme.fit-space;
+                                y: (parent.height - self.height) / 2;
+                            }
+                            clicked => {
+                                AJContestCallbacks.open-profile(submission.user-id)
+                            }
+                        }
+
+                        AJText {
+                            text: {
+                                if submission.language == AJLanguage.Clang {
+                                    "C"
+                                } else if submission.language == AJLanguage.Clangpp {
+                                    "C++"
+                                } else if submission.language == AJLanguage.Rust {
+                                    "Rust"
+                                } else if submission.language == AJLanguage.Go {
+                                    "Go"
+                                } else {
+                                    "Python"
+                                }
+                            }
+                            font-weight: submission.total-verdict == AJTotalVerdict.Ok ? AJTheme.font-weight-heading : AJTheme.font-weight-paragraph;
+                            horizontal-alignment: center;
+                            vertical-alignment: center;
+                            color: AJTheme.container-text;
+                        }
+
+                        AJText {
+                            text: {
+                                if submission.total-verdict == AJTotalVerdict.Ok {
+                                    "полное решение"
+                                } else if submission.total-verdict == AJTotalVerdict.PartialSolution {
+                                    "частичное решение"
+                                } else if submission.total-verdict == AJTotalVerdict.Pending {
+                                    "в очереди"
+                                } else if submission.total-verdict == AJTotalVerdict.Compiling {
+                                    "компилируется"
+                                } else if submission.total-verdict == AJTotalVerdict.CompilationError {
+                                    "ошибка компиляции"
+                                } else if submission.total-verdict == AJTotalVerdict.Testing {
+                                    "тестируется"
+                                } else if submission.total-verdict == AJTotalVerdict.InvalidProblem {
+                                    "некорректная задача"
+                                } else if submission.total-verdict == AJTotalVerdict.InvalidRequest {
+                                    "некорректный запрос"
+                                } else {
+                                    "баг"
+                                }
+                            }
+                            font-weight: submission.total-verdict == AJTotalVerdict.Ok ? AJTheme.font-weight-heading : AJTheme.font-weight-paragraph;
+                            horizontal-alignment: center;
+                            vertical-alignment: center;
+                            color: AJTheme.container-text;
+                        }
+
+                        AJText {
+                            text: submission.total-score;
+                            font-weight: submission.total-verdict == AJTotalVerdict.Ok ? AJTheme.font-weight-heading : AJTheme.font-weight-paragraph;
+                            horizontal-alignment: center;
+                            vertical-alignment: center;
+                            color: AJTheme.container-text;
+                        }
+
+                        if contest.can-manage || problem.can-manage || !contest.hide-solutions:
+                        AJButton {
+                            text: "скачать";
+                            text-font-weight: submission.total-verdict == AJTotalVerdict.Ok ? AJTheme.font-weight-heading : AJTheme.font-weight-paragraph;
+                            background: AJTheme.secondary-container;
+                            text-halign: left;
+
+                            AJIcon {
+                                source: submission.total-verdict == AJTotalVerdict.Ok ? @image-url("../../radix-icons/download-bold.svg") : @image-url("../../radix-icons/download.svg");
+                                x: parent.width - self.width - AJTheme.fit-space;
+                                y: (parent.height - self.height) / 2;
+                            }
+                            clicked => {
+                                AJContestCallbacks.download-submission(index)
+                            }
+                        }
+
+                        AJButton {
+                            text: "подробнее";
+                            text-font-weight: submission.total-verdict == AJTotalVerdict.Ok ? AJTheme.font-weight-heading : AJTheme.font-weight-paragraph;
+                            background: AJTheme.secondary-container;
+                            text-halign: left;
+
+                            AJIcon {
+                                source: submission.total-verdict == AJTotalVerdict.Ok ? @image-url("../../radix-icons/info-circled-bold.svg") : @image-url("../../radix-icons/info-circled.svg");
+                                x: parent.width - self.width - AJTheme.fit-space;
+                                y: (parent.height - self.height) / 2;
+                            }
+
+                            clicked => {
+                                AJContestState.current-submission-index = index;
+                            }
+                        }
+                    }
+                }
+            }
+
+            Rectangle {
+                visible: scroll.viewport-y < 0;
+                x: 0;
+                y: 0;
+                width: parent.width;
+                height: 64px;
+                background: @linear-gradient(0deg, AJTheme.primary-container.transparentize(100%), AJTheme.primary-container.transparentize(0%));
+            }
+
+            Rectangle {
+                visible: scroll.viewport-y + scroll.viewport-height > scroll.height;
+                x: 0;
+                y: parent.height - self.height;
+                width: parent.width;
+                height: 64px;
+                background: @linear-gradient(180deg, AJTheme.primary-container.transparentize(100%), AJTheme.primary-container.transparentize(0%));
+            }
+
+            Rectangle {
+                visible: scroll.viewport-x < 0;
+                x: 0;
+                y: 0;
+                width: 64px;
+                height: parent.height;
+                background: @linear-gradient(-90deg, AJTheme.primary-container.transparentize(100%), AJTheme.primary-container.transparentize(0%));
+            }
+
+            Rectangle {
+                visible: scroll.viewport-x + scroll.viewport-width > scroll.width;
+                x: parent.width - self.width;
+                y: 0;
+                width: 64px;
+                height: parent.height;
+                background: @linear-gradient(90deg, AJTheme.primary-container.transparentize(100%), AJTheme.primary-container.transparentize(0%));
+            }
+        }
+    }
+}

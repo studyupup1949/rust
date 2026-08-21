@@ -1,0 +1,46 @@
+# SPDX-FileCopyrightText: © 2026 Decompollaborate
+# SPDX-License-Identifier: MIT OR Apache-2.0
+
+[package]
+name = "addended_ordered_map"
+version = "0.1.0"
+description = "Ordered mapping with ranged lookups. Range sizes can be modified after creation."
+edition = "2021"
+authors = [
+    "Anghelo Carvajal <angheloalf95@gmail.com>",
+]
+license = "MIT OR Apache-2.0"
+repository = "https://github.com/Decompollaborate/addended_ordered_map"
+readme = "README.md"
+categories = [
+    "no-std",
+]
+keywords = [
+    "data-structures",
+    "map",
+    "ordered-mapping",
+    "ranged-mapping",
+]
+
+rust-version = "1.56.0"
+
+[lib]
+name = "addended_ordered_map"
+path = "src/lib.rs"
+
+[features]
+default = []
+std = []
+
+# Exposes the `extract_if` method.
+# Bumps the MSRV to 1.91.
+extract_if = []
+
+# TODO: consider adding serde support.
+
+# Evil stuff, do not use.
+nightly = []
+
+[dependencies]
+# TODO: get rid of the polonius stuff when the new borrow checker has been released.
+polonius-the-crab = "0"

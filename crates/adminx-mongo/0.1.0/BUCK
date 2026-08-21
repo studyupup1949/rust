@@ -1,0 +1,19 @@
+load("@buckal//:wrapper.bzl", "rust_library")
+
+rust_library(
+    name = "adminx_mongo",
+    srcs = glob(["**/*.rs"]),
+    crate = "adminx_mongo",
+    crate_root = "src/lib.rs",
+    edition = "2021",
+
+    visibility = ["PUBLIC"],
+    deps = [
+        "//third-party/rust/crates/adminx-core/0.1.0:adminx_core",
+        "//third-party/rust/crates/async-trait/0.1.92:async_trait",
+        "//third-party/rust/crates/futures-util/0.3.34:futures_util",
+        "//third-party/rust/crates/mongodb/2.8.2:mongodb",
+        "//third-party/rust/crates/serde_json/1.0.151:serde_json",
+        "//third-party/rust/crates/tracing/0.1.44:tracing",
+    ],
+)

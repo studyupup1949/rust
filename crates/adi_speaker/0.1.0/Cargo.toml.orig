@@ -1,0 +1,24 @@
+# Copyright Jeron Lau 2018-2019.
+# Dual-licensed under either the MIT License or the Boost Software License,
+# Version 1.0.  (See accompanying file LICENSE_1_0.txt or copy at
+# https://www.boost.org/LICENSE_1_0.txt)
+#
+# XXXX  X                    /5\——————/5\       XXXX      X           X
+# X   X X   XXX   XXXX      |   0    0   |     X      XXX   XXXX XXXX X X   X
+# X   X X  X   X  X   X  /"\|     <>     |/"\  X      X   X    X    X X X   X
+# XXXX  X  X   X  X   X  \  \\_  ====  _//  /  X   XX X   X   X    X  X  X X
+# X     X  X   X  XXXX    \_              _/   X    X X   X  X    X   X   X
+# X     X   XXX   X       / \            / \    XXXX  X   X XXXX XXXX X   X
+#                 X       \                /                            XX
+#                          --____________--
+
+[package]
+name = "adi_speaker"
+version = "0.1.0"
+authors = ["Jeron Aldaron Lau <jeronaldaron@gmail.com>"]
+license = "MIT / BSL-1.0"
+documentation = "https://docs.rs/wavy"
+homepage = "https://jeronaldaron.plopgrizzly.com/wavy"
+repository = "https://github.com/OxyDeadbeef/wavy"
+readme = "README.md"
+description = "Play sound through speakers, earbuds or headphones (platform-agnostic)."

@@ -1,0 +1,48 @@
+~ Next Release
+
+	adi 0.4.0
+		* Add adi_storage ( For: Data Storage Device )
+		* Remove TODO File
+		* Use Rust's Automatic Documentation
+
+~ Before 1.0.0 ~
+
+~ Add Support & Change API.
+
+	adi 0.5.0
+		* Add adi_network ( For: Network Interface Controller )
+
+	adi 0.6.0
+		* Add adi_input ( For: User Input Devices )
+
+	adi 0.7.0
+		* Add adi_speaker
+
+	adi 0.8.0
+		* Add adi_camera
+
+	adi 0.x.0
+		* Add adi_gps
+
+	adi 0.x.0
+		* Add adi_motion ( For: Motion Sensors ( gyroscope,
+			accelerometer, etc. ) )
+
+	adi 0.x.0
+		* Add adi_usb ( For: Serial over a USB Cable )
+
+	adi 0.x.0
+		* Add adi_gpio ( For: General Purpose Input/Output Pins )
+
+	adi 0.x.0
+		* Add adi_bluetooth ( For: bluetooth communications )
+
+	adi 0.x.0
+		* Add adi_haptic ( For: Haptic Feedback Device )
+
+	adi 0.x.0
+		* Add adi_microphone
+
+~ Bug Fixes & Internal Improvements.
+
+~ After 1.0.0 ~

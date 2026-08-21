@@ -1,0 +1,23 @@
+[package]
+name = "adapto_parser"
+description = "Adapto DSL parser — Pest grammar for .adapto template files"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+authors.workspace = true
+repository.workspace = true
+homepage.workspace = true
+
+[dependencies]
+pest = { workspace = true }
+pest_derive = { workspace = true }
+serde = { workspace = true }
+serde_json = { workspace = true }
+thiserror = { workspace = true }
+
+[dev-dependencies]
+insta = { workspace = true }
+
+[[bench]]
+name = "benchmark"
+harness = false

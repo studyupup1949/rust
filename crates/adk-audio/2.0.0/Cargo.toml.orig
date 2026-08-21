@@ -1,0 +1,124 @@
+[package]
+name = "adk-audio"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+authors.workspace = true
+repository.workspace = true
+documentation = "https://docs.rs/adk-audio"
+readme = "README.md"
+description = "Audio intelligence and pipeline orchestration for ADK-Rust agents"
+keywords = ["adk", "audio", "tts", "stt", "speech"]
+categories = ["multimedia::audio", "asynchronous"]
+
+[dependencies]
+# Core (always included)
+# 'rustls' feature provides ensure_crypto_provider() to fix process-wide provider panics.
+adk-core = { workspace = true, features = ["rustls"] }
+bytes = "1"
+bytemuck = { version = "1", features = ["derive"] }
+async-trait = { workspace = true }
+async-stream = { workspace = true }
+futures = { workspace = true }
+tokio = { version = "1", features = ["sync", "rt", "macros", "time"] }
+serde = { version = "1", features = ["derive"] }
+serde_json = { workspace = true }
+tracing = { workspace = true }
+thiserror = { workspace = true }
+pin-project-lite = "0.2"
+
+# Cloud providers (optional)
+reqwest = { workspace = true, features = ["multipart"], optional = true }
+base64 = { version = "0.22", optional = true }
+
+# DSP (optional)
+rubato = { version = "4.0", optional = true }
+dasp = { version = "0.11", features = ["signal"], optional = true }
+
+# VAD
+#
+# There is deliberately no VAD backend dependency here. `webrtc-vad` used to be
+# declared under the `vad` feature but was never imported by a single line of
+# this crate, so it only ever cost consumers a C toolchain and a linker hazard:
+# it builds libfvad, which exports the upstream WebRTC signal-processing symbols
+# (`WebRtcSpl_*`) unmangled. Any binary that also links LiveKit's `webrtc-sys`
+# gets the same symbols from the full libwebrtc and fails to link outright:
+#
+#     wild: error: Duplicate symbols detected: WebRtcSpl_DivW32W16,
+#       defined in libwebrtc_vad-*.rlib @ ...-division_operations.o
+#       and         libwebrtc_sys-*.rlib @ division_operations.o
+#
+# A real backend lands here once `wavekat-vad` gains its pure-Rust `earshot`
+# backend; it must be pinned to an immutable revision and must not re-introduce
+# a C VAD into the dependency graph.
+
+# Local inference (optional)
+ort = { version = "2.0.0-rc.11", optional = true }
+tokenizers = { version = "0.22", optional = true }
+hf-hub = { version = "0.5", optional = true }
+
+# Kokoro phonemizer (optional — requires espeak-ng system library)
+espeak-rs = { version = "0.1", optional = true }
+ndarray = { version = "0.17", optional = true }
+ndarray-npy = { version = "0.10", optional = true }
+
+# Candle-based TTS (optional)
+candle-core = { version = "0.9", optional = true }
+
+# Qwen3 TTS native (Candle-based, optional)
+qwen_tts = { version = "0.1", optional = true }
+
+# Desktop audio I/O (optional)
+cpal = { version = "0.15", optional = true }
+
+# Streaming (optional)
+tokio-tungstenite = { workspace = true, optional = true }
+
+# Bridge (optional)
+adk-realtime = { workspace = true, optional = true }
+livekit-api = { workspace = true, optional = true }
+
+[dev-dependencies]
+proptest = "1"
+rustls = { workspace = true }
+tokio = { version = "1", features = ["full", "test-util"] }
+
+[features]
+default = ["tts", "stt"]
+tts = ["dep:reqwest", "dep:base64"]
+stt = ["dep:reqwest", "dep:tokio-tungstenite"]
+music = ["dep:reqwest"]
+fx = ["dep:rubato", "dep:dasp"]
+# The `VadProcessor` trait is compiled unconditionally, so this feature has
+# never gated any code (`#[cfg(feature = "vad")]` appears nowhere in the crate).
+# It is retained as a no-op so existing consumers and `desktop-audio` keep
+# building; it no longer drags a C VAD implementation into the graph.
+vad = []
+streaming = []
+
+# Desktop audio I/O (cpal-based, not included in `all` — requires audio hardware)
+desktop-audio = ["dep:cpal", "vad"]
+
+# Cross-platform local inference
+onnx = ["dep:ort", "dep:tokenizers", "dep:hf-hub"]
+mlx = ["dep:tokenizers", "dep:hf-hub"]
+kokoro = ["onnx", "dep:espeak-rs", "dep:ndarray", "dep:ndarray-npy"]
+chatterbox = ["onnx"]
+
+# STT backends (ONNX)
+whisper-onnx = ["onnx"]
+distil-whisper = ["onnx"]
+moonshine = ["onnx"]
+
+# TTS backends (ONNX / Candle)
+qwen3-tts = ["dep:qwen_tts", "dep:hf-hub", "dep:candle-core"]
+
+# All ONNX backends (STT + TTS)
+all-onnx = ["onnx", "kokoro", "chatterbox", "whisper-onnx", "distil-whisper", "moonshine", "qwen3-tts"]
+
+# Bridge
+livekit = ["dep:livekit-api", "dep:adk-realtime", "dep:base64"]
+
+# All portable features — safe for `--all-features` and CI on any platform.
+all = ["tts", "stt", "music", "fx", "vad", "streaming", "mlx", "all-onnx", "livekit"]

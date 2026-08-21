@@ -1,0 +1,28 @@
+[package]
+name = "ad9850"
+version = "0.1.2"
+edition = "2021"
+authors = ["Niklas Cathor <niklas.cathor@gmx.de>"]
+description = "Embedded driver for the AD9850 DDS synthesizer chip"
+readme = "README.crates-io.md"
+keywords = [
+    "embedded-hal",
+    "dds",
+    "synthesizer"
+]
+
+categories = [
+    "embedded",
+    "hardware-support",
+    "no-std"
+]
+license = "MIT"
+repository = "https://github.com/nilclass/ad9850-rs"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+embedded-hal = "0.2.7"
+
+[package.metadata.docs.rs]
+rustdoc-args = ["--html-in-header", "./src/docs-header.html"]

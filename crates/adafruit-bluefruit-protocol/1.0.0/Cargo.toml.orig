@@ -1,0 +1,30 @@
+[package]
+name = "adafruit-bluefruit-protocol"
+version = "1.0.0"
+edition = "2021"
+rust-version = "1.81"
+
+description = "A `no_std` parser for the Adafruit Bluefruit LE Connect controller protocol."
+repository = "https://github.com/rust-embedded-community/adafruit-bluefruit-protocol-rs"
+categories = ["embedded", "hardware-support", "no-std", "no-std::no-alloc"]
+keywords = ["adafruit", "bluefruit", "bluetooth", "protocol"]
+license = "MIT OR Apache-2.0"
+
+[dependencies]
+defmt = { version = "0.3", optional = true }
+
+rgb = { version = "0.8", optional = true }
+serde = { version = "1.0", features = ["derive"], optional = true }
+
+[features]
+default = ["accelerometer_event", "button_event", "color_event", "gyro_event", "location_event", "magnetometer_event", "quaternion_event"]
+
+defmt = ["dep:defmt"]
+
+accelerometer_event = []
+button_event = []
+color_event = []
+gyro_event = []
+location_event = []
+magnetometer_event = []
+quaternion_event = []

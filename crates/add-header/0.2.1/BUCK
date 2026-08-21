@@ -1,0 +1,16 @@
+load("@buckal//:wrapper.bzl", "rust_binary")
+
+rust_binary(
+    name = "add_header",
+    srcs = glob(["**/*.rs"]),
+    crate = "add_header",
+    crate_root = "src/main.rs",
+    edition = "2021",
+
+    visibility = ["PUBLIC"],
+    deps = [
+        "//third-party/rust/crates/anyhow/1.0.104:anyhow",
+        "//third-party/rust/crates/argh/0.1.19:argh",
+        "//third-party/rust/crates/walkdir/2.5.0:walkdir",
+    ],
+)

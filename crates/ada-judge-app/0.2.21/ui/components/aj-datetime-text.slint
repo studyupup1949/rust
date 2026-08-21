@@ -1,0 +1,16 @@
+import { AJTheme } from "../aj-theme.slint";
+import { AJDateTime } from "../models/others.slint";
+import { AJText } from "aj-text.slint";
+
+export component AJDateTimeText inherits AJText {
+    in property <string> prefix;
+    in property <AJDateTime> date-time;
+
+    property <string> day: date-time.day < 10 ? "0\{date-time.day}" : "\{date-time.day}";
+    property <string> month: date-time.month < 10 ? "0\{date-time.month}" : "\{date-time.month}";
+    property <string> hour: date-time.hour < 10 ? "0\{date-time.hour}" : "\{date-time.hour}";
+    property <string> minute: date-time.minute < 10 ? "0\{date-time.minute}" : "\{date-time.minute}";
+    property <string> second: date-time.second < 10 ? "0\{date-time.second}" : "\{date-time.second}";
+
+    text: "\{prefix}\{day}.\{month}.\{date-time.year} \{hour}:\{minute}:\{second}";
+}

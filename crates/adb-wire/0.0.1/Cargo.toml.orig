@@ -1,0 +1,13 @@
+[package]
+name = "adb-wire"
+version = "0.0.1"
+edition = "2021"
+description = "Async ADB wire protocol client over TCP."
+license = "MIT"
+repository = "https://github.com/cbxss/adb_wire"
+readme = "README.md"
+keywords = ["adb", "android", "wire-protocol", "tokio", "async"]
+categories = ["development-tools"]
+
+[dependencies]
+tokio = { version = "1", features = ["net", "rt", "io-util", "time", "fs", "macros"] }

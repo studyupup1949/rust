@@ -1,0 +1,17 @@
+load("@buckal//:wrapper.bzl", "rust_library")
+
+rust_library(
+    name = "adze_concurrency_init_core",
+    srcs = glob(["**/*.rs"]),
+    crate = "adze_concurrency_init_core",
+    crate_root = "src/lib.rs",
+    edition = "2024",
+    features = ["default"],
+
+    visibility = ["PUBLIC"],
+    deps = [
+        "//third-party/rust/crates/adze-concurrency-env-core/0.1.0:adze_concurrency_env_core",
+        "//third-party/rust/crates/adze-concurrency-init-bootstrap-core/0.1.0:adze_concurrency_init_bootstrap_core",
+        "//third-party/rust/crates/adze-concurrency-init-rayon-core/0.1.0:adze_concurrency_init_rayon_core",
+    ],
+)

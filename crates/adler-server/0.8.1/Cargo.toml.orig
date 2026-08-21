@@ -1,0 +1,51 @@
+[package]
+name = "adler-server"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+repository.workspace = true
+homepage.workspace = true
+description = "HTTP API + SSE streaming for the Adler OSINT username-search engine."
+categories = ["web-programming::http-server", "command-line-utilities"]
+keywords = ["osint", "username", "sherlock", "axum", "sse"]
+readme = "../README.md"
+# The crate ships with a self-contained SPA bundle in `dist/` (mirrored
+# from `../adler-web/dist/` by `build.rs` at workspace build time;
+# pre-populated by the release pipeline before `cargo publish`). The
+# `include` list pins exactly what lands in the `.crate` tarball — the
+# `Cargo.toml`-default would skip `dist/` because it's gitignored.
+include = [
+    "src/**/*",
+    "build.rs",
+    "dist/**/*",
+    "Cargo.toml",
+    "../README.md",
+]
+
+[dependencies]
+adler-core = { path = "../adler-core", version = "0.8.0" }
+axum.workspace = true
+tower.workspace = true
+tower-http.workspace = true
+tokio = { workspace = true, features = ["net"] }
+tokio-stream.workspace = true
+async-stream.workspace = true
+futures.workspace = true
+rust-embed.workspace = true
+mime_guess.workspace = true
+serde.workspace = true
+serde_json.workspace = true
+thiserror.workspace = true
+tracing.workspace = true
+fastrand.workspace = true
+
+[dev-dependencies]
+reqwest = { workspace = true, features = ["stream"] }
+tempfile.workspace = true
+tokio = { workspace = true, features = ["net", "test-util"] }
+wiremock.workspace = true
+tower.workspace = true
+
+[lints]
+workspace = true

@@ -1,0 +1,13 @@
+[package]
+authors = ["asanchen798@gmail.com"]
+description = "A rust tutorials"
+edition = "2021"
+license = "MIT"
+name = "addering"
+version = "0.1.0"
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+#adder-one = { path = "../adder-one" }
+rand = "0.3.15"
+adder-one = "0.1.0"

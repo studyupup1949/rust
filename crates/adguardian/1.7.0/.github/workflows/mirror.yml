@@ -1,0 +1,22 @@
+# Syncs the full source of the adguardian repo over to our Codeberg mirror
+# This is then accessible over at https://codeberg.org/alicia/adguardian
+name: 🪞 Mirror
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: '30 3 * * 0' # At 03:30 on Sunday
+
+permissions:
+  contents: read
+
+jobs:
+  codeberg:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: lissy93/repo-mirror-action@v1.5.0
+        with:
+          ssh_key: ${{ secrets.CODEBERG_SSH }}
+          host: git@codeberg.org
+          user: alicia
+          repo: adguardian
+          force_push: false

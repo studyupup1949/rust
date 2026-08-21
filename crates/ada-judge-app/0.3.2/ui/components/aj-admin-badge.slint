@@ -1,0 +1,43 @@
+import { AJTheme } from "../aj-theme.slint";
+import { AJAdminLevel } from "../models/users.slint";
+import { AJText } from "aj-text.slint";
+
+export component AJAdminBadge inherits Rectangle {
+    in property <AJAdminLevel> level;
+
+    width: self.min-width + AJTheme.fit-space;
+    height: self.min-height + AJTheme.fit-space;
+
+    background: {
+        if level == AJAdminLevel.NotAdmin {
+            AJTheme.not-admin-badge
+        } else if level == AJAdminLevel.BetaTester {
+            AJTheme.beta-tester-badge
+        } else if level == AJAdminLevel.Admin {
+            AJTheme.admin-badge
+        } else {
+            AJTheme.owner-badge
+        }
+    }
+
+    border-width: AJTheme.border-width;
+    border-radius: AJTheme.border-radius;
+    border-color: self.background.darker(1);
+
+    AJText {
+        text: {
+            if level == AJAdminLevel.NotAdmin {
+                @tr("не админ")
+            } else if level == AJAdminLevel.BetaTester {
+                @tr("бета-тестер")
+            } else if level == AJAdminLevel.Admin {
+                @tr("админ")
+            } else {
+                @tr("владелец")
+            }
+        }
+        horizontal-alignment: center;
+        vertical-alignment: center;
+        color: root.border-color;
+    }
+}

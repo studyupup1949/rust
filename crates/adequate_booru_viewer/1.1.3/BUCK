@@ -1,0 +1,32 @@
+load("@buckal//:wrapper.bzl", "rust_library")
+
+rust_library(
+    name = "adequate_booru_viewer",
+    srcs = glob(["**/*.rs"]),
+    crate = "adequate_booru_viewer",
+    crate_root = "src/lib.rs",
+    edition = "2024",
+
+    visibility = ["PUBLIC"],
+    deps = [
+        "//third-party/rust/crates/abv-contract/0.1.0:abv_contract",
+        "//third-party/rust/crates/anyhow/1.0.104:anyhow",
+        "//third-party/rust/crates/arboard/3.6.1:arboard",
+        "//third-party/rust/crates/crossbeam-channel/0.5.16:crossbeam_channel",
+        "//third-party/rust/crates/directories/6.0.0:directories",
+        "//third-party/rust/crates/dwemer_poolrooms/0.9.2:dwemer_poolrooms",
+        "//third-party/rust/crates/egui-wgpu/0.34.3:egui_wgpu",
+        "//third-party/rust/crates/egui/0.34.3:egui",
+        "//third-party/rust/crates/eternalist-apps/0.3.3:eternalist_apps",
+        "//third-party/rust/crates/image/0.25.10:image",
+        "//third-party/rust/crates/memmap2/0.9.11:memmap2",
+        "//third-party/rust/crates/redb/4.1.0:redb",
+        "//third-party/rust/crates/rfd/0.17.2:rfd",
+        "//third-party/rust/crates/roaring/0.11.4:roaring",
+        "//third-party/rust/crates/serde/1.0.229:serde",
+        "//third-party/rust/crates/tracing/0.1.44:tracing",
+        "//third-party/rust/crates/ureq/3.4.0:ureq",
+        "//third-party/rust/crates/zune-core/0.5.3:zune_core",
+        "//third-party/rust/crates/zune-jpeg/0.5.15:zune_jpeg",
+    ],
+)

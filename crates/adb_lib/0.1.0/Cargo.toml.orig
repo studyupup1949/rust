@@ -1,0 +1,10 @@
+[package]
+name = "adb_lib"
+version = "0.1.0"
+authors = ["Cristian Arana Castiñeiras <cristianaranacastineiras@gmail.com>"]
+edition = "2021"
+description = "A Rust library for interacting with Android Debug Bridge (ADB)"
+license = "MIT"
+repository = "https://github.com/Cristiancastt/adbr"
+homepage = "https://github.com/Cristiancastt"
+documentation = "https://docs.rs/adb_lib"

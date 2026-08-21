@@ -1,0 +1,16 @@
+# zizmor configuration — https://docs.zizmor.sh/configuration/
+#
+# House style: actions are pinned to version tags (e.g. @v6), not commit SHAs.
+# We rely on tag immutability plus Dependabot to keep them current, so allow a
+# ref-pin for every action rather than requiring a hash.
+rules:
+  unpinned-uses:
+    config:
+      policies:
+        "*": ref-pin
+
+  # The crate is published to crates.io with an API token by deliberate choice;
+  # OIDC trusted publishing isn't configured for this project.
+  use-trusted-publishing:
+    ignore:
+      - cargo.yml

@@ -1,0 +1,746 @@
+{
+  "id": "finance/invoice-processing",
+  "title": "Invoice Processing \u2014 Upload, Review, and Approval",
+  "description": "Invoice processing card with PDF upload, OCR-extracted fields review, vendor lookup, line items breakdown, approval workflow, and payment scheduling. Uses FactSet for invoice metadata, Input forms for edits, and Container styles for approval stages.",
+  "category": "finance",
+  "tags": [
+    "finance",
+    "invoice",
+    "processing",
+    "ap",
+    "accounts-payable",
+    "approval",
+    "vendor",
+    "payment",
+    "ocr"
+  ],
+  "use_cases": [
+    "Upload vendor invoice for processing",
+    "Review OCR-extracted fields",
+    "Route invoice for approval",
+    "Schedule payment to vendor"
+  ],
+  "host_targets": [
+    "generic",
+    "teams",
+    "outlook"
+  ],
+  "complexity": "advanced",
+  "card": {
+    "$schema": "http://adaptivecards.io/schemas/adaptive-card.json",
+    "type": "AdaptiveCard",
+    "version": "1.5",
+    "metadata": {
+      "webUrl": "https://greentic.io/cards/invoice-processing",
+      "demo_mode": true
+    },
+    "body": [
+      {
+        "type": "Container",
+        "id": "invMenu",
+        "isVisible": true,
+        "style": "emphasis",
+        "bleed": true,
+        "items": [
+          {
+            "type": "ColumnSet",
+            "columns": [
+              {
+                "type": "Column",
+                "width": "auto",
+                "items": [
+                  {
+                    "type": "Image",
+                    "url": "https://img.icons8.com/fluency/96/bill.png",
+                    "size": "Medium"
+                  }
+                ],
+                "verticalContentAlignment": "Center"
+              },
+              {
+                "type": "Column",
+                "width": "stretch",
+                "items": [
+                  {
+                    "type": "TextBlock",
+                    "text": "Invoice Processing",
+                    "size": "ExtraLarge",
+                    "weight": "Bolder",
+                    "color": "Accent"
+                  },
+                  {
+                    "type": "TextBlock",
+                    "text": "Submit vendor invoices, approve payments, and track outstanding bills.",
+                    "spacing": "None",
+                    "isSubtle": true,
+                    "wrap": true
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "type": "Container",
+            "style": "good",
+            "spacing": "Medium",
+            "items": [
+              {
+                "type": "ColumnSet",
+                "columns": [
+                  {
+                    "type": "Column",
+                    "width": "1",
+                    "items": [
+                      {
+                        "type": "TextBlock",
+                        "text": "To Approve",
+                        "size": "Small",
+                        "isSubtle": true,
+                        "horizontalAlignment": "Center"
+                      },
+                      {
+                        "type": "TextBlock",
+                        "text": "5",
+                        "weight": "Bolder",
+                        "size": "Large",
+                        "color": "Warning",
+                        "horizontalAlignment": "Center",
+                        "spacing": "None"
+                      }
+                    ]
+                  },
+                  {
+                    "type": "Column",
+                    "width": "1",
+                    "items": [
+                      {
+                        "type": "TextBlock",
+                        "text": "Processing",
+                        "size": "Small",
+                        "isSubtle": true,
+                        "horizontalAlignment": "Center"
+                      },
+                      {
+                        "type": "TextBlock",
+                        "text": "3",
+                        "weight": "Bolder",
+                        "size": "Large",
+                        "color": "Accent",
+                        "horizontalAlignment": "Center",
+                        "spacing": "None"
+                      }
+                    ]
+                  },
+                  {
+                    "type": "Column",
+                    "width": "1",
+                    "items": [
+                      {
+                        "type": "TextBlock",
+                        "text": "Paid (Apr)",
+                        "size": "Small",
+                        "isSubtle": true,
+                        "horizontalAlignment": "Center"
+                      },
+                      {
+                        "type": "TextBlock",
+                        "text": "12",
+                        "weight": "Bolder",
+                        "size": "Large",
+                        "color": "Good",
+                        "horizontalAlignment": "Center",
+                        "spacing": "None"
+                      }
+                    ]
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "type": "ActionSet",
+            "spacing": "Medium",
+            "actions": [
+              {
+                "type": "Action.ToggleVisibility",
+                "title": "\ud83d\udce4 Submit Invoice",
+                "style": "positive",
+                "targetElements": [
+                  {
+                    "elementId": "invMenu",
+                    "isVisible": false
+                  },
+                  {
+                    "elementId": "invSubmit",
+                    "isVisible": true
+                  }
+                ]
+              },
+              {
+                "type": "Action.ToggleVisibility",
+                "title": "\u2705 Approve Invoices",
+                "targetElements": [
+                  {
+                    "elementId": "invMenu",
+                    "isVisible": false
+                  },
+                  {
+                    "elementId": "invApprove",
+                    "isVisible": true
+                  }
+                ]
+              },
+              {
+                "type": "Action.ToggleVisibility",
+                "title": "\ud83d\udccb Payment Tracker",
+                "targetElements": [
+                  {
+                    "elementId": "invMenu",
+                    "isVisible": false
+                  },
+                  {
+                    "elementId": "invTracker",
+                    "isVisible": true
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "type": "Container",
+        "id": "invSubmit",
+        "isVisible": false,
+        "items": [
+          {
+            "type": "TextBlock",
+            "text": "\ud83d\udce4 Submit Vendor Invoice",
+            "size": "Large",
+            "weight": "Bolder",
+            "color": "Accent"
+          },
+          {
+            "type": "Input.Text",
+            "id": "inv_vendor",
+            "label": "Vendor / Supplier Name",
+            "placeholder": "e.g. Microsoft Azure, AWS, Contabo GmbH",
+            "isRequired": true
+          },
+          {
+            "type": "Input.Text",
+            "id": "inv_number",
+            "label": "Invoice Number",
+            "placeholder": "e.g. INV-2026-04-001",
+            "isRequired": true
+          },
+          {
+            "type": "Input.Date",
+            "id": "inv_date",
+            "label": "Invoice Date",
+            "isRequired": true
+          },
+          {
+            "type": "Input.Date",
+            "id": "inv_due_date",
+            "label": "Payment Due Date",
+            "isRequired": true
+          },
+          {
+            "type": "ColumnSet",
+            "columns": [
+              {
+                "type": "Column",
+                "width": "2",
+                "items": [
+                  {
+                    "type": "Input.Number",
+                    "id": "inv_amount",
+                    "label": "Amount",
+                    "isRequired": true,
+                    "min": 1
+                  }
+                ]
+              },
+              {
+                "type": "Column",
+                "width": "1",
+                "items": [
+                  {
+                    "type": "Input.ChoiceSet",
+                    "id": "inv_currency",
+                    "label": "Currency",
+                    "value": "IDR",
+                    "choices": [
+                      {
+                        "title": "IDR",
+                        "value": "IDR"
+                      },
+                      {
+                        "title": "USD",
+                        "value": "USD"
+                      },
+                      {
+                        "title": "GBP",
+                        "value": "GBP"
+                      },
+                      {
+                        "title": "EUR",
+                        "value": "EUR"
+                      }
+                    ]
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "type": "Input.ChoiceSet",
+            "id": "inv_category",
+            "label": "Expense Category",
+            "isRequired": true,
+            "choices": [
+              {
+                "title": "\u2601\ufe0f Cloud / SaaS Subscriptions",
+                "value": "cloud"
+              },
+              {
+                "title": "\ud83d\udcbb Hardware / Equipment",
+                "value": "hardware"
+              },
+              {
+                "title": "\ud83d\udccb Professional Services",
+                "value": "services"
+              },
+              {
+                "title": "\ud83c\udfe2 Office / Rent / Utilities",
+                "value": "office"
+              },
+              {
+                "title": "\ud83d\udcda Training / Licenses",
+                "value": "training"
+              },
+              {
+                "title": "\ud83d\ude97 Travel / Transport",
+                "value": "travel"
+              },
+              {
+                "title": "\u2753 Other",
+                "value": "other"
+              }
+            ]
+          },
+          {
+            "type": "Input.ChoiceSet",
+            "id": "inv_project",
+            "label": "Charge to Project",
+            "value": "overhead",
+            "choices": [
+              {
+                "title": "General / Overhead",
+                "value": "overhead"
+              },
+              {
+                "title": "MAP FAS Migration",
+                "value": "map_fas"
+              },
+              {
+                "title": "Telkom University AI Ops",
+                "value": "telkom"
+              },
+              {
+                "title": "ANTAM AI Chatbot",
+                "value": "antam"
+              },
+              {
+                "title": "Bank Indonesia Sentrix",
+                "value": "bi_sentrix"
+              }
+            ]
+          },
+          {
+            "type": "Input.Text",
+            "id": "inv_notes",
+            "label": "Notes",
+            "placeholder": "Additional context for the approver...",
+            "isMultiline": true
+          },
+          {
+            "type": "Input.ChoiceSet",
+            "id": "inv_payment_method",
+            "label": "Preferred Payment Method",
+            "value": "bank_transfer",
+            "choices": [
+              {
+                "title": "\ud83c\udfe6 Bank Transfer",
+                "value": "bank_transfer"
+              },
+              {
+                "title": "\ud83d\udcb3 Corporate Card",
+                "value": "corp_card"
+              },
+              {
+                "title": "\ud83d\udcf1 E-wallet (GoPay/OVO)",
+                "value": "ewallet"
+              }
+            ]
+          },
+          {
+            "type": "ActionSet",
+            "spacing": "Medium",
+            "actions": [
+              {
+                "type": "Action.Submit",
+                "title": "\ud83d\udce4 Submit Invoice",
+                "style": "positive",
+                "data": {
+                  "action": "submit_invoice",
+                  "demo_mode": true
+                }
+              },
+              {
+                "type": "Action.ToggleVisibility",
+                "title": "\u2190 Back",
+                "targetElements": [
+                  {
+                    "elementId": "invSubmit",
+                    "isVisible": false
+                  },
+                  {
+                    "elementId": "invMenu",
+                    "isVisible": true
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "type": "Container",
+        "id": "invApprove",
+        "isVisible": false,
+        "items": [
+          {
+            "type": "TextBlock",
+            "text": "\u2705 Invoices Pending Approval",
+            "size": "Large",
+            "weight": "Bolder",
+            "color": "Accent"
+          },
+          {
+            "type": "Container",
+            "style": "attention",
+            "items": [
+              {
+                "type": "ColumnSet",
+                "columns": [
+                  {
+                    "type": "Column",
+                    "width": "stretch",
+                    "items": [
+                      {
+                        "type": "TextBlock",
+                        "text": "Microsoft Azure \u2014 April Usage",
+                        "weight": "Bolder"
+                      },
+                      {
+                        "type": "TextBlock",
+                        "text": "\u2601\ufe0f Cloud  \u2022  Rp 18,500,000  \u2022  Due: Apr 20  \u2022  \u26a0\ufe0f 8 days",
+                        "size": "Small",
+                        "isSubtle": true,
+                        "spacing": "None",
+                        "wrap": true
+                      }
+                    ]
+                  },
+                  {
+                    "type": "Column",
+                    "width": "auto",
+                    "items": [
+                      {
+                        "type": "TextBlock",
+                        "text": "\ud83d\udd34 Overdue",
+                        "color": "Attention",
+                        "weight": "Bolder",
+                        "size": "Small"
+                      }
+                    ],
+                    "verticalContentAlignment": "Center"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "type": "Container",
+            "style": "warning",
+            "separator": true,
+            "items": [
+              {
+                "type": "ColumnSet",
+                "columns": [
+                  {
+                    "type": "Column",
+                    "width": "stretch",
+                    "items": [
+                      {
+                        "type": "TextBlock",
+                        "text": "Contabo VPS \u2014 Quarterly",
+                        "weight": "Bolder"
+                      },
+                      {
+                        "type": "TextBlock",
+                        "text": "\u2601\ufe0f Cloud  \u2022  \u20ac45.00  \u2022  Due: Apr 25",
+                        "size": "Small",
+                        "isSubtle": true,
+                        "spacing": "None",
+                        "wrap": true
+                      }
+                    ]
+                  },
+                  {
+                    "type": "Column",
+                    "width": "auto",
+                    "items": [
+                      {
+                        "type": "TextBlock",
+                        "text": "\u23f3 Pending",
+                        "color": "Warning",
+                        "weight": "Bolder",
+                        "size": "Small"
+                      }
+                    ],
+                    "verticalContentAlignment": "Center"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "type": "Input.ChoiceSet",
+            "id": "inv_approve_select",
+            "label": "Select invoice",
+            "isRequired": true,
+            "choices": [
+              {
+                "title": "Azure April \u2014 Rp 18.5M (OVERDUE)",
+                "value": "azure_apr"
+              },
+              {
+                "title": "Contabo VPS \u2014 \u20ac45",
+                "value": "contabo_q2"
+              }
+            ]
+          },
+          {
+            "type": "Input.ChoiceSet",
+            "id": "inv_approve_action",
+            "label": "Action",
+            "isRequired": true,
+            "choices": [
+              {
+                "title": "\u2705 Approve for payment",
+                "value": "approve"
+              },
+              {
+                "title": "\u23f8\ufe0f Hold \u2014 Need more info",
+                "value": "hold"
+              },
+              {
+                "title": "\u274c Reject",
+                "value": "reject"
+              }
+            ]
+          },
+          {
+            "type": "Input.Text",
+            "id": "inv_approve_notes",
+            "label": "Comments",
+            "isMultiline": true
+          },
+          {
+            "type": "ActionSet",
+            "spacing": "Medium",
+            "actions": [
+              {
+                "type": "Action.Submit",
+                "title": "\ud83d\udce8 Submit Decision",
+                "style": "positive",
+                "data": {
+                  "action": "approve_invoice",
+                  "demo_mode": true
+                }
+              },
+              {
+                "type": "Action.ToggleVisibility",
+                "title": "\u2190 Back",
+                "targetElements": [
+                  {
+                    "elementId": "invApprove",
+                    "isVisible": false
+                  },
+                  {
+                    "elementId": "invMenu",
+                    "isVisible": true
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "type": "Container",
+        "id": "invTracker",
+        "isVisible": false,
+        "items": [
+          {
+            "type": "TextBlock",
+            "text": "\ud83d\udccb Payment Tracker \u2014 April 2026",
+            "size": "Large",
+            "weight": "Bolder",
+            "color": "Accent"
+          },
+          {
+            "type": "FactSet",
+            "facts": [
+              {
+                "title": "GitHub Enterprise",
+                "value": "\u2705 Paid Apr 2 \u2014 $21/user \u00d7 8"
+              },
+              {
+                "title": "Figma Pro",
+                "value": "\u2705 Paid Apr 3 \u2014 $15/user \u00d7 3"
+              },
+              {
+                "title": "Slack Business+",
+                "value": "\u2705 Paid Apr 5 \u2014 $12.50/user \u00d7 15"
+              },
+              {
+                "title": "AWS EC2 Ireland",
+                "value": "\u2705 Paid Apr 8 \u2014 $124.50"
+              },
+              {
+                "title": "Azure April",
+                "value": "\ud83d\udd34 Overdue \u2014 Rp 18.5M"
+              },
+              {
+                "title": "Contabo VPS",
+                "value": "\u23f3 Due Apr 25 \u2014 \u20ac45"
+              },
+              {
+                "title": "JetBrains Licenses",
+                "value": "\u23f3 Due Apr 28 \u2014 $599"
+              }
+            ]
+          },
+          {
+            "type": "Container",
+            "style": "emphasis",
+            "spacing": "Medium",
+            "items": [
+              {
+                "type": "ColumnSet",
+                "columns": [
+                  {
+                    "type": "Column",
+                    "width": "1",
+                    "items": [
+                      {
+                        "type": "TextBlock",
+                        "text": "Total Paid",
+                        "size": "Small",
+                        "isSubtle": true,
+                        "horizontalAlignment": "Center"
+                      },
+                      {
+                        "type": "TextBlock",
+                        "text": "Rp 8.2M",
+                        "weight": "Bolder",
+                        "color": "Good",
+                        "horizontalAlignment": "Center",
+                        "spacing": "None"
+                      }
+                    ]
+                  },
+                  {
+                    "type": "Column",
+                    "width": "1",
+                    "items": [
+                      {
+                        "type": "TextBlock",
+                        "text": "Outstanding",
+                        "size": "Small",
+                        "isSubtle": true,
+                        "horizontalAlignment": "Center"
+                      },
+                      {
+                        "type": "TextBlock",
+                        "text": "Rp 28.4M",
+                        "weight": "Bolder",
+                        "color": "Warning",
+                        "horizontalAlignment": "Center",
+                        "spacing": "None"
+                      }
+                    ]
+                  },
+                  {
+                    "type": "Column",
+                    "width": "1",
+                    "items": [
+                      {
+                        "type": "TextBlock",
+                        "text": "Overdue",
+                        "size": "Small",
+                        "isSubtle": true,
+                        "horizontalAlignment": "Center"
+                      },
+                      {
+                        "type": "TextBlock",
+                        "text": "Rp 18.5M",
+                        "weight": "Bolder",
+                        "color": "Attention",
+                        "horizontalAlignment": "Center",
+                        "spacing": "None"
+                      }
+                    ]
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "type": "ActionSet",
+            "spacing": "Medium",
+            "actions": [
+              {
+                "type": "Action.Submit",
+                "title": "\ud83d\udce5 Export Report",
+                "data": {
+                  "action": "export_payment_report",
+                  "demo_mode": true
+                }
+              },
+              {
+                "type": "Action.ToggleVisibility",
+                "title": "\u2190 Back",
+                "targetElements": [
+                  {
+                    "elementId": "invTracker",
+                    "isVisible": false
+                  },
+                  {
+                    "elementId": "invMenu",
+                    "isVisible": true
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  "notes": "Multi-section card using Action.ToggleVisibility for in-card navigation. All non-main sections hidden by default."
+}

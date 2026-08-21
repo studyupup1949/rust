@@ -1,0 +1,12 @@
+[package]
+name = "adb-rust" # 你的包名
+version = "0.1.1" # 初始版本号
+edition = "2018" # Rust 版本
+authors = ["Zengyuhan <zengyuhan503@gmail.com>"] # 作者信息
+license = "MIT" # 许可证
+description = "A common adb operation" # 描述你的仓库地址
+keywords = ["adb", "command"] # 可选：关键词，帮助别人发现你的包
+categories = ["command-line-utilities"] # 可选：分类
+
+[dependencies]
+tokio = { version = "1.0", features = ["full"] }

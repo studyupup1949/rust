@@ -1,0 +1,19 @@
+load("@buckal//:wrapper.bzl", "rust_library")
+
+rust_library(
+    name = "adhammer_collector",
+    srcs = glob(["**/*.rs"]),
+    crate = "adhammer_collector",
+    crate_root = "src/lib.rs",
+    edition = "2021",
+
+    visibility = ["PUBLIC"],
+    deps = [
+        "//third-party/rust/crates/adhammer-core/0.0.1:adhammer_core",
+        "//third-party/rust/crates/anyhow/1.0.104:anyhow",
+        "//third-party/rust/crates/ldap3/0.11.5:ldap3",
+        "//third-party/rust/crates/rustls/0.21.12:rustls",
+        "//third-party/rust/crates/tokio/1.53.1:tokio",
+        "//third-party/rust/crates/tracing/0.1.44:tracing",
+    ],
+)

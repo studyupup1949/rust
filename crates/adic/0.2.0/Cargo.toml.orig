@@ -1,0 +1,20 @@
+[package]
+name = "adic"
+version = "0.2.0"
+description = "Arithmetic and rootfinding for p-adic numbers"
+repository = "https://gitlab.com/pmodular/adic"
+readme = "readme.md"
+edition = "2021"
+license = "MIT OR Apache-2.0"
+keywords = ["mathematics", "modular", "number", "padic"]
+categories = ["mathematics", "science"]
+
+[dependencies]
+clap = { version = "4.5.20", features = ["derive"] }
+itertools = "0.13.0"
+num = "0.4.3"
+num-prime = "0.4.4"
+serde = { version = "1.0.215", optional=true, features = ["derive"] }
+
+[lints]
+workspace = true

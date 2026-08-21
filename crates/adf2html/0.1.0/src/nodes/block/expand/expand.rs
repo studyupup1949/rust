@@ -1,0 +1,114 @@
+use serde::{Deserialize, Serialize};
+use uuid::Uuid;
+
+use crate::{
+    marks::mark::Mark,
+    nodes::inline::text::Text,
+    ToHtml
+};
+
+use super::{
+    nested_expand::NestedExpand, 
+    super::{
+        blockquote::Blockquote, 
+        list::{bullet_list::BulletList, ordered_list::OrderedList},
+        code_block::CodeBlock, 
+        heading::Heading, 
+        media::{media_group::MediaGroup, media_single::MediaSingle},
+        panel::Panel, 
+        paragraph::Paragraph, 
+        table::table::Table, 
+    },
+};
+
+#[derive(Clone, Debug, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct Expand {
+    pub content: Vec<Content>,
+    #[serde(rename = "attrs")]
+    pub attributes: Attributes,
+    pub marks: Option<Vec<Mark>>,
+}
+
+#[derive(Clone, Debug, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct Attributes {
+    pub title: String,
+}
+
+#[derive(Clone, Debug, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase", tag = "type")]
+pub enum Content {
+    Blockquote(Blockquote),
+    BulletList(BulletList),
+    CodeBlock(CodeBlock),
+    Heading(Heading),
+    MediaGroup(MediaGroup),
+    MediaSingle(MediaSingle),
+    OrderedList(OrderedList),
+    Panel(Panel),
+    Paragraph(Paragraph),
+    Rule,
+    Table(Table),
+    NestedExpand(NestedExpand),
+}
+
+impl ToHtml for Expand {
+    fn to_html(&self) -> String {
+        let title = Text::new(self.attributes.title.clone(), self.marks.clone()).to_html();
+        let content = self.content
+            .iter()
+            .map(|n| n.to_html())
+            .collect::<String>();
+
+        expand_html_formatting(title, content)
+    }
+}
+
+pub(crate) fn expand_html_formatting(title: String, content: String) -> String {
+    let arrow_id = Uuid::new_v4().to_string();
+    let expandable_content_id = Uuid::new_v4().to_string();
+    
+    format!(
+        r#"
+            <p 
+                style="display: flex; align-items: center; cursor: pointer; padding: 4px;" 
+                onclick="
+                    var content = document.getElementById('{expandable_content_id}');
+                    var arrow = document.getElementById('{arrow_id}');
+                    content.style.display = (content.style.display === 'none' || content.style.display === '') ? 'block' : 'none';
+                    arrow.style.transform = (arrow.style.transform === 'rotate(90deg)') ? 'rotate(0deg)' : 'rotate(90deg)';
+                "
+            >
+                <span style="display: inline-flex; align-items: center;">
+                    <svg width="24" height="24" id="{arrow_id}" style="transition: transform 0.3s ease; vertical-align: middle;">
+                    <path d="M10.294 9.698a.99.99 0 0 1 0-1.407 1.01 1.01 0 0 1 1.419 0l2.965 2.94a1.09 1.09 0 0 1 0 1.548l-2.955 2.93a1.01 1.01 0 0 1-1.42 0 .99.99 0 0 1 0-1.407l2.318-2.297z"></path>
+                    </svg>
+                </span>
+                {title}
+            </p>
+            <div style="display: none; margin-left: 32px;" id="{expandable_content_id}">
+                {content}
+            </div>
+        "#
+    )
+}
+
+impl ToHtml for Content {
+    fn to_html(&self) -> String {
+        match self {
+            Content::Blockquote(blockquote) => blockquote.to_html(),
+            Content::BulletList(bullet_list) => bullet_list.to_html(),
+            Content::CodeBlock(code_block) => code_block.to_html(),
+            Content::Heading(heading) => heading.to_html(),
+            Content::MediaGroup(media_group) => media_group.to_html(),
+            Content::MediaSingle(media_single) => media_single.to_html(),
+            Content::OrderedList(ordered_list) => ordered_list.to_html(),
+            Content::Panel(panel) => panel.to_html(),
+            Content::Paragraph(paragraph) => paragraph.to_html(),
+            Content::Rule => String::from("<hr/>"),
+            Content::Table(table) => table.to_html(),
+            Content::NestedExpand(nested_expand) => nested_expand.to_html(),
+        }
+    }
+}

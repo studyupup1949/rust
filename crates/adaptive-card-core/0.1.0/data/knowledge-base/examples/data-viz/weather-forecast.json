@@ -1,0 +1,440 @@
+{
+  "id": "data-viz/weather-forecast",
+  "title": "Weather Forecast \u2014 Multi-city with 5-day forecast and search",
+  "description": "Weather dashboard showing current conditions, 5-day forecast via ColumnSet grid, city search input, and unit toggle. Uses ToggleVisibility for tabbed sections, Container styles for weather conditions, Image icons for weather states, and FactSet for detailed metrics.",
+  "category": "data-viz",
+  "tags": [
+    "weather",
+    "forecast",
+    "dashboard",
+    "data-viz",
+    "toggle-visibility",
+    "columnset",
+    "image",
+    "search",
+    "temperature"
+  ],
+  "use_cases": [
+    "Display current weather conditions for a city",
+    "5-day weather forecast grid",
+    "City search with unit toggle",
+    "Data visualization with icons and colors"
+  ],
+  "host_targets": [
+    "generic",
+    "teams",
+    "web_chat"
+  ],
+  "complexity": "intermediate",
+  "card": {
+    "$schema": "http://adaptivecards.io/schemas/adaptive-card.json",
+    "type": "AdaptiveCard",
+    "version": "1.5",
+    "metadata": {
+      "webUrl": "https://greentic.io/cards/weather-forecast",
+      "demo_mode": true
+    },
+    "body": [
+      {
+        "type": "Container",
+        "id": "weatherSearch",
+        "isVisible": true,
+        "items": [
+          {
+            "type": "ColumnSet",
+            "columns": [
+              {
+                "type": "Column",
+                "width": "auto",
+                "items": [
+                  {
+                    "type": "Image",
+                    "url": "https://img.icons8.com/fluency/96/partly-cloudy-day.png",
+                    "size": "Medium"
+                  }
+                ],
+                "verticalContentAlignment": "Center"
+              },
+              {
+                "type": "Column",
+                "width": "stretch",
+                "items": [
+                  {
+                    "type": "TextBlock",
+                    "text": "Weather Forecast",
+                    "size": "ExtraLarge",
+                    "weight": "Bolder",
+                    "color": "Accent"
+                  },
+                  {
+                    "type": "TextBlock",
+                    "text": "Get current conditions and 5-day forecast for any city.",
+                    "spacing": "None",
+                    "isSubtle": true,
+                    "wrap": true
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "type": "Input.Text",
+            "id": "weather_location",
+            "label": "City or Location",
+            "placeholder": "e.g. Tokyo, Jakarta, London",
+            "isRequired": true,
+            "errorMessage": "Please enter a city name."
+          },
+          {
+            "type": "Input.ChoiceSet",
+            "id": "weather_units",
+            "label": "Temperature Unit",
+            "value": "celsius",
+            "choices": [
+              {
+                "title": "\u00b0C Celsius",
+                "value": "celsius"
+              },
+              {
+                "title": "\u00b0F Fahrenheit",
+                "value": "fahrenheit"
+              }
+            ]
+          },
+          {
+            "type": "ActionSet",
+            "actions": [
+              {
+                "type": "Action.ToggleVisibility",
+                "title": "\ud83d\udd0d Get Weather",
+                "style": "positive",
+                "targetElements": [
+                  {
+                    "elementId": "weatherSearch",
+                    "isVisible": false
+                  },
+                  {
+                    "elementId": "weatherResult",
+                    "isVisible": true
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "type": "Container",
+        "id": "weatherResult",
+        "isVisible": false,
+        "items": [
+          {
+            "type": "Container",
+            "style": "emphasis",
+            "bleed": true,
+            "items": [
+              {
+                "type": "ColumnSet",
+                "columns": [
+                  {
+                    "type": "Column",
+                    "width": "auto",
+                    "items": [
+                      {
+                        "type": "Image",
+                        "url": "https://img.icons8.com/fluency/96/sun.png",
+                        "size": "Large"
+                      }
+                    ],
+                    "verticalContentAlignment": "Center"
+                  },
+                  {
+                    "type": "Column",
+                    "width": "stretch",
+                    "items": [
+                      {
+                        "type": "TextBlock",
+                        "text": "Tokyo, Japan",
+                        "size": "Large",
+                        "weight": "Bolder"
+                      },
+                      {
+                        "type": "TextBlock",
+                        "text": "28\u00b0C",
+                        "size": "ExtraLarge",
+                        "weight": "Bolder",
+                        "color": "Accent",
+                        "spacing": "None"
+                      },
+                      {
+                        "type": "TextBlock",
+                        "text": "Mostly Sunny  \u2022  Feels like 31\u00b0C",
+                        "spacing": "None",
+                        "isSubtle": true
+                      }
+                    ]
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "type": "FactSet",
+            "spacing": "Medium",
+            "facts": [
+              {
+                "title": "\ud83d\udca7 Humidity",
+                "value": "62%"
+              },
+              {
+                "title": "\ud83d\udca8 Wind",
+                "value": "12 km/h SW"
+              },
+              {
+                "title": "\ud83c\udf05 Sunrise",
+                "value": "04:52"
+              },
+              {
+                "title": "\ud83c\udf07 Sunset",
+                "value": "18:34"
+              },
+              {
+                "title": "\u2602\ufe0f Rain chance",
+                "value": "10%"
+              },
+              {
+                "title": "\ud83d\udc41\ufe0f Visibility",
+                "value": "16 km"
+              },
+              {
+                "title": "\ud83d\udd06 UV Index",
+                "value": "7 (High)"
+              }
+            ]
+          },
+          {
+            "type": "TextBlock",
+            "text": "5-Day Forecast",
+            "weight": "Bolder",
+            "size": "Medium",
+            "spacing": "Large"
+          },
+          {
+            "type": "ColumnSet",
+            "columns": [
+              {
+                "type": "Column",
+                "width": "1",
+                "items": [
+                  {
+                    "type": "TextBlock",
+                    "text": "Mon",
+                    "weight": "Bolder",
+                    "horizontalAlignment": "Center"
+                  },
+                  {
+                    "type": "Image",
+                    "url": "https://img.icons8.com/fluency/48/sun.png",
+                    "size": "Small",
+                    "horizontalAlignment": "Center"
+                  },
+                  {
+                    "type": "TextBlock",
+                    "text": "29\u00b0",
+                    "horizontalAlignment": "Center",
+                    "spacing": "None"
+                  },
+                  {
+                    "type": "TextBlock",
+                    "text": "21\u00b0",
+                    "horizontalAlignment": "Center",
+                    "isSubtle": true,
+                    "spacing": "None",
+                    "size": "Small"
+                  }
+                ]
+              },
+              {
+                "type": "Column",
+                "width": "1",
+                "items": [
+                  {
+                    "type": "TextBlock",
+                    "text": "Tue",
+                    "weight": "Bolder",
+                    "horizontalAlignment": "Center"
+                  },
+                  {
+                    "type": "Image",
+                    "url": "https://img.icons8.com/fluency/48/partly-cloudy-day.png",
+                    "size": "Small",
+                    "horizontalAlignment": "Center"
+                  },
+                  {
+                    "type": "TextBlock",
+                    "text": "27\u00b0",
+                    "horizontalAlignment": "Center",
+                    "spacing": "None"
+                  },
+                  {
+                    "type": "TextBlock",
+                    "text": "20\u00b0",
+                    "horizontalAlignment": "Center",
+                    "isSubtle": true,
+                    "spacing": "None",
+                    "size": "Small"
+                  }
+                ]
+              },
+              {
+                "type": "Column",
+                "width": "1",
+                "items": [
+                  {
+                    "type": "TextBlock",
+                    "text": "Wed",
+                    "weight": "Bolder",
+                    "horizontalAlignment": "Center"
+                  },
+                  {
+                    "type": "Image",
+                    "url": "https://img.icons8.com/fluency/48/rain.png",
+                    "size": "Small",
+                    "horizontalAlignment": "Center"
+                  },
+                  {
+                    "type": "TextBlock",
+                    "text": "24\u00b0",
+                    "horizontalAlignment": "Center",
+                    "spacing": "None"
+                  },
+                  {
+                    "type": "TextBlock",
+                    "text": "19\u00b0",
+                    "horizontalAlignment": "Center",
+                    "isSubtle": true,
+                    "spacing": "None",
+                    "size": "Small"
+                  }
+                ]
+              },
+              {
+                "type": "Column",
+                "width": "1",
+                "items": [
+                  {
+                    "type": "TextBlock",
+                    "text": "Thu",
+                    "weight": "Bolder",
+                    "horizontalAlignment": "Center"
+                  },
+                  {
+                    "type": "Image",
+                    "url": "https://img.icons8.com/fluency/48/moderate-rain.png",
+                    "size": "Small",
+                    "horizontalAlignment": "Center"
+                  },
+                  {
+                    "type": "TextBlock",
+                    "text": "22\u00b0",
+                    "horizontalAlignment": "Center",
+                    "spacing": "None"
+                  },
+                  {
+                    "type": "TextBlock",
+                    "text": "18\u00b0",
+                    "horizontalAlignment": "Center",
+                    "isSubtle": true,
+                    "spacing": "None",
+                    "size": "Small"
+                  }
+                ]
+              },
+              {
+                "type": "Column",
+                "width": "1",
+                "items": [
+                  {
+                    "type": "TextBlock",
+                    "text": "Fri",
+                    "weight": "Bolder",
+                    "horizontalAlignment": "Center"
+                  },
+                  {
+                    "type": "Image",
+                    "url": "https://img.icons8.com/fluency/48/partly-cloudy-day.png",
+                    "size": "Small",
+                    "horizontalAlignment": "Center"
+                  },
+                  {
+                    "type": "TextBlock",
+                    "text": "26\u00b0",
+                    "horizontalAlignment": "Center",
+                    "spacing": "None"
+                  },
+                  {
+                    "type": "TextBlock",
+                    "text": "20\u00b0",
+                    "horizontalAlignment": "Center",
+                    "isSubtle": true,
+                    "spacing": "None",
+                    "size": "Small"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "type": "Container",
+            "style": "attention",
+            "spacing": "Medium",
+            "items": [
+              {
+                "type": "TextBlock",
+                "text": "\u26a0\ufe0f Weather Alert",
+                "weight": "Bolder",
+                "color": "Attention"
+              },
+              {
+                "type": "TextBlock",
+                "text": "Heavy rain expected Wednesday-Thursday. Possible localized flooding in low-lying areas. Carry an umbrella and plan indoor activities.",
+                "wrap": true,
+                "size": "Small"
+              }
+            ]
+          },
+          {
+            "type": "ActionSet",
+            "spacing": "Medium",
+            "actions": [
+              {
+                "type": "Action.Submit",
+                "title": "\ud83d\udccd Save as Favorite",
+                "data": {
+                  "action": "save_weather_favorite",
+                  "city": "Tokyo",
+                  "demo_mode": true
+                }
+              },
+              {
+                "type": "Action.ToggleVisibility",
+                "title": "\ud83d\udd0d Search Another City",
+                "targetElements": [
+                  {
+                    "elementId": "weatherResult",
+                    "isVisible": false
+                  },
+                  {
+                    "elementId": "weatherSearch",
+                    "isVisible": true
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  "notes": "Single-card multi-section app using Action.ToggleVisibility for navigation. All sections hidden by default (isVisible:false) except the main view. Card version 1.5 for broad host compatibility."
+}

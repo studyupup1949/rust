@@ -1,0 +1,21 @@
+[package]
+name = "ad5700"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+repository.workspace = true
+homepage.workspace = true
+description = "AD5700-1 HART modem driver for embedded-hal with blocking and async support"
+keywords = ["hart", "ad5700", "modem", "embedded", "embedded-hal"]
+categories = ["embedded", "no-std", "hardware-support"]
+readme = "../README.md"
+
+[dependencies]
+hart-protocol = { version = "0.1.0", path = "../hart-protocol" }
+embedded-hal = "1.0"
+embedded-hal-async = "1.0"
+embedded-io = "0.7"
+embedded-io-async = "0.7"
+
+[dev-dependencies]
+embedded-hal-mock = { version = "0.11", features = ["eh1"] }

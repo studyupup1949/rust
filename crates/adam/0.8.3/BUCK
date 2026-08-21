@@ -1,0 +1,38 @@
+load("@buckal//:wrapper.bzl", "rust_binary")
+
+rust_binary(
+    name = "adam",
+    srcs = glob(["**/*.rs"]),
+    crate = "adam",
+    crate_root = "src/main.rs",
+    edition = "2021",
+
+    visibility = ["PUBLIC"],
+    deps = [
+        "//third-party/rust/crates/aho-corasick/0.7.20:aho_corasick",
+        "//third-party/rust/crates/camino/1.2.5:camino",
+        "//third-party/rust/crates/clap/4.6.6:clap",
+        "//third-party/rust/crates/color-eyre/0.6.5:color_eyre",
+        "//third-party/rust/crates/colored/2.2.0:colored",
+        "//third-party/rust/crates/confy/0.5.1:confy",
+        "//third-party/rust/crates/console/0.15.11:console",
+        "//third-party/rust/crates/const_format/0.2.36:const_format",
+        "//third-party/rust/crates/ctrlc/3.5.2:ctrlc",
+        "//third-party/rust/crates/directories/5.0.1:directories",
+        "//third-party/rust/crates/dunce/1.0.5:dunce",
+        "//third-party/rust/crates/filetime/0.2.29:filetime",
+        "//third-party/rust/crates/heck/0.4.1:heck",
+        "//third-party/rust/crates/indicatif/0.17.11:indicatif",
+        "//third-party/rust/crates/once_cell/1.21.4:once_cell",
+        "//third-party/rust/crates/regex/1.13.1:regex",
+        "//third-party/rust/crates/rustc-hash/1.1.0:rustc_hash",
+        "//third-party/rust/crates/serde/1.0.229:serde",
+        "//third-party/rust/crates/serde_json/1.0.151:serde_json",
+        "//third-party/rust/crates/sysinfo/0.28.4:sysinfo",
+        "//third-party/rust/crates/toml/0.7.8:toml",
+        "//third-party/rust/crates/toml_edit/0.20.7:toml_edit",
+        "//third-party/rust/crates/walkdir/2.5.0:walkdir",
+        "//third-party/rust/crates/yy-boss/0.8.0:yy_boss",
+        "//third-party/rust/crates/yy-typings/0.6.0:yy_typings",
+    ],
+)

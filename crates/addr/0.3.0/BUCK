@@ -1,0 +1,19 @@
+load("@buckal//:wrapper.bzl", "rust_library")
+
+rust_library(
+    name = "addr",
+    srcs = glob(["**/*.rs"]),
+    crate = "addr",
+    crate_root = "src/lib.rs",
+    edition = "2015",
+
+    visibility = ["PUBLIC"],
+    deps = [
+        "//third-party/rust/crates/error-chain/0.12.4:error_chain",
+        "//third-party/rust/crates/idna/0.2.3:idna",
+        "//third-party/rust/crates/lazy_static/1.5.0:lazy_static",
+        "//third-party/rust/crates/psl/0.5.0:psl",
+        "//third-party/rust/crates/regex/1.13.1:regex",
+        "//third-party/rust/crates/rental/0.5.6:rental",
+    ],
+)

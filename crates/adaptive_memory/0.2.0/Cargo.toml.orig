@@ -1,0 +1,25 @@
+[package]
+name = "adaptive_memory"
+version = "0.2.0"
+edition = "2024"
+description = "An associative memory system using spreading activation with SQLite FTS5 full-text search"
+license = "MIT"
+repository = "https://github.com/spoj/adaptive_memory"
+keywords = ["memory", "search", "sqlite", "fts5", "spreading-activation"]
+categories = ["database", "text-processing"]
+
+[lib]
+name = "adaptive_memory"
+path = "src/lib.rs"
+
+[[bin]]
+name = "adaptive-memory"
+path = "src/main.rs"
+
+[dependencies]
+rusqlite = { version = "0.32", features = ["bundled"] }
+clap = { version = "4", features = ["derive"] }
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+chrono = { version = "0.4", features = ["serde"] }
+dirs = "5"

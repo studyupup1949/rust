@@ -1,0 +1,580 @@
+{
+  "id": "hr/performance-review",
+  "title": "Performance Review \u2014 Goals, Ratings, and Feedback",
+  "description": "Performance review card with self-assessment, rating scales for competencies, goal tracking, peer feedback, and manager comments. Uses Input.ChoiceSet for ratings, FactSet for goals, and Container styles for sections.",
+  "category": "hr",
+  "tags": [
+    "hr",
+    "performance",
+    "review",
+    "rating",
+    "goals",
+    "feedback",
+    "appraisal",
+    "competency",
+    "self-assessment"
+  ],
+  "use_cases": [
+    "Annual performance review cycle",
+    "360-degree feedback collection",
+    "Goal setting and tracking",
+    "Self-assessment and manager review"
+  ],
+  "host_targets": [
+    "generic",
+    "teams",
+    "web_chat"
+  ],
+  "complexity": "advanced",
+  "card": {
+    "$schema": "http://adaptivecards.io/schemas/adaptive-card.json",
+    "type": "AdaptiveCard",
+    "version": "1.5",
+    "metadata": {
+      "webUrl": "https://greentic.io/cards/performance-review",
+      "demo_mode": true
+    },
+    "body": [
+      {
+        "type": "Container",
+        "id": "prMenu",
+        "isVisible": true,
+        "style": "emphasis",
+        "bleed": true,
+        "items": [
+          {
+            "type": "ColumnSet",
+            "columns": [
+              {
+                "type": "Column",
+                "width": "auto",
+                "items": [
+                  {
+                    "type": "Image",
+                    "url": "https://img.icons8.com/fluency/96/ratings.png",
+                    "size": "Medium"
+                  }
+                ],
+                "verticalContentAlignment": "Center"
+              },
+              {
+                "type": "Column",
+                "width": "stretch",
+                "items": [
+                  {
+                    "type": "TextBlock",
+                    "text": "Performance Review",
+                    "size": "ExtraLarge",
+                    "weight": "Bolder",
+                    "color": "Accent"
+                  },
+                  {
+                    "type": "TextBlock",
+                    "text": "Self-assessment, goal tracking, and 360\u00b0 feedback.",
+                    "spacing": "None",
+                    "isSubtle": true,
+                    "wrap": true
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "type": "Container",
+            "style": "good",
+            "spacing": "Medium",
+            "items": [
+              {
+                "type": "TextBlock",
+                "text": "Review Cycle: Q1 2026 (Jan\u2013Mar)",
+                "weight": "Bolder"
+              },
+              {
+                "type": "TextBlock",
+                "text": "\u23f3 Self-assessment due: April 18, 2026 (6 days left)",
+                "color": "Warning",
+                "size": "Small",
+                "spacing": "None"
+              }
+            ]
+          },
+          {
+            "type": "ActionSet",
+            "spacing": "Medium",
+            "actions": [
+              {
+                "type": "Action.ToggleVisibility",
+                "title": "\ud83d\udcdd Self-Assessment",
+                "style": "positive",
+                "targetElements": [
+                  {
+                    "elementId": "prMenu",
+                    "isVisible": false
+                  },
+                  {
+                    "elementId": "prSelf",
+                    "isVisible": true
+                  }
+                ]
+              },
+              {
+                "type": "Action.ToggleVisibility",
+                "title": "\ud83c\udfaf Goals & OKRs",
+                "targetElements": [
+                  {
+                    "elementId": "prMenu",
+                    "isVisible": false
+                  },
+                  {
+                    "elementId": "prGoals",
+                    "isVisible": true
+                  }
+                ]
+              },
+              {
+                "type": "Action.ToggleVisibility",
+                "title": "\ud83d\udc65 Peer Feedback",
+                "targetElements": [
+                  {
+                    "elementId": "prMenu",
+                    "isVisible": false
+                  },
+                  {
+                    "elementId": "prPeer",
+                    "isVisible": true
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "type": "Container",
+        "id": "prSelf",
+        "isVisible": false,
+        "items": [
+          {
+            "type": "TextBlock",
+            "text": "\ud83d\udcdd Self-Assessment \u2014 Q1 2026",
+            "size": "Large",
+            "weight": "Bolder",
+            "color": "Accent"
+          },
+          {
+            "type": "TextBlock",
+            "text": "Rate yourself honestly on each competency area.",
+            "isSubtle": true,
+            "wrap": true,
+            "spacing": "Small"
+          },
+          {
+            "type": "Input.ChoiceSet",
+            "id": "pr_technical",
+            "label": "Technical Expertise",
+            "isRequired": true,
+            "choices": [
+              {
+                "title": "\u2b50\u2b50\u2b50\u2b50\u2b50 Exceptional \u2014 Exceeds all expectations",
+                "value": "5"
+              },
+              {
+                "title": "\u2b50\u2b50\u2b50\u2b50 Strong \u2014 Exceeds most expectations",
+                "value": "4"
+              },
+              {
+                "title": "\u2b50\u2b50\u2b50 Solid \u2014 Meets expectations",
+                "value": "3"
+              },
+              {
+                "title": "\u2b50\u2b50 Developing \u2014 Partially meets expectations",
+                "value": "2"
+              },
+              {
+                "title": "\u2b50 Needs Improvement",
+                "value": "1"
+              }
+            ]
+          },
+          {
+            "type": "Input.ChoiceSet",
+            "id": "pr_delivery",
+            "label": "Project Delivery & Quality",
+            "isRequired": true,
+            "choices": [
+              {
+                "title": "\u2b50\u2b50\u2b50\u2b50\u2b50 Exceptional",
+                "value": "5"
+              },
+              {
+                "title": "\u2b50\u2b50\u2b50\u2b50 Strong",
+                "value": "4"
+              },
+              {
+                "title": "\u2b50\u2b50\u2b50 Solid",
+                "value": "3"
+              },
+              {
+                "title": "\u2b50\u2b50 Developing",
+                "value": "2"
+              },
+              {
+                "title": "\u2b50 Needs Improvement",
+                "value": "1"
+              }
+            ]
+          },
+          {
+            "type": "Input.ChoiceSet",
+            "id": "pr_collab",
+            "label": "Collaboration & Communication",
+            "isRequired": true,
+            "choices": [
+              {
+                "title": "\u2b50\u2b50\u2b50\u2b50\u2b50 Exceptional",
+                "value": "5"
+              },
+              {
+                "title": "\u2b50\u2b50\u2b50\u2b50 Strong",
+                "value": "4"
+              },
+              {
+                "title": "\u2b50\u2b50\u2b50 Solid",
+                "value": "3"
+              },
+              {
+                "title": "\u2b50\u2b50 Developing",
+                "value": "2"
+              },
+              {
+                "title": "\u2b50 Needs Improvement",
+                "value": "1"
+              }
+            ]
+          },
+          {
+            "type": "Input.ChoiceSet",
+            "id": "pr_leadership",
+            "label": "Leadership & Initiative",
+            "isRequired": true,
+            "choices": [
+              {
+                "title": "\u2b50\u2b50\u2b50\u2b50\u2b50 Exceptional",
+                "value": "5"
+              },
+              {
+                "title": "\u2b50\u2b50\u2b50\u2b50 Strong",
+                "value": "4"
+              },
+              {
+                "title": "\u2b50\u2b50\u2b50 Solid",
+                "value": "3"
+              },
+              {
+                "title": "\u2b50\u2b50 Developing",
+                "value": "2"
+              },
+              {
+                "title": "\u2b50 Needs Improvement",
+                "value": "1"
+              }
+            ]
+          },
+          {
+            "type": "Input.Text",
+            "id": "pr_achievements",
+            "label": "Key Achievements This Quarter",
+            "placeholder": "List your top 3-5 accomplishments...",
+            "isMultiline": true,
+            "isRequired": true
+          },
+          {
+            "type": "Input.Text",
+            "id": "pr_challenges",
+            "label": "Challenges & Areas for Growth",
+            "placeholder": "What obstacles did you face? Where do you want to improve?",
+            "isMultiline": true
+          },
+          {
+            "type": "Input.Text",
+            "id": "pr_support",
+            "label": "Support Needed from Manager",
+            "placeholder": "Training, resources, mentorship, clearer priorities...",
+            "isMultiline": true
+          },
+          {
+            "type": "ActionSet",
+            "spacing": "Medium",
+            "actions": [
+              {
+                "type": "Action.Submit",
+                "title": "\ud83d\udce4 Submit Self-Assessment",
+                "style": "positive",
+                "data": {
+                  "action": "submit_self_assessment",
+                  "demo_mode": true
+                }
+              },
+              {
+                "type": "Action.ToggleVisibility",
+                "title": "\u2190 Back",
+                "targetElements": [
+                  {
+                    "elementId": "prSelf",
+                    "isVisible": false
+                  },
+                  {
+                    "elementId": "prMenu",
+                    "isVisible": true
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "type": "Container",
+        "id": "prGoals",
+        "isVisible": false,
+        "items": [
+          {
+            "type": "TextBlock",
+            "text": "\ud83c\udfaf Goals & OKRs \u2014 2026",
+            "size": "Large",
+            "weight": "Bolder",
+            "color": "Accent"
+          },
+          {
+            "type": "Container",
+            "style": "good",
+            "items": [
+              {
+                "type": "TextBlock",
+                "text": "OKR 1: Deliver MAP FAS Phase 2 on time",
+                "weight": "Bolder"
+              },
+              {
+                "type": "FactSet",
+                "facts": [
+                  {
+                    "title": "KR1",
+                    "value": "\u2705 Bronze\u2192Silver pipeline live (Done)"
+                  },
+                  {
+                    "title": "KR2",
+                    "value": "\u23f3 Gold Mart 80% complete (65%)"
+                  },
+                  {
+                    "title": "KR3",
+                    "value": "\u2b1c Stakeholder sign-off (Pending)"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "type": "Container",
+            "style": "warning",
+            "separator": true,
+            "items": [
+              {
+                "type": "TextBlock",
+                "text": "OKR 2: Build repeatable AI chatbot delivery framework",
+                "weight": "Bolder"
+              },
+              {
+                "type": "FactSet",
+                "facts": [
+                  {
+                    "title": "KR1",
+                    "value": "\u2705 ANTAM chatbot POC delivered (Done)"
+                  },
+                  {
+                    "title": "KR2",
+                    "value": "\u23f3 Template architecture doc (50%)"
+                  },
+                  {
+                    "title": "KR3",
+                    "value": "\u2b1c Second client deployment (Not started)"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "type": "Container",
+            "style": "good",
+            "separator": true,
+            "items": [
+              {
+                "type": "TextBlock",
+                "text": "OKR 3: Grow team capabilities",
+                "weight": "Bolder"
+              },
+              {
+                "type": "FactSet",
+                "facts": [
+                  {
+                    "title": "KR1",
+                    "value": "\u2705 Hired 2 Sr Data Engineers (Done)"
+                  },
+                  {
+                    "title": "KR2",
+                    "value": "\u2705 Conducted 8 tech interviews (Done)"
+                  },
+                  {
+                    "title": "KR3",
+                    "value": "\u23f3 Intern training program (In progress)"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "type": "ActionSet",
+            "spacing": "Medium",
+            "actions": [
+              {
+                "type": "Action.Submit",
+                "title": "\u2795 Add New Goal",
+                "style": "positive",
+                "data": {
+                  "action": "add_goal",
+                  "demo_mode": true
+                }
+              },
+              {
+                "type": "Action.ToggleVisibility",
+                "title": "\u2190 Back",
+                "targetElements": [
+                  {
+                    "elementId": "prGoals",
+                    "isVisible": false
+                  },
+                  {
+                    "elementId": "prMenu",
+                    "isVisible": true
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "type": "Container",
+        "id": "prPeer",
+        "isVisible": false,
+        "items": [
+          {
+            "type": "TextBlock",
+            "text": "\ud83d\udc65 Give Peer Feedback",
+            "size": "Large",
+            "weight": "Bolder",
+            "color": "Accent"
+          },
+          {
+            "type": "TextBlock",
+            "text": "You have been requested to provide feedback for the following colleagues.",
+            "isSubtle": true,
+            "wrap": true,
+            "spacing": "Small"
+          },
+          {
+            "type": "Input.ChoiceSet",
+            "id": "pr_peer_select",
+            "label": "Select Colleague",
+            "isRequired": true,
+            "choices": [
+              {
+                "title": "Dewi Sari \u2014 Sr Data Engineer (\u23f3 Due Apr 16)",
+                "value": "dewi"
+              },
+              {
+                "title": "Reza Pratama \u2014 Backend Dev (\u23f3 Due Apr 16)",
+                "value": "reza"
+              },
+              {
+                "title": "Fajar Nugroho \u2014 DevOps (\u2705 Completed)",
+                "value": "fajar"
+              }
+            ]
+          },
+          {
+            "type": "Input.ChoiceSet",
+            "id": "pr_peer_rating",
+            "label": "Overall Rating",
+            "choices": [
+              {
+                "title": "\u2b50\u2b50\u2b50\u2b50\u2b50 Exceptional",
+                "value": "5"
+              },
+              {
+                "title": "\u2b50\u2b50\u2b50\u2b50 Strong",
+                "value": "4"
+              },
+              {
+                "title": "\u2b50\u2b50\u2b50 Solid",
+                "value": "3"
+              },
+              {
+                "title": "\u2b50\u2b50 Developing",
+                "value": "2"
+              }
+            ]
+          },
+          {
+            "type": "Input.Text",
+            "id": "pr_peer_strengths",
+            "label": "What does this person do well?",
+            "isMultiline": true,
+            "isRequired": true
+          },
+          {
+            "type": "Input.Text",
+            "id": "pr_peer_improve",
+            "label": "What could they improve?",
+            "isMultiline": true
+          },
+          {
+            "type": "Input.Toggle",
+            "id": "pr_peer_anonymous",
+            "title": "Submit feedback anonymously",
+            "value": "true"
+          },
+          {
+            "type": "ActionSet",
+            "spacing": "Medium",
+            "actions": [
+              {
+                "type": "Action.Submit",
+                "title": "\ud83d\udce4 Submit Feedback",
+                "style": "positive",
+                "data": {
+                  "action": "submit_peer_feedback",
+                  "demo_mode": true
+                }
+              },
+              {
+                "type": "Action.ToggleVisibility",
+                "title": "\u2190 Back",
+                "targetElements": [
+                  {
+                    "elementId": "prPeer",
+                    "isVisible": false
+                  },
+                  {
+                    "elementId": "prMenu",
+                    "isVisible": true
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  "notes": "Multi-section card using Action.ToggleVisibility for in-card navigation. All non-main sections hidden by default."
+}

@@ -1,0 +1,30 @@
+[package]
+name = "adao99-tauri-plugin-printer"
+version = "1.0.10"
+edition = "2021"
+authors = ["Alfian Lensun <alfianlensundev@gmail.com>"]
+description = "Tauri Plugin for printer access"
+homepage = "https://crates.io/crates/tauri-plugin-printer"
+readme = "README.md"
+rust-version = "1.79"
+exclude = ["/examples"]
+keywords = [
+    "tauri",
+    "printer",
+    "print",
+    "printing",
+    "json"
+]
+categories = [
+    "os",
+    "os::windows-apis"
+]
+license = "MIT"
+repository = "https://github.com/alfianlensundev/tauri-plugin-printer"
+
+
+[dependencies]
+base64 = "0.22.1"
+tauri-plugin-shell = "2.0.0-beta"
+tauri = { version = "2.0.0-beta.22" }
+

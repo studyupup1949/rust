@@ -1,0 +1,26 @@
+[package]
+name = "adept-fmt"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+repository.workspace = true
+rust-version.workspace = true
+readme.workspace = true
+keywords.workspace = true
+homepage.workspace = true
+categories.workspace = true
+description = "Canonical formatter for SKILL.md agent skills: frontmatter ordering and Markdown reflow, idempotent and atomic."
+
+[dependencies]
+adept-core = { workspace = true }
+serde = { workspace = true }
+serde_yaml = { workspace = true }
+thiserror = { workspace = true }
+similar = { workspace = true }
+
+[dev-dependencies]
+# Only the formatter's test-side semantic oracle inspects raw events; the
+# parser itself lives in `adept::markdown`.
+pulldown-cmark = { workspace = true }
+insta = { workspace = true }
+proptest = "1"

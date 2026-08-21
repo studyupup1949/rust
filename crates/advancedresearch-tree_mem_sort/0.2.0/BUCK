@@ -1,0 +1,11 @@
+load("@buckal//:wrapper.bzl", "rust_library")
+
+rust_library(
+    name = "tree_mem_sort",
+    srcs = glob(["**/*.rs"]),
+    crate = "tree_mem_sort",
+    crate_root = "src/lib.rs",
+    edition = "2018",
+
+    visibility = ["PUBLIC"],
+)

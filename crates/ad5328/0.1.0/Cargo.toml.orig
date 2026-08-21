@@ -1,0 +1,19 @@
+[package]
+name = "ad5328"
+description = "A rust-embedded driver for the Analog Devices ad5328 DAC"
+categories = ["embedded", "hardware-support", "no-std"]
+documentation = "https://docs.rs/ad5328"
+authors = ["Chris Maniewski"]
+version = "0.1.0"
+edition = "2021"
+readme = "README.md"
+license = "MIT OR Apache-2.0"
+repository = "https://git.sr.ht/~chmanie/ad5328"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+embedded-hal = "0.2.7"
+
+[dev-dependencies]
+embedded-hal-mock = "0.8.0"

@@ -1,0 +1,835 @@
+use serde::{Deserialize, Serialize};
+use serde_json::{Value, json};
+use std::any::TypeId;
+use std::future::{Future, IntoFuture};
+use std::marker::PhantomData;
+use std::pin::Pin;
+use std::sync::{Arc, Mutex};
+use std::time::{Duration, Instant};
+
+pub use adamastor_macros::schema;
+
+// ============ Error Handling ============
+
+#[derive(Debug, thiserror::Error)]
+pub enum AdamastorError {
+    #[error("API error: {0}")]
+    Api(String),
+
+    #[error("Failed to parse response: {0}")]
+    ParseError(String),
+
+    #[error("Network error: {0}")]
+    Network(#[from] reqwest::Error),
+
+    #[error("JSON error: {0}")]
+    Json(#[from] serde_json::Error),
+
+    #[error("File operation failed: {0}")]
+    FileOperation(String),
+}
+
+pub type Result<T> = std::result::Result<T, AdamastorError>;
+
+// ============ GeminiSchema Trait ============
+
+/// Trait for types that can generate Gemini JSON schemas
+pub trait GeminiSchema {
+    fn gemini_schema() -> Value;
+}
+
+// String is special - it means unstructured text response
+impl GeminiSchema for String {
+    fn gemini_schema() -> Value {
+        json!({"type": "STRING"})
+    }
+}
+
+impl GeminiSchema for bool {
+    fn gemini_schema() -> Value {
+        json!({"type": "BOOLEAN"})
+    }
+}
+
+impl GeminiSchema for i32 {
+    fn gemini_schema() -> Value {
+        json!({"type": "INTEGER", "format": "int32"})
+    }
+}
+
+impl GeminiSchema for i64 {
+    fn gemini_schema() -> Value {
+        json!({"type": "INTEGER", "format": "int64"})
+    }
+}
+
+impl GeminiSchema for u32 {
+    fn gemini_schema() -> Value {
+        json!({"type": "INTEGER", "format": "int32"})
+    }
+}
+
+impl GeminiSchema for u64 {
+    fn gemini_schema() -> Value {
+        json!({"type": "INTEGER", "format": "int64"})
+    }
+}
+
+impl GeminiSchema for f32 {
+    fn gemini_schema() -> Value {
+        json!({"type": "NUMBER", "format": "float"})
+    }
+}
+
+impl GeminiSchema for f64 {
+    fn gemini_schema() -> Value {
+        json!({"type": "NUMBER", "format": "double"})
+    }
+}
+
+impl<T: GeminiSchema> GeminiSchema for Vec<T> {
+    fn gemini_schema() -> Value {
+        json!({
+            "type": "ARRAY",
+            "items": T::gemini_schema()
+        })
+    }
+}
+
+impl<T: GeminiSchema> GeminiSchema for Option<T> {
+    fn gemini_schema() -> Value {
+        let mut schema = T::gemini_schema();
+        if let Some(obj) = schema.as_object_mut() {
+            obj.insert("nullable".to_string(), json!(true));
+        }
+        schema
+    }
+}
+
+// ============ File Handling ============
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct FileHandle {
+    pub uri: String,
+    pub mime_type: String,
+    pub name: Option<String>,
+    pub display_name: Option<String>,
+}
+
+impl FileHandle {
+    fn from_response(response: Value, mime_type: String) -> Result<Self> {
+        let file = response.get("file").ok_or_else(|| {
+            AdamastorError::ParseError("Missing 'file' field in upload response".to_string())
+        })?;
+
+        let uri = file
+            .get("uri")
+            .and_then(|u| u.as_str())
+            .ok_or_else(|| {
+                AdamastorError::ParseError("Missing or invalid 'uri' field".to_string())
+            })?
+            .to_string();
+
+        let name = file
+            .get("name")
+            .and_then(|n| n.as_str())
+            .map(|s| s.to_string());
+
+        let display_name = file
+            .get("displayName")
+            .and_then(|d| d.as_str())
+            .map(|s| s.to_string());
+
+        Ok(FileHandle {
+            uri,
+            mime_type,
+            name,
+            display_name,
+        })
+    }
+}
+
+struct MultipartFormData {
+    boundary: String,
+    body: Vec<u8>,
+}
+
+impl MultipartFormData {
+    fn new() -> Self {
+        let boundary = format!("----FormBoundary{}", uuid::Uuid::new_v4());
+        Self {
+            boundary,
+            body: Vec::new(),
+        }
+    }
+
+    fn add_json_field(&mut self, name: &str, value: &Value) {
+        let json_str = serde_json::to_string(value).unwrap();
+        self.body
+            .extend_from_slice(format!("--{}\r\n", self.boundary).as_bytes());
+        self.body.extend_from_slice(
+            format!("Content-Disposition: form-data; name=\"{}\"\r\n", name).as_bytes(),
+        );
+        self.body
+            .extend_from_slice(b"Content-Type: application/json\r\n\r\n");
+        self.body.extend_from_slice(json_str.as_bytes());
+        self.body.extend_from_slice(b"\r\n");
+    }
+
+    fn add_file_field(&mut self, name: &str, filename: &str, mime_type: &str, data: &[u8]) {
+        self.body
+            .extend_from_slice(format!("--{}\r\n", self.boundary).as_bytes());
+        self.body.extend_from_slice(
+            format!(
+                "Content-Disposition: form-data; name=\"{}\"; filename=\"{}\"\r\n",
+                name, filename
+            )
+            .as_bytes(),
+        );
+        self.body
+            .extend_from_slice(format!("Content-Type: {}\r\n\r\n", mime_type).as_bytes());
+        self.body.extend_from_slice(data);
+        self.body.extend_from_slice(b"\r\n");
+    }
+
+    fn finish(mut self) -> (String, Vec<u8>) {
+        self.body
+            .extend_from_slice(format!("--{}--\r\n", self.boundary).as_bytes());
+        (
+            format!("multipart/form-data; boundary={}", self.boundary),
+            self.body,
+        )
+    }
+}
+
+// ============ Rate Limiting ============
+
+struct RateLimiter {
+    min_interval: Duration,
+    last_request: Mutex<Instant>,
+}
+
+impl RateLimiter {
+    fn new(requests_per_second: f64) -> Self {
+        Self {
+            min_interval: Duration::from_secs_f64(1.0 / requests_per_second),
+            last_request: Mutex::new(Instant::now() - Duration::from_secs(1)),
+        }
+    }
+
+    async fn wait(&self) {
+        let elapsed = {
+            let last = self.last_request.lock().unwrap();
+            last.elapsed()
+        };
+
+        if elapsed < self.min_interval {
+            tokio::time::sleep(self.min_interval - elapsed).await;
+        }
+
+        *self.last_request.lock().unwrap() = Instant::now();
+    }
+}
+
+// ============ Agent ============
+
+/// Main agent for stateless prompt execution
+pub struct Agent {
+    api_key: String,
+    model: String,
+    system_prompt: Option<String>,
+    client: reqwest::Client,
+    rate_limiter: Arc<RateLimiter>,
+}
+
+impl Agent {
+    /// Create a new stateless agent
+    pub fn new(api_key: impl Into<String>) -> Self {
+        Self {
+            api_key: api_key.into(),
+            model: "gemini-2.0-flash".to_string(),
+            system_prompt: None,
+            client: reqwest::Client::new(),
+            rate_limiter: Arc::new(RateLimiter::new(2.0)),
+        }
+    }
+
+    /// Create a new stateful chat agent
+    pub fn chat(api_key: impl Into<String>) -> Chat {
+        Chat {
+            agent: Self::new(api_key),
+            history: Vec::new(),
+        }
+    }
+
+    /// Set the model to use
+    pub fn with_model(mut self, model: impl Into<String>) -> Self {
+        self.model = model.into();
+        self
+    }
+
+    /// Set a system prompt
+    pub fn with_system_prompt(mut self, prompt: impl Into<String>) -> Self {
+        self.system_prompt = Some(prompt.into());
+        self
+    }
+
+    /// Set rate limiting
+    pub fn with_requests_per_second(mut self, rps: f64) -> Self {
+        self.rate_limiter = Arc::new(RateLimiter::new(rps));
+        self
+    }
+
+    /// Create a prompt - returns a builder that can be configured and awaited
+    pub fn prompt<T>(&self, text: impl Into<String>) -> PromptBuilder<'_, T>
+    where
+        T: GeminiSchema + for<'de> Deserialize<'de> + Send + 'static,
+    {
+        PromptBuilder::new(self, text.into())
+    }
+
+    /// Upload a file for use in prompts
+    pub async fn upload_file(
+        &self,
+        data: &[u8],
+        mime_type: impl Into<String>,
+    ) -> Result<FileHandle> {
+        let mime_type = mime_type.into();
+        let display_name = "file";
+
+        self.rate_limiter.wait().await;
+
+        let mut form = MultipartFormData::new();
+        let metadata = json!({"file": {"displayName": display_name}});
+        form.add_json_field("metadata", &metadata);
+        form.add_file_field("file", display_name, &mime_type, data);
+        let (content_type, body) = form.finish();
+
+        let url =
+            "https://generativelanguage.googleapis.com/upload/v1beta/files?uploadType=multipart";
+
+        let response = self
+            .client
+            .post(url)
+            .header("X-Goog-Api-Key", &self.api_key)
+            .header("Content-Type", content_type)
+            .body(body)
+            .send()
+            .await?;
+
+        if !response.status().is_success() {
+            let error_text = response.text().await?;
+            return Err(AdamastorError::FileOperation(format!(
+                "Upload failed: {}",
+                error_text
+            )));
+        }
+
+        let response_json: Value = response.json().await?;
+        FileHandle::from_response(response_json, mime_type)
+    }
+
+    async fn call_gemini(&self, request: Value) -> Result<Value> {
+        self.rate_limiter.wait().await;
+
+        let url = format!(
+            "https://generativelanguage.googleapis.com/v1beta/models/{}:generateContent",
+            self.model
+        );
+
+        let response = self
+            .client
+            .post(&url)
+            .header("x-goog-api-key", &self.api_key)
+            .header("Content-Type", "application/json")
+            .json(&request)
+            .send()
+            .await?;
+
+        if !response.status().is_success() {
+            let error_text = response.text().await?;
+            return Err(AdamastorError::Api(error_text));
+        }
+
+        Ok(response.json().await?)
+    }
+}
+
+// ============ Chat ============
+
+#[derive(Debug, Clone)]
+struct Content {
+    role: String,
+    parts: Vec<Part>,
+}
+
+#[derive(Debug, Clone)]
+struct Part {
+    text: Option<String>,
+    file_data: Option<FileData>,
+}
+
+#[derive(Debug, Clone)]
+struct FileData {
+    mime_type: String,
+    file_uri: String,
+}
+
+/// Chat agent that maintains conversation history
+pub struct Chat {
+    agent: Agent,
+    history: Vec<Content>,
+}
+
+impl Chat {
+    /// Send a message in the conversation - returns a builder that can be configured and awaited
+    pub fn send<T>(&mut self, text: impl Into<String>) -> ChatPromptBuilder<'_, T>
+    where
+        T: GeminiSchema + for<'de> Deserialize<'de> + Send + 'static,
+    {
+        ChatPromptBuilder::new(self, text.into())
+    }
+
+    /// Set the model to use
+    pub fn with_model(mut self, model: impl Into<String>) -> Self {
+        self.agent = self.agent.with_model(model);
+        self
+    }
+
+    /// Set a system prompt
+    pub fn with_system_prompt(mut self, prompt: impl Into<String>) -> Self {
+        self.agent = self.agent.with_system_prompt(prompt);
+        self
+    }
+
+    /// Set rate limiting
+    pub fn with_requests_per_second(mut self, rps: f64) -> Self {
+        self.agent = self.agent.with_requests_per_second(rps);
+        self
+    }
+
+    /// Get access to the underlying agent for file uploads
+    pub fn agent(&self) -> &Agent {
+        &self.agent
+    }
+}
+
+// ============ PromptBuilder ============
+
+/// Builder for configuring and executing a single prompt
+pub struct PromptBuilder<'a, T> {
+    agent: &'a Agent,
+    prompt_text: String,
+    temperature: Option<f32>,
+    max_tokens: Option<u32>,
+    top_p: Option<f32>,
+    retries: u32,
+    files: Vec<FileHandle>,
+    _phantom: PhantomData<T>,
+}
+
+impl<'a, T: 'static> PromptBuilder<'a, T> {
+    fn new(agent: &'a Agent, prompt_text: String) -> Self {
+        Self {
+            agent,
+            prompt_text,
+            temperature: None,
+            max_tokens: None,
+            top_p: None,
+            retries: 1,
+            files: Vec::new(),
+            _phantom: PhantomData,
+        }
+    }
+
+    /// Set the temperature (0.0 to 1.0)
+    pub fn temperature(mut self, temp: f32) -> Self {
+        self.temperature = Some(temp);
+        self
+    }
+
+    /// Set the maximum number of tokens in the response
+    pub fn max_tokens(mut self, tokens: u32) -> Self {
+        self.max_tokens = Some(tokens);
+        self
+    }
+
+    /// Set the top-p value for nucleus sampling
+    pub fn top_p(mut self, p: f32) -> Self {
+        self.top_p = Some(p);
+        self
+    }
+
+    /// Set the number of retry attempts on failure
+    pub fn retries(mut self, n: u32) -> Self {
+        self.retries = n;
+        self
+    }
+
+    /// Attach a file to the prompt
+    pub fn with_file(mut self, file: FileHandle) -> Self {
+        self.files.push(file);
+        self
+    }
+
+    async fn execute(self) -> Result<T>
+    where
+        T: GeminiSchema + for<'de> Deserialize<'de>,
+    {
+        let mut last_error = None;
+
+        for attempt in 0..self.retries {
+            if attempt > 0 {
+                tokio::time::sleep(Duration::from_millis(500 * attempt as u64)).await;
+            }
+
+            match self.execute_once().await {
+                Ok(result) => return Ok(result),
+                Err(e) => last_error = Some(e),
+            }
+        }
+
+        Err(last_error.unwrap())
+    }
+
+    async fn execute_once(&self) -> Result<T>
+    where
+        T: GeminiSchema + for<'de> Deserialize<'de>,
+    {
+        let request = self.build_request();
+        let response = self.agent.call_gemini(request).await?;
+        self.parse_response(response)
+    }
+
+    fn build_request(&self) -> Value
+    where
+        T: GeminiSchema,
+    {
+        let mut parts = vec![json!({"text": self.prompt_text})];
+
+        for file in &self.files {
+            parts.push(json!({
+                "fileData": {
+                    "mimeType": file.mime_type,
+                    "fileUri": file.uri
+                }
+            }));
+        }
+
+        let mut request = json!({
+            "contents": [{
+                "role": "user",
+                "parts": parts
+            }]
+        });
+
+        if let Some(system_prompt) = &self.agent.system_prompt {
+            request["systemInstruction"] = json!({
+                "parts": [{"text": system_prompt}]
+            });
+        }
+
+        let mut generation_config = json!({});
+
+        // Check if T is String using TypeId - if not, it's a structured type
+        if TypeId::of::<T>() != TypeId::of::<String>() {
+            generation_config["responseMimeType"] = json!("application/json");
+            generation_config["responseSchema"] = T::gemini_schema();
+        }
+
+        if let Some(temp) = self.temperature {
+            generation_config["temperature"] = json!(temp);
+        }
+        if let Some(max) = self.max_tokens {
+            generation_config["maxOutputTokens"] = json!(max);
+        }
+        if let Some(p) = self.top_p {
+            generation_config["topP"] = json!(p);
+        }
+
+        if !generation_config.as_object().unwrap().is_empty() {
+            request["generationConfig"] = generation_config;
+        }
+
+        request
+    }
+
+    fn parse_response(&self, response: Value) -> Result<T>
+    where
+        T: for<'de> Deserialize<'de>,
+    {
+        let text = response
+            .get("candidates")
+            .and_then(|c| c.get(0))
+            .and_then(|c| c.get("content"))
+            .and_then(|c| c.get("parts"))
+            .and_then(|p| p.get(0))
+            .and_then(|p| p.get("text"))
+            .and_then(|t| t.as_str())
+            .ok_or_else(|| AdamastorError::ParseError("Missing text in response".to_string()))?;
+
+        // If T is String, just return the text directly
+        if TypeId::of::<T>() == TypeId::of::<String>() {
+            // Safe because we checked the type
+            let result: T = unsafe { std::mem::transmute_copy(&text.to_string()) };
+            std::mem::forget(text.to_string());
+            Ok(result)
+        } else {
+            // Otherwise parse as JSON
+            serde_json::from_str(text).map_err(|e| {
+                AdamastorError::ParseError(format!(
+                    "Failed to parse response into target schema: {}",
+                    e
+                ))
+            })
+        }
+    }
+}
+
+impl<'a, T> IntoFuture for PromptBuilder<'a, T>
+where
+    T: GeminiSchema + for<'de> Deserialize<'de> + Send + Sync + 'static,
+{
+    type Output = Result<T>;
+    type IntoFuture = Pin<Box<dyn Future<Output = Self::Output> + Send + 'a>>;
+
+    fn into_future(self) -> Self::IntoFuture {
+        Box::pin(self.execute())
+    }
+}
+
+// ============ ChatPromptBuilder ============
+
+/// Builder for configuring and executing a chat message
+pub struct ChatPromptBuilder<'a, T> {
+    chat: &'a mut Chat,
+    prompt_text: String,
+    temperature: Option<f32>,
+    max_tokens: Option<u32>,
+    top_p: Option<f32>,
+    retries: u32,
+    files: Vec<FileHandle>,
+    _phantom: PhantomData<T>,
+}
+
+impl<'a, T: 'static> ChatPromptBuilder<'a, T> {
+    fn new(chat: &'a mut Chat, prompt_text: String) -> Self {
+        Self {
+            chat,
+            prompt_text,
+            temperature: None,
+            max_tokens: None,
+            top_p: None,
+            retries: 1,
+            files: Vec::new(),
+            _phantom: PhantomData,
+        }
+    }
+
+    /// Set the temperature (0.0 to 1.0)
+    pub fn temperature(mut self, temp: f32) -> Self {
+        self.temperature = Some(temp);
+        self
+    }
+
+    /// Set the maximum number of tokens in the response
+    pub fn max_tokens(mut self, tokens: u32) -> Self {
+        self.max_tokens = Some(tokens);
+        self
+    }
+
+    /// Set the top-p value for nucleus sampling
+    pub fn top_p(mut self, p: f32) -> Self {
+        self.top_p = Some(p);
+        self
+    }
+
+    /// Set the number of retry attempts on failure
+    pub fn retries(mut self, n: u32) -> Self {
+        self.retries = n;
+        self
+    }
+
+    /// Attach a file to this message
+    pub fn with_file(mut self, file: FileHandle) -> Self {
+        self.files.push(file);
+        self
+    }
+
+    async fn execute(mut self) -> Result<T>
+    where
+        T: GeminiSchema + for<'de> Deserialize<'de>,
+    {
+        let mut last_error = None;
+
+        for attempt in 0..self.retries {
+            if attempt > 0 {
+                tokio::time::sleep(Duration::from_millis(500 * attempt as u64)).await;
+            }
+
+            match self.execute_once().await {
+                Ok(result) => return Ok(result),
+                Err(e) => last_error = Some(e),
+            }
+        }
+
+        Err(last_error.unwrap())
+    }
+
+    async fn execute_once(&mut self) -> Result<T>
+    where
+        T: GeminiSchema + for<'de> Deserialize<'de>,
+    {
+        // Add user message to history
+        let mut user_parts = vec![Part {
+            text: Some(self.prompt_text.clone()),
+            file_data: None,
+        }];
+
+        for file in &self.files {
+            user_parts.push(Part {
+                text: None,
+                file_data: Some(FileData {
+                    mime_type: file.mime_type.clone(),
+                    file_uri: file.uri.clone(),
+                }),
+            });
+        }
+
+        self.chat.history.push(Content {
+            role: "user".to_string(),
+            parts: user_parts,
+        });
+
+        // Build request with full history
+        let request = self.build_request();
+        let response = self.chat.agent.call_gemini(request).await?;
+
+        // Parse response
+        let (result, response_text) = self.parse_response(response)?;
+
+        // Add model response to history
+        self.chat.history.push(Content {
+            role: "model".to_string(),
+            parts: vec![Part {
+                text: Some(response_text),
+                file_data: None,
+            }],
+        });
+
+        Ok(result)
+    }
+
+    fn build_request(&self) -> Value
+    where
+        T: GeminiSchema,
+    {
+        // Convert history to Gemini format
+        let contents: Vec<Value> = self
+            .chat
+            .history
+            .iter()
+            .map(|content| {
+                let parts: Vec<Value> = content
+                    .parts
+                    .iter()
+                    .map(|part| {
+                        if let Some(text) = &part.text {
+                            json!({"text": text})
+                        } else if let Some(file_data) = &part.file_data {
+                            json!({
+                                "fileData": {
+                                    "mimeType": file_data.mime_type,
+                                    "fileUri": file_data.file_uri
+                                }
+                            })
+                        } else {
+                            json!({"text": ""})
+                        }
+                    })
+                    .collect();
+
+                json!({
+                    "role": content.role,
+                    "parts": parts
+                })
+            })
+            .collect();
+
+        let mut request = json!({
+            "contents": contents
+        });
+
+        if let Some(system_prompt) = &self.chat.agent.system_prompt {
+            request["systemInstruction"] = json!({
+                "parts": [{"text": system_prompt}]
+            });
+        }
+
+        let mut generation_config = json!({});
+
+        if TypeId::of::<T>() != TypeId::of::<String>() {
+            generation_config["responseMimeType"] = json!("application/json");
+            generation_config["responseSchema"] = T::gemini_schema();
+        }
+
+        if let Some(temp) = self.temperature {
+            generation_config["temperature"] = json!(temp);
+        }
+        if let Some(max) = self.max_tokens {
+            generation_config["maxOutputTokens"] = json!(max);
+        }
+        if let Some(p) = self.top_p {
+            generation_config["topP"] = json!(p);
+        }
+
+        if !generation_config.as_object().unwrap().is_empty() {
+            request["generationConfig"] = generation_config;
+        }
+
+        request
+    }
+
+    fn parse_response(&self, response: Value) -> Result<(T, String)>
+    where
+        T: for<'de> Deserialize<'de>,
+    {
+        let text = response
+            .get("candidates")
+            .and_then(|c| c.get(0))
+            .and_then(|c| c.get("content"))
+            .and_then(|c| c.get("parts"))
+            .and_then(|p| p.get(0))
+            .and_then(|p| p.get("text"))
+            .and_then(|t| t.as_str())
+            .ok_or_else(|| AdamastorError::ParseError("Missing text in response".to_string()))?;
+
+        let parsed = if TypeId::of::<T>() == TypeId::of::<String>() {
+            // Safe because we checked the type
+            let result: T = unsafe { std::mem::transmute_copy(&text.to_string()) };
+            std::mem::forget(text.to_string());
+            result
+        } else {
+            serde_json::from_str(text).map_err(|e| {
+                AdamastorError::ParseError(format!(
+                    "Failed to parse response into target schema: {}",
+                    e
+                ))
+            })?
+        };
+
+        Ok((parsed, text.to_string()))
+    }
+}
+
+impl<'a, T> IntoFuture for ChatPromptBuilder<'a, T>
+where
+    T: GeminiSchema + for<'de> Deserialize<'de> + Send + Sync + 'static,
+{
+    type Output = Result<T>;
+    type IntoFuture = Pin<Box<dyn Future<Output = Self::Output> + Send + 'a>>;
+
+    fn into_future(self) -> Self::IntoFuture {
+        Box::pin(self.execute())
+    }
+}

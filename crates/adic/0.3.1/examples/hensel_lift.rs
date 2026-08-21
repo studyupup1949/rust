@@ -1,0 +1,32 @@
+//! # Adic
+//!
+//! Hensel lift algebraic varieties to the p-adic numbers
+
+use clap::Parser;
+use adic::{AdicInteger, IAdic, SignedAdicInteger};
+
+#[derive(Parser)]
+struct Args {
+    #[arg(short)]
+    p: u32,
+
+    #[arg(short, allow_hyphen_values=true)]
+    a: i32,
+
+    #[arg(short)]
+    n: u32,
+
+    #[arg(long)]
+    precision: usize,
+}
+
+fn main() {
+    let args = Args::parse();
+    let a = IAdic::from_i32(args.p, args.a);
+    let out = a.nth_root(args.n, args.precision);
+
+    match out {
+        Ok(varieties) => println!("Varieties are {varieties:?}"),
+        Err(err) => println!("{err:#?}")
+    }
+}

@@ -1,0 +1,11 @@
+load("@buckal//:wrapper.bzl", "rust_library")
+
+rust_library(
+    name = "add_one_70kg",
+    srcs = glob(["**/*.rs"]),
+    crate = "add_one_70kg",
+    crate_root = "src/lib.rs",
+    edition = "2021",
+
+    visibility = ["PUBLIC"],
+)

@@ -1,0 +1,63 @@
+[package]
+name = "adlt"
+version = "0.30.0"
+edition = "2021"
+authors = ["Matthias Behr"]
+license = "CC-BY-NC-SA-4.0"
+repository = "https://github.com/mbehr1/adlt/"
+homepage = "https://github.com/mbehr1/adlt/"
+readme= "README.md"
+description = "Library and tools to handle automotive DLT- (diagnostic log and trace) files."
+keywords = ["dlt", "automotive", "log", "trace", "analysis"]
+categories = ["command-line-utilities", "development-tools", "encoding", "parsing"]
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[lib]
+name = "adlt"
+path = "src/lib.rs"
+
+[[bench]]
+name = "dlt_benches"
+harness = false
+
+[[bench]]
+name = "util_benches"
+harness = false
+
+[[bench]]
+name = "filter_benches"
+harness = false
+
+[dev-dependencies]
+ntest = "0.9"
+criterion = "0.4"
+
+[dependencies]
+slog = "2.7.0"
+slog-term = "2.9.0"
+slog-async = "2.7.0"
+clap = {version="4.0", features = ["cargo"]}
+chrono = "0.4.23"
+#rayon = "1.6"
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
+evmap = "10.0.2"
+nohash-hasher = "0.2.0"
+tungstenite = "0.18.0"
+assert_cmd = "2.0"
+predicates = "2.1"
+portpicker = "0.1.1"
+cow-utils = "0.1.2"
+encoding_rs = "0.8.31"
+tempfile = "3.3.0"
+itoa = "1.0"
+lazy_static = "1.4.0"
+regex = "1.7.0"
+quick-xml = "0.23"
+bincode = "2.0.0-rc.2"
+funty = "2.0.0"
+afibex = "0.6"
+asomeip = "0.3.1"
+fancy-regex = "0.10"
+glob = "0.3"

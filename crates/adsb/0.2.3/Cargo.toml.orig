@@ -1,0 +1,23 @@
+[package]
+name = "adsb"
+version = "0.2.3"
+description = "ADS-B/Mode-S parser"
+authors = ["António Marques <me@antoniomarques.eu>"]
+license = "MIT/Apache-2.0"
+repository = "https://github.com/asmarques/adsb"
+readme = "README.md"
+edition = "2018"
+
+[dependencies]
+nom = "5"
+
+[dev-dependencies]
+criterion = "0.3"
+structopt = "0.2.10"
+
+[lib]
+bench = false
+
+[[bench]]
+name = "parser"
+harness = false

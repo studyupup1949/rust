@@ -1,0 +1,193 @@
+[package]
+name = "add-determinism"
+version = "0.3.4"
+edition = "2021"
+authors = ["Zbigniew Jędrzejewski-Szmek <zbyszek@in.waw.pl>"]
+homepage = "https://github.com/keszybz/add-determinism"
+description = "RPM buildroot helper to strip nondeterministic bits in files"
+readme = "README.md"
+repository = "https://github.com/keszybz/add-determinism"
+license = "GPL-3.0-or-later"
+keywords = ["rpm", "reproducible-builds"]
+
+exclude = [
+        "tests/cases/python_stdlib/3.6/datetimetester.cpython-36.opt-2.pyc",
+        "tests/cases/python_stdlib/3.6/datetimetester.cpython-36.opt-2.pyc.fixed",
+        "tests/cases/python_stdlib/3.6/entities.cpython-36.opt-1.pyc",
+        "tests/cases/python_stdlib/3.6/entities.cpython-36.opt-1.pyc.fixed",
+        "tests/cases/python_stdlib/3.6/topics.cpython-36.opt-1.pyc",
+        "tests/cases/python_stdlib/3.6/topics.cpython-36.opt-1.pyc.fixed",
+        "tests/cases/python_stdlib/3.6/turtle.cpython-36.pyc",
+        "tests/cases/python_stdlib/3.6/turtle.cpython-36.pyc.fixed",
+        "tests/cases/python_stdlib/3.7/_pydecimal.cpython-37.opt-2.pyc",
+        "tests/cases/python_stdlib/3.7/_pydecimal.cpython-37.opt-2.pyc.fixed",
+        "tests/cases/python_stdlib/3.7/_test_multiprocessing.cpython-37.pyc",
+        "tests/cases/python_stdlib/3.7/_test_multiprocessing.cpython-37.pyc.fixed",
+        "tests/cases/python_stdlib/3.7/difflib.cpython-37.opt-1.pyc",
+        "tests/cases/python_stdlib/3.7/difflib.cpython-37.opt-1.pyc.fixed",
+        "tests/cases/python_stdlib/3.7/minidom.cpython-37.opt-2.pyc",
+        "tests/cases/python_stdlib/3.7/minidom.cpython-37.opt-2.pyc.fixed",
+        "tests/cases/python_stdlib/3.8/_pydecimal.cpython-38.opt-1.pyc",
+        "tests/cases/python_stdlib/3.8/_pydecimal.cpython-38.opt-1.pyc.fixed",
+        "tests/cases/python_stdlib/3.8/_pydecimal.cpython-38.opt-2.pyc",
+        "tests/cases/python_stdlib/3.8/_pydecimal.cpython-38.opt-2.pyc.fixed",
+        "tests/cases/python_stdlib/3.8/_pydecimal.cpython-38.pyc",
+        "tests/cases/python_stdlib/3.8/_pydecimal.cpython-38.pyc.fixed",
+        "tests/cases/python_stdlib/3.8/minidom.cpython-38.opt-2.pyc",
+        "tests/cases/python_stdlib/3.8/minidom.cpython-38.opt-2.pyc.fixed",
+        "tests/cases/python_stdlib/3.8/minidom.cpython-38.pyc",
+        "tests/cases/python_stdlib/3.8/minidom.cpython-38.pyc.fixed",
+        "tests/cases/python_stdlib/3.8/mock.cpython-38.opt-1.pyc",
+        "tests/cases/python_stdlib/3.8/mock.cpython-38.opt-1.pyc.fixed",
+        "tests/cases/python_stdlib/3.8/mock.cpython-38.opt-2.pyc",
+        "tests/cases/python_stdlib/3.8/mock.cpython-38.opt-2.pyc.fixed",
+        "tests/cases/python_stdlib/3.8/test_codecs.cpython-38.opt-2.pyc",
+        "tests/cases/python_stdlib/3.8/test_codecs.cpython-38.opt-2.pyc.fixed",
+        "tests/cases/python_stdlib/3.8/test_email.cpython-38.opt-1.pyc",
+        "tests/cases/python_stdlib/3.8/test_email.cpython-38.opt-1.pyc.fixed",
+        "tests/cases/python_stdlib/3.9/__init__.cpython-39.opt-2.pyc",
+        "tests/cases/python_stdlib/3.9/__init__.cpython-39.opt-2.pyc.fixed",
+        "tests/cases/python_stdlib/3.9/_pyio.cpython-39.pyc",
+        "tests/cases/python_stdlib/3.9/_pyio.cpython-39.pyc.fixed",
+        "tests/cases/python_stdlib/3.9/doctest.cpython-39.opt-1.pyc",
+        "tests/cases/python_stdlib/3.9/doctest.cpython-39.opt-1.pyc.fixed",
+        "tests/cases/python_stdlib/3.9/tix.cpython-39.pyc",
+        "tests/cases/python_stdlib/3.9/tix.cpython-39.pyc.fixed",
+        "tests/cases/python_stdlib/3.9/zipfile.cpython-39.pyc",
+        "tests/cases/python_stdlib/3.9/zipfile.cpython-39.pyc.fixed",
+        "tests/cases/python_stdlib/3.10/ElementTree.cpython-310.pyc",
+        "tests/cases/python_stdlib/3.10/ElementTree.cpython-310.pyc.fixed",
+        "tests/cases/python_stdlib/3.10/base_events.cpython-310.opt-1.pyc",
+        "tests/cases/python_stdlib/3.10/base_events.cpython-310.opt-1.pyc.fixed",
+        "tests/cases/python_stdlib/3.10/datetime.cpython-310.opt-1.pyc",
+        "tests/cases/python_stdlib/3.10/datetime.cpython-310.opt-1.pyc.fixed",
+        "tests/cases/python_stdlib/3.10/difflib.cpython-310.pyc",
+        "tests/cases/python_stdlib/3.10/difflib.cpython-310.pyc.fixed",
+        "tests/cases/python_stdlib/3.10/zipfile.cpython-310.opt-2.pyc",
+        "tests/cases/python_stdlib/3.10/zipfile.cpython-310.opt-2.pyc.fixed",
+        "tests/cases/python_stdlib/3.11/_parser.cpython-311.pyc",
+        "tests/cases/python_stdlib/3.11/_parser.cpython-311.pyc.fixed",
+        "tests/cases/python_stdlib/3.11/_pyio.cpython-311.opt-2.pyc",
+        "tests/cases/python_stdlib/3.11/_pyio.cpython-311.opt-2.pyc.fixed",
+        "tests/cases/python_stdlib/3.11/argparse.cpython-311.opt-1.pyc",
+        "tests/cases/python_stdlib/3.11/argparse.cpython-311.opt-1.pyc.fixed",
+        "tests/cases/python_stdlib/3.11/ast.cpython-311.pyc",
+        "tests/cases/python_stdlib/3.11/ast.cpython-311.pyc.fixed",
+        "tests/cases/python_stdlib/3.11/datetime.cpython-311.opt-2.pyc",
+        "tests/cases/python_stdlib/3.11/datetime.cpython-311.opt-2.pyc.fixed",
+        "tests/cases/python_stdlib/3.11/entities.cpython-311.opt-1.pyc",
+        "tests/cases/python_stdlib/3.11/entities.cpython-311.opt-1.pyc.fixed",
+        "tests/cases/python_stdlib/3.11/handlers.cpython-311.opt-1.pyc",
+        "tests/cases/python_stdlib/3.11/handlers.cpython-311.opt-1.pyc.fixed",
+        "tests/cases/python_stdlib/3.11/inspect.cpython-311.opt-2.pyc",
+        "tests/cases/python_stdlib/3.11/inspect.cpython-311.opt-2.pyc.fixed",
+        "tests/cases/python_stdlib/3.11/minidom.cpython-311.opt-1.pyc",
+        "tests/cases/python_stdlib/3.11/minidom.cpython-311.opt-1.pyc.fixed",
+        "tests/cases/python_stdlib/3.11/pydoc.cpython-311.opt-1.pyc",
+        "tests/cases/python_stdlib/3.11/pydoc.cpython-311.opt-1.pyc.fixed",
+        "tests/cases/python_stdlib/3.11/shutil.cpython-311.pyc",
+        "tests/cases/python_stdlib/3.11/shutil.cpython-311.pyc.fixed",
+        "tests/cases/python_stdlib/3.12/ElementTree.cpython-312.opt-2.pyc",
+        "tests/cases/python_stdlib/3.12/ElementTree.cpython-312.opt-2.pyc.fixed",
+        "tests/cases/python_stdlib/3.12/ast.cpython-312.pyc",
+        "tests/cases/python_stdlib/3.12/ast.cpython-312.pyc.fixed",
+        "tests/cases/python_stdlib/3.12/case.cpython-312.opt-1.pyc",
+        "tests/cases/python_stdlib/3.12/case.cpython-312.opt-1.pyc.fixed",
+        "tests/cases/python_stdlib/3.12/datetime.cpython-312.opt-1.pyc",
+        "tests/cases/python_stdlib/3.12/datetime.cpython-312.opt-1.pyc.fixed",
+        "tests/cases/python_stdlib/3.12/locale.cpython-312.opt-2.pyc",
+        "tests/cases/python_stdlib/3.12/locale.cpython-312.opt-2.pyc.fixed",
+        "tests/cases/python_stdlib/3.12/message.cpython-312.pyc",
+        "tests/cases/python_stdlib/3.12/message.cpython-312.pyc.fixed",
+        "tests/cases/python_stdlib/3.12/minidom.cpython-312.opt-2.pyc",
+        "tests/cases/python_stdlib/3.12/minidom.cpython-312.opt-2.pyc.fixed",
+        "tests/cases/python_stdlib/3.12/optparse.cpython-312.opt-1.pyc",
+        "tests/cases/python_stdlib/3.12/optparse.cpython-312.opt-1.pyc.fixed",
+        "tests/cases/python_stdlib/3.12/server.cpython-312.pyc",
+        "tests/cases/python_stdlib/3.12/server.cpython-312.pyc.fixed",
+        "tests/cases/python_stdlib/3.12/ssl.cpython-312.opt-2.pyc",
+        "tests/cases/python_stdlib/3.12/ssl.cpython-312.opt-2.pyc.fixed",
+        "tests/cases/python_stdlib/3.12/ssl.cpython-312.pyc",
+        "tests/cases/python_stdlib/3.12/ssl.cpython-312.pyc.fixed",
+        "tests/cases/python_stdlib/3.12/subprocess.cpython-312.pyc",
+        "tests/cases/python_stdlib/3.12/subprocess.cpython-312.pyc.fixed",
+        "tests/cases/python_stdlib/3.12/zipfile.cpython-312.opt-1.pyc",
+        "tests/cases/python_stdlib/3.12/zipfile.cpython-312.opt-1.pyc.fixed",
+        "tests/cases/python_stdlib/3.13/_pydatetime.cpython-313.opt-1.pyc",
+        "tests/cases/python_stdlib/3.13/_pydatetime.cpython-313.opt-1.pyc.fixed",
+        "tests/cases/python_stdlib/3.13/_pydatetime.cpython-313.opt-2.pyc",
+        "tests/cases/python_stdlib/3.13/_pydatetime.cpython-313.opt-2.pyc.fixed",
+        "tests/cases/python_stdlib/3.13/_pydatetime.cpython-313.pyc",
+        "tests/cases/python_stdlib/3.13/_pydatetime.cpython-313.pyc.fixed",
+        "tests/cases/python_stdlib/3.13/_pydecimal.cpython-313.opt-1.pyc",
+        "tests/cases/python_stdlib/3.13/_pydecimal.cpython-313.opt-1.pyc.fixed",
+        "tests/cases/python_stdlib/3.13/_pydecimal.cpython-313.opt-2.pyc",
+        "tests/cases/python_stdlib/3.13/_pydecimal.cpython-313.opt-2.pyc.fixed",
+        "tests/cases/python_stdlib/3.13/_pydecimal.cpython-313.pyc",
+        "tests/cases/python_stdlib/3.13/_pydecimal.cpython-313.pyc.fixed",
+        "tests/cases/python_stdlib/3.13/_pyio.cpython-313.opt-1.pyc",
+        "tests/cases/python_stdlib/3.13/_pyio.cpython-313.opt-1.pyc.fixed",
+        "tests/cases/python_stdlib/3.13/_pyio.cpython-313.opt-2.pyc",
+        "tests/cases/python_stdlib/3.13/_pyio.cpython-313.opt-2.pyc.fixed",
+        "tests/cases/python_stdlib/3.13/_pyio.cpython-313.pyc",
+        "tests/cases/python_stdlib/3.13/_pyio.cpython-313.pyc.fixed",
+        "tests/cases/python_stdlib/3.13/argparse.cpython-313.opt-1.pyc",
+        "tests/cases/python_stdlib/3.13/argparse.cpython-313.opt-1.pyc.fixed",
+        "tests/cases/python_stdlib/3.13/argparse.cpython-313.opt-2.pyc",
+        "tests/cases/python_stdlib/3.13/argparse.cpython-313.opt-2.pyc.fixed",
+        "tests/cases/python_stdlib/3.13/argparse.cpython-313.pyc",
+        "tests/cases/python_stdlib/3.13/argparse.cpython-313.pyc.fixed",
+        "tests/cases/python_stdlib/3.13/ast.cpython-313.opt-1.pyc",
+        "tests/cases/python_stdlib/3.13/ast.cpython-313.opt-1.pyc.fixed",
+        "tests/cases/python_stdlib/3.13/ast.cpython-313.opt-2.pyc",
+        "tests/cases/python_stdlib/3.13/ast.cpython-313.opt-2.pyc.fixed",
+        "tests/cases/python_stdlib/3.13/ast.cpython-313.pyc",
+        "tests/cases/python_stdlib/3.13/ast.cpython-313.pyc.fixed",
+        "tests/cases/python_stdlib/3.13/configparser.cpython-313.opt-2.pyc",
+        "tests/cases/python_stdlib/3.13/configparser.cpython-313.opt-2.pyc.fixed",
+        "tests/cases/python_stdlib/3.13/difflib.cpython-313.opt-1.pyc",
+        "tests/cases/python_stdlib/3.13/difflib.cpython-313.opt-1.pyc.fixed",
+        "tests/cases/python_stdlib/3.13/difflib.cpython-313.pyc",
+        "tests/cases/python_stdlib/3.13/difflib.cpython-313.pyc.fixed",
+        "tests/cases/python_stdlib/3.13/doctest.cpython-313.opt-1.pyc",
+        "tests/cases/python_stdlib/3.13/doctest.cpython-313.opt-1.pyc.fixed",
+        "tests/cases/python_stdlib/3.13/doctest.cpython-313.opt-2.pyc",
+        "tests/cases/python_stdlib/3.13/doctest.cpython-313.opt-2.pyc.fixed",
+        "tests/cases/python_stdlib/3.13/doctest.cpython-313.pyc",
+        "tests/cases/python_stdlib/3.13/doctest.cpython-313.pyc.fixed",
+        "tests/cases/python_stdlib/3.13/enum.cpython-313.opt-2.pyc",
+        "tests/cases/python_stdlib/3.13/enum.cpython-313.opt-2.pyc.fixed",
+]
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+anyhow = "1.0.12"
+chrono = "0.4.35"
+clap = { version = "4.4.18", features = ["derive"] }
+indoc = "2.0.4"
+itertools = "0.13.0"
+log = { version = "0.4", features = ["std"] }
+nix = { version = "0.28.0", features = ["fs", "socket"] }
+num-bigint-dig = "0.8.4"
+regex = { version = "1.10.0", default-features = false, features = ["std", "perf", "unicode-case"] }
+serde = { version = "1.0.203", features = ["derive"] }
+serde_cbor = "0.11"
+thiserror = "1.0.61"
+time = "0.3.34"
+walkdir = "2.5.0"
+zip = { version = "0.6.0", default-features = false, features = ["deflate", "deflate-zlib", "time"] }
+
+[dev-dependencies]
+tempfile = "3"
+ctor = "0.1"
+
+[profile.release]
+lto = true
+opt-level = "z"
+codegen-units = 1
+panic = "abort"
+
+[build-dependencies]
+anyhow = "1.0.12"
+glob = "0.3.1"

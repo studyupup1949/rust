@@ -1,0 +1,6 @@
+{
+  "git": {
+    "sha1": "9c8d964d647ef82f6c6261a088ed6b156fc951e0"
+  },
+  "path_in_vcs": "crates/semantic_version"
+}

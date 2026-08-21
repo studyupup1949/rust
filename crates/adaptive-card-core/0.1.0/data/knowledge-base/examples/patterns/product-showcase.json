@@ -1,0 +1,512 @@
+{
+  "id": "patterns/product-showcase",
+  "title": "Product Showcase with Image Carousel",
+  "description": "Image carousel via 4 ToggleVisibility containers with peek-next column (56px showing next image + chevron overlay). Feature grid (2x2 with icons). Data-bound specs table. Pricing footer.",
+  "category": "patterns",
+  "tags": [
+    "product",
+    "showcase",
+    "carousel",
+    "e-commerce",
+    "features",
+    "specs",
+    "images"
+  ],
+  "use_cases": [
+    "Product detail page",
+    "Image carousel",
+    "Feature comparison",
+    "E-commerce listing"
+  ],
+  "host_targets": [
+    "generic",
+    "teams",
+    "web_chat"
+  ],
+  "complexity": "advanced",
+  "card": {
+    "type": "AdaptiveCard",
+    "$schema": "http://adaptivecards.io/schemas/adaptive-card.json",
+    "version": "1.2",
+    "body": [
+      {
+        "type": "Container",
+        "style": "emphasis",
+        "items": [
+          {
+            "type": "Container"
+          },
+          {
+            "type": "TextBlock",
+            "text": "${product}",
+            "wrap": true,
+            "size": "ExtraLarge",
+            "weight": "Bolder",
+            "spacing": "Large"
+          },
+          {
+            "type": "TextBlock",
+            "wrap": true,
+            "text": "${description}"
+          },
+          {
+            "type": "Container",
+            "spacing": "Large"
+          }
+        ]
+      },
+      {
+        "type": "Container",
+        "items": [
+          {
+            "type": "ColumnSet",
+            "columns": [
+              {
+                "type": "Column",
+                "width": "stretch",
+                "backgroundImage": {
+                  "url": "${images[0].url}",
+                  "horizontalAlignment": "Center",
+                  "verticalAlignment": "Center"
+                },
+                "minHeight": "300px",
+                "bleed": true
+              },
+              {
+                "type": "Column",
+                "width": "56px",
+                "backgroundImage": {
+                  "url": "${images[1].url}",
+                  "verticalAlignment": "Center"
+                },
+                "bleed": true,
+                "items": [
+                  {
+                    "type": "Image",
+                    "url": "https://raw.githubusercontent.com/pnp/AdaptiveCards-Templates/main/samples/image-carousel/assets/chevron_right_white.png",
+                    "width": "24px",
+                    "height": "24px"
+                  }
+                ],
+                "verticalContentAlignment": "Center",
+                "selectAction": {
+                  "type": "Action.ToggleVisibility",
+                  "title": "Next",
+                  "targetElements": [
+                    "img_set_1",
+                    "img_set_2"
+                  ]
+                }
+              }
+            ],
+            "horizontalAlignment": "Center"
+          }
+        ],
+        "minHeight": "1px",
+        "bleed": true,
+        "spacing": "None",
+        "id": "img_set_1"
+      },
+      {
+        "type": "Container",
+        "items": [
+          {
+            "type": "ColumnSet",
+            "columns": [
+              {
+                "type": "Column",
+                "width": "stretch",
+                "backgroundImage": {
+                  "url": "${images[1].url}",
+                  "horizontalAlignment": "Center",
+                  "verticalAlignment": "Center"
+                },
+                "minHeight": "300px",
+                "bleed": true
+              },
+              {
+                "type": "Column",
+                "width": "56px",
+                "backgroundImage": {
+                  "url": "${images[2].url}"
+                },
+                "bleed": true,
+                "items": [
+                  {
+                    "type": "Image",
+                    "url": "https://raw.githubusercontent.com/pnp/AdaptiveCards-Templates/main/samples/image-carousel/assets/chevron_right_white.png",
+                    "width": "24px",
+                    "height": "24px"
+                  }
+                ],
+                "verticalContentAlignment": "Center",
+                "selectAction": {
+                  "type": "Action.ToggleVisibility",
+                  "title": "Next",
+                  "targetElements": [
+                    "img_set_2",
+                    "img_set_3"
+                  ]
+                }
+              }
+            ],
+            "horizontalAlignment": "Center"
+          }
+        ],
+        "minHeight": "1px",
+        "bleed": true,
+        "spacing": "None",
+        "isVisible": false,
+        "id": "img_set_2"
+      },
+      {
+        "type": "Container",
+        "items": [
+          {
+            "type": "ColumnSet",
+            "columns": [
+              {
+                "type": "Column",
+                "width": "stretch",
+                "backgroundImage": {
+                  "url": "${images[2].url}",
+                  "horizontalAlignment": "Center",
+                  "verticalAlignment": "Center"
+                },
+                "minHeight": "300px",
+                "bleed": true
+              },
+              {
+                "type": "Column",
+                "width": "56px",
+                "backgroundImage": {
+                  "url": "${images[3].url}"
+                },
+                "bleed": true,
+                "items": [
+                  {
+                    "type": "Image",
+                    "url": "https://raw.githubusercontent.com/pnp/AdaptiveCards-Templates/main/samples/image-carousel/assets/chevron_right_white.png",
+                    "width": "24px",
+                    "height": "24px"
+                  }
+                ],
+                "verticalContentAlignment": "Center",
+                "selectAction": {
+                  "type": "Action.ToggleVisibility",
+                  "title": "Next",
+                  "targetElements": [
+                    "img_set_3",
+                    "img_set_4"
+                  ]
+                }
+              }
+            ],
+            "horizontalAlignment": "Center"
+          }
+        ],
+        "minHeight": "1px",
+        "bleed": true,
+        "spacing": "None",
+        "isVisible": false,
+        "id": "img_set_3"
+      },
+      {
+        "type": "Container",
+        "items": [
+          {
+            "type": "ColumnSet",
+            "columns": [
+              {
+                "type": "Column",
+                "width": "stretch",
+                "backgroundImage": {
+                  "url": "${images[3].url}",
+                  "horizontalAlignment": "Center",
+                  "verticalAlignment": "Center"
+                },
+                "minHeight": "300px",
+                "bleed": true
+              },
+              {
+                "type": "Column",
+                "width": "56px",
+                "backgroundImage": {
+                  "url": "${images[0].url}"
+                },
+                "bleed": true,
+                "items": [
+                  {
+                    "type": "Image",
+                    "url": "https://raw.githubusercontent.com/pnp/AdaptiveCards-Templates/main/samples/image-carousel/assets/chevron_right_white.png",
+                    "width": "24px",
+                    "height": "24px"
+                  }
+                ],
+                "verticalContentAlignment": "Center",
+                "selectAction": {
+                  "type": "Action.ToggleVisibility",
+                  "title": "Next",
+                  "targetElements": [
+                    "img_set_4",
+                    "img_set_1"
+                  ]
+                }
+              }
+            ],
+            "horizontalAlignment": "Center"
+          }
+        ],
+        "minHeight": "1px",
+        "bleed": true,
+        "spacing": "None",
+        "isVisible": false,
+        "id": "img_set_4"
+      },
+      {
+        "type": "Container",
+        "style": "emphasis",
+        "items": [
+          {
+            "type": "TextBlock",
+            "text": "FEATURES",
+            "wrap": true,
+            "spacing": "ExtraLarge",
+            "size": "Default",
+            "weight": "Bolder",
+            "horizontalAlignment": "Center",
+            "color": "Accent"
+          },
+          {
+            "type": "Container",
+            "spacing": "None",
+            "minHeight": "8px"
+          },
+          {
+            "type": "ColumnSet",
+            "columns": [
+              {
+                "type": "Column",
+                "width": 48,
+                "items": [
+                  {
+                    "type": "Image",
+                    "url": "${feature_1.icon}",
+                    "horizontalAlignment": "Center",
+                    "width": "40px",
+                    "height": "40px"
+                  },
+                  {
+                    "type": "TextBlock",
+                    "text": "${feature_1.name}",
+                    "wrap": true,
+                    "weight": "Bolder",
+                    "size": "Medium",
+                    "horizontalAlignment": "Center"
+                  },
+                  {
+                    "type": "TextBlock",
+                    "text": "${feature_1.description}",
+                    "wrap": true,
+                    "horizontalAlignment": "Center",
+                    "size": "Small",
+                    "isSubtle": true
+                  }
+                ]
+              },
+              {
+                "type": "Column",
+                "width": 2
+              },
+              {
+                "type": "Column",
+                "width": 48,
+                "items": [
+                  {
+                    "type": "Image",
+                    "url": "${feature_2.icon}",
+                    "horizontalAlignment": "Center",
+                    "width": "40px",
+                    "height": "40px"
+                  },
+                  {
+                    "type": "TextBlock",
+                    "text": "${feature_2.name}",
+                    "wrap": true,
+                    "horizontalAlignment": "Center",
+                    "size": "Medium",
+                    "weight": "Bolder"
+                  },
+                  {
+                    "type": "TextBlock",
+                    "text": "${feature_2.description}",
+                    "wrap": true,
+                    "horizontalAlignment": "Center",
+                    "size": "Small",
+                    "isSubtle": true
+                  }
+                ]
+              }
+            ],
+            "spacing": "Medium"
+          },
+          {
+            "type": "ColumnSet",
+            "columns": [
+              {
+                "type": "Column",
+                "items": [
+                  {
+                    "type": "Image",
+                    "horizontalAlignment": "Center",
+                    "url": "${feature_3.icon}",
+                    "width": "40px",
+                    "height": "40px"
+                  },
+                  {
+                    "type": "TextBlock",
+                    "text": "${feature_3.title}",
+                    "wrap": true,
+                    "horizontalAlignment": "Center",
+                    "size": "Medium",
+                    "weight": "Bolder"
+                  },
+                  {
+                    "type": "TextBlock",
+                    "text": "${feature_3.description}",
+                    "wrap": true,
+                    "horizontalAlignment": "Center",
+                    "size": "Small",
+                    "isSubtle": true
+                  }
+                ],
+                "width": 48
+              },
+              {
+                "type": "Column",
+                "width": 2
+              },
+              {
+                "type": "Column",
+                "width": 48,
+                "items": [
+                  {
+                    "type": "Image",
+                    "horizontalAlignment": "Center",
+                    "url": "${feature_4.icon}",
+                    "width": "40px",
+                    "height": "40px"
+                  },
+                  {
+                    "type": "TextBlock",
+                    "text": "${feature_4.title}",
+                    "wrap": true,
+                    "horizontalAlignment": "Center",
+                    "size": "Medium",
+                    "weight": "Bolder"
+                  },
+                  {
+                    "type": "TextBlock",
+                    "text": "${feature_4.description}",
+                    "wrap": true,
+                    "horizontalAlignment": "Center",
+                    "size": "Small",
+                    "isSubtle": true
+                  }
+                ]
+              }
+            ],
+            "spacing": "Medium"
+          }
+        ],
+        "spacing": "None"
+      },
+      {
+        "type": "Container",
+        "minHeight": "16px",
+        "spacing": "None"
+      },
+      {
+        "type": "Container",
+        "style": "emphasis",
+        "items": [
+          {
+            "type": "TextBlock",
+            "text": "SPECS",
+            "wrap": true,
+            "weight": "Bolder",
+            "horizontalAlignment": "Center",
+            "spacing": "ExtraLarge",
+            "color": "Accent"
+          },
+          {
+            "type": "ColumnSet",
+            "columns": [
+              {
+                "type": "Column",
+                "width": "stretch",
+                "items": [
+                  {
+                    "type": "TextBlock",
+                    "text": "${name}",
+                    "wrap": true,
+                    "weight": "Bolder",
+                    "horizontalAlignment": "Left"
+                  }
+                ]
+              },
+              {
+                "type": "Column",
+                "width": "stretch",
+                "items": [
+                  {
+                    "type": "TextBlock",
+                    "text": "${stat}",
+                    "wrap": true
+                  }
+                ]
+              }
+            ],
+            "$data": "${specs}"
+          }
+        ],
+        "spacing": "None"
+      },
+      {
+        "type": "Container",
+        "spacing": "None",
+        "minHeight": "16px"
+      },
+      {
+        "type": "Container",
+        "items": [
+          {
+            "type": "Container",
+            "items": [
+              {
+                "type": "TextBlock",
+                "text": "${available}",
+                "wrap": true,
+                "weight": "Bolder",
+                "size": "Small",
+                "color": "Accent"
+              },
+              {
+                "type": "TextBlock",
+                "text": "from ${price}",
+                "wrap": true,
+                "spacing": "None",
+                "size": "ExtraLarge",
+                "weight": "Bolder"
+              }
+            ]
+          }
+        ],
+        "horizontalAlignment": "Right",
+        "style": "emphasis",
+        "spacing": "None"
+      }
+    ]
+  },
+  "notes": ""
+}

@@ -1,0 +1,16 @@
+load("@buckal//:wrapper.bzl", "rust_library")
+
+rust_library(
+    name = "ad7124_rs",
+    srcs = glob(["**/*.rs"]),
+    crate = "ad7124_rs",
+    crate_root = "src/lib.rs",
+    edition = "2021",
+
+    visibility = ["PUBLIC"],
+    deps = [
+        "//third-party/rust/crates/defmt/0.3.100:defmt",
+        "//third-party/rust/crates/embedded-hal-async/1.0.0:embedded_hal_async",
+        "//third-party/rust/crates/embedded-hal/1.0.0:embedded_hal",
+    ],
+)

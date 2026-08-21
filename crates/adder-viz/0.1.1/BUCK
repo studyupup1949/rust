@@ -1,0 +1,20 @@
+load("@buckal//:wrapper.bzl", "rust_binary")
+
+rust_binary(
+    name = "adder_viz",
+    srcs = glob(["**/*.rs"]),
+    crate = "adder_viz",
+    crate_root = "src/main.rs",
+    edition = "2021",
+
+    visibility = ["PUBLIC"],
+    deps = [
+        "//third-party/rust/crates/adder-codec-rs/0.2.7:adder_codec_rs",
+        "//third-party/rust/crates/bevy/0.9.1:bevy",
+        "//third-party/rust/crates/bevy_editor_pls/0.2.0:bevy_editor_pls",
+        "//third-party/rust/crates/bevy_egui/0.17.1:bevy_egui",
+        "//third-party/rust/crates/opencv/0.66.0:opencv",
+        "//third-party/rust/crates/rayon/1.12.0:rayon",
+        "//third-party/rust/crates/tokio/1.53.1:tokio",
+    ],
+)

@@ -1,0 +1,601 @@
+syntax = "proto3";
+
+package ada.v1;
+
+import "ada/v1/common.proto";
+import "ada/v1/ingest.proto";
+import "google/protobuf/struct.proto";
+import "google/protobuf/timestamp.proto";
+
+option go_package = "github.com/eleven-am/ada-sdk/go/gen/ada/v1;adav1";
+
+message PaginationRequest {
+  int32 limit = 1;
+  int32 offset = 2;
+  string search = 3;
+}
+
+message PaginationMeta {
+  int32 total = 1;
+  bool has_more = 2;
+  int32 limit = 3;
+  int32 offset = 4;
+}
+
+message ApiKeyRecord {
+  string id = 1;
+  string namespace = 2;
+  string name = 3;
+  google.protobuf.Timestamp created_at = 4;
+  google.protobuf.Timestamp last_used_at = 5;
+  google.protobuf.Timestamp revoked_at = 6;
+}
+
+message CreateApiKeyRequest {
+  string namespace = 1;
+  string name = 2;
+}
+
+message CreateApiKeyResponse {
+  ApiKeyRecord key = 1;
+  string token = 2;
+}
+
+message ListApiKeysRequest {}
+
+message ListApiKeysResponse {
+  repeated ApiKeyRecord keys = 1;
+}
+
+message RevokeApiKeyRequest {
+  string api_key_id = 1;
+}
+
+message RevokeApiKeyResponse {
+  ApiKeyRecord key = 1;
+}
+
+message ListEntitiesRequest {
+  PaginationRequest pagination = 1;
+  string entity_type = 2;
+  string principal_id = 100;
+}
+
+message EntityRecord {
+  string id = 1;
+  string name = 2;
+  string entity_type = 3;
+  repeated string aliases = 4;
+  string description = 5;
+  double confidence = 6;
+  double rank = 7;
+  string community_id = 8;
+  google.protobuf.Struct properties = 9;
+  google.protobuf.Timestamp created_at = 10;
+  google.protobuf.Timestamp updated_at = 11;
+  int32 access_count = 12;
+  google.protobuf.Timestamp last_accessed = 13;
+}
+
+message ListEntitiesResponse {
+  repeated EntityRecord entities = 1;
+  PaginationMeta pagination = 2;
+}
+
+message ListAtomsRequest {
+  PaginationRequest pagination = 1;
+  string predicate = 2;
+  string principal_id = 100;
+}
+
+message AtomRecord {
+  string id = 1;
+  string subject = 2;
+  string predicate = 3;
+  string object = 4;
+  double confidence = 5;
+  string claim_status = 6;
+  string claim_type = 7;
+  string cardinality = 8;
+  google.protobuf.Timestamp t_valid = 9;
+  google.protobuf.Timestamp t_invalid = 10;
+  repeated string source_chunks = 11;
+  google.protobuf.Timestamp created_at = 12;
+  google.protobuf.Timestamp updated_at = 13;
+}
+
+message ListAtomsResponse {
+  repeated AtomRecord atoms = 1;
+  PaginationMeta pagination = 2;
+}
+
+message ListRelationsRequest {
+  PaginationRequest pagination = 1;
+  string predicate = 2;
+  string principal_id = 100;
+}
+
+message RelationRecord {
+  string id = 1;
+  string source_id = 2;
+  string target_id = 3;
+  string predicate = 4;
+  double weight = 5;
+  double rank = 6;
+  string cardinality = 7;
+  repeated string descriptions = 8;
+  repeated string keywords = 9;
+  google.protobuf.Timestamp t_valid = 10;
+  google.protobuf.Timestamp t_invalid = 11;
+  google.protobuf.Timestamp created_at = 12;
+  google.protobuf.Timestamp updated_at = 13;
+}
+
+message ListRelationsResponse {
+  repeated RelationRecord relations = 1;
+  PaginationMeta pagination = 2;
+}
+
+message ListCommitmentsRequest {
+  PaginationRequest pagination = 1;
+  string status = 2;
+  string principal_id = 100;
+}
+
+message CommitmentRecord {
+  string id = 1;
+  string maker_id = 2;
+  string receiver_id = 3;
+  string description = 4;
+  string status = 5;
+  google.protobuf.Timestamp due_date = 6;
+  double confidence = 7;
+  google.protobuf.Timestamp created_at = 8;
+  google.protobuf.Timestamp updated_at = 9;
+}
+
+message ListCommitmentsResponse {
+  repeated CommitmentRecord commitments = 1;
+  PaginationMeta pagination = 2;
+}
+
+message ListDecisionsRequest {
+  PaginationRequest pagination = 1;
+  string status = 2;
+  string principal_id = 100;
+}
+
+message DecisionRecord {
+  string id = 1;
+  string decider_id = 2;
+  string description = 3;
+  string rationale = 4;
+  string status = 5;
+  repeated string alternatives = 6;
+  repeated string dissent = 7;
+  google.protobuf.Timestamp decided_at = 8;
+  double confidence = 9;
+  google.protobuf.Timestamp created_at = 10;
+  google.protobuf.Timestamp updated_at = 11;
+}
+
+message ListDecisionsResponse {
+  repeated DecisionRecord decisions = 1;
+  PaginationMeta pagination = 2;
+}
+
+message ListActionItemsRequest {
+  PaginationRequest pagination = 1;
+  string status = 2;
+  string principal_id = 100;
+}
+
+message ActionItemRecord {
+  string id = 1;
+  string owner_id = 2;
+  string title = 3;
+  string description = 4;
+  string status = 5;
+  int32 priority = 6;
+  google.protobuf.Timestamp due_date = 7;
+  repeated string blocked_by = 8;
+  double confidence = 9;
+  google.protobuf.Timestamp created_at = 10;
+  google.protobuf.Timestamp updated_at = 11;
+}
+
+message ListActionItemsResponse {
+  repeated ActionItemRecord action_items = 1;
+  PaginationMeta pagination = 2;
+}
+
+message ListContradictionsRequest {
+  PaginationRequest pagination = 1;
+  string status = 2;
+  string principal_id = 100;
+}
+
+message ContradictionRecord {
+  string id = 1;
+  string subject = 2;
+  string predicate = 3;
+  string winner_id = 4;
+  string loser_id = 5;
+  string winner_value = 6;
+  string loser_value = 7;
+  string status = 8;
+  string classification = 9;
+  string rationale = 10;
+  double confidence = 11;
+  google.protobuf.Timestamp resolved_at = 12;
+  google.protobuf.Timestamp created_at = 13;
+  google.protobuf.Timestamp updated_at = 14;
+}
+
+message ListContradictionsResponse {
+  repeated ContradictionRecord contradictions = 1;
+  PaginationMeta pagination = 2;
+}
+
+message ListObservationsRequest {
+  PaginationRequest pagination = 1;
+  string principal_id = 100;
+}
+
+message ObservationRecord {
+  string id = 1;
+  string observer_id = 2;
+  string observed_id = 3;
+  string type = 4;
+  string description = 5;
+  double sentiment = 6;
+  double confidence = 7;
+  google.protobuf.Timestamp observed_at = 8;
+  google.protobuf.Timestamp created_at = 9;
+  google.protobuf.Timestamp updated_at = 10;
+}
+
+message ListObservationsResponse {
+  repeated ObservationRecord observations = 1;
+  PaginationMeta pagination = 2;
+}
+
+message ListDocumentsRequest {
+  PaginationRequest pagination = 1;
+  string status = 2;
+  string principal_id = 100;
+}
+
+message DocumentRecord {
+  string id = 1;
+  string source_id = 2;
+  string name = 3;
+  string mime_type = 4;
+  int64 size_bytes = 5;
+  string status = 6;
+  int32 chunk_count = 7;
+  google.protobuf.Timestamp created_at = 8;
+  google.protobuf.Timestamp updated_at = 9;
+}
+
+message ListDocumentsResponse {
+  repeated DocumentRecord documents = 1;
+  PaginationMeta pagination = 2;
+}
+
+message ListCommunitiesRequest {
+  PaginationRequest pagination = 1;
+  string resolution = 2;
+  string principal_id = 100;
+}
+
+message ListCommunitiesResponse {
+  repeated Community communities = 1;
+  PaginationMeta pagination = 2;
+}
+
+message ListEventsRequest {
+  PaginationRequest pagination = 1;
+  string principal_id = 100;
+}
+
+message ListEventsResponse {
+  repeated Event events = 1;
+  PaginationMeta pagination = 2;
+}
+
+message ListMeetingsRequest {
+  PaginationRequest pagination = 1;
+  string principal_id = 100;
+}
+
+message ListMeetingsResponse {
+  repeated Meeting meetings = 1;
+  PaginationMeta pagination = 2;
+}
+
+message ListIntentionsRequest {
+  PaginationRequest pagination = 1;
+  string status = 2;
+  string principal_id = 100;
+}
+
+message ListIntentionsResponse {
+  repeated Intention intentions = 1;
+  PaginationMeta pagination = 2;
+}
+
+message ListPrioritiesRequest {
+  PaginationRequest pagination = 1;
+  string principal_id = 100;
+}
+
+message ListPrioritiesResponse {
+  repeated Priority priorities = 1;
+  PaginationMeta pagination = 2;
+}
+
+message ListIngestJobsRequest {
+  PaginationRequest pagination = 1;
+  string status = 2;
+  string document_id = 3;
+  string principal_id = 100;
+}
+
+message ListIngestJobsResponse {
+  repeated JobStatus jobs = 1;
+  PaginationMeta pagination = 2;
+}
+
+message UsageReport {
+  string job_id = 1;
+  string document_id = 2;
+  string source_id = 3;
+  string source_type = 4;
+  string status = 5;
+  string content_type = 6;
+  string extraction_model = 7;
+  string distill_model = 8;
+  int64 llm_call_count = 9;
+  int64 llm_input_tokens = 10;
+  int64 llm_output_tokens = 11;
+  int64 llm_total_tokens = 12;
+  int64 available_tokens = 13;
+  bool has_accounting = 14;
+  string accounting_status = 15;
+  int64 document_size_bytes = 16;
+  int64 chunk_count = 17;
+  int64 postgres_bytes = 18;
+  int64 postgres_row_count = 19;
+  int64 qdrant_estimated_bytes = 20;
+  int64 qdrant_point_count = 21;
+  int32 qdrant_vector_dimensions = 22;
+  int64 neo4j_estimated_bytes = 23;
+  int64 neo4j_statement_count = 24;
+  int64 object_store_bytes = 25;
+  int64 total_estimated_bytes = 26;
+  google.protobuf.Timestamp created_at = 27;
+  google.protobuf.Timestamp updated_at = 28;
+  google.protobuf.Timestamp started_at = 29;
+  google.protobuf.Timestamp completed_at = 30;
+  google.protobuf.Timestamp computed_at = 31;
+}
+
+message UsageTotals {
+  int64 job_count = 1;
+  int64 llm_call_count = 2;
+  int64 llm_input_tokens = 3;
+  int64 llm_output_tokens = 4;
+  int64 llm_total_tokens = 5;
+  int64 document_size_bytes = 6;
+  int64 chunk_count = 7;
+  int64 postgres_bytes = 8;
+  int64 postgres_row_count = 9;
+  int64 qdrant_estimated_bytes = 10;
+  int64 qdrant_point_count = 11;
+  int64 neo4j_estimated_bytes = 12;
+  int64 neo4j_statement_count = 13;
+  int64 object_store_bytes = 14;
+  int64 total_estimated_bytes = 15;
+}
+
+message GetUsageReportRequest {
+  string job_id = 1;
+  string principal_id = 100;
+}
+
+message GetUsageReportResponse {
+  bool found = 1;
+  UsageReport report = 2;
+}
+
+message ListUsageReportsRequest {
+  PaginationRequest pagination = 1;
+  string status = 2;
+  string document_id = 3;
+  string source_id = 4;
+  string principal_id = 100;
+}
+
+message ListUsageReportsResponse {
+  repeated UsageReport reports = 1;
+  PaginationMeta pagination = 2;
+  UsageTotals totals = 3;
+}
+
+message UsageEvent {
+  string usage_event_id = 1;
+  string provider = 2;
+  string operation = 3;
+  string job_id = 4;
+  string organization_id = 5;
+  string project_id = 6;
+  string principal_id = 7;
+  string invocation_id = 8;
+  string run_id = 9;
+  string tool_invocation_id = 10;
+  string tool_attempt_id = 11;
+  string application_name = 12;
+  string resource_name = 13;
+  string tool_name = 14;
+  string status = 15;
+  int64 input_tokens = 16;
+  int64 output_tokens = 17;
+  int64 embedding_tokens = 18;
+  int64 storage_bytes_delta = 19;
+  string document_id = 20;
+  string source_id = 21;
+  google.protobuf.Struct accounting_context = 22;
+  google.protobuf.Struct details = 23;
+  google.protobuf.Timestamp occurred_at = 24;
+  google.protobuf.Timestamp finalized_at = 25;
+  google.protobuf.Timestamp created_at = 26;
+}
+
+message GetUsageEventRequest {
+  string usage_event_id = 1;
+  string principal_id = 100;
+}
+
+message GetUsageEventResponse {
+  bool found = 1;
+  UsageEvent event = 2;
+}
+
+message ListUsageEventsRequest {
+  string cursor = 1;
+  int32 limit = 2;
+  string organization_id = 3;
+  string project_id = 4;
+  string invocation_id = 5;
+  string run_id = 6;
+  string job_id = 7;
+  string principal_id = 100;
+}
+
+message ListUsageEventsResponse {
+  repeated UsageEvent events = 1;
+  string next_cursor = 2;
+  bool has_more = 3;
+}
+
+message ListRecallRunsRequest {
+  PaginationRequest pagination = 1;
+  string channel = 2;
+  string entity_id = 3;
+  string principal_id = 100;
+}
+
+message RecallRunRecord {
+  string id = 1;
+  string channel = 2;
+  string query = 3;
+  string subject_entity_id = 4;
+  repeated string covered_entity_ids = 5;
+  google.protobuf.Struct request_payload = 6;
+  google.protobuf.Struct response_payload = 7;
+  int32 request_size_bytes = 8;
+  int32 response_size_bytes = 9;
+  int32 request_token_count = 10;
+  int32 response_token_count = 11;
+  int32 items_count = 12;
+  int32 actors_count = 13;
+  int32 tensions_count = 14;
+  int32 communities_count = 15;
+  int32 summaries_count = 16;
+  int32 total_items = 17;
+  bool degraded = 18;
+  bool cache_hit = 19;
+  int64 duration_ms = 20;
+  google.protobuf.Timestamp created_at = 21;
+}
+
+message ListRecallRunsResponse {
+  repeated RecallRunRecord recalls = 1;
+  PaginationMeta pagination = 2;
+}
+
+message GetProjectionStatusRequest {
+  int32 failure_limit = 1;
+  string principal_id = 100;
+}
+
+message ProjectionStoreStatus {
+  string store = 1;
+  int64 pending = 2;
+  int64 applied = 3;
+  int64 retrying = 4;
+  int64 dead_lettered = 5;
+  int64 superseded = 6;
+  google.protobuf.Timestamp oldest_active_at = 7;
+  int64 oldest_active_age_seconds = 8;
+  int32 max_attempt_count = 9;
+}
+
+message ProjectionFailure {
+  string id = 1;
+  string principal_id = 2;
+  string event_id = 3;
+  string ingest_job_id = 4;
+  string document_id = 5;
+  string store = 6;
+  string operation = 7;
+  string record_type = 8;
+  string record_id = 9;
+  int64 revision = 10;
+  string status = 11;
+  int32 attempt_count = 12;
+  string last_error = 13;
+  google.protobuf.Timestamp next_attempt_at = 14;
+  google.protobuf.Timestamp dead_lettered_at = 15;
+  google.protobuf.Timestamp updated_at = 16;
+  string projection_group_id = 17;
+  string source_chunk_id = 18;
+  google.protobuf.Struct correlation = 19;
+}
+
+message GetProjectionStatusResponse {
+  bool healthy = 1;
+  google.protobuf.Timestamp generated_at = 2;
+  repeated ProjectionStoreStatus stores = 3;
+  int64 pending = 4;
+  int64 applied = 5;
+  int64 retrying = 6;
+  int64 dead_lettered = 7;
+  int64 superseded = 8;
+  repeated ProjectionFailure failures = 9;
+}
+
+message DeleteDataRequest {
+  reserved 3;
+  string principal_id = 100;
+}
+
+message DeleteDataResponse {
+  uint64 deleted_rows = 1;
+}
+
+service DataService {
+  rpc ListEntities (ListEntitiesRequest) returns (ListEntitiesResponse);
+  rpc ListAtoms (ListAtomsRequest) returns (ListAtomsResponse);
+  rpc ListRelations (ListRelationsRequest) returns (ListRelationsResponse);
+  rpc ListCommitments (ListCommitmentsRequest) returns (ListCommitmentsResponse);
+  rpc ListDecisions (ListDecisionsRequest) returns (ListDecisionsResponse);
+  rpc ListActionItems (ListActionItemsRequest) returns (ListActionItemsResponse);
+  rpc ListContradictions (ListContradictionsRequest) returns (ListContradictionsResponse);
+  rpc ListObservations (ListObservationsRequest) returns (ListObservationsResponse);
+  rpc ListDocuments (ListDocumentsRequest) returns (ListDocumentsResponse);
+  rpc ListEvents (ListEventsRequest) returns (ListEventsResponse);
+  rpc ListMeetings (ListMeetingsRequest) returns (ListMeetingsResponse);
+  rpc ListIntentions (ListIntentionsRequest) returns (ListIntentionsResponse);
+  rpc ListPriorities (ListPrioritiesRequest) returns (ListPrioritiesResponse);
+  rpc ListIngestJobs (ListIngestJobsRequest) returns (ListIngestJobsResponse);
+  rpc GetUsageReport (GetUsageReportRequest) returns (GetUsageReportResponse);
+  rpc ListUsageReports (ListUsageReportsRequest) returns (ListUsageReportsResponse);
+  rpc GetUsageEvent (GetUsageEventRequest) returns (GetUsageEventResponse);
+  rpc ListUsageEvents (ListUsageEventsRequest) returns (ListUsageEventsResponse);
+  rpc ListCommunities (ListCommunitiesRequest) returns (ListCommunitiesResponse);
+  rpc ListRecallRuns (ListRecallRunsRequest) returns (ListRecallRunsResponse);
+  rpc GetProjectionStatus (GetProjectionStatusRequest) returns (GetProjectionStatusResponse);
+  rpc DeleteData (DeleteDataRequest) returns (DeleteDataResponse);
+}

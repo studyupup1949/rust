@@ -1,0 +1,7 @@
+[package]
+name = "adroit"
+version = "0.0.0"
+description = "AD on first-order SSA functions with arrays and algebraic types."
+license = "MIT"
+repository = "https://github.com/samestep/adroit"
+include = ["src/lib.rs"]

@@ -1,0 +1,16 @@
+load("@buckal//:wrapper.bzl", "rust_library")
+
+rust_library(
+    name = "adhammer_core",
+    srcs = glob(["**/*.rs"]),
+    crate = "adhammer_core",
+    crate_root = "src/lib.rs",
+    edition = "2021",
+
+    visibility = ["PUBLIC"],
+    deps = [
+        "//third-party/rust/crates/serde/1.0.229:serde",
+        "//third-party/rust/crates/thiserror/2.0.20:thiserror",
+        "//third-party/rust/crates/windows-sddl/0.1.1:windows_sddl",
+    ],
+)

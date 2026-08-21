@@ -1,0 +1,22 @@
+[package]
+name = "adversary-macros"
+version = "0.1.0"
+authors = ["Isaac Chen"]
+description = "Procedural macros for the adversary crate."
+license = "MIT OR Apache-2.0"
+readme = "README.md"
+repository = "https://github.com/ijchen/adversary"
+documentation = "https://docs.rs/adversary-macros"
+edition = "2021"
+include = ["/src/", "/Cargo.toml", "/README.md", "/LICENSE-*"]
+publish = true
+
+[lib]
+proc-macro = true
+
+[dependencies]
+proc-macro2 = "1.0.86"
+quote = "1.0.37"
+syn = "2.0.77"
+
+[dev-dependencies]

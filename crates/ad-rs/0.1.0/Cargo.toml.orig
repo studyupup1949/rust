@@ -1,0 +1,15 @@
+[package]
+name = "ad-rs"
+version = "0.1.0"
+authors = ["immortal infidel <immortal.infidel@gmail.com>"]
+edition = "2018"
+license="MIT"
+description="Accumulation/Distribution(AD) Line and Oscillator Implementation In Rust"
+repository="https://github.com/immortalinfidel/ad-rs"
+homepage="https://github.com/immortalinfidel/ad-rs"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+ta-common = { path = "../ta-common", version = "0.1.0" }
+ema-rs = { path = "../ema-rs", version = "0.1.0" }

@@ -1,0 +1,217 @@
+import { AJTheme } from "../aj-theme.slint";
+import { AJAppState, AJUserState } from "../aj-state.slint";
+import { AJHomeCallbacks, AJContestCallbacks } from "../aj-callbacks.slint";
+import { AJAccountData, AJAdminLevel } from "../models/users.slint";
+import { AJText, AJTextType } from "../components/aj-text.slint";
+import { AJInput, AJInputType } from "../components/aj-input.slint";
+import { AJAdminBadge } from "../components/aj-admin-badge.slint";
+import { AJButton } from "../components/aj-button.slint";
+import { AJDateTimeText } from "../components/aj-datetime-text.slint";
+import { AJDropdown } from "../components/aj-dropdown.slint";
+import { AJCheckbox } from "../components/aj-checkbox.slint";
+import { AJIcon } from "../components/aj-icon.slint";
+
+export component UserPrivateProfilePage {
+    property <AJAccountData> user: AJAppState.opened-user-private-profile;
+    property <AJAdminLevel> admin-level: {
+        if admin-level-dropdown.current-index == 0 {
+            AJAdminLevel.NotAdmin
+        } else if admin-level-dropdown.current-index == 1 {
+            AJAdminLevel.BetaTester
+        } else if admin-level-dropdown.current-index == 2 {
+            AJAdminLevel.Admin
+        } else {
+            AJAdminLevel.Owner
+        }
+    };
+
+    VerticalLayout {
+        alignment: start;
+        spacing: AJTheme.spacing;
+
+        AJButton {
+            text: @tr("назад");
+            text-halign: right;
+
+            AJIcon {
+                source: @image-url("../../radix-icons/reset.svg");
+                x: AJTheme.fit-space;
+                y: (parent.height - self.height) / 2;
+            }
+            clicked => {
+                AJAppState.page = 5
+            }
+        }
+
+        AJText {
+            text: @tr("Профиль");
+            type: AJTextType.Heading;
+        }
+
+        AJText {
+            text: "id";
+            type: AJTextType.Medium;
+        }
+
+        AJText {
+            text: user.id;
+            font-italic: true;
+        }
+
+        AJText {
+            text: @tr("логин");
+            type: AJTextType.Medium;
+        }
+
+        AJText {
+            text: user.login;
+            font-italic: true;
+        }
+
+        AJText {
+            text: @tr("уровень админа");
+            type: AJTextType.Medium;
+        }
+
+        AJAdminBadge {
+            level: user.admin-level;
+        }
+
+        HorizontalLayout {
+            z: 100;
+            spacing: AJTheme.spacing;
+
+            admin-level-dropdown := AJDropdown {
+                variants: [@tr("не админ"), @tr("бета-тестер"), @tr("админ"), @tr("владелец")];
+            }
+
+            AJButton {
+                text: @tr("изменить");
+
+                text-halign: left;
+
+                AJIcon {
+                    source: @image-url("../../radix-icons/pencil-1.svg");
+                    x: parent.width - self.width - AJTheme.fit-space;
+                    y: (parent.height - self.height) / 2;
+                }
+
+                clicked => {
+                    AJContestCallbacks.change-user-admin-level(user.id, admin-level)
+                }
+            }
+        }
+
+        AJText {
+            text: @tr("аккаунт был создан");
+            type: AJTextType.Medium;
+        }
+
+        AJDateTimeText {
+            date-time: user.created-at;
+            font-italic: true;
+        }
+
+        AJButton {
+            text: @tr("удалить аккаунт");
+            background: AJTheme.container-error;
+            text-color: AJTheme.error-text;
+
+            text-halign: left;
+
+            AJIcon {
+                source: @image-url("../../radix-icons/trash.svg");
+                color: AJTheme.error-text;
+                x: parent.width - self.width - AJTheme.fit-space;
+                y: (parent.height - self.height) / 2;
+            }
+
+            delete-account-popup := PopupWindow {
+                close-policy: PopupClosePolicy.close-on-click-outside;
+
+                function close-popup() {
+                    self.close()
+                }
+
+                Rectangle {
+                    background: AJTheme.secondary-container;
+
+                    border-radius: AJTheme.border-radius;
+
+                    VerticalLayout {
+                        padding: AJTheme.padding;
+                        spacing: AJTheme.spacing;
+
+                        AJText {
+                            text: @tr("Требуется рут-доступ");
+                            type: AJTextType.Medium;
+                            color: AJTheme.container-text;
+                        }
+
+                        login := AJInput {
+                            placeholder: @tr("логин");
+                        }
+
+                        password := AJInput {
+                            placeholder: @tr("пароль");
+                            type: AJInputType.Password;
+                        }
+
+                        password-confirmation := AJInput {
+                            placeholder: @tr("подтвердите пароль");
+                            type: AJInputType.Password;
+                        }
+
+                        deletion-confirmation := AJCheckbox {
+                            text: @tr("подтвердите удаление");
+                        }
+
+                        AJButton {
+                            text: @tr("удалить");
+                            background: AJTheme.container-error;
+                            text-color: AJTheme.error-text;
+
+                            text-halign: left;
+
+                            AJIcon {
+                                source: {
+                                    if !login.text.is-empty && !password.text.is-empty && password.text == password-confirmation.text && deletion-confirmation.value {
+                                        @image-url("../../radix-icons/trash.svg")
+                                    } else {
+                                        @image-url("../../radix-icons/circle-backslash.svg")
+                                    }
+                                };
+                                color: AJTheme.error-text;
+                                x: parent.width - self.width - AJTheme.fit-space;
+                                y: (parent.height - self.height) / 2;
+                            }
+
+                            clicked => {
+                                if !login.text.is-empty && !password.text.is-empty && password.text == password-confirmation.text && deletion-confirmation.value {
+                                    AJContestCallbacks.delete-user-account(user.id, login.text, password.text, password-confirmation.text, deletion-confirmation.value);
+                                }
+                            }
+                        }
+
+                        AJButton {
+                            text: @tr("отменить");
+                            text-halign: right;
+
+                            AJIcon {
+                                source: @image-url("../../radix-icons/reset.svg");
+                                x: AJTheme.fit-space;
+                                y: (parent.height - self.height) / 2;
+                            }
+                            clicked => {
+                                close-popup()
+                            }
+                        }
+                    }
+                }
+            }
+            clicked => {
+                delete-account-popup.show()
+            }
+        }
+    }
+}

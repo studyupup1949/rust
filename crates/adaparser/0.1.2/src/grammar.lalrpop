@@ -1,0 +1,286 @@
+grammar;
+
+use aleph_syntax_tree::syntax::AlephTree as at;
+
+// --- Program ---
+// An Ada program consists of a list of declarations.
+pub Program: at = {
+    <decls:DeclarationList> => at::Module {
+        name: "ADA_PROGRAM".to_string(),
+        module_type: "program".to_string(),
+        id: None,
+        declarations: decls,
+        body: None,
+        initialization: None,
+    }
+}
+
+// --- Declaration List ---
+// A list of declarations (can be empty).
+pub DeclarationList: Vec<Box<at>> = {
+    => Vec::new(),
+    <decls:NonEmptyDeclarationList> => decls,
+}
+
+// --- Non-Empty Declaration List ---
+// A non-empty list of declarations.
+pub NonEmptyDeclarationList: Vec<Box<at>> = {
+    <decl:Declaration> => vec![Box::new(decl)],
+    <decls:NonEmptyDeclarationList> <decl:Declaration> => {
+        let mut v = decls;
+        v.push(Box::new(decl));
+        v
+    }
+}
+
+// --- Declaration ---
+// A single declaration (variable, type, procedure, etc.).
+pub Declaration: at = {
+    <decl:VarDecl> => decl,
+    <decl:ProcedureDef> => decl,
+}
+
+// --- Variable Declaration ---
+// A variable declaration: "Name : Type [:= InitialValue];"
+pub VarDecl: at = {
+    <name:Ident> ":" <typ:TypeRef> ";" => at::VarDecl {
+        name: name,
+        var_type: Some(Box::new(typ)),
+        initial_value: None,
+        is_constant: false,
+        is_aliased: false,
+        storage: None,
+        occurs: None,
+        usage: None,
+        attributes: Vec::new(),
+        level: None,
+    },
+    <name:Ident> ":" <typ:TypeRef> ":=" <init:Expr> ";" => at::VarDecl {
+        name: name,
+        var_type: Some(Box::new(typ)),
+        initial_value: Some(Box::new(init)),
+        is_constant: false,
+        is_aliased: false,
+        storage: None,
+        occurs: None,
+        usage: None,
+        attributes: Vec::new(),
+        level: None,
+    }
+}
+
+// --- Procedure Definition ---
+// A procedure definition: "procedure Name is [Declarations] begin [Statements] end Name;"
+pub ProcedureDef: at = {
+    "procedure" <name:Ident> "is" <decls:DeclarationList> "begin" <stmts:StatementList> "end" <end_name:Ident> ";" => at::ProcedureDef {
+        name: name,
+        proc_type: Some("procedure".to_string()),
+        parameters: Vec::new(),
+        return_type: None,
+        attributes: Vec::new(),
+        declarations: decls,
+        body: stmts,
+    }
+}
+
+// --- Statement List ---
+// A list of statements (can be empty).
+pub StatementList: Vec<Box<at>> = {
+    => Vec::new(),
+    <stmts:NonEmptyStatementList> => stmts,
+}
+
+// --- Non-Empty Statement List ---
+// A non-empty list of statements.
+pub NonEmptyStatementList: Vec<Box<at>> = {
+    <stmt:Statement> => vec![Box::new(stmt)],
+    <stmts:NonEmptyStatementList> <stmt:Statement> => {
+        let mut v = stmts;
+        v.push(Box::new(stmt));
+        v
+    }
+}
+
+// --- Statement ---
+// A single statement (assignment, procedure call, etc.).
+pub Statement: at = {
+    <stmt:Assignment> => stmt,
+    <stmt:Call> => stmt,
+    <stmt:IfStmt> => stmt,
+    <stmt:Loop> => stmt,
+}
+
+// --- Assignment ---
+// An assignment statement: "Target := Expression;"
+pub Assignment: at = {
+    <target:Ident> ":=" <expr:Expr> ";" => at::Assignment {
+        target: Box::new(at::Ident { value: target }),
+        value: Box::new(expr),
+    }
+}
+
+// --- Procedure Call ---
+// A procedure call: "Name [Parameters];"
+pub Call: at = {
+    <name:Ident> ";" => at::Call {
+        target: Box::new(at::Ident { value: name }),
+        parameters: None,
+        returning: None,
+        on_error: None,
+    },
+    <name:Ident> "(" <params:ParameterList> ")" ";" => at::Call {
+        target: Box::new(at::Ident { value: name }),
+        parameters: Some(params),
+        returning: None,
+        on_error: None,
+    }
+}
+
+// --- Parameter List ---
+// A list of parameters (can be empty).
+pub ParameterList: Vec<Box<at>> = {
+    => Vec::new(),
+    <params:NonEmptyParameterList> => params,
+}
+
+// --- Non-Empty Parameter List ---
+// A non-empty list of parameters.
+pub NonEmptyParameterList: Vec<Box<at>> = {
+    <param:Parameter> => vec![Box::new(param)],
+    <params:NonEmptyParameterList> "," <param:Parameter> => {
+        let mut v = params;
+        v.push(Box::new(param));
+        v
+    }
+}
+
+// --- Parameter ---
+// A single parameter: "Expression"
+pub Parameter: at = {
+    <expr:Expr> => expr,
+}
+
+// --- If Statement ---
+// An if statement: "if Condition then [Statements] [else [Statements]] end if;"
+pub IfStmt: at = {
+    "if" <cond:Condition> "then" <then:StatementList> "end" "if" ";" => at::If {
+        condition: Box::new(cond),
+        then: Box::new(at::Block { statements: then }),
+        els: Box::new(at::Unit),
+    },
+    "if" <cond:Condition> "then" <then:StatementList> "else" <els:StatementList> "end" "if" ";" => at::If {
+        condition: Box::new(cond),
+        then: Box::new(at::Block { statements: then }),
+        els: Box::new(at::Block { statements: els }),
+    }
+}
+
+// --- Loop Statement ---
+// A loop statement: "loop [Statements] end loop;"
+pub Loop: at = {
+    "loop" <body:StatementList> "end" "loop" ";" => at::Loop {
+        name: None,
+        body: body,
+    }
+}
+
+// --- Condition ---
+// A condition: "Expression"
+pub Condition: at = {
+    <expr:Expr> => expr,
+}
+
+// --- Expression ---
+// An expression (literal, identifier, operation, etc.).
+pub Expr: at = {
+    <expr:AddExpr> => expr,
+}
+
+// --- AddExpr ---
+// Addition and subtraction expressions.
+pub AddExpr: at = {
+    <expr:MulExpr> => expr,
+    <left:AddExpr> "+" <right:MulExpr> => at::Add {
+        number_expr1: Box::new(left),
+        number_expr2: Box::new(right),
+    },
+    <left:AddExpr> "-" <right:MulExpr> => at::Sub {
+        number_expr1: Box::new(left),
+        number_expr2: Box::new(right),
+    },
+}
+
+// --- MulExpr ---
+// Multiplication and division expressions.
+pub MulExpr: at = {
+    <expr:EqExpr> => expr,
+    <left:MulExpr> "*" <right:EqExpr> => at::Mul {
+        number_expr1: Box::new(left),
+        number_expr2: Box::new(right),
+    },
+    <left:MulExpr> "/" <right:EqExpr> => at::Div {
+        number_expr1: Box::new(left),
+        number_expr2: Box::new(right),
+    },
+}
+
+// --- EqExpr ---
+// Equality expressions.
+pub EqExpr: at = {
+    <expr:PrimaryExpr> => expr,
+    <left:EqExpr> "=" <right:PrimaryExpr> => at::Eq {
+        expr1: Box::new(left),
+        expr2: Box::new(right),
+    },
+}
+
+// --- PrimaryExpr ---
+// Primary expressions (literals, identifiers, parentheses).
+pub PrimaryExpr: at = {
+    <lit:Literal> => lit,
+    <id:Ident> => at::Ident { value: id },
+    "(" <expr:Expr> ")" => expr,
+}
+
+// --- Literal ---
+// A literal value (integer, string, etc.).
+pub Literal: at = {
+    <lit:Int> => at::Int { value: lit },
+    <lit:String> => at::String { value: lit },
+    <lit:Bool> => at::Bool { value: lit },
+}
+
+// --- Integer ---
+// An integer literal.
+pub Int: String = {
+    r"-?[0-9]+" => <>.to_string(),
+};
+
+// --- String ---
+// A string literal.
+pub String: String = {
+    r#""[^"]*""# => <>.to_string().trim_matches('"').to_string(),
+};
+
+// --- Boolean ---
+// A boolean literal.
+pub Bool: String = {
+    "true" => "true".to_string(),
+    "false" => "false".to_string(),
+};
+
+// --- Identifier ---
+// An identifier.
+pub Ident: String = {
+    r#"[A-Za-z_][A-Za-z0-9_]*"# => <>.to_string(),
+};
+
+// --- Type Reference ---
+// A type reference: "TypeName"
+pub TypeRef: at = {
+    <name:Ident> => at::TypeRef {
+        name: name,
+        qualifiers: Vec::new(),
+    }
+}
+

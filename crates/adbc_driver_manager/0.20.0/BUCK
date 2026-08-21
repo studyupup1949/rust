@@ -1,0 +1,19 @@
+load("@buckal//:wrapper.bzl", "rust_library")
+
+rust_library(
+    name = "adbc_driver_manager",
+    srcs = glob(["**/*.rs"]),
+    crate = "adbc_driver_manager",
+    crate_root = "src/lib.rs",
+    edition = "2021",
+
+    visibility = ["PUBLIC"],
+    deps = [
+        "//third-party/rust/crates/adbc_core/0.20.0:adbc_core",
+        "//third-party/rust/crates/adbc_ffi/0.20.0:adbc_ffi",
+        "//third-party/rust/crates/arrow-array/56.2.1:arrow_array",
+        "//third-party/rust/crates/arrow-schema/56.2.1:arrow_schema",
+        "//third-party/rust/crates/libloading/0.8.9:libloading",
+        "//third-party/rust/crates/toml/0.9.8:toml",
+    ],
+)

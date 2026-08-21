@@ -1,0 +1,14 @@
+load("@buckal//:wrapper.bzl", "rust_library")
+
+rust_library(
+    name = "advay26_rust_workshop_tools",
+    srcs = glob(["**/*.rs"]),
+    crate = "advay26_rust_workshop_tools",
+    crate_root = "src/lib.rs",
+    edition = "2021",
+
+    visibility = ["PUBLIC"],
+    deps = [
+        "//third-party/rust/crates/advay26-rust-workshop-tools-lib/0.1.2:advay26_rust_workshop_tools_lib",
+    ],
+)

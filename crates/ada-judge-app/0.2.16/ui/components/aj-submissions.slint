@@ -1,0 +1,208 @@
+import { AJTheme } from "../aj-theme.slint";
+import { AJAppState } from "../aj-state.slint";
+import { AJContestState } from "../aj-state.slint";
+import {
+    AJSubmission,
+    AJTotalVerdict,
+    AJLanguage,
+} from "../models/testing.slint";
+import { AJContestCallbacks, AJAppCallbacks } from "../aj-callbacks.slint";
+import { ListView, ScrollView, HorizontalBox } from "std-widgets.slint";
+import { AJText, AJTextType } from "aj-text.slint";
+import { AJButton } from "aj-button.slint";
+import { AJCheckbox } from "aj-checkbox.slint";
+
+export component AJSubmissions inherits Rectangle {
+    property <[AJSubmission]> submissions: AJContestState.submissions;
+
+    width: 100%;
+    height: 415px;
+
+    background: AJTheme.primary-container;
+
+    border-radius: AJTheme.border-radius;
+
+    VerticalLayout {
+        padding: AJTheme.padding;
+        spacing: AJTheme.spacing;
+
+        HorizontalBox {
+            spacing: AJTheme.spacing;
+
+            AJText {
+                text: "Посылки";
+                type: AJTextType.Heading;
+                color: AJTheme.container-text;
+            }
+
+            AJCheckbox {
+                visible: AJAppState.contests[AJContestState.index].can-manage;
+                value <=> AJContestState.all-submissions;
+                text: "все посылки";
+                changed value => {
+                    AJAppCallbacks.reload()
+                }
+            }
+        }
+
+        AJText {
+            visible: submissions.length == 0;
+            text: "Посылок пока что нет";
+            type: AJTextType.Medium;
+            font-italic: true;
+            color: AJTheme.container-text;
+        }
+
+        Rectangle {
+            visible: submissions.length != 0;
+            width: 590px;
+            clip: true;
+            border-radius: AJTheme.border-radius;
+
+            ScrollView {
+                GridLayout {
+                    spacing: AJTheme.spacing;
+
+                    Row {
+                        AJText {
+                            text: "#";
+                            font-italic: true;
+                            horizontal-alignment: center;
+                            vertical-alignment: center;
+                            color: AJTheme.container-text;
+                        }
+
+                        AJText {
+                            text: "участник";
+                            font-italic: true;
+                            horizontal-alignment: center;
+                            vertical-alignment: center;
+                            color: AJTheme.container-text;
+                        }
+
+                        AJText {
+                            text: "язык";
+                            font-italic: true;
+                            horizontal-alignment: center;
+                            vertical-alignment: center;
+                            color: AJTheme.container-text;
+                        }
+
+                        AJText {
+                            text: "вердикт";
+                            font-italic: true;
+                            horizontal-alignment: center;
+                            vertical-alignment: center;
+                            color: AJTheme.container-text;
+                        }
+
+                        AJText {
+                            text: "баллы";
+                            font-italic: true;
+                            horizontal-alignment: center;
+                            vertical-alignment: center;
+                            color: AJTheme.container-text;
+                        }
+                    }
+
+                    for submission[index] in submissions: Row {
+                        AJText {
+                            text: submission.id;
+                            font-weight: submission.total-verdict == AJTotalVerdict.Ok ? AJTheme.font-weight-heading : AJTheme.font-weight-paragraph;
+                            horizontal-alignment: center;
+                            vertical-alignment: center;
+                            color: AJTheme.container-text;
+                        }
+
+                        AJButton {
+                            text: submission.username;
+                            clicked => {
+                                AJContestCallbacks.open-profile(submission.user-id)
+                            }
+                        }
+
+                        AJText {
+                            text: {
+                                if submission.language == AJLanguage.Clang {
+                                    "C"
+                                } else if submission.language == AJLanguage.Clangpp {
+                                    "C++"
+                                } else if submission.language == AJLanguage.Rust {
+                                    "Rust"
+                                } else if submission.language == AJLanguage.Go {
+                                    "Go"
+                                } else {
+                                    "Python"
+                                }
+                            }
+                            font-weight: submission.total-verdict == AJTotalVerdict.Ok ? AJTheme.font-weight-heading : AJTheme.font-weight-paragraph;
+                            horizontal-alignment: center;
+                            vertical-alignment: center;
+                            color: AJTheme.container-text;
+                        }
+
+                        AJText {
+                            text: {
+                                if submission.total-verdict == AJTotalVerdict.Ok {
+                                    "полное решение"
+                                } else if submission.total-verdict == AJTotalVerdict.PartialSolution {
+                                    "частичное решение"
+                                } else if submission.total-verdict == AJTotalVerdict.Pending {
+                                    "в очереди"
+                                } else if submission.total-verdict == AJTotalVerdict.Compiling {
+                                    "компилируется"
+                                } else if submission.total-verdict == AJTotalVerdict.CompilationError {
+                                    "ошибка компиляции"
+                                } else if submission.total-verdict == AJTotalVerdict.Testing {
+                                    "тестируется"
+                                } else if submission.total-verdict == AJTotalVerdict.InvalidProblem {
+                                    "некорректная задача"
+                                } else if submission.total-verdict == AJTotalVerdict.InvalidRequest {
+                                    "некорректный запрос"
+                                } else {
+                                    "баг"
+                                }
+                            }
+                            font-weight: submission.total-verdict == AJTotalVerdict.Ok ? AJTheme.font-weight-heading : AJTheme.font-weight-paragraph;
+                            horizontal-alignment: center;
+                            vertical-alignment: center;
+                            color: AJTheme.container-text;
+                        }
+
+                        AJText {
+                            text: submission.total-score;
+                            font-weight: submission.total-verdict == AJTotalVerdict.Ok ? AJTheme.font-weight-heading : AJTheme.font-weight-paragraph;
+                            horizontal-alignment: center;
+                            vertical-alignment: center;
+                            color: AJTheme.container-text;
+                        }
+
+                        AJButton {
+                            text: "скачать";
+                            clicked => {
+                                AJContestCallbacks.download-submission(index)
+                            }
+                        }
+
+                        AJButton {
+                            text: "подробнее...";
+                            background: transparent;
+
+                            clicked => {
+                                AJContestState.current-submission-index = index;
+                            }
+                        }
+                    }
+                }
+            }
+
+            Rectangle {
+                x: 0;
+                y: parent.height - self.height;
+                width: parent.width;
+                height: 64px;
+                background: @linear-gradient(180deg, AJTheme.background.transparentize(100%), AJTheme.background.transparentize(50%));
+            }
+        }
+    }
+}

@@ -1,0 +1,15 @@
+load("@buckal//:wrapper.bzl", "rust_library")
+
+rust_library(
+    name = "adroit",
+    srcs = glob(["**/*.rs"]),
+    crate = "adroit",
+    crate_root = "src/lib.rs",
+    edition = "2021",
+
+    visibility = ["PUBLIC"],
+    deps = [
+        "//third-party/rust/crates/indexmap/2.14.0:indexmap",
+        "//third-party/rust/crates/logos/0.14.4:logos",
+    ],
+)

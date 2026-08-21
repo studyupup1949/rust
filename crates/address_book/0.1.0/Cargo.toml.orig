@@ -1,0 +1,13 @@
+[package]
+name = "address_book"
+version = "0.1.0"
+edition = "2021"
+description = "A simple address book to parse and manage phone numbers."
+license = "MIT"
+
+[dependencies]
+anyhow = "1.0"
+pest = "2.1"
+pest_derive = "2.1"
+clap = { version = "4.0", features = ["derive"] }
+thiserror = "1.0"

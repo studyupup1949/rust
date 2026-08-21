@@ -1,0 +1,26 @@
+[package]
+name = "adb-remote-cli"
+version = "0.2.0"
+edition = "2024"
+description = "Terminal-based Android TV remote over ADB"
+license = "MIT"
+repository = "https://github.com/goodboyneon/adb-remote-cli"
+readme = "README.md"
+authors = ["Sushant Ray (goodboyneon)"]
+homepage = "https://github.com/GoodBoyNeon/adb-remote-cli#adb-remote-cli"
+
+[package.metadata.wix]
+upgrade-guid = "7E49D7FC-18FF-44BC-987F-7EE734CE7EF1"
+path-guid = "099F9C3E-D889-44B4-B598-7E9D41A69D35"
+license = false
+eula = false
+
+[dependencies]
+clap = { version = "4.6.6", features = ["derive"] }
+crossterm = "0.27"
+
+# The profile that 'dist' will build with
+[profile.dist]
+inherits = "release"
+lto = "thin"
+

@@ -1,0 +1,21 @@
+[package]
+name = "ad-core"
+version.workspace = true
+edition.workspace = true
+description = "Core types and base classes for areaDetector-rs"
+license.workspace = true
+authors.workspace = true
+repository.workspace = true
+readme = "README.md"
+
+[dependencies]
+asyn-rs = { workspace = true }
+epics-base-rs = { workspace = true, optional = true }
+tokio = { version = "1", features = ["sync", "time", "rt", "macros"] }
+tracing = "0.1"
+thiserror = "2"
+parking_lot = "0.12"
+
+[features]
+default = []
+ioc = ["dep:epics-base-rs", "asyn-rs/epics"]

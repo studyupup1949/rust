@@ -1,0 +1,15 @@
+load("@buckal//:wrapper.bzl", "rust_library")
+
+rust_library(
+    name = "adc_interpolator",
+    srcs = glob(["**/*.rs"]),
+    crate = "adc_interpolator",
+    crate_root = "src/lib.rs",
+    edition = "2021",
+
+    visibility = ["PUBLIC"],
+    deps = [
+        "//third-party/rust/crates/embedded-hal/0.2.7:embedded_hal",
+        "//third-party/rust/crates/nb/1.1.0:nb",
+    ],
+)

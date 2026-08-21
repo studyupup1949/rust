@@ -1,0 +1,9 @@
+dotfiles:
+  f_ghost:
+    dst: /tmp/adot_tests/install_link/dst/ghost
+    src: does_not_exist
+    type: link
+profiles:
+  test-host:
+    dotfiles:
+      - f_ghost

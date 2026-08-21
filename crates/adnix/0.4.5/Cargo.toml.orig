@@ -1,0 +1,42 @@
+[package]
+name = "adnix"
+version = "0.4.5"
+authors = ["Harsh Shandilya <me@msfjarvis.dev>"]
+edition = "2021"
+description = "Rust binary to generate DNSMasq and Unbound configurations from UNIX host files"
+license = "MIT"
+homepage = "https://github.com/msfjarvis/adnix-rs"
+repository = "https://github.com/msfjarvis/adnix-rs"
+readme = "README.md"
+include = ["src/**/*", "README.md"]
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+clap = { version = "4.3.19", features = ["color", "deprecated", "derive"] }
+color-eyre = { version = "0.6.2", default-features = false }
+regex = "1.9.1"
+ureq = "2.7.1"
+
+[profile.release]
+codegen-units = 1
+lto = "thin"
+panic = "abort"
+
+# The profile that 'cargo dist' will build with
+[profile.dist]
+inherits = "release"
+lto = "thin"
+
+# Config for 'cargo dist'
+[workspace.metadata.dist]
+# The preferred cargo-dist version to use in CI (Cargo.toml SemVer syntax)
+cargo-dist-version = "0.0.7"
+# The preferred Rust toolchain to use in CI (rustup toolchain syntax)
+rust-toolchain-version = "1.70.0"
+# CI backends to support (see 'cargo dist generate-ci')
+ci = ["github"]
+# The installers to generate for each app
+installers = ["shell", "powershell"]
+# Target platforms to build apps for (Rust target-triple syntax)
+targets = ["x86_64-unknown-linux-gnu", "x86_64-apple-darwin", "x86_64-pc-windows-msvc", "aarch64-apple-darwin"]

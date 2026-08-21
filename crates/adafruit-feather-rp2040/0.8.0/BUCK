@@ -1,0 +1,15 @@
+load("@buckal//:wrapper.bzl", "rust_library")
+
+rust_library(
+    name = "adafruit_feather_rp2040",
+    srcs = glob(["**/*.rs"]),
+    crate = "adafruit_feather_rp2040",
+    crate_root = "src/lib.rs",
+    edition = "2018",
+    features = ["default"],
+
+    visibility = ["PUBLIC"],
+    deps = [
+        "//third-party/rust/crates/rp2040-hal/0.10.2:rp2040_hal",
+    ],
+)

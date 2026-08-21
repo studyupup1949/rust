@@ -1,0 +1,51 @@
+[package]
+name = "adler-server"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+repository.workspace = true
+homepage.workspace = true
+description = "HTTP API + SSE streaming for the Adler OSINT username-search engine."
+categories = ["web-programming::http-server", "command-line-utilities"]
+keywords = ["osint", "username", "sherlock", "axum", "sse"]
+readme = "../README.md"
+# The crate ships with a self-contained SPA bundle: the SolidJS project
+# at `web/` is built by Vite to `web/dist/`, which `rust-embed` embeds.
+# The `include` list pins exactly what lands in the `.crate` tarball —
+# `web/dist/` is gitignored, so the default include would skip it, and
+# we deliberately exclude `web/src`, `web/node_modules`, etc. The
+# release pipeline builds the SPA before `cargo publish`.
+include = [
+    "src/**/*",
+    "web/dist/**/*",
+    "Cargo.toml",
+    "../README.md",
+]
+
+[dependencies]
+adler-core = { path = "../adler-core", version = "0.11.0" }
+axum.workspace = true
+tower.workspace = true
+tower-http.workspace = true
+tokio = { workspace = true, features = ["net"] }
+tokio-stream.workspace = true
+async-stream.workspace = true
+futures.workspace = true
+rust-embed.workspace = true
+mime_guess.workspace = true
+serde.workspace = true
+serde_json.workspace = true
+thiserror.workspace = true
+tracing.workspace = true
+fastrand.workspace = true
+
+[dev-dependencies]
+reqwest = { workspace = true, features = ["stream"] }
+tempfile.workspace = true
+tokio = { workspace = true, features = ["net", "test-util"] }
+wiremock.workspace = true
+tower.workspace = true
+
+[lints]
+workspace = true

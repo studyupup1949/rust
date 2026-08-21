@@ -1,0 +1,94 @@
+# SPDX-License-Identifier: MIT
+name: ci
+
+on:
+  push:
+  pull_request:
+  schedule:
+    - cron: "0 4 * * *"
+
+permissions:
+  contents: read
+
+env:
+  CARGO_TERM_COLOR: always
+
+jobs:
+  test:
+    name: Build and run tests (rust ${{ matrix.rust }})
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        rust:
+          - stable
+          - beta
+          - nightly
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+      - name: Install libselinux
+        run: |
+          sudo apt-get install -y libselinux1-dev
+      - name: Install Rust
+        run: |
+          rm -f ~/.cargo/bin/*fmt ~/.cargo/bin/rust-analyzer
+          curl https://sh.rustup.rs -sSf | sh -s -- -y
+      - name: Install toolchain
+        run: |
+          rustup toolchain install ${{ matrix.rust }}
+          rustup default ${{ matrix.rust }}
+      - name: Build without selinux
+        run: cargo build --release --verbose
+      - name: Build with selinux
+        run: cargo build --release --verbose --features selinux
+      - name: Run check
+        run: cargo check --release --verbose --features selinux
+      - name: Run tests
+        run: cargo test --release --verbose --features selinux
+      # Do a tests with and without -j, because the internal modes of operation are quite different
+      - name: Simulate package processing without -j
+        if: ${{ matrix.rust == 'nightly' }}
+        run: |
+          mkdir /var/tmp/buildroot-1
+          cp -a tests/cases /var/tmp/buildroot-1
+          # Handlers which require $SOURCE_DATE_EPOCH have to be excluded,
+          # because we enter strict mode when --handler is used.
+          RPM_BUILD_ROOT=/var/tmp/buildroot-1 target/release/add-det --brp /var/tmp/buildroot-1/ --handler=-pyc,-jar,-zip,-gzip
+      - name: Simulate package processing with -j
+        if: ${{ matrix.rust == 'stable' }}
+        run: |
+          mkdir /var/tmp/buildroot-2
+          cp -a tests/cases /var/tmp/buildroot-2
+          RPM_BUILD_ROOT=/var/tmp/buildroot-2 target/release/add-det -j4 --brp /var/tmp/buildroot-2
+      - name: Do empty runs with large number of processes
+        run: |
+          mkdir /var/tmp/buildroot-empty
+          for n in 200 300 400 500 2000 4000; do
+            RPM_BUILD_ROOT=/var/tmp/buildroot-empty target/release/add-det -j $n --brp /var/tmp/buildroot-empty
+          done
+      - name: Simulate package processing with --check
+        if: ${{ matrix.rust == 'stable' }}
+        run: |
+          RPM_BUILD_ROOT=/var/tmp/buildroot-2 target/release/add-det -j4 --brp /var/tmp/buildroot-2 --check
+
+  clippy:
+    name: clippy
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+      - name: Install libselinux
+        run: |
+          sudo apt-get install -y libselinux1-dev
+      - name: Install Rust
+        run: |
+          rm -f ~/.cargo/bin/*fmt ~/.cargo/bin/rust-analyzer
+          curl https://sh.rustup.rs -sSf | sh -s -- -y
+      - name: Install toolchain
+        run: |
+          rustup toolchain install nightly
+          rustup default nightly
+      - name: Validate clippy
+        run: |
+          cargo clippy -- -D warnings
+          cargo clippy --features selinux -- -D warnings

@@ -1,0 +1,7 @@
+error: Cleanup already defined
+ --> tests/errors/multiple-cleanup.rs:5:1
+  |
+5 | #[adtest::adtest(cleanup = cleanup, cleanup = cleanup)]
+  | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  |
+  = note: this error originates in the attribute macro `adtest::adtest` (in Nightly builds, run with -Z macro-backtrace for more info)

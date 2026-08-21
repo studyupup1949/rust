@@ -1,0 +1,11 @@
+load("@buckal//:wrapper.bzl", "rust_binary")
+
+rust_binary(
+    name = "adder_trial",
+    srcs = glob(["**/*.rs"]),
+    crate = "adder_trial",
+    crate_root = "src/main.rs",
+    edition = "2021",
+
+    visibility = ["PUBLIC"],
+)

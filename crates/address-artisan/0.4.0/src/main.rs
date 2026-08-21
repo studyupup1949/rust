@@ -1,0 +1,80 @@
+mod cli;
+mod constants;
+mod cpu_workbench;
+mod device_info;
+mod device_manager;
+mod device_selector;
+mod display_backend;
+mod events;
+mod extended_public_key;
+mod extended_public_key_deriver;
+mod extended_public_key_path_walker;
+mod gpu_workbench;
+mod ground_truth_validator;
+#[cfg(test)]
+mod null_backend;
+mod opencl;
+mod orchestrator;
+mod prefix;
+mod tui_backend;
+mod workbench;
+mod workbench_config;
+mod workbench_factory;
+
+use cli::Cli;
+use device_selector::{DeviceConfig, DeviceSelector};
+use display_backend::UiBackend;
+use extended_public_key::ExtendedPubKey;
+use ground_truth_validator::GroundTruthValidator;
+use orchestrator::Orchestrator;
+use std::sync::atomic::{AtomicBool, Ordering};
+use std::sync::Arc;
+use tui_backend::TuiBackend;
+
+fn main() {
+    let cli = Cli::parse_args();
+
+    let prefixes = cli.prefixes.clone();
+    let xpub = ExtendedPubKey::from_str(&cli.xpub).unwrap();
+    let ground_truth_validator =
+        GroundTruthValidator::new(&cli.xpub).expect("Failed to create ground truth validator");
+
+    let stop_signal = Arc::new(AtomicBool::new(false));
+
+    let stop_signal_clone = Arc::clone(&stop_signal);
+    ctrlc::set_handler(move || {
+        stop_signal_clone.store(true, Ordering::Relaxed);
+    })
+    .expect("Error setting Ctrl+C handler");
+
+    // Use DeviceSelector to handle all device selection logic
+    let device_config = DeviceConfig::from(&cli);
+    let selected_devices = match DeviceSelector::select_devices(device_config) {
+        Ok(devices) => devices,
+        Err(error_msg) => {
+            eprintln!("{}", error_msg);
+            std::process::exit(1);
+        }
+    };
+
+    // Calculate total threads (for logging purposes)
+    let total_cpu_threads: u32 = selected_devices.iter().filter_map(|d| d.threads()).sum();
+
+    // Create TUI backend
+    let mut backend: Box<dyn UiBackend> =
+        Box::new(TuiBackend::new(Arc::clone(&stop_signal)).expect("Failed to initialize TUI"));
+
+    backend.start(&prefixes, cli.max_depth, total_cpu_threads);
+
+    let mut orchestrator = Orchestrator::new(
+        xpub,
+        prefixes,
+        cli.max_depth,
+        cli.num_addresses,
+        stop_signal,
+        ground_truth_validator,
+        backend,
+    );
+
+    orchestrator.run(selected_devices);
+}

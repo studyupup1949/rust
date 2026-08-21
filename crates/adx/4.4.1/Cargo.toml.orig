@@ -1,0 +1,29 @@
+[package]
+name = "adx"
+version = "4.4.1"
+authors = ["Harsh Shandilya <me@msfjarvis.dev>"]
+edition = "2021"
+license = "MIT/Apache-2.0"
+description = "Poll Google's Maven repository to fetch the latest versions of AndroidX packages"
+repository = "https://github.com/msfjarvis/androidx-release-watcher"
+homepage = "https://github.com/msfjarvis/androidx-release-watcher"
+keywords = ["maven", "androidx"]
+readme = "../README.md"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+clap = { version = "4.1.4", features = [ "color", "deprecated", "derive" ] }
+color-eyre = { version = "0.6.2", default-features = false }
+futures = "0.3.26"
+reqwest = { version = "0.11.14", default-features = false, features = ["rustls-tls"] }
+roxmltree = { version = "0.17.0", features = ["std"] }
+semver = "1.0.16"
+thiserror = "1.0.38"
+tokio = { version = "1.25.0", features = ["macros", "rt-multi-thread"] }
+
+[badges]
+maintenance = { status = "actively-developed" }
+
+[features]
+measure-alloc = []

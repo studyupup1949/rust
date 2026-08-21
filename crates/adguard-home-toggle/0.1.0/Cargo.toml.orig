@@ -1,0 +1,30 @@
+[package]
+name = "adguard-home-toggle"
+version = "0.1.0"
+edition = "2024"
+authors = ["plgeek"]
+description = "CLI and system tray tool to control AdGuard Home protection on Linux"
+license = "MIT"
+repository = "https://github.com/subsy/adguard-home-toggle"
+homepage = "https://github.com/subsy/adguard-home-toggle"
+keywords = ["adguard", "dns", "tray", "wayland", "linux"]
+categories = ["command-line-utilities"]
+readme = "README.md"
+
+[[bin]]
+name = "adguard-toggle"
+path = "src/main.rs"
+
+[dependencies]
+clap = { version = "4", features = ["derive"] }
+reqwest = { version = "0.12", features = ["blocking", "json"] }
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+toml = "0.8"
+dirs = "6"
+open = "5"
+notify-rust = "4"
+ksni = "0.2"
+gtk4 = "0.9"
+gtk4-layer-shell = "0.4"
+resvg = "0.45"

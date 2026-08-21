@@ -1,0 +1,14 @@
+load("@buckal//:wrapper.bzl", "rust_library")
+
+rust_library(
+    name = "adxl_for_rpi",
+    srcs = glob(["**/*.rs"]),
+    crate = "adxl_for_rpi",
+    crate_root = "src/lib.rs",
+    edition = "2018",
+
+    visibility = ["PUBLIC"],
+    deps = [
+        "//third-party/rust/crates/rppal/0.11.3:rppal",
+    ],
+)

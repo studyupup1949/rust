@@ -1,0 +1,15 @@
+[package]
+name = "adaptivemsg-amgen"
+version = "0.1.0"
+edition = "2021"
+description = "Go code generator for adaptivemsg message types"
+license = "MIT"
+repository = "https://github.com/adaptivemsg/adaptivemsg-rust"
+
+[[bin]]
+name = "amgen-rs"
+path = "src/main.rs"
+
+[dependencies]
+anyhow = "1.0"
+syn = { version = "2.0", features = ["full"] }

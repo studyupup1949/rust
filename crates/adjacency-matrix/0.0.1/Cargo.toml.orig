@@ -1,0 +1,25 @@
+[package]
+name = "adjacency-matrix"
+version = "0.0.1"
+authors = ["Aster <192607617@qq.com>"]
+description = "Adjacency Matrix and Adjacency Graph"
+repository = "https://github.com/oovm/graph-rs"
+documentation = "https://docs.rs/adjacency-matrix"
+readme = "Readme.md"
+license = "MPL-2.0"
+edition = "2021"
+exclude = ["package.json", "tests/**"]
+
+[dependencies]
+num-traits = "0.2.15"
+ndarray = "0.15.6"
+
+[dependencies.graph-types]
+version = "0.0.3"
+path = "../graph-types"
+
+[dev-dependencies]
+
+[features]
+default = []
+wolfram = ["graph-types/wolfram_wxf"]

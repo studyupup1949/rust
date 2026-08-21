@@ -1,0 +1,23 @@
+load("@buckal//:wrapper.bzl", "rust_library")
+
+rust_library(
+    name = "adafruit_nrf52840_sense",
+    srcs = glob(["**/*.rs"]),
+    crate = "adafruit_nrf52840_sense",
+    crate_root = "src/lib.rs",
+    edition = "2018",
+
+    visibility = ["PUBLIC"],
+    deps = [
+        "//third-party/rust/crates/apds9960/0.1.0:apds9960",
+        "//third-party/rust/crates/bmp280-driver/0.0.7:bmp280_driver",
+        "//third-party/rust/crates/cortex-m-rt/0.6.15:cortex_m_rt",
+        "//third-party/rust/crates/cortex-m/0.6.7:cortex_m",
+        "//third-party/rust/crates/embedded-hal/0.2.7:embedded_hal",
+        "//third-party/rust/crates/lis3mdl-driver/0.1.0:lis3mdl_driver",
+        "//third-party/rust/crates/lsm6ds33/0.1.0:lsm6ds33",
+        "//third-party/rust/crates/nb/1.1.0:nb",
+        "//third-party/rust/crates/nrf52840-hal/0.14.1:nrf52840_hal",
+        "//third-party/rust/crates/shared-bus/0.2.5:shared_bus",
+    ],
+)

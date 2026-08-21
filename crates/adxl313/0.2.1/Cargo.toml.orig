@@ -1,0 +1,15 @@
+[package]
+name = "adxl313"
+description = "A platform agnostic driver to interface with the ADXL313 (accelerometer) through SPI"
+authors = ["Michael van Niekerk <mvniekerk@chazaqdev.com>"]
+edition = "2018"
+keywords = ["embedded-hal-driver", "accelerometer", "MEMS", "analog-devices"]
+license = "MIT OR Apache-2.0"
+repository = "https://github.com/mvniekerk/adxl313-rs"
+categories  = ["embedded", "hardware-support", "no-std"]
+version = "0.2.1"
+readme = "README.md"
+
+[dependencies]
+embedded-hal = "~0.2"
+accelerometer = "~0.11"

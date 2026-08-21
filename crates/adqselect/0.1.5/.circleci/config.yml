@@ -1,0 +1,28 @@
+version: 2.1
+
+orbs:
+  codecov: codecov/codecov@4.0.1
+
+jobs:
+  build:
+    machine:
+      image: ubuntu-2204:2024.01.1
+    steps:
+      - checkout
+
+      - run:
+          name: Install Rust
+          command: |
+            curl https://sh.rustup.rs -sSf | sh -s -- -y
+            source $HOME/.cargo/env
+
+      - run:
+          name: Install Tarpaulin
+          command: cargo install cargo-tarpaulin
+
+      - run:
+          name: Generate coverage report
+          command: cargo tarpaulin --out Xml
+
+      - codecov/upload:
+          file: cobertura.xml

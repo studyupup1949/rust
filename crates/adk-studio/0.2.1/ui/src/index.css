@@ -1,0 +1,48 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+body {
+  margin: 0;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  background-color: #1a1a2e;
+  color: #eee;
+}
+
+.react-flow__node {
+  border-radius: 8px;
+  font-size: 12px;
+}
+
+.react-flow__handle {
+  width: 10px;
+  height: 10px;
+  background: #e94560;
+}
+
+
+.react-flow__controls {
+  background: #16213e;
+  border: 1px solid #e94560;
+  border-radius: 8px;
+}
+
+.react-flow__controls-button {
+  background: #16213e;
+  border-bottom: 1px solid #333;
+  fill: #e94560;
+}
+
+.react-flow__edge.selected .react-flow__edge-path {
+  stroke: #fbbf24 !important;
+  stroke-width: 3px;
+}
+
+.react-flow__edge:hover .react-flow__edge-path {
+  stroke: #fbbf24;
+}
+
+
+.react-flow__controls-button:hover {
+  background: #1f2937;
+}

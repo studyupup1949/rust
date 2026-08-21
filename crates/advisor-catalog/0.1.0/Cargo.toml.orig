@@ -1,0 +1,15 @@
+[package]
+name = "advisor-catalog"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+rust-version.workspace = true
+repository.workspace = true
+homepage.workspace = true
+description = "Curated intent catalog and crate recommendations for cargo-advisor"
+readme = "../../README.md"
+keywords = ["cargo", "catalog", "dependencies", "recommendation", "rust"]
+categories = ["development-tools", "command-line-utilities"]
+
+[dependencies]
+advisor-core.workspace = true

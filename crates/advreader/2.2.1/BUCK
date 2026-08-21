@@ -1,0 +1,15 @@
+load("@buckal//:wrapper.bzl", "rust_library")
+
+rust_library(
+    name = "advreader",
+    srcs = glob(["**/*.rs"]),
+    crate = "advreader",
+    crate_root = "src/lib.rs",
+    edition = "2021",
+
+    visibility = ["PUBLIC"],
+    deps = [
+        "//third-party/rust/crates/flume/0.11.1:flume",
+        "//third-party/rust/crates/local-encoding/0.2.0:local_encoding",
+    ],
+)

@@ -1,0 +1,9 @@
+[package]
+name = "addenv"
+description = "add environment variables contained in a `.env` file to a command"
+version = "0.1.0"
+edition = "2021"
+license-file = "LICENSE"
+repository = "https://github.com/fedfontana/addenv"
+
+[dependencies]

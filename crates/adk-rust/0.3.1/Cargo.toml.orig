@@ -1,0 +1,121 @@
+[package]
+name = "adk-rust"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+authors.workspace = true
+description = "Rust Agent Development Kit - Build AI agents in Rust with modular components for models, tools, memory, and more."
+homepage = "https://github.com/zavora-ai/adk-rust"
+repository = "https://github.com/zavora-ai/adk-rust"
+documentation = "https://docs.rs/adk-rust"
+keywords = ["ai", "agent", "gemini", "llm", "adk"]
+categories = ["api-bindings", "asynchronous", "web-programming"]
+readme = "README.md"
+
+[features]
+default = ["full"]
+
+# Full installation (everything)
+full = [
+    "agents",
+    "models",
+    "tools",
+    "skills",
+    "sessions",
+    "artifacts",
+    "memory",
+    "runner",
+    "server",
+    "telemetry",
+    "cli",
+    "graph",
+    "ui",
+    "doc-audit",
+    "realtime",
+    "browser",
+    "eval",
+    "guardrail",
+    "auth",
+    "plugin"
+]
+
+# CLI launcher support
+cli = ["dep:adk-cli", "runner", "server", "sessions", "telemetry"]
+
+# Component features
+agents = ["dep:adk-agent"]
+models = ["dep:adk-model"]
+tools = ["dep:adk-tool"]
+skills = ["dep:adk-skill"]
+sessions = ["dep:adk-session"]
+artifacts = ["dep:adk-artifact"]
+memory = ["dep:adk-memory"]
+runner = ["dep:adk-runner"]
+server = ["dep:adk-server"]
+telemetry = ["dep:adk-telemetry"]
+graph = ["dep:adk-graph"]
+ui = ["dep:adk-ui"]
+doc-audit = ["dep:adk-doc-audit"]
+realtime = ["dep:adk-realtime"]
+browser = ["dep:adk-browser"]
+eval = ["dep:adk-eval"]
+guardrail = ["dep:adk-guardrail"]
+auth = ["dep:adk-auth"]
+plugin = ["dep:adk-plugin"]
+
+# Minimal preset (just agents + models + runner)
+minimal = ["agents", "models", "runner"]
+
+# Model provider features (forwarded to adk-model)
+openai = ["models", "adk-model/openai"]
+anthropic = ["models", "adk-model/anthropic"]
+deepseek = ["models", "adk-model/deepseek"]
+groq = ["models", "adk-model/groq"]
+ollama = ["models", "adk-model/ollama"]
+
+# Realtime transport features (forwarded to adk-realtime)
+vertex-live = ["realtime", "adk-realtime/vertex-live"]
+livekit = ["realtime", "adk-realtime/livekit"]
+openai-webrtc = ["realtime", "adk-realtime/openai-webrtc"]
+
+[dependencies]
+# Core is always included
+adk-core.workspace = true
+
+# Optional components
+adk-agent = { workspace = true, optional = true }
+adk-model = { workspace = true, optional = true }
+adk-tool = { workspace = true, optional = true }
+adk-skill = { workspace = true, optional = true }
+adk-session = { workspace = true, optional = true }
+adk-artifact = { workspace = true, optional = true }
+adk-memory = { workspace = true, optional = true }
+adk-runner = { workspace = true, optional = true }
+adk-server = { workspace = true, optional = true }
+adk-telemetry = { workspace = true, optional = true }
+adk-cli = { workspace = true, optional = true }
+adk-graph = { workspace = true, optional = true }
+adk-ui = { workspace = true, optional = true }
+adk-doc-audit = { workspace = true, optional = true }
+adk-realtime = { workspace = true, optional = true }
+adk-browser = { workspace = true, optional = true }
+adk-eval = { workspace = true, optional = true }
+adk-guardrail = { workspace = true, optional = true }
+adk-auth = { workspace = true, optional = true }
+adk-plugin = { workspace = true, optional = true }
+
+# Re-export common dependencies
+tokio = { workspace = true }
+async-trait = { workspace = true }
+futures = { workspace = true }
+serde = { workspace = true }
+serde_json = { workspace = true }
+anyhow = { workspace = true }
+
+[dev-dependencies]
+tokio = { workspace = true, features = ["full"] }
+
+[package.metadata.docs.rs]
+all-features = true
+rustdoc-args = ["--cfg", "docsrs"]

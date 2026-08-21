@@ -1,0 +1,9 @@
+[package]
+name = "admiral-types"
+version = "0.1.0"
+edition = "2018"
+description = "Types for Admiral test runner"
+license = "MIT OR Apache-2.0"
+
+[dependencies]
+rustc-test = "0.3.1"

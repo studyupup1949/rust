@@ -1,0 +1,20 @@
+load("@buckal//:wrapper.bzl", "rust_binary")
+
+rust_binary(
+    name = "adk_mcp_github",
+    srcs = glob(["**/*.rs"]),
+    crate = "adk_mcp_github",
+    crate_root = "src/main.rs",
+    edition = "2021",
+
+    visibility = ["PUBLIC"],
+    deps = [
+        "//third-party/rust/crates/adk-mcp-sdk/0.1.3:adk_mcp_sdk",
+        "//third-party/rust/crates/anyhow/1.0.104:anyhow",
+        "//third-party/rust/crates/reqwest/0.12.28:reqwest",
+        "//third-party/rust/crates/rmcp/1.8.0:rmcp",
+        "//third-party/rust/crates/serde/1.0.229:serde",
+        "//third-party/rust/crates/serde_json/1.0.151:serde_json",
+        "//third-party/rust/crates/tokio/1.53.1:tokio",
+    ],
+)

@@ -1,0 +1,21 @@
+[package]
+name = "adl2sidm"
+version = "0.4.3"
+edition = "2024"
+rust-version = "1.92"
+license = "MIT OR Apache-2.0"
+description = "DEPRECATED: renamed to adl2rsdm. This crate re-exports adl2rsdm and is no longer maintained."
+repository = "https://github.com/physwkim/rsplot"
+readme = "README.md"
+keywords = ["deprecated", "renamed", "medm", "adl", "epics"]
+
+[lib]
+name = "adl2sidm"
+path = "src/lib.rs"
+
+[[bin]]
+name = "adl2sidm"
+path = "src/main.rs"
+
+[dependencies]
+adl2rsdm = "0.5"

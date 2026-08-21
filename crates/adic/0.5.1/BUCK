@@ -1,0 +1,18 @@
+load("@buckal//:wrapper.bzl", "rust_library")
+
+rust_library(
+    name = "adic",
+    srcs = glob(["**/*.rs"]),
+    crate = "adic",
+    crate_root = "src/lib.rs",
+    edition = "2021",
+
+    visibility = ["PUBLIC"],
+    deps = [
+        "//third-party/rust/crates/clap/4.6.6:clap",
+        "//third-party/rust/crates/itertools/0.14.0:itertools",
+        "//third-party/rust/crates/machine-factor/0.2.5:machine_factor",
+        "//third-party/rust/crates/machine-prime/1.5.7:machine_prime",
+        "//third-party/rust/crates/num/0.4.3:num",
+    ],
+)

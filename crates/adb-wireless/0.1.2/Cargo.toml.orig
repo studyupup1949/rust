@@ -1,0 +1,24 @@
+[package]
+name = "adb-wireless"
+version = "0.1.2"
+edition = "2024"
+authors = ["teamclouday <teamclouday@gmail.com>"]
+license = "Apache-2.0"
+description = "CLI tool to generate QR code for adb wireless connection"
+homepage = "https://github.com/teamclouday/adb-wireless"
+repository = "https://github.com/teamclouday/adb-wireless"
+keywords = ["adb", "wireless", "qr-code"]
+categories = ["command-line-utilities"]
+
+[dependencies]
+thiserror = "2.0.12"
+rand = "0.9.2"
+dialoguer = "0.11.0"
+clap = { version = "4.5.41", features = ["derive"] }
+
+# multicast DNS
+mdns-sd = "0.13.11"
+flume = "0.11.1"
+
+# QR code generator
+qr2term = "0.3.3"

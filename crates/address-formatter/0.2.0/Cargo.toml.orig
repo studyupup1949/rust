@@ -1,0 +1,30 @@
+[package]
+name = "address-formatter"
+version = "0.2.0"
+authors = ["antoine-de <antoine.desbordes@gmail.com>"]
+edition = "2018"
+license = "AGPL-3.0"
+description = "Universal international address formatter"
+repository = "https://github.com/CanalTP/address-formatter-rs"
+keywords = ["address", "i18n", "geocoder", "mimirsbrunn", "navitia"]
+readme = "README.md"
+
+[dependencies]
+failure = "0.1"
+include_dir = "0.2"
+serde =  { version = "1", features = ["derive"] }
+serde_yaml = "0.8"
+yaml-rust = "0.4"
+log = "0.4"
+handlebars = "2.0.0-beta.1"
+regex = "1"
+lazy_static = "1.3"
+itertools = "0.8"
+linked-hash-map = "0.5"
+strum = "0.15"
+strum_macros = "0.15"
+enum-map = { version = "0.5", features = ["serde"] }
+env_logger = "0.6"
+
+[dev-dependencies]
+maplit = "1.0.1"

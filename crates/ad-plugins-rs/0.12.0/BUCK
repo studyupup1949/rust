@@ -1,0 +1,31 @@
+load("@buckal//:wrapper.bzl", "rust_library")
+
+rust_library(
+    name = "ad_plugins_rs",
+    srcs = glob(["**/*.rs"]),
+    crate = "ad_plugins_rs",
+    crate_root = "src/lib.rs",
+    edition = "2024",
+    features = ["default"],
+
+    visibility = ["PUBLIC"],
+    deps = [
+        "//third-party/rust/crates/ad-core-rs/0.12.0:ad_core_rs",
+        "//third-party/rust/crates/asyn-rs/0.12.0:asyn_rs",
+        "//third-party/rust/crates/epics-base-rs/0.12.0:epics_base_rs",
+        "//third-party/rust/crates/epics-ca-rs/0.12.0:epics_ca_rs",
+        "//third-party/rust/crates/image/0.25.10:image",
+        "//third-party/rust/crates/jpeg-decoder/0.3.2:jpeg_decoder",
+        "//third-party/rust/crates/jpeg-encoder/0.6.1:jpeg_encoder",
+        "//third-party/rust/crates/lz4_flex/0.11.6:lz4_flex",
+        "//third-party/rust/crates/netcdf3/0.6.1:netcdf3",
+        "//third-party/rust/crates/parking_lot/0.12.5:parking_lot",
+        "//third-party/rust/crates/rust-hdf5/0.2.28:rust_hdf5",
+        "//third-party/rust/crates/rustfft/6.4.1:rustfft",
+        "//third-party/rust/crates/serde/1.0.229:serde",
+        "//third-party/rust/crates/serde_json/1.0.151:serde_json",
+        "//third-party/rust/crates/tiff/0.9.1:tiff",
+        "//third-party/rust/crates/tokio/1.53.1:tokio",
+        "//third-party/rust/crates/tracing/0.1.44:tracing",
+    ],
+)

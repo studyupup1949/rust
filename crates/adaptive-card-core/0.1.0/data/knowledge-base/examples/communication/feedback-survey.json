@@ -1,0 +1,654 @@
+{
+  "id": "communication/feedback-survey",
+  "title": "Feedback Survey \u2014 Multi-question NPS and Open Feedback",
+  "description": "Survey card with NPS rating (1-10 scale), multi-choice questions, star ratings, and open-ended text feedback. Uses Input.ChoiceSet expanded style for multi-choice, Input.Text multiline for open feedback, and Container for question groups.",
+  "category": "communication",
+  "tags": [
+    "survey",
+    "feedback",
+    "nps",
+    "rating",
+    "communication",
+    "questionnaire",
+    "customer",
+    "satisfaction",
+    "form"
+  ],
+  "use_cases": [
+    "Customer satisfaction survey (CSAT/NPS)",
+    "Employee engagement survey",
+    "Product feedback collection",
+    "Post-event feedback form"
+  ],
+  "host_targets": [
+    "generic",
+    "teams",
+    "web_chat"
+  ],
+  "complexity": "intermediate",
+  "card": {
+    "$schema": "http://adaptivecards.io/schemas/adaptive-card.json",
+    "type": "AdaptiveCard",
+    "version": "1.5",
+    "metadata": {
+      "webUrl": "https://greentic.io/cards/feedback-survey",
+      "demo_mode": true
+    },
+    "body": [
+      {
+        "type": "Container",
+        "id": "surveyMenu",
+        "isVisible": true,
+        "style": "emphasis",
+        "bleed": true,
+        "items": [
+          {
+            "type": "ColumnSet",
+            "columns": [
+              {
+                "type": "Column",
+                "width": "auto",
+                "items": [
+                  {
+                    "type": "Image",
+                    "url": "https://img.icons8.com/fluency/96/survey.png",
+                    "size": "Medium"
+                  }
+                ],
+                "verticalContentAlignment": "Center"
+              },
+              {
+                "type": "Column",
+                "width": "stretch",
+                "items": [
+                  {
+                    "type": "TextBlock",
+                    "text": "Feedback & Surveys",
+                    "size": "ExtraLarge",
+                    "weight": "Bolder",
+                    "color": "Accent"
+                  },
+                  {
+                    "type": "TextBlock",
+                    "text": "Share feedback, complete pulse surveys, and view team sentiment.",
+                    "spacing": "None",
+                    "isSubtle": true,
+                    "wrap": true
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "type": "Container",
+            "style": "attention",
+            "spacing": "Medium",
+            "items": [
+              {
+                "type": "TextBlock",
+                "text": "\ud83d\udccb 1 survey pending \u2014 Weekly Pulse Check (2 min)",
+                "weight": "Bolder",
+                "color": "Attention"
+              }
+            ]
+          },
+          {
+            "type": "ActionSet",
+            "spacing": "Medium",
+            "actions": [
+              {
+                "type": "Action.ToggleVisibility",
+                "title": "\ud83d\udcca Weekly Pulse Check",
+                "style": "positive",
+                "targetElements": [
+                  {
+                    "elementId": "surveyMenu",
+                    "isVisible": false
+                  },
+                  {
+                    "elementId": "pulseCheck",
+                    "isVisible": true
+                  }
+                ]
+              },
+              {
+                "type": "Action.ToggleVisibility",
+                "title": "\ud83d\udca1 Submit Suggestion",
+                "targetElements": [
+                  {
+                    "elementId": "surveyMenu",
+                    "isVisible": false
+                  },
+                  {
+                    "elementId": "suggestion",
+                    "isVisible": true
+                  }
+                ]
+              },
+              {
+                "type": "Action.ToggleVisibility",
+                "title": "\ud83d\udcc8 Team Sentiment",
+                "targetElements": [
+                  {
+                    "elementId": "surveyMenu",
+                    "isVisible": false
+                  },
+                  {
+                    "elementId": "sentiment",
+                    "isVisible": true
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "type": "Container",
+        "id": "pulseCheck",
+        "isVisible": false,
+        "items": [
+          {
+            "type": "TextBlock",
+            "text": "\ud83d\udcca Weekly Pulse Check",
+            "size": "Large",
+            "weight": "Bolder",
+            "color": "Accent"
+          },
+          {
+            "type": "TextBlock",
+            "text": "Week of April 7\u201312, 2026  \u2022  Takes ~2 minutes",
+            "isSubtle": true,
+            "size": "Small"
+          },
+          {
+            "type": "Input.ChoiceSet",
+            "id": "pulse_mood",
+            "label": "How are you feeling this week?",
+            "isRequired": true,
+            "choices": [
+              {
+                "title": "\ud83d\ude04 Great \u2014 Energized and productive",
+                "value": "great"
+              },
+              {
+                "title": "\ud83d\ude42 Good \u2014 Steady and focused",
+                "value": "good"
+              },
+              {
+                "title": "\ud83d\ude10 Okay \u2014 Getting by",
+                "value": "okay"
+              },
+              {
+                "title": "\ud83d\ude1f Struggling \u2014 Need support",
+                "value": "struggling"
+              },
+              {
+                "title": "\ud83d\ude29 Overwhelmed \u2014 Burning out",
+                "value": "overwhelmed"
+              }
+            ]
+          },
+          {
+            "type": "Input.ChoiceSet",
+            "id": "pulse_workload",
+            "label": "How is your workload?",
+            "isRequired": true,
+            "choices": [
+              {
+                "title": "\ud83d\udfe2 Manageable \u2014 Good balance",
+                "value": "manageable"
+              },
+              {
+                "title": "\ud83d\udfe1 Busy \u2014 Slightly stretched",
+                "value": "busy"
+              },
+              {
+                "title": "\ud83d\udfe0 Heavy \u2014 Struggling to keep up",
+                "value": "heavy"
+              },
+              {
+                "title": "\ud83d\udd34 Overloaded \u2014 Need relief",
+                "value": "overloaded"
+              },
+              {
+                "title": "\u26aa Too light \u2014 Could take on more",
+                "value": "light"
+              }
+            ]
+          },
+          {
+            "type": "Input.ChoiceSet",
+            "id": "pulse_blockers",
+            "label": "Any blockers this week?",
+            "value": "none",
+            "choices": [
+              {
+                "title": "None \u2014 All clear",
+                "value": "none"
+              },
+              {
+                "title": "\ud83d\udd27 Technical blocker",
+                "value": "technical"
+              },
+              {
+                "title": "\ud83d\udc65 Waiting on someone else",
+                "value": "dependency"
+              },
+              {
+                "title": "\ud83d\udccb Unclear requirements",
+                "value": "unclear_reqs"
+              },
+              {
+                "title": "\ud83c\udfd7\ufe0f Infrastructure / tooling issue",
+                "value": "infra"
+              },
+              {
+                "title": "\ud83e\udd1d Communication gap",
+                "value": "communication"
+              }
+            ]
+          },
+          {
+            "type": "Input.ChoiceSet",
+            "id": "pulse_nps",
+            "label": "How likely would you recommend our workplace to a friend? (0-10)",
+            "isRequired": true,
+            "choices": [
+              {
+                "title": "10 \u2014 Absolutely!",
+                "value": "10"
+              },
+              {
+                "title": "9",
+                "value": "9"
+              },
+              {
+                "title": "8",
+                "value": "8"
+              },
+              {
+                "title": "7",
+                "value": "7"
+              },
+              {
+                "title": "6",
+                "value": "6"
+              },
+              {
+                "title": "5 \u2014 Neutral",
+                "value": "5"
+              },
+              {
+                "title": "4 or below",
+                "value": "4"
+              }
+            ]
+          },
+          {
+            "type": "Input.Text",
+            "id": "pulse_highlight",
+            "label": "What was your highlight this week?",
+            "placeholder": "Something positive that happened..."
+          },
+          {
+            "type": "Input.Text",
+            "id": "pulse_concern",
+            "label": "Any concerns? (anonymous)",
+            "placeholder": "Anything you want leadership to know...",
+            "isMultiline": true
+          },
+          {
+            "type": "ActionSet",
+            "spacing": "Medium",
+            "actions": [
+              {
+                "type": "Action.Submit",
+                "title": "\ud83d\udce4 Submit Pulse",
+                "style": "positive",
+                "data": {
+                  "action": "submit_pulse",
+                  "demo_mode": true
+                }
+              },
+              {
+                "type": "Action.ToggleVisibility",
+                "title": "\u2190 Back",
+                "targetElements": [
+                  {
+                    "elementId": "pulseCheck",
+                    "isVisible": false
+                  },
+                  {
+                    "elementId": "surveyMenu",
+                    "isVisible": true
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "type": "Container",
+        "id": "suggestion",
+        "isVisible": false,
+        "items": [
+          {
+            "type": "TextBlock",
+            "text": "\ud83d\udca1 Submit a Suggestion",
+            "size": "Large",
+            "weight": "Bolder",
+            "color": "Accent"
+          },
+          {
+            "type": "TextBlock",
+            "text": "Ideas to improve our workplace, tools, or processes. All submissions can be anonymous.",
+            "isSubtle": true,
+            "wrap": true,
+            "spacing": "Small"
+          },
+          {
+            "type": "Input.ChoiceSet",
+            "id": "suggest_category",
+            "label": "Category",
+            "isRequired": true,
+            "choices": [
+              {
+                "title": "\ud83d\udee0\ufe0f Tools & Technology",
+                "value": "tools"
+              },
+              {
+                "title": "\ud83d\udccb Process Improvement",
+                "value": "process"
+              },
+              {
+                "title": "\ud83c\udfe2 Workplace / Office",
+                "value": "workplace"
+              },
+              {
+                "title": "\ud83d\udc65 Team & Culture",
+                "value": "culture"
+              },
+              {
+                "title": "\ud83d\udcda Learning & Development",
+                "value": "learning"
+              },
+              {
+                "title": "\ud83d\udcb0 Benefits & Perks",
+                "value": "benefits"
+              },
+              {
+                "title": "\ud83c\udf31 Sustainability / CSR",
+                "value": "sustainability"
+              },
+              {
+                "title": "\u2753 Other",
+                "value": "other"
+              }
+            ]
+          },
+          {
+            "type": "Input.Text",
+            "id": "suggest_title",
+            "label": "Suggestion Title",
+            "placeholder": "Brief summary of your idea",
+            "isRequired": true
+          },
+          {
+            "type": "Input.Text",
+            "id": "suggest_detail",
+            "label": "Details",
+            "placeholder": "Describe your suggestion, the problem it solves, and expected impact...",
+            "isMultiline": true,
+            "isRequired": true
+          },
+          {
+            "type": "Input.ChoiceSet",
+            "id": "suggest_impact",
+            "label": "Expected Impact",
+            "value": "medium",
+            "choices": [
+              {
+                "title": "\ud83d\udd34 High \u2014 Affects many people significantly",
+                "value": "high"
+              },
+              {
+                "title": "\ud83d\udfe1 Medium \u2014 Noticeable improvement",
+                "value": "medium"
+              },
+              {
+                "title": "\ud83d\udfe2 Low \u2014 Nice to have",
+                "value": "low"
+              }
+            ]
+          },
+          {
+            "type": "Input.Toggle",
+            "id": "suggest_anonymous",
+            "title": "Submit anonymously",
+            "value": "false"
+          },
+          {
+            "type": "ActionSet",
+            "spacing": "Medium",
+            "actions": [
+              {
+                "type": "Action.Submit",
+                "title": "\ud83d\udce4 Submit Suggestion",
+                "style": "positive",
+                "data": {
+                  "action": "submit_suggestion",
+                  "demo_mode": true
+                }
+              },
+              {
+                "type": "Action.ToggleVisibility",
+                "title": "\u2190 Back",
+                "targetElements": [
+                  {
+                    "elementId": "suggestion",
+                    "isVisible": false
+                  },
+                  {
+                    "elementId": "surveyMenu",
+                    "isVisible": true
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "type": "Container",
+        "id": "sentiment",
+        "isVisible": false,
+        "items": [
+          {
+            "type": "TextBlock",
+            "text": "\ud83d\udcc8 Team Sentiment \u2014 Last 4 Weeks",
+            "size": "Large",
+            "weight": "Bolder",
+            "color": "Accent"
+          },
+          {
+            "type": "TextBlock",
+            "text": "Based on anonymous pulse check responses",
+            "isSubtle": true,
+            "size": "Small"
+          },
+          {
+            "type": "ColumnSet",
+            "spacing": "Medium",
+            "columns": [
+              {
+                "type": "Column",
+                "width": "1",
+                "items": [
+                  {
+                    "type": "TextBlock",
+                    "text": "Wk 12",
+                    "size": "Small",
+                    "horizontalAlignment": "Center",
+                    "weight": "Bolder"
+                  },
+                  {
+                    "type": "TextBlock",
+                    "text": "\ud83d\ude04",
+                    "horizontalAlignment": "Center",
+                    "spacing": "None",
+                    "size": "Large"
+                  },
+                  {
+                    "type": "TextBlock",
+                    "text": "4.2",
+                    "horizontalAlignment": "Center",
+                    "spacing": "None",
+                    "size": "Small"
+                  }
+                ]
+              },
+              {
+                "type": "Column",
+                "width": "1",
+                "items": [
+                  {
+                    "type": "TextBlock",
+                    "text": "Wk 13",
+                    "size": "Small",
+                    "horizontalAlignment": "Center",
+                    "weight": "Bolder"
+                  },
+                  {
+                    "type": "TextBlock",
+                    "text": "\ud83d\ude42",
+                    "horizontalAlignment": "Center",
+                    "spacing": "None",
+                    "size": "Large"
+                  },
+                  {
+                    "type": "TextBlock",
+                    "text": "3.8",
+                    "horizontalAlignment": "Center",
+                    "spacing": "None",
+                    "size": "Small"
+                  }
+                ]
+              },
+              {
+                "type": "Column",
+                "width": "1",
+                "items": [
+                  {
+                    "type": "TextBlock",
+                    "text": "Wk 14",
+                    "size": "Small",
+                    "horizontalAlignment": "Center",
+                    "weight": "Bolder"
+                  },
+                  {
+                    "type": "TextBlock",
+                    "text": "\ud83d\ude10",
+                    "horizontalAlignment": "Center",
+                    "spacing": "None",
+                    "size": "Large"
+                  },
+                  {
+                    "type": "TextBlock",
+                    "text": "3.5",
+                    "horizontalAlignment": "Center",
+                    "spacing": "None",
+                    "size": "Small"
+                  }
+                ]
+              },
+              {
+                "type": "Column",
+                "width": "1",
+                "items": [
+                  {
+                    "type": "TextBlock",
+                    "text": "Wk 15",
+                    "size": "Small",
+                    "horizontalAlignment": "Center",
+                    "weight": "Bolder"
+                  },
+                  {
+                    "type": "TextBlock",
+                    "text": "\ud83d\ude42",
+                    "horizontalAlignment": "Center",
+                    "spacing": "None",
+                    "size": "Large"
+                  },
+                  {
+                    "type": "TextBlock",
+                    "text": "3.9",
+                    "horizontalAlignment": "Center",
+                    "spacing": "None",
+                    "size": "Small"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "type": "FactSet",
+            "spacing": "Medium",
+            "facts": [
+              {
+                "title": "eNPS Score",
+                "value": "+32 (Good) \u2014 \u2b06\ufe0f from +28 last month"
+              },
+              {
+                "title": "Response Rate",
+                "value": "86% (6 of 7 members)"
+              },
+              {
+                "title": "Top Concern",
+                "value": "Workload distribution"
+              },
+              {
+                "title": "Top Positive",
+                "value": "Team collaboration & support"
+              },
+              {
+                "title": "Suggestions Received",
+                "value": "4 this month (2 actioned)"
+              }
+            ]
+          },
+          {
+            "type": "ActionSet",
+            "spacing": "Medium",
+            "actions": [
+              {
+                "type": "Action.Submit",
+                "title": "\ud83d\udce5 Full Sentiment Report",
+                "data": {
+                  "action": "export_sentiment",
+                  "demo_mode": true
+                }
+              },
+              {
+                "type": "Action.ToggleVisibility",
+                "title": "\u2190 Back",
+                "targetElements": [
+                  {
+                    "elementId": "sentiment",
+                    "isVisible": false
+                  },
+                  {
+                    "elementId": "surveyMenu",
+                    "isVisible": true
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  "notes": "Multi-section card using Action.ToggleVisibility for in-card navigation. All non-main sections hidden by default."
+}

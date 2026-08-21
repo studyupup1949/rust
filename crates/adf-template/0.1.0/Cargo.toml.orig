@@ -1,0 +1,12 @@
+[package]
+name = "adf-template"
+version = "0.1.0"
+edition = "2021"
+description = "A macro for generating ADF from html templates"
+license = "MIT"
+
+[dependencies]
+adf-template-macro = "0.1.0"
+htmltoadf = "0.1.7"
+serde = { version = "1.0.160", features = ["derive"] }
+tinytemplate = "1.2.1"

@@ -1,0 +1,16 @@
+load("@buckal//:wrapper.bzl", "rust_binary")
+
+rust_binary(
+    name = "add_gitignore",
+    srcs = glob(["**/*.rs"]),
+    crate = "add_gitignore",
+    crate_root = "src/main.rs",
+    edition = "2018",
+
+    visibility = ["PUBLIC"],
+    deps = [
+        "//third-party/rust/crates/console/0.8.0:console",
+        "//third-party/rust/crates/dialoguer/0.4.0:dialoguer",
+        "//third-party/rust/crates/reqwest/0.9.24:reqwest",
+    ],
+)

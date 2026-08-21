@@ -1,0 +1,25 @@
+[package]
+name = "ade-strongly-connected-components"
+version = "0.1.1"
+edition = "2021"
+description = "Algorithms for finding strongly connected components (SCCs) in directed graphs."
+license = "MIT OR Apache-2.0"
+repository = "https://github.com/riccardoscalco/ade"
+homepage = "https://github.com/riccardoscalco/ade"
+keywords = ["graph", "scc", "connected-components", "algorithms", "directed"]
+categories = ["algorithms", "mathematics"]
+
+[dependencies]
+ade-traits = { path = "../ade-traits", version = "0.1.0" }
+ade-common = { path = "../ade-common", version = "0.1.0" }
+
+[dev-dependencies]
+ade-graph = { path = "../ade-graph" }
+ade-graph-generators = { path = "../ade-graph-generators" }
+ade-common = { path = "../ade-common", features = ["test-helpers"] }
+criterion = { workspace = true }
+rand = "0.8"
+
+[[bench]]
+name = "scc_bench"
+harness = false

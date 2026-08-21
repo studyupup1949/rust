@@ -1,0 +1,19 @@
+load("@buckal//:wrapper.bzl", "rust_library")
+
+rust_library(
+    name = "ad_blob_test",
+    srcs = glob(["**/*.rs"]),
+    crate = "ad_blob_test",
+    crate_root = "src/lib.rs",
+    edition = "2018",
+
+    visibility = ["PUBLIC"],
+    deps = [
+        "//third-party/rust/crates/anyhow/1.0.104:anyhow",
+        "//third-party/rust/crates/chrono-wasi/0.4.11:chrono_wasi",
+        "//third-party/rust/crates/hex/0.4.3:hex",
+        "//third-party/rust/crates/hmac-sha256/0.1.7:hmac_sha256",
+        "//third-party/rust/crates/reqwest/0.10.10:reqwest",
+        "//third-party/rust/crates/urlencoding/1.3.3:urlencoding",
+    ],
+)

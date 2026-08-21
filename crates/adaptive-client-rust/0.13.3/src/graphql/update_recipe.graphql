@@ -1,0 +1,15 @@
+mutation UpdateCustomRecipe(
+    $project: IdOrKey!
+    $id: IdOrKey!
+    $input: UpdateRecipeInput!
+    $file: Upload
+) {
+    updateCustomRecipe(project: $project, id: $id, input: $input, file: $file) {
+        id
+        key
+        name
+        description
+        contentHash
+        updatedAt
+    }
+}

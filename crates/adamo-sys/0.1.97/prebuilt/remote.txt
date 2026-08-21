@@ -1,0 +1,18 @@
+# Pinned download manifest for targets whose libadamo is NOT shipped inside
+# the crate (crates.io caps packages at 10MB; only the Jetson lib fits).
+#
+# Format, whitespace separated:
+#   <target-triple> <artifact-version> <sha256-of-the-xz>
+#
+# build.rs fetches
+#   https://install.adamohq.com/sdk/v<version>/libadamo-<triple>.{so,dylib}.xz
+# and verifies the checksum before linking.
+#
+# Auto-maintained: the "Pin remote libadamo artifacts" step in
+# .github/workflows/publish-crates.yml runs scripts/pin-remote.sh on every
+# v*.*.* tag, so the published adamo-sys always pins its own release's libs
+# (version == crate version). Regenerate by hand with:
+#   adamo-rs/scripts/pin-remote.sh <version>
+
+x86_64-unknown-linux-gnu   0.1.97       085d147bd8ed714e3af6395fb4a485298cc23ffbc5683f009463af7e9f475214
+aarch64-apple-darwin       0.1.97       1ebdc5896ff0579b36c81e2aa0585fa89fa9217f8bb8dc9224de4bdf144d90e5

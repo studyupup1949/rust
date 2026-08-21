@@ -1,0 +1,16 @@
+[package]
+name = "adafruit-led-backpack"
+version = "0.1.0"
+description = "Small wrapper on top of the `ht16k33` crate to drive an Adafruit 8x8 bicolor LED backpack"
+authors = ["Gabriel Féron <feron.gabriel@gmail.com>"]
+edition = "2018"
+categories = ["hardware-support"]
+keywords = ["driver", "led", "display", "embedded-hal", "adafruit"]
+license = "MIT OR Apache-2.0"
+
+[dependencies]
+embedded-hal = "0.2"
+ht16k33 = "0.4"
+
+[dev-dependencies]
+rppal = { version = "0.11", features = ["hal"] }

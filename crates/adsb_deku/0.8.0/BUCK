@@ -1,0 +1,16 @@
+load("@buckal//:wrapper.bzl", "rust_library")
+
+rust_library(
+    name = "adsb_deku",
+    srcs = glob(["**/*.rs"]),
+    crate = "adsb_deku",
+    crate_root = "src/lib.rs",
+    edition = "2021",
+    features = ["default"],
+
+    visibility = ["PUBLIC"],
+    deps = [
+        "//third-party/rust/crates/deku/0.19.1:deku",
+        "//third-party/rust/crates/libm/0.2.16:libm",
+    ],
+)

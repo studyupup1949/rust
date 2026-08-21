@@ -1,0 +1,9 @@
+import { AJTheme } from "../aj-theme.slint";
+
+export component AJIcon inherits Image {
+    in property <brush> color: AJTheme.button-text;
+    colorize: color;
+    width: 16px;
+    height: 16px;
+    image-fit: contain;
+}

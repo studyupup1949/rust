@@ -1,0 +1,14 @@
+load("@buckal//:wrapper.bzl", "rust_library")
+
+rust_library(
+    name = "adam_fov_rs",
+    srcs = glob(["**/*.rs"]),
+    crate = "adam_fov_rs",
+    crate_root = "src/lib.rs",
+    edition = "2024",
+
+    visibility = ["PUBLIC"],
+    deps = [
+        "//third-party/rust/crates/glam/0.32.1:glam",
+    ],
+)

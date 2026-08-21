@@ -1,0 +1,16 @@
+load("@buckal//:wrapper.bzl", "rust_library")
+
+rust_library(
+    name = "adabraka_sum_tree",
+    srcs = glob(["**/*.rs"]),
+    crate = "adabraka_sum_tree",
+    crate_root = "src/sum_tree.rs",
+    edition = "2024",
+
+    visibility = ["PUBLIC"],
+    deps = [
+        "//third-party/rust/crates/arrayvec/0.7.8:arrayvec",
+        "//third-party/rust/crates/log/0.4.33:log",
+        "//third-party/rust/crates/rayon/1.12.0:rayon",
+    ],
+)

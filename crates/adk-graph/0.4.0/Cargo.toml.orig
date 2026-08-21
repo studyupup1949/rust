@@ -1,0 +1,38 @@
+[package]
+name = "adk-graph"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+authors.workspace = true
+description = "Graph-based workflow orchestration for ADK-Rust agents"
+repository = "https://github.com/zavora-ai/adk-rust"
+documentation = "https://docs.rs/adk-graph"
+readme = "README.md"
+keywords = ["ai", "agents", "workflow", "graph", "langgraph"]
+categories = ["science", "asynchronous"]
+
+[dependencies]
+adk-core.workspace = true
+
+async-trait.workspace = true
+async-stream.workspace = true
+futures.workspace = true
+tokio = { workspace = true, features = ["sync"] }
+serde.workspace = true
+serde_json.workspace = true
+chrono.workspace = true
+uuid.workspace = true
+thiserror.workspace = true
+tracing.workspace = true
+
+# Optional SQLite checkpointer
+sqlx = { version = "0.8", features = ["runtime-tokio", "sqlite"], optional = true }
+
+[features]
+default = []
+sqlite = ["sqlx"]
+full = ["sqlite"]
+
+[dev-dependencies]
+tokio = { workspace = true, features = ["rt", "macros", "test-util"] }

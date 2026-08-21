@@ -1,0 +1,22 @@
+[package]
+name = "adobe-font-parser"
+version = "0.2.0"
+authors = ["David Craven <david@craven.ch>"]
+edition = "2024"
+description = "adobe font parser"
+repository = "https://git.farsight.zrh/Farsight/pdf-core"
+license = "MIT OR Apache-2.0"
+
+[dependencies]
+anyhow = "1.0.100"
+decorum = "0.3"
+indexmap = "2.12.0"
+nom = "8.0.0"
+nom-language = "0.1.0"
+slotmap = { version = "1.0" }
+tiny-skia = { version = "0.11.4", default-features = false, features = ["std", "simd"] }
+tracing = "0.1.41"
+
+[dev-dependencies]
+env_logger = "0.11.8"
+walkdir = "2.5.0"

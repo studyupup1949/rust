@@ -1,0 +1,8 @@
+[package]
+name = "adder-imcurie"
+version = "0.1.0"
+edition = "2024"
+description = "test for cargo public"
+license = "MIT"
+
+[dependencies]

@@ -1,0 +1,33 @@
+[package]
+name = "adminx-search"
+description = "Full-text search for the adminx admin-panel framework, powered by the standalone searchez crate. Resources declare searchable fields; create/update/delete keep the index in sync automatically, and the list page gains a search box."
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+authors.workspace = true
+license.workspace = true
+repository.workspace = true
+documentation = "https://docs.rs/adminx-search"
+homepage = "https://github.com/srotas-space/adminx"
+readme = "README.md"
+keywords = ["admin", "search", "fulltext", "actix", "axum"]
+categories = ["web-programming", "database"]
+
+[dependencies]
+adminx-core.workspace = true
+async-trait.workspace = true
+serde_json.workspace = true
+tracing.workspace = true
+# The standalone search-model layer. adminx-search is only the glue between it
+# and adminx's Indexer seam — searchez itself knows nothing about adminx.
+searchez = { path = "../../searchez", version = "1" }
+
+# Optional: forward searchez's Meilisearch backend so `adminx-search`'s own
+# `meilisearch` feature turns it on end to end.
+[features]
+default = []
+meilisearch = ["searchez/meilisearch"]
+
+[dev-dependencies]
+tokio = { workspace = true }
+async-trait.workspace = true

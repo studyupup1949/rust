@@ -1,0 +1,7 @@
+{
+  "git": {
+    "sha1": "d62f2fd5ef05ef2ff6614bfad27c18b2966fcc25",
+    "dirty": true
+  },
+  "path_in_vcs": "crates/adb-rs"
+}

@@ -1,0 +1,17 @@
+load("@buckal//:wrapper.bzl", "rust_library")
+
+rust_library(
+    name = "adf_template",
+    srcs = glob(["**/*.rs"]),
+    crate = "adf_template",
+    crate_root = "src/lib.rs",
+    edition = "2021",
+
+    visibility = ["PUBLIC"],
+    deps = [
+        "//third-party/rust/crates/adf-template-macro/0.1.1:adf_template_macro",
+        "//third-party/rust/crates/htmltoadf/0.1.13:htmltoadf",
+        "//third-party/rust/crates/serde/1.0.229:serde",
+        "//third-party/rust/crates/tinytemplate/1.2.1:tinytemplate",
+    ],
+)

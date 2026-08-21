@@ -1,0 +1,38 @@
+# Copyright Jeron A. Lau 2017 - 2018.
+# Dual-licensed under either the MIT License or the Boost Software License,
+# Version 1.0.  (See accompanying file LICENSE_1_0.txt or copy at
+# https://www.boost.org/LICENSE_1_0.txt)
+#
+# XXXX  X                    /5\——————/5\       XXXX      X           X
+# X   X X   XXX   XXXX      |   0    0   |     X      XXX   XXXX XXXX X X   X
+# X   X X  X   X  X   X  /"\|     <>     |/"\  X      X   X    X    X X X   X
+# XXXX  X  X   X  X   X  \  \\_  ====  _//  /  X   XX X   X   X    X  X  X X
+# X     X  X   X  XXXX    \_              _/   X    X X   X  X    X   X   X
+# X     X   XXX   X       / \            / \    XXXX  X   X XXXX XXXX X   X
+#                 X       \                /                            XX
+#                          --____________--
+
+[package]
+name = "adi_gpu"
+version = "0.11.0"
+authors = [
+	"Jeron A. Lau <jeron.lau@plopgrizzly.com>",
+]
+license = "MIT / BSL-1.0"
+documentation = "https://docs.rs/adi_gpu"
+homepage = "https://gitlab.com/plopgrizzly/adi/"
+repository = "https://gitlab.com/plopgrizzly/adi/adi_gpu"
+readme = "README.md"
+description = "GPU interface - render graphics and do fast calculations"
+keywords = ["vulkan", "graphics", "rendering", "opengl", "gpu"]
+categories = ["rendering::graphics-api", "hardware-support",
+	"rendering::engine", "rendering"]
+
+[dependencies]
+adi_gpu_base = "0.11"
+
+[target.'cfg(any(target_os="macos", target_os="android", target_os="linux", target_os="windows", target_os="nintendo_switch"))'.dependencies]
+adi_gpu_vulkan = "0.11"
+
+[target.'cfg(any(target_os="android", target_os="linux", target_os="windows", target_os="web"))'.dependencies]
+adi_gpu_opengl = "0.11"

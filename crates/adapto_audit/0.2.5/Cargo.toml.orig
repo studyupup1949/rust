@@ -1,0 +1,23 @@
+[package]
+name = "adapto_audit"
+description = "Adapto audit logging — event tracking, sinks, structured logging"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+authors.workspace = true
+repository.workspace = true
+homepage.workspace = true
+
+[dependencies]
+adapto_runtime = { path = "../adapto_runtime", version = "0.2.5" }
+serde = { workspace = true }
+serde_json = { workspace = true }
+thiserror = { workspace = true }
+uuid = { workspace = true }
+chrono = { workspace = true }
+tracing = { workspace = true }
+tokio = { workspace = true }
+
+[dev-dependencies]
+insta = { workspace = true }
+tokio-test = { workspace = true }

@@ -1,0 +1,5 @@
+[user]
+    name = Test User
+    email = {{@@ git.email @@}}
+[core]
+    editor = {{@@ editor @@}}

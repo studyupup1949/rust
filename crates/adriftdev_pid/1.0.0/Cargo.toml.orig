@@ -1,0 +1,12 @@
+[package]
+name = "adriftdev_pid"
+version = "1.0.0"
+authors = ["Joshua Tracey <joshua.tracey08@gmail.com>"]
+edition = "2018"
+
+description =  "PID Controller library"
+keyword = ["PID controller", "pid"]
+license = "GPL-3.0-only"
+
+
+[dependencies]

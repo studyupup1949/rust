@@ -1,0 +1,28 @@
+[package]
+name = "adminx-seaorm"
+description = "SeaORM (PostgreSQL / MySQL) storage backend for the adminx admin-panel framework."
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+authors.workspace = true
+license.workspace = true
+repository.workspace = true
+
+[dependencies]
+adminx-core.workspace = true
+async-trait.workspace = true
+serde_json.workspace = true
+tracing.workspace = true
+chrono = { version = "0.4", default-features = false, features = ["clock"] }
+sea-orm = { version = "1.1", default-features = false, features = [
+    "sqlx-postgres",
+    "sqlx-mysql",
+    "sqlx-sqlite",
+    "runtime-tokio-rustls",
+    "with-json",
+    "with-chrono",
+    "macros",
+] }
+
+[dev-dependencies]
+tokio = { workspace = true }

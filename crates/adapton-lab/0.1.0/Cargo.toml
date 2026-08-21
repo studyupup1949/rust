@@ -1,0 +1,34 @@
+[package]
+name = "adapton-lab"
+version = "0.1.0"
+authors = ["Matthew A. Hammer <matthew.hammer@colorado.edu>"]
+description = "Testing and performance evaluation suite for Adapton"
+homepage = "http://adapton.org"
+repository = "https://github.com/cuplv/adapton-lab.rust/"
+readme = "README.md"
+keywords = ["Incremental", "Memoization", "Dependency-Graph", "Demand-driven", "Self-Adjusting",]
+license = "MPL-2.0"
+
+
+[dependencies]
+time = "0.1"
+rand = "0.3"
+# csv = ""
+clap = "1"
+# piston = "0.15.1"
+# piston2d-graphics = "0.11.0"
+# piston2d-opengl_graphics = "0.19.0"
+# pistoncore-glutin_window = "0.17.1"
+
+[dependencies.adapton]
+version = "0.3"
+#
+# git = "https://github.com/cuplv/adapton.rust.git"
+# branch = "dev"
+#
+# path = "/Users/hammer/repo/adapton.rust"
+
+# [dependencies.iodyn]
+# git = "https://github.com/cuplv/iodyn.rust.git"
+# branch = "master"
+# # path = "/Users/hammer/repo/iodyn.rust"

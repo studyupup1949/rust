@@ -1,0 +1,42 @@
+[package]
+name = "adminx-cloud"
+description = "Cloud storage backends (AWS S3, Google Cloud Storage, Azure Blob) for adminx file attachments, over a single object_store-backed BlobStore. Enable only the providers you use via feature flags."
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+authors.workspace = true
+license.workspace = true
+repository.workspace = true
+documentation = "https://docs.rs/adminx-cloud"
+homepage = "https://github.com/srotas-space/adminx"
+readme = "README.md"
+keywords = ["adminx", "s3", "gcs", "azure", "storage"]
+categories = ["web-programming", "filesystem"]
+
+[dependencies]
+adminx-attachments.workspace = true
+adminx-core.workspace = true
+async-trait.workspace = true
+tracing.workspace = true
+tokio = { workspace = true }
+# Core is light (memory + local only). The cloud HTTP stacks are pulled in only
+# by the provider features below, so a crate that enables no provider stays lean.
+object_store = "0.14"
+
+[features]
+default = []
+# AWS S3 (and S3-compatible: MinIO, R2, ...).
+aws = ["object_store/aws"]
+# Google Cloud Storage.
+gcp = ["object_store/gcp"]
+# Azure Blob Storage.
+azure = ["object_store/azure"]
+# All three cloud providers.
+all = ["aws", "gcp", "azure"]
+
+[dev-dependencies]
+tokio = { workspace = true }
+
+[package.metadata.docs.rs]
+# Document every provider builder.
+features = ["all"]

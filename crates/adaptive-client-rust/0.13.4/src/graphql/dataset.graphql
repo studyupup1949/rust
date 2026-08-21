@@ -1,0 +1,9 @@
+query GetDataset($idOrKey: IdOrKey!, $project: IdOrKey!) {
+    dataset(idOrKey: $idOrKey, project: $project) {
+        id
+        key
+        name
+        kind
+        downloadUrl
+    }
+}

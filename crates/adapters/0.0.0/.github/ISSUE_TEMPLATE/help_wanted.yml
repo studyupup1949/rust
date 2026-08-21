@@ -1,0 +1,27 @@
+name: 🙋 Help Wanted / Support Request
+description: Get help or ask questions regarding your Adapters configuration or usage.
+title: "[SUPPORT]: "
+labels: ["help wanted"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Please consult the official guides and dynamic example folder before submitting a support request.
+  - type: textarea
+    id: question
+    attributes:
+      label: What are you trying to accomplish?
+      description: Describe your target data transformation pipeline, custom schema configuration, or validation setup.
+      placeholder: Describe your objective...
+    validations:
+      required: true
+  - type: textarea
+    id: problem
+    attributes:
+      label: What is preventing you from succeeding?
+      description: Provide error logs, code, or compiler messages.
+      render: rust
+      placeholder: |
+        // Your code or compiler error output here...
+    validations:
+      required: true

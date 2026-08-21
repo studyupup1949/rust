@@ -1,0 +1,181 @@
+import { AJTheme } from "../aj-theme.slint";
+import { AJContestState } from "../aj-state.slint";
+import { AJProblemsCallbacks } from "../aj-callbacks.slint";
+import { AJProblem, AJProblemType } from "../models/problems.slint";
+import { ScrollView } from "std-widgets.slint";
+import { AJText, AJTextType } from "aj-text.slint";
+import { AJInput, AJInputType } from "aj-input.slint";
+import { AJButton } from "aj-button.slint";
+import { AJCheckbox } from "aj-checkbox.slint";
+import { AJSubgroupCard } from "aj-subgroup-card.slint";
+
+export component AJProblemCard inherits Rectangle {
+    in property <AJProblem> problem;
+    in property <bool> show-id;
+
+    width: 400px;
+    height: 270px;
+
+    background: AJTheme.primary-container;
+
+    border-radius: AJTheme.border-radius;
+
+    VerticalLayout {
+        padding: AJTheme.padding;
+        spacing: AJTheme.spacing;
+
+        HorizontalLayout {
+            spacing: AJTheme.spacing;
+
+            AJText {
+                text: show-id ? "#\{problem.id} \{problem.name}" : "#\{problem.problem-index + 1} \{problem.name}";
+                type: AJTextType.Heading;
+                color: AJTheme.container-text;
+            }
+
+            delete-problem-popup := PopupWindow {
+                close-policy: PopupClosePolicy.close-on-click-outside;
+
+                function close-popup() {
+                    self.close()
+                }
+
+                Rectangle {
+                    background: AJTheme.secondary-container;
+
+                    border-radius: AJTheme.border-radius;
+
+                    VerticalLayout {
+                        padding: AJTheme.padding;
+                        spacing: AJTheme.spacing;
+
+                        AJText {
+                            text: "Требуется рут-доступ";
+                            type: AJTextType.Medium;
+                            color: AJTheme.container-text;
+                        }
+
+                        login := AJInput {
+                            placeholder: "логин";
+                        }
+
+                        password := AJInput {
+                            placeholder: "пароль";
+                            type: AJInputType.Password;
+                        }
+
+                        password-confirmation := AJInput {
+                            placeholder: "подтвердите пароль";
+                            type: AJInputType.Password;
+                        }
+
+                        deletion-confirmation := AJCheckbox {
+                            text: "подтвердите удаление";
+                        }
+
+                        AJButton {
+                            text: "удалить \\\\";
+                            clicked => {
+                                AJProblemsCallbacks.delete-problem(problem.id, login.text, password.text, password-confirmation.text, deletion-confirmation.value)
+                            }
+                        }
+
+                        AJButton {
+                            text: "<< отменить";
+                            clicked => {
+                                close-popup()
+                            }
+                        }
+                    }
+                }
+            }
+
+            AJButton {
+                visible: problem.can-manage;
+                text: "удалить \\\\";
+                clicked => {
+                    delete-problem-popup.show()
+                }
+            }
+        }
+
+        if problem.type == AJProblemType.Interactive: AJText {
+            text: "Это интерактивная задача.";
+            font-weight: AJTheme.font-weight-heading;
+            color: AJTheme.container-text;
+        }
+
+        if problem.type == AJProblemType.RunTwice: AJText {
+            text: "Это задача с двойным запуском.";
+            font-weight: AJTheme.font-weight-heading;
+            color: AJTheme.container-text;
+        }
+
+        HorizontalLayout {
+            AJText {
+                text: "ограничение по времени";
+                horizontal-stretch: 1;
+                horizontal-alignment: left;
+                vertical-alignment: center;
+                color: AJTheme.container-text;
+            }
+
+            AJText {
+                text: "\{problem.time_limit_ms}мс";
+                font-italic: true;
+                horizontal-stretch: 1;
+                horizontal-alignment: right;
+                vertical-alignment: center;
+                color: AJTheme.container-text;
+            }
+        }
+
+        HorizontalLayout {
+            AJText {
+                text: "ограничение по памяти";
+                horizontal-stretch: 1;
+                horizontal-alignment: left;
+                vertical-alignment: center;
+                color: AJTheme.container-text;
+            }
+
+            AJText {
+                text: "\{problem.memory_limit_mb}МБ";
+                font-italic: true;
+                horizontal-stretch: 1;
+                horizontal-alignment: right;
+                vertical-alignment: center;
+                color: AJTheme.container-text;
+            }
+        }
+
+        AJText {
+            text: "Подгруппы";
+            type: AJTextType.Medium;
+            color: AJTheme.container-text;
+        }
+
+        Rectangle {
+            clip: true;
+            border-radius: AJTheme.border-radius;
+
+            ScrollView {
+                VerticalLayout {
+                    spacing: AJTheme.spacing;
+
+                    for subgroup[index] in problem.subgroups: AJSubgroupCard {
+                        index: index;
+                    }
+                }
+            }
+
+            Rectangle {
+                x: 0;
+                y: parent.height - self.height;
+                width: parent.width;
+                height: 64px;
+                background: @linear-gradient(180deg, AJTheme.background.transparentize(100%), AJTheme.background.transparentize(50%));
+            }
+        }
+    }
+}

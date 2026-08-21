@@ -1,0 +1,29 @@
+load("@buckal//:wrapper.bzl", "rust_binary")
+
+rust_binary(
+    name = "ad4m",
+    srcs = glob(["**/*.rs"]),
+    crate = "ad4m",
+    crate_root = "src/main.rs",
+    edition = "2021",
+
+    visibility = ["PUBLIC"],
+    deps = [
+        "//third-party/rust/crates/ad4m-client/0.5.1:ad4m_client",
+        "//third-party/rust/crates/anyhow/1.0.104:anyhow",
+        "//third-party/rust/crates/chrono/0.4.45:chrono",
+        "//third-party/rust/crates/clap/4.6.6:clap",
+        "//third-party/rust/crates/colour/0.6.0:colour",
+        "//third-party/rust/crates/dirs/4.0.0:dirs",
+        "//third-party/rust/crates/futures/0.3.34:futures",
+        "//third-party/rust/crates/rand/0.8.7:rand",
+        "//third-party/rust/crates/regex/1.13.1:regex",
+        "//third-party/rust/crates/rustyline/10.1.1:rustyline",
+        "//third-party/rust/crates/serde/1.0.229:serde",
+        "//third-party/rust/crates/serde_json/1.0.151:serde_json",
+        "//third-party/rust/crates/syntect/5.3.0:syntect",
+        "//third-party/rust/crates/tokio/1.53.1:tokio",
+        "//third-party/rust/crates/unicode-width/0.1.14:unicode_width",
+        "//third-party/rust/crates/urlencoding/2.1.3:urlencoding",
+    ],
+)

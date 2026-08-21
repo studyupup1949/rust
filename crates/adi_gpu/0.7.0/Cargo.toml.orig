@@ -1,0 +1,45 @@
+# "adi_gpu" crate - Licensed under the MIT LICENSE
+#  * Copyright (c) 2017-2018  Jeron A. Lau <jeron.lau@plopgrizzly.com>
+#                             _        _
+#                            /@\——————/@\
+# .———  .                   |   o    o   |     .————      .            .
+# |   | |  .———   .———   .——.     []     .——.  |      .——    ———: ———: | .   .
+# |   | |  |   |  |   |  \   \   <##>   /   /  |      |   |    /    /  | |   |
+# |———  |  |   |  |   |   |   ¯        ¯   |   |   -- |   |   /    /   |  \ /
+# |     |  |   |  |———    |                |   |    | |   |  /    /    |   |
+# |     |   ———   |       |                |    ————  |   | :——— :———  |   |
+#                 |        \              /                              __/
+#                           ¯————————————¯
+
+[package]
+name = "adi_gpu"
+version = "0.7.0"
+authors = [
+	"Jeron A. Lau <jeron.lau@plopgrizzly.com>",
+]
+
+license = "MIT"
+documentation = "https://docs.rs/adi_gpu"
+homepage = "http://plopgrizzly.com/adi_gpu"
+repository = "https://github.com/plopgrizzly/adi_gpu"
+
+readme = "README.md"
+description = "GPU interface - render graphics and do fast calculations"
+keywords = ["vulkan", "graphics", "rendering", "opengl", "gpu"]
+categories = ["rendering::graphics-api", "hardware-support",
+	"rendering::engine", "rendering"]
+
+exclude = [
+	"examples/*", "code_of_conduct.md", "contributing.md", ".gitignore",
+	"_config.yml", "ISSUE_TEMPLATE.md", "icon.png", "icon.ico"
+]
+
+[dependencies]
+ami = "^0.8"
+adi_gpu_base = "^0.6"
+
+[target.'cfg(any(unix, target_os="windows", target_os="web"))'.dependencies]
+adi_gpu_opengl = "^0.4"
+
+[target.'cfg(any(unix, target_os="windows", target_os="nintendo_switch"))'.dependencies]
+adi_gpu_vulkan = "^0.5"

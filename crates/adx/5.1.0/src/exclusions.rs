@@ -1,0 +1,56 @@
+use crate::parse::{get_groups, get_packages};
+use clap::{ValueEnum, builder::PossibleValue};
+use std::fmt::Write;
+
+#[derive(Debug, Eq, PartialEq, PartialOrd, Clone, Copy)]
+pub(crate) enum PrintType {
+    IncludeGroup,
+    IncludeModule,
+}
+
+const EXCLUDED_GROUPS: [&str; 1] = ["org.jetbrains.kotlin"];
+
+impl ValueEnum for PrintType {
+    fn value_variants<'a>() -> &'a [Self] {
+        &[Self::IncludeGroup, Self::IncludeModule]
+    }
+
+    fn to_possible_value(&self) -> Option<clap::builder::PossibleValue> {
+        match self {
+            PrintType::IncludeGroup => Some(PossibleValue::new("group")),
+            PrintType::IncludeModule => Some(PossibleValue::new("module")),
+        }
+    }
+}
+
+pub(crate) async fn print_inclusions(print_type: PrintType) {
+    let mut rules = String::new();
+    match print_type {
+        PrintType::IncludeGroup => {
+            let Ok(groups) = get_groups().await else {
+                return;
+            };
+            for group_id in groups {
+                if EXCLUDED_GROUPS.contains(&group_id.as_str()) {
+                    continue;
+                }
+                let _ = writeln!(rules, "includeGroup(\"{group_id}\")");
+            }
+        }
+        PrintType::IncludeModule => {
+            let packages = get_packages().await;
+            let Ok(packages) = packages else { return };
+            for pkg in packages {
+                if EXCLUDED_GROUPS.contains(&pkg.group_id.as_str()) {
+                    continue;
+                }
+                let _ = writeln!(
+                    rules,
+                    "includeModule(\"{}\", \"{}\")",
+                    pkg.group_id, pkg.artifact_id
+                );
+            }
+        }
+    }
+    println!("{rules}");
+}

@@ -1,0 +1,14 @@
+load("@buckal//:wrapper.bzl", "rust_library")
+
+rust_library(
+    name = "adhoc_figment",
+    srcs = glob(["**/*.rs"]),
+    crate = "adhoc_figment",
+    crate_root = "src/lib.rs",
+    edition = "2018",
+
+    visibility = ["PUBLIC"],
+    deps = [
+        "//third-party/rust/crates/figment/0.10.19:figment",
+    ],
+)

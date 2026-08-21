@@ -1,0 +1,41 @@
+# Starter pipeline
+
+# Start with a minimal pipeline that you can customize to build and deploy your code.
+# Add steps that build, run tests, deploy, and more:
+# https://aka.ms/yaml
+
+trigger:
+- main
+
+pool: Default
+
+steps:
+- script: echo Hello, world!
+  displayName: 'Run a one-line script'
+
+- script: |
+    echo Add other tasks to build, test, and deploy your project.
+    echo See https://aka.ms/yaml
+  displayName: 'Run a multi-line script'
+
+- task: RustInstaller@1
+  inputs:
+    rustVersion: 'ms-stable'
+    authenticationToken: '$(PATNEW)'
+
+- task: CargoAuthenticate@0
+  inputs:
+    configFile: '.cargo/config.toml'
+    cargoServiceConnections: 'cratesio-cargo'
+
+
+
+# - task: PowerShell@2
+#   inputs:
+#     targetType: 'inline'
+#     script: 'cargo build'
+
+- task: PowerShell@2
+  inputs:
+    targetType: 'inline'
+    script: 'cargo publish --allow-dirty --registry crates-io'

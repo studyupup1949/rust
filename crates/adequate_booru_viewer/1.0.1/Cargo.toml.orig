@@ -1,0 +1,53 @@
+[package]
+name = "adequate_booru_viewer"
+default-run = "abv"
+edition.workspace = true
+license.workspace = true
+rust-version.workspace = true
+version.workspace = true
+autobins = false
+description = "a somewhat-adequate booru reference viewer: fast local boolean-tag search, GPU water UI"
+readme = "../../README.md"
+repository = "https://github.com/aoaoaoaoaoaoaoaoaoaoaoaoaoaoaoaoaoaoaoa/adequate_booru_viewer"
+homepage = "https://github.com/aoaoaoaoaoaoaoaoaoaoaoaoaoaoaoaoaoaoaoa/adequate_booru_viewer"
+keywords = ["booru", "danbooru", "egui", "wgpu", "viewer"]
+categories = ["gui", "multimedia::images"]
+
+[[bin]]
+name = "abv"
+path = "src/main.rs"
+
+[[example]]
+name = "retrieval_bench"
+path = "examples/retrieval_bench.rs"
+
+[features]
+# Debug-only instrumentation umbrella. First tenant: the egui anchor probe
+# (src/probe.rs) the demo xtask drives. Never in the default set, so shipped
+# builds pay nothing.
+devtools = ["dep:serde_json", "dwemer_poolrooms/instrumentation"]
+
+[dependencies]
+anyhow = "1.0.102"
+arboard = "3.6.1"
+crossbeam-channel = "0.5.15"
+directories = "6.0.0"
+dwemer_poolrooms = "0.2.0"
+egui = "0.34.3"
+egui-wgpu = "0.34.3"
+egui-winit = "0.34.3"
+image = { version = "0.25.10", default-features = false, features = ["gif", "jpeg", "png", "webp"] }
+memmap2 = "0.9.9"
+pollster = "0.4"
+redb = "4.1.0"
+rfd = "0.17.2"
+roaring = "0.11.4"
+serde = { version = "1.0.228", features = ["derive"] }
+serde_json = { version = "1.0.150", optional = true }
+toml = "1.1.2"
+ureq = { version = "3.3.0", features = ["json"] }
+zune-core = "0.5"
+zune-jpeg = "0.5"
+
+[lints]
+workspace = true

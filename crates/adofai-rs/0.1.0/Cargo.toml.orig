@@ -1,0 +1,13 @@
+[package]
+name = "adofai-rs"
+description = "adofai custom map parser"
+license = "MIT"
+version = "0.1.0"
+edition = "2018"
+repository = "https://github.com/pikokr/adofai-rs"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+serde_jsonrc = "0.1.0"
+serde = "1.0.130"

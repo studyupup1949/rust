@@ -1,0 +1,34 @@
+[package]
+name = "advantage"
+description = "Automatic Differentiation Toolkit"
+license = "MIT"
+version = "0.1.0"
+authors = ["Richard Wiedenhöft <richard@wiedenhoeft.xyz>"]
+edition = "2018"
+repository = "https://github.com/richard-w/advantage"
+
+[lib]
+path = "src/lib.rs"
+crate-type = ["rlib", "staticlib"]
+
+[dependencies]
+nalgebra = "0.19"
+rayon = "1.2"
+paste = "0.1"
+num = "0.2"
+lazy_static = "1.4"
+static_assertions = "1.1"
+
+[build-dependencies]
+cbindgen = { version = "0.9", optional = true }
+
+[features]
+default = []
+
+ffi = ["cbindgen"]
+
+[[example]]
+name = "perceptron"
+
+[[example]]
+name = "floyd_warshall"

@@ -1,0 +1,29 @@
+[package]
+name = "adic-shape"
+version = "0.1.2"
+description = "Visualizing p-adic numbers"
+repository = "https://gitlab.com/pmodular/adic"
+readme = "readme.md"
+edition = "2021"
+license = "MIT OR Apache-2.0"
+keywords = ["mathematics", "modular", "number", "padic", "plot"]
+categories = ["mathematics", "science", "visualization"]
+
+[dependencies]
+adic = "0.3.1"
+clap = { version = "4.5.20", features = ["derive"] }
+itertools = "0.14.0"
+petgraph = "0.7.1"
+svg = "0.18.0"
+
+console_error_panic_hook = { version="0.1.7", optional = true }
+leptos = { version = "0.7.0", optional = true, features = ["csr"] }
+
+[features]
+leptos = [
+    "dep:console_error_panic_hook",
+    "dep:leptos",
+]
+
+[lints]
+workspace = true

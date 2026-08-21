@@ -1,0 +1,9 @@
+dotfiles:
+  f_bad:
+    dst: same/path
+    src: same/path
+    type: link
+profiles:
+  test-host:
+    dotfiles:
+      - f_bad

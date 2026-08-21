@@ -1,0 +1,24 @@
+{
+	"folders": [
+		{
+			"path": "."
+		}
+	],
+    "settings": {
+        "cSpell.words": [
+            "Ctrl",
+            "Gitlab",
+            "anthonywilliams",
+            "committerdate",
+            "ctrlc",
+            "hsutter",
+            "prnt",
+            "remotes",
+            "repo",
+            "reqwest",
+            "subfork",
+            "subkey",
+            "uint"
+        ]
+    }
+}

@@ -1,0 +1,24 @@
+[package]
+name = "adnix"
+version = "0.4.2"
+authors = ["Harsh Shandilya <me@msfjarvis.dev>"]
+edition = "2021"
+description = "Rust binary to generate DNSMasq and Unbound configurations from UNIX host files"
+license = "MIT"
+homepage = "https://github.com/msfjarvis/adnix-rs"
+repository = "https://github.com/msfjarvis/adnix-rs"
+readme = "README.md"
+include = ["src/**/*", "README.md"]
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+clap = { version = "3.1.12", features = [ "color", "derive" ] }
+color-eyre = { version = "0.6.1", default-features = false }
+regex = "1.5.5"
+ureq = "2.4.0"
+
+[profile.release]
+codegen-units = 1
+lto = "thin"
+panic = "abort"

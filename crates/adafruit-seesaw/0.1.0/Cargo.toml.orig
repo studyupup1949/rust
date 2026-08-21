@@ -1,0 +1,27 @@
+[package]
+authors = ["Alex Eden <alexandereden91@gmail.com>"]
+description = "[WIP] Embedded rust implementation of the Adafruit Seesaw library."
+edition = "2021"
+license = "MIT/Apache-2.0"
+name = "adafruit-seesaw"
+readme = "README.md"
+repository = "https://github.com/alexeden/adafruit-seesaw"
+version = "0.1.0"
+exclude = [".cargo", "memory.x"]
+
+[dependencies]
+embedded-hal = "0.2"
+num_enum = { version = "0.5", default-features = false }
+
+[dev-dependencies]
+cortex-m = "0.7"
+cortex-m-rt = "0.7"
+rtt-target = { version = "0.3", features = ["cortex-m"] }
+stm32f4xx-hal = { features = ["rt", "stm32f405", "sdio"], version = "0.13" }
+
+[profile.release]
+codegen-units = 1   # better optimizations
+debug = true        # symbols are nice and they don't increase the size on Flash
+lto = true          # better optimizations
+incremental = false
+opt-level = 's'

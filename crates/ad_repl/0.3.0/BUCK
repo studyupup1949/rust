@@ -1,0 +1,15 @@
+load("@buckal//:wrapper.bzl", "rust_binary")
+
+rust_binary(
+    name = "ad_repl",
+    srcs = glob(["**/*.rs"]),
+    crate = "ad_repl",
+    crate_root = "src/main.rs",
+    edition = "2021",
+
+    visibility = ["PUBLIC"],
+    deps = [
+        "//third-party/rust/crates/ad_client/0.3.0:ad_client",
+        "//third-party/rust/crates/subprocess/0.2.15:subprocess",
+    ],
+)

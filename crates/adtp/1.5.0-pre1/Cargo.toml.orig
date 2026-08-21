@@ -1,0 +1,17 @@
+[package]
+name = "adtp" # Alula's Data Transfer Protocol
+version = "1.5.0-pre1"
+edition = "2024"
+description = "Alula's Data Transfer Protocol"
+license = "MPL-2.0"
+readme = "README.md"
+repository = "https://github.com/ApplePieCodes/adtp"
+
+[dependencies]
+serde = {version = "1.0.219", features = ["derive"]}
+serde_json = "1.0.140"
+chrono = {version = "0.4.41", features = ["alloc", "std", "clock", "now", "serde"]}
+aes-gcm = "0.10.3"
+base64 = "0.22.1"
+rsa = "0.9.8"
+rand = "0.8.5"

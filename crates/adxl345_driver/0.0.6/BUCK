@@ -1,0 +1,17 @@
+load("@buckal//:wrapper.bzl", "rust_library")
+
+rust_library(
+    name = "adxl345_driver",
+    srcs = glob(["**/*.rs"]),
+    crate = "adxl345_driver",
+    crate_root = "src/lib.rs",
+    edition = "2018",
+
+    visibility = ["PUBLIC"],
+    deps = [
+        "//third-party/rust/crates/bitflags/1.3.2:bitflags",
+        "//third-party/rust/crates/c2rust-bitfields/0.3.0:c2rust_bitfields",
+        "//third-party/rust/crates/rppal/0.11.3:rppal",
+        "//third-party/rust/crates/thiserror/1.0.69:thiserror",
+    ],
+)

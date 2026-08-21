@@ -1,0 +1,14 @@
+load("@buckal//:wrapper.bzl", "rust_library")
+
+rust_library(
+    name = "adaptive_bezier",
+    srcs = glob(["**/*.rs"]),
+    crate = "adaptive_bezier",
+    crate_root = "src/lib.rs",
+    edition = "2018",
+
+    visibility = ["PUBLIC"],
+    deps = [
+        "//third-party/rust/crates/nalgebra/0.22.1:nalgebra",
+    ],
+)

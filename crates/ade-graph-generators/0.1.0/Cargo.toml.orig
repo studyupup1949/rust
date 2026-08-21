@@ -1,0 +1,10 @@
+[package]
+name = "ade-graph-generators"
+version = "0.1.0"
+edition = "2021"
+description = "Functions for generating various types of graph data, including complete and random graphs."
+license = "MIT OR Apache-2.0"
+repository = "https://github.com/riccardoscalco/ade"
+homepage = "https://github.com/riccardoscalco/ade"
+keywords = ["graph", "generators", "random", "complete", "data"]
+categories = []

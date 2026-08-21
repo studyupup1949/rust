@@ -1,0 +1,11 @@
+load("@buckal//:wrapper.bzl", "rust_binary")
+
+rust_binary(
+    name = "adv_derive",
+    srcs = glob(["**/*.rs"]),
+    crate = "adv_derive",
+    crate_root = "src/main.rs",
+    edition = "2018",
+
+    visibility = ["PUBLIC"],
+)

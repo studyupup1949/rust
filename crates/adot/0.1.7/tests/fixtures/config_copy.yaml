@@ -1,0 +1,9 @@
+dotfiles:
+  f_bashrc:
+    dst: /tmp/adot_tests/copy/dst/.bashrc
+    src: bashrc
+    type: copy
+profiles:
+  test-host:
+    dotfiles:
+      - f_bashrc

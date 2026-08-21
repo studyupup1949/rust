@@ -1,0 +1,48 @@
+import { AJTheme } from "../aj-theme.slint";
+import { AJDateTime } from "../models/others.slint";
+import { AJInput } from "aj-input.slint";
+
+export component AJDateTimeInput inherits HorizontalLayout {
+    in property <AJDateTime> default-date-time;
+
+    out property <AJDateTime> date-time: {
+        year: year.text.to-float(),
+        month: month.text.to-float(),
+        day: day.text.to-float(),
+        hour: hour.text.to-float(),
+        minute: minute.text.to-float(),
+        second: second.text.to-float(),
+    };
+
+    spacing: AJTheme.spacing;
+
+    year := AJInput {
+        text: default-date-time.year;
+        placeholder: "год";
+    }
+
+    month := AJInput {
+        text: default-date-time.month;
+        placeholder: "мес";
+    }
+
+    day := AJInput {
+        text: default-date-time.day;
+        placeholder: "день";
+    }
+
+    hour := AJInput {
+        text: default-date-time.hour;
+        placeholder: "час";
+    }
+
+    minute := AJInput {
+        text: default-date-time.minute;
+        placeholder: "мин";
+    }
+
+    second := AJInput {
+        text: default-date-time.second;
+        placeholder: "сек";
+    }
+}

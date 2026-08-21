@@ -1,0 +1,13 @@
+[package]
+name = "ads7953-rs"
+description = "A platform agnostic driver to interface with the ADS7953 ADC"
+categories = ["embedded", "hardware-support", "no-std", "no-std::no-alloc"]
+license = "MIT"
+repository = "https://github.com/PercyJW-2/ads7953-rs"
+version = "0.1.0"
+edition = "2021"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+embedded-hal = "1.0.0"

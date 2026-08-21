@@ -1,0 +1,35 @@
+name: Publish
+
+on:
+  workflow_call:
+    inputs:
+      crate-version:
+        type: string
+        required: true
+  workflow_dispatch:
+
+
+jobs:
+  add-notice:
+    runs-on: ubuntu-latest
+    steps: 
+      - name: Fetch Repository
+        uses: actions/checkout@v4
+
+      - run: git pull
+
+      - name: Install stable toolchain
+        uses: actions-rust-lang/setup-rust-toolchain@v1
+
+      - name: Install cargo-attribution
+        uses: taiki-e/install-action@v2
+        with:
+          tool: add-header
+      
+      - name: Run cargo attribution
+        run: add-header
+      
+      - name: Commit and Push
+        uses: stefanzweifel/git-auto-commit-action@v4
+        with:
+          commit_message: "[${{ inputs.crate-version || 'Manual run' }}]: Add Notice to New Files"

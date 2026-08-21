@@ -1,0 +1,11 @@
+load("@buckal//:wrapper.bzl", "rust_library")
+
+rust_library(
+    name = "agent_safety_layers",
+    srcs = glob(["**/*.rs"]),
+    crate = "agent_safety_layers",
+    crate_root = "src/lib.rs",
+    edition = "2018",
+
+    visibility = ["PUBLIC"],
+)

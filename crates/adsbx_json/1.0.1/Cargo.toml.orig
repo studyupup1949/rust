@@ -1,0 +1,32 @@
+[package]
+name = "adsbx_json"
+description = "Library for parsing the ADS-B Exchange API JSON."
+version = "1.0.1"
+authors = ["John Wiseman <jjwiseman@gmail.com>"]
+repository = "https://gitlab.com/jjwiseman/adsbx_json"
+readme = "readme.md"
+license = "MIT"
+keywords = ["adsbx", "ADS-B", "adsbexchange", "planetracking", "aviation"]
+categories = []
+edition = "2018"
+
+[[bench]]
+name = "parser"
+harness = false
+
+[dependencies]
+bitflags = "1.2"
+bitflags_serde_shim = "0.2"
+chrono = "0.4"
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
+
+[dependencies.serde_with]
+version = "1.6.4"
+features = [ "chrono" ]
+
+[dev-dependencies]
+criterion = "0.3"
+reqwest = { version = "0.10.7", features = ["blocking", "gzip", "json"] }
+rand = "0.8"
+

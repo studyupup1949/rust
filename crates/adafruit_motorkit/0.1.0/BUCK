@@ -1,0 +1,17 @@
+load("@buckal//:wrapper.bzl", "rust_library")
+
+rust_library(
+    name = "adafruit_motorkit",
+    srcs = glob(["**/*.rs"]),
+    crate = "adafruit_motorkit",
+    crate_root = "src/lib.rs",
+    edition = "2018",
+
+    visibility = ["PUBLIC"],
+    deps = [
+        "//third-party/rust/crates/lazy_static/1.5.0:lazy_static",
+        "//third-party/rust/crates/linux-embedded-hal/0.3.2:linux_embedded_hal",
+        "//third-party/rust/crates/pwm-pca9685/0.2.0:pwm_pca9685",
+        "//third-party/rust/crates/rppal/0.11.3:rppal",
+    ],
+)

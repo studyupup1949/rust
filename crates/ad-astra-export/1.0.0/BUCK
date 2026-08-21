@@ -1,0 +1,23 @@
+load("@buckal//:wrapper.bzl", "rust_library")
+
+rust_library(
+    name = "ad_astra_export",
+    srcs = glob(["**/*.rs"]),
+    crate = "ad_astra_export",
+    crate_root = "src/lib.rs",
+    edition = "2021",
+    features = ["default"],
+    proc_macro = True,
+
+    visibility = ["PUBLIC"],
+    deps = [
+        "//third-party/rust/crates/ahash/0.8.12:ahash",
+        "//third-party/rust/crates/cargo_toml/0.20.5:cargo_toml",
+        "//third-party/rust/crates/convert_case/0.6.0:convert_case",
+        "//third-party/rust/crates/paste/1.0.15:paste",
+        "//third-party/rust/crates/prettyplease/0.2.37:prettyplease",
+        "//third-party/rust/crates/proc-macro2/1.0.107:proc_macro2",
+        "//third-party/rust/crates/quote/1.0.47:quote",
+        "//third-party/rust/crates/syn/2.0.119:syn",
+    ],
+)

@@ -1,0 +1,25 @@
+name: 📖 Documentation Improvement
+description: Suggest improvements, corrections, or additions to the Adapters documentation.
+title: "[DOCS]: "
+labels: ["documentation"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thank you for helping us keep the Adapters guides and API reference precise and clear!
+  - type: textarea
+    id: details
+    attributes:
+      label: What needs improvement?
+      description: Explain what part of the documentation is outdated, unclear, or incorrect. Link to the specific file or website page if applicable.
+      placeholder: e.g. The README.md section on custom regex lists an incorrect API path...
+    validations:
+      required: true
+  - type: textarea
+    id: suggestion
+    attributes:
+      label: Describe the proposed correction or new contents
+      description: Write down the correct contents, markdown, or new section structure you want to add.
+      placeholder: What the updated documentation should look like...
+    validations:
+      required: true

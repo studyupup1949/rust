@@ -1,0 +1,18 @@
+error[E0631]: type mismatch in closure arguments
+ --> tests/ui/wrong_payload.rs:5:12
+  |
+5 |     events.on_memory_ingest_finished(
+  |            ^^^^^^^^^^^^^^^^^^^^^^^^^ expected due to this
+6 |         |_: MemoryIngestStarted| {},
+  |         ------------------------ found signature defined here
+  |
+  = note: expected closure signature `fn(ada_sdk::proto::MemoryIngestFinished) -> _`
+             found closure signature `fn(ada_sdk::proto::MemoryIngestStarted) -> _`
+note: required by a bound in `PrincipalEvents::on_memory_ingest_finished`
+ --> src/events.rs
+  |
+  |     pub fn on_memory_ingest_finished(
+  |            ------------------------- required by a bound in this associated function
+  |         &self,
+  |         handler: impl Fn(MemoryIngestFinished) + Send + Sync + 'static,
+  |                       ^^^^^^^^^^^^^^^^^^^^^^^^ required by this bound in `PrincipalEvents::on_memory_ingest_finished`

@@ -1,0 +1,20 @@
+[package]
+name = "advent-of-code"
+version = "2019.12.89"
+authors = ["Fredrik Fornwall <fredrik@fornwall.net>"]
+keywords = ["advent-of-code", "wasm", "webassembly", "node"]
+categories = ["algorithms", "rust-patterns"]
+repository = "https://github.com/fornwall/advent-of-code"
+license = "MIT"
+description = "Solutions to Advent of Code"
+documentation = "https://docs.rs/advent-of-code/2019.12.89/advent_of_code/"
+homepage = "https://github.com/fornwall/advent-of-code"
+readme = "../../README.md"
+edition = "2018"
+
+[lib]
+name = "advent_of_code"
+
+[dependencies]
+bytecount = "0.*"
+mod_exp = "1.*"

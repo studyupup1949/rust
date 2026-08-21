@@ -1,0 +1,210 @@
+{
+  "id": "patterns/social-news-feed",
+  "title": "Social News Feed with Like & Comment Toggle",
+  "description": "Article card with 4:3 magazine layout, like toggle using dual Image swap + ToggleVisibility, expandable comment section, Person avatar author row.",
+  "category": "patterns",
+  "tags": [
+    "news",
+    "social",
+    "article",
+    "feed",
+    "like",
+    "comment",
+    "toggle",
+    "magazine-layout"
+  ],
+  "use_cases": [
+    "Company intranet news",
+    "Blog feed",
+    "Social interaction card",
+    "Content with reactions"
+  ],
+  "host_targets": [
+    "generic",
+    "teams",
+    "web_chat"
+  ],
+  "complexity": "advanced",
+  "card": {
+    "$schema": "http://adaptivecards.io/schemas/adaptive-card.json",
+    "type": "AdaptiveCard",
+    "version": "1.2",
+    "body": [
+      {
+        "speak": "The latest news is ${title}",
+        "type": "ColumnSet",
+        "columns": [
+          {
+            "type": "Column",
+            "width": 4,
+            "items": [
+              {
+                "type": "ColumnSet",
+                "columns": [
+                  {
+                    "type": "Column",
+                    "width": "auto",
+                    "items": [
+                      {
+                        "type": "Image",
+                        "url": "${published_avatar}",
+                        "size": "Small",
+                        "style": "Person"
+                      }
+                    ]
+                  },
+                  {
+                    "type": "Column",
+                    "width": "stretch",
+                    "items": [
+                      {
+                        "type": "TextBlock",
+                        "text": "**${published_by}** posted in ${category}",
+                        "size": "Small",
+                        "wrap": true,
+                        "maxLines": 3
+                      }
+                    ],
+                    "verticalContentAlignment": "Center"
+                  }
+                ]
+              },
+              {
+                "type": "TextBlock",
+                "text": "${title}",
+                "weight": "Bolder",
+                "size": "ExtraLarge",
+                "wrap": true,
+                "maxLines": 3,
+                "spacing": "Small"
+              },
+              {
+                "type": "TextBlock",
+                "text": "${excerpt}",
+                "isSubtle": true,
+                "spacing": "None",
+                "wrap": true,
+                "maxLines": 4
+              }
+            ]
+          },
+          {
+            "type": "Column",
+            "width": 3,
+            "backgroundImage": {
+              "url": "https://www.adenin.com/assets/images/bg/office-scene.jpg",
+              "horizontalAlignment": "Center",
+              "verticalAlignment": "Center"
+            },
+            "spacing": "Medium"
+          }
+        ],
+        "selectAction": {
+          "type": "Action.OpenUrl",
+          "id": "open-article",
+          "url": "${title}"
+        }
+      },
+      {
+        "type": "ColumnSet",
+        "columns": [
+          {
+            "type": "Column",
+            "width": "auto",
+            "items": [
+              {
+                "type": "Image",
+                "url": "https://img.icons8.com/material-two-tone/48/000000/thumb-up--v1.png",
+                "width": "20px",
+                "spacing": "None",
+                "id": "Like"
+              },
+              {
+                "type": "Image",
+                "url": "https://placeholder.greentic.com/like-active.svg",
+                "width": "20px",
+                "spacing": "None",
+                "isVisible": false,
+                "id": "LikeClicked"
+              }
+            ],
+            "verticalContentAlignment": "Center"
+          },
+          {
+            "type": "Column",
+            "width": "stretch",
+            "items": [
+              {
+                "type": "TextBlock",
+                "text": "${current_like_count} people like this",
+                "wrap": true,
+                "id": "CurrentLikes"
+              },
+              {
+                "type": "TextBlock",
+                "text": "${add(current_like_count, 1)} people like this",
+                "wrap": true,
+                "spacing": "None",
+                "isVisible": false,
+                "weight": "Bolder",
+                "id": "Liked"
+              }
+            ],
+            "verticalContentAlignment": "Center"
+          },
+          {
+            "type": "Column",
+            "width": "auto",
+            "items": [
+              {
+                "type": "ActionSet",
+                "actions": [
+                  {
+                    "type": "Action.ToggleVisibility",
+                    "title": "Like",
+                    "targetElements": [
+                      "Like",
+                      "LikeClicked",
+                      "CurrentLikes",
+                      "Liked"
+                    ]
+                  },
+                  {
+                    "type": "Action.ToggleVisibility",
+                    "title": "Comment",
+                    "targetElements": [
+                      "CommentSection"
+                    ]
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "type": "Container",
+        "items": [
+          {
+            "type": "Input.Text",
+            "placeholder": "What do you think?",
+            "id": "comment-field"
+          },
+          {
+            "type": "ActionSet",
+            "actions": [
+              {
+                "type": "Action.Submit",
+                "title": "Submit"
+              }
+            ]
+          }
+        ],
+        "isVisible": false,
+        "id": "CommentSection",
+        "style": "emphasis"
+      }
+    ]
+  },
+  "notes": ""
+}

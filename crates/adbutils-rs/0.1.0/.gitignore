@@ -1,0 +1,11 @@
+# Rust build output
+/target
+
+# Bundled binaries are provided per-checkout, not committed
+/assets/binaries/adb
+/assets/binaries/adb.exe
+/assets/binaries/*.jar
+
+# Editor / OS cruft
+*.swp
+.DS_Store

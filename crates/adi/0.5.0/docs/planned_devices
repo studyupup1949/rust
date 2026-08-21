@@ -1,0 +1,24 @@
+speakers
+	Audio Output.
+
+network
+	Send and receive packets over Ethernet or Wifi.
+
+storage
+	Hard drive, Solid state drive, USB drive, CD/DVD, and SD card.
+
+usb
+	Send and recieve packets over USB between a Computer and an Arduino,
+	Tablet, or Phone.
+
+bluetooth
+	Send and receive packets over bluetooth.
+
+microphone
+	Record Audio from a Microphone.
+
+camera
+	Record Video from a Webcam or other Camera.
+
+haptic
+	Cause vibrations in a Joystick, Phone or Other controller.

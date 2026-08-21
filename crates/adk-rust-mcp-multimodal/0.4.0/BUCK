@@ -1,0 +1,28 @@
+load("@buckal//:wrapper.bzl", "rust_library")
+
+rust_library(
+    name = "adk_rust_mcp_multimodal",
+    srcs = glob(["**/*.rs"]),
+    crate = "adk_rust_mcp_multimodal",
+    crate_root = "src/lib.rs",
+    edition = "2024",
+    features = ["default"],
+
+    visibility = ["PUBLIC"],
+    deps = [
+        "//third-party/rust/crates/adk-rust-mcp-common/0.4.0:adk_rust_mcp_common",
+        "//third-party/rust/crates/anyhow/1.0.104:anyhow",
+        "//third-party/rust/crates/async-trait/0.1.92:async_trait",
+        "//third-party/rust/crates/base64/0.22.1:base64",
+        "//third-party/rust/crates/clap/4.6.6:clap",
+        "//third-party/rust/crates/reqwest/0.12.28:reqwest",
+        "//third-party/rust/crates/rmcp/0.14.0:rmcp",
+        "//third-party/rust/crates/schemars/0.8.22:schemars",
+        "//third-party/rust/crates/serde/1.0.229:serde",
+        "//third-party/rust/crates/serde_json/1.0.151:serde_json",
+        "//third-party/rust/crates/thiserror/2.0.20:thiserror",
+        "//third-party/rust/crates/tokio/1.53.1:tokio",
+        "//third-party/rust/crates/tracing-subscriber/0.3.23:tracing_subscriber",
+        "//third-party/rust/crates/tracing/0.1.44:tracing",
+    ],
+)

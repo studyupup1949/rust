@@ -1,0 +1,64 @@
+import { AJTheme } from "../aj-theme.slint";
+import { AJText, AJTextType } from "aj-text.slint";
+import { AJIcon } from "aj-icon.slint";
+
+export enum AJAlertType {
+    Error,
+    Success
+}
+
+export component AJAlert inherits Rectangle {
+    in property <AJAlertType> type;
+    in property <string> text;
+
+    width: self.min-width + 2 * AJTheme.fit-space;
+    height: self.min-height + AJTheme.fit-space;
+    transform-scale: 100%;
+
+    background: type == AJAlertType.Error ? AJTheme.container-error : AJTheme.contest-ongoing;
+
+    border-radius: AJTheme.border-radius;
+
+    timer := Timer {
+        interval: AJTheme.animation-duration-long;
+        running: false;
+
+        triggered() => {
+            root.transform-scale = AJTheme.hovered-scale;
+            root.opacity = 0%;
+            self.running = false;
+        }
+    }
+
+    public function show() {
+        root.transform-scale = 100%;
+        root.opacity = 100%;
+        timer.running = true;
+    }
+
+    HorizontalLayout {
+        padding-left: AJTheme.fit-space;
+        padding-right: AJTheme.fit-space;
+
+        AJText {
+            text: text;
+            type: AJTextType.Medium;
+            font-italic: true;
+            horizontal-alignment: right;
+            vertical-alignment: center;
+            color: type == AJAlertType.Error ? AJTheme.error-text : AJTheme.contest-ongoing-text;
+        }
+    }
+
+    AJIcon {
+        source: type == AJAlertType.Error ?  @image-url("../../radix-icons/exclamation-triangle.svg") : @image-url("../../radix-icons/check-circled.svg");
+        color: type == AJAlertType.Error ? AJTheme.error-text : AJTheme.contest-ongoing-text;
+        x: AJTheme.fit-space;
+        y: (parent.height - self.height) / 2;
+    }
+
+    animate transform-scale, opacity {
+        duration: AJTheme.animation-duration-medium;
+        easing: ease-in-out;
+    }
+}

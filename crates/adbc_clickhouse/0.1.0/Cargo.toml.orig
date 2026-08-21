@@ -1,0 +1,79 @@
+[package]
+name = "adbc_clickhouse"
+version = "0.1.0"
+edition = "2024"
+description = "Official ClickHouse ADBC driver."
+authors = [
+    "Austin Bonander <austin.bonander@clickhouse.com>",
+    "Serge Klochkov <serge.klochkov@clickhouse.com>"
+]
+# TODO: replace with ADBC client page on docs
+homepage = "https://clickhouse.com/docs/integrations/rust"
+repository = "https://github.com/clickhouse/adbc_clickhouse"
+license = "MIT OR Apache-2.0"
+
+[lib]
+crate-type = ["lib", "cdylib"]
+
+[features]
+ffi = ["adbc_ffi"]
+
+native-tls = ["clickhouse/native-tls"]
+rustls-tls = ["clickhouse/rustls-tls"]
+rustls-tls-aws-lc = ["clickhouse/rustls-tls-aws-lc"]
+rustls-tls-ring = ["clickhouse/rustls-tls-ring"]
+rustls-tls-native-roots = ["clickhouse/rustls-tls-native-roots"]
+rustls-tls-webpki-roots = ["clickhouse/rustls-tls-webpki-roots"]
+
+[dependencies]
+arrow-array = "58.3.0"
+arrow-buffer = "58.3.0"
+arrow-ipc = "58.3.0"
+arrow-schema = "58.3.0"
+
+adbc_core = "0.23.0"
+adbc_ffi = { version = "0.23.0", optional = true }
+
+clickhouse-types = "0.1.2"
+clickhouse-ext-arrow = "0.1.0"
+
+serde_bytes = "0.11.19"
+
+tracing = "0.1.44"
+
+url = "2.5.8"
+
+[dependencies.clickhouse]
+version = "0.15.1"
+
+[dependencies.rand]
+version = "0.10.1"
+features = ["alloc"]
+
+[dependencies.serde]
+version = "1.0.228"
+features = ["derive"]
+
+[dependencies.chrono]
+version = "0.4.42"
+features = ["serde"]
+
+[dependencies.tokio]
+version = "1.48.0"
+features = ["rt"]
+
+[dependencies.uuid]
+version = "1.23.3"
+features = ["serde"]
+
+[[test]]
+name = "it"
+path = "tests/it/main.rs"
+
+[dev-dependencies]
+arrow = "58.3.0"
+adbc_driver_manager = "0.23.0"
+
+[dev-dependencies.tokio]
+version = "1"
+features = ["rt-multi-thread", "macros"]

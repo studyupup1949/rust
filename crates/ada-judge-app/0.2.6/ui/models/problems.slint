@@ -1,0 +1,22 @@
+export enum AJSubgroupType {
+    Sample,
+    Main
+}
+
+export struct AJSubgroup {
+    type: AJSubgroupType,
+    tests: string,
+    depends-on: string,
+    score: int,
+}
+
+export struct AJProblem {
+    id: int,
+    owner-id: int,
+    problem-index: int,
+    name: string,
+    time-limit-ms: int,
+    memory-limit-mb: int,
+    subgroups: [AJSubgroup],
+    can-manage: bool,
+}

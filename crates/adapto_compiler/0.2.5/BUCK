@@ -1,0 +1,19 @@
+load("@buckal//:wrapper.bzl", "rust_library")
+
+rust_library(
+    name = "adapto_compiler",
+    srcs = glob(["**/*.rs"]),
+    crate = "adapto_compiler",
+    crate_root = "src/lib.rs",
+    edition = "2021",
+
+    visibility = ["PUBLIC"],
+    deps = [
+        "//third-party/rust/crates/adapto_parser/0.2.5:adapto_parser",
+        "//third-party/rust/crates/adapto_runtime/0.2.5:adapto_runtime",
+        "//third-party/rust/crates/serde/1.0.229:serde",
+        "//third-party/rust/crates/serde_json/1.0.151:serde_json",
+        "//third-party/rust/crates/thiserror/1.0.69:thiserror",
+        "//third-party/rust/crates/uuid/1.24.0:uuid",
+    ],
+)

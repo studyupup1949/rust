@@ -1,0 +1,6 @@
+/.idea
+/temp
+/dist
+/target/
+/tarpaulin-report.html
+/test_data/test.adi

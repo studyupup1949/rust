@@ -1,0 +1,478 @@
+use crate::events::EventSender;
+use crate::extended_public_key_deriver::ExtendedPublicKeyDeriver;
+use crate::opencl::cache_preloader::CachePreloader;
+use crate::opencl::cache_range_analyzer::CacheRangeAnalyzer;
+use crate::opencl::g_tables;
+use crate::opencl::gpu_cache::GpuCache;
+use crate::workbench::Workbench;
+use crate::workbench_config::WorkbenchConfig;
+use ocl::{Buffer, Context, Device, Kernel, Platform, Program, Queue};
+use std::sync::atomic::{AtomicBool, AtomicU64, Ordering};
+use std::sync::Arc;
+use std::thread;
+use std::time::{Duration, Instant};
+
+// Global flag to coordinate kernel compilation
+// Only one GPU compiles at a time to avoid driver issues
+static KERNEL_COMPILING: AtomicBool = AtomicBool::new(false);
+
+// GPU processing constants
+const GPU_WORK_SIZE: u64 = 524_288;
+const CACHE_CAPACITY: usize = 1_000_000; // ~ 100 MB
+const MAX_MATCHES: usize = 1000; // Max matches per kernel call
+const REPORT_INTERVAL: Duration = Duration::from_millis(1000);
+
+pub struct GpuWorkbench {
+    config: WorkbenchConfig,
+    event_sender: EventSender,
+    stop_signal: Arc<AtomicBool>,
+    global_generated: Arc<AtomicU64>,
+    device_index: usize,
+    platform_index: usize,
+}
+
+impl GpuWorkbench {
+    pub fn new(
+        config: WorkbenchConfig,
+        event_sender: EventSender,
+        stop_signal: Arc<AtomicBool>,
+        device_index: usize,
+        platform_index: usize,
+    ) -> Self {
+        Self {
+            config,
+            event_sender,
+            stop_signal,
+            global_generated: Arc::new(AtomicU64::new(0)),
+            device_index,
+            platform_index,
+        }
+    }
+
+    fn worker_loop(
+        config: WorkbenchConfig,
+        stop_signal: Arc<AtomicBool>,
+        global_generated: Arc<AtomicU64>,
+        event_sender: EventSender,
+        device_index: usize,
+        platform_index: usize,
+    ) {
+        let start_time = Instant::now();
+
+        // Initialize OpenCL context and queue
+        let (device, context, queue) = match Self::init_opencl(device_index, platform_index) {
+            Ok(result) => result,
+            Err(e) => {
+                eprintln!("Failed to initialize OpenCL: {}", e);
+                return;
+            }
+        };
+
+        // Initialize GPU cache
+        let mut gpu_cache =
+            match GpuCache::new(device, context.clone(), queue.clone(), CACHE_CAPACITY) {
+                Ok(cache) => cache,
+                Err(e) => {
+                    eprintln!("Failed to create GPU cache: {}", e);
+                    return;
+                }
+            };
+
+        let mut deriver = ExtendedPublicKeyDeriver::new(&config.xpub);
+
+        // Build kernel program
+        let program = match Self::build_kernel_program(device, context.clone()) {
+            Ok(prog) => prog,
+            Err(e) => {
+                eprintln!("Failed to build kernel program: {}", e);
+                return;
+            }
+        };
+
+        event_sender.started(Instant::now());
+
+        // Prepare GPU ranges from all prefixes
+        let gpu_ranges = Self::prepare_gpu_ranges(&config.prefixes);
+        let range_count = gpu_ranges.len() as u32;
+
+        // Create ALL GPU buffers ONCE before the loop
+        let ranges_buffer = match Buffer::<crate::opencl::gpu_cache::Hash160RangeGpu>::builder()
+            .queue(queue.clone())
+            .len(gpu_ranges.len())
+            .copy_host_slice(&gpu_ranges)
+            .build()
+        {
+            Ok(buf) => buf,
+            Err(_) => return,
+        };
+
+        // Precomputed g_times_scalar tables: computed once on the CPU,
+        // written once to GPU global memory, then read-only for the whole run
+        let g_times_tables_buffer = match g_tables::create_g_tables_buffer(&queue) {
+            Ok(buf) => buf,
+            Err(e) => {
+                eprintln!("Failed to create g_times_tables buffer: {}", e);
+                return;
+            }
+        };
+
+        let matches_hash160_buffer = match Buffer::<u8>::builder()
+            .queue(queue.clone())
+            .len(MAX_MATCHES * 20)
+            .build()
+        {
+            Ok(buf) => buf,
+            Err(_) => return,
+        };
+
+        let matches_b_buffer = match Buffer::<u32>::builder()
+            .queue(queue.clone())
+            .len(MAX_MATCHES)
+            .build()
+        {
+            Ok(buf) => buf,
+            Err(_) => return,
+        };
+
+        let matches_a_buffer = match Buffer::<u32>::builder()
+            .queue(queue.clone())
+            .len(MAX_MATCHES)
+            .build()
+        {
+            Ok(buf) => buf,
+            Err(_) => return,
+        };
+
+        let matches_index_buffer = match Buffer::<u32>::builder()
+            .queue(queue.clone())
+            .len(MAX_MATCHES)
+            .build()
+        {
+            Ok(buf) => buf,
+            Err(_) => return,
+        };
+
+        let matches_prefix_id_buffer = match Buffer::<u8>::builder()
+            .queue(queue.clone())
+            .len(MAX_MATCHES)
+            .build()
+        {
+            Ok(buf) => buf,
+            Err(_) => return,
+        };
+
+        let match_count_buffer = match Buffer::<u32>::builder().queue(queue.clone()).len(1).build()
+        {
+            Ok(buf) => buf,
+            Err(_) => return,
+        };
+
+        // Initialize match count buffer to 0 once
+        if let Err(e) = match_count_buffer.cmd().fill(0u32, None).enq() {
+            eprintln!("Failed to initialize match_count: {}", e);
+            return;
+        }
+
+        // Ensure initialization is complete
+        if let Err(e) = queue.finish() {
+            eprintln!("Failed to sync initial buffer setup: {}", e);
+            return;
+        }
+
+        let cache_miss_error_buffer =
+            match Buffer::<u32>::builder().queue(queue.clone()).len(1).build() {
+                Ok(buf) => buf,
+                Err(_) => return,
+            };
+
+        // Initialize error buffer to 0 once (no need to reset since we stop on error)
+        if let Err(e) = cache_miss_error_buffer.cmd().fill(0u32, None).enq() {
+            eprintln!("Failed to initialize cache_miss_error: {}", e);
+            return;
+        }
+
+        // Get cache buffers for kernel creation (these buffers never change, only their content)
+        let (cache_keys_buffer, cache_values_buffer, cache_size_buffer) = gpu_cache.get_buffers();
+
+        // Create kernel ONCE before the loop
+        let mut kernel_builder = Kernel::builder();
+        kernel_builder
+            .program(&program)
+            .name("batch_address_search")
+            .queue(queue.clone())
+            .global_work_size(GPU_WORK_SIZE as usize)
+            .arg(cache_keys_buffer) // arg 0 - fixed (same buffer object always)
+            .arg(cache_values_buffer) // arg 1 - fixed (same buffer object always)
+            .arg(&ranges_buffer) // arg 2 - fixed (Hash160RangeGpu struct buffer)
+            .arg(range_count) // arg 3 - fixed
+            .arg(cache_size_buffer) // arg 4 - fixed buffer (GpuCache updates its content)
+            .arg(0u64) // arg 5 - start_counter, will update in loop
+            .arg(config.max_depth) // arg 6 - fixed
+            .arg(&matches_hash160_buffer) // arg 7 - fixed
+            .arg(&matches_b_buffer) // arg 8 - fixed
+            .arg(&matches_a_buffer) // arg 9 - fixed
+            .arg(&matches_index_buffer) // arg 10 - fixed
+            .arg(&matches_prefix_id_buffer) // arg 11 - fixed (NEW!)
+            .arg(&match_count_buffer) // arg 12 - fixed (reset separately)
+            .arg(&cache_miss_error_buffer) // arg 13 - fixed (reset separately)
+            .arg(&g_times_tables_buffer); // arg 14 - fixed (precomputed tables)
+
+        // ocl's arg type check parses the "Point*" type name as an int
+        // pointer ("Point" contains "int"), rejecting the tables buffer.
+        // The check is best-effort anyway (skipped entirely on NVIDIA).
+        unsafe {
+            kernel_builder.disable_arg_type_check();
+        }
+
+        let kernel = match kernel_builder.build() {
+            Ok(k) => k,
+            Err(_) => return,
+        };
+
+        let mut counter = 0u64;
+        let mut last_report = Instant::now();
+        let mut generated_since_last_report = 0u64;
+        let mut needs_match_count_reset = false; // Track if we need to reset match count
+
+        while !stop_signal.load(Ordering::Relaxed) {
+            // Analyze which cache keys we need for this batch
+            let cache_keys =
+                CacheRangeAnalyzer::analyze_counter_range(counter, GPU_WORK_SIZE, config.max_depth);
+
+            let _cache_updated = match CachePreloader::preload(
+                &mut gpu_cache,
+                &cache_keys,
+                &mut deriver,
+                config.seed0,
+                config.seed1,
+            ) {
+                Ok(updated) => updated,
+                Err(e) => {
+                    eprintln!("Cache preload error: {}", e);
+                    break;
+                }
+            };
+
+            // Only reset match counter if there were matches in the previous iteration
+            if needs_match_count_reset {
+                if let Err(e) = match_count_buffer.cmd().fill(0u32, None).enq() {
+                    eprintln!("Failed to reset match_count: {}", e);
+                    break;
+                }
+
+                // Ensure reset operation completed
+                if let Err(e) = queue.finish() {
+                    eprintln!("Failed to sync match count reset: {}", e);
+                    break;
+                }
+
+                needs_match_count_reset = false;
+            }
+
+            // Only need to update the counter arg - cache size is now managed by GpuCache buffer
+            if let Err(e) = kernel.set_arg(5, counter) {
+                eprintln!("Failed to set start_counter arg: {}", e);
+                break;
+            }
+
+            if let Err(e) = unsafe { kernel.enq() } {
+                eprintln!("Failed to execute kernel: {}", e);
+                break;
+            }
+
+            // Wait for kernel completion
+            if let Err(e) = queue.finish() {
+                eprintln!("Failed to finish queue: {}", e);
+                break;
+            }
+
+            // Check for cache miss errors
+            let mut cache_miss_error = vec![0u32; 1];
+            if let Err(e) = cache_miss_error_buffer.read(&mut cache_miss_error).enq() {
+                eprintln!("Failed to read cache_miss_error: {}", e);
+                break;
+            }
+
+            if cache_miss_error[0] != 0 {
+                panic!(
+                    "CACHE MISS ERROR: {} lookups failed! This should never happen - cache was not properly preloaded.",
+                    cache_miss_error[0]
+                );
+            }
+
+            // Read match count
+            let mut match_count = vec![0u32; 1];
+            if let Err(e) = match_count_buffer.read(&mut match_count).enq() {
+                eprintln!("Failed to read match count: {}", e);
+                break;
+            }
+
+            let num_matches = match_count[0].min(MAX_MATCHES as u32) as usize;
+
+            if num_matches > 0 {
+                // Mark that we need to reset match count in the next iteration
+                needs_match_count_reset = true;
+
+                // Read matches
+                let mut matches_hash160_data = vec![0u8; num_matches * 20];
+                let mut matches_b_data = vec![0u32; num_matches];
+                let mut matches_a_data = vec![0u32; num_matches];
+                let mut matches_index_data = vec![0u32; num_matches];
+
+                if let Err(e) = matches_hash160_buffer.read(&mut matches_hash160_data).enq() {
+                    eprintln!("Failed to read hash160: {}", e);
+                    break;
+                }
+                if let Err(e) = matches_b_buffer.read(&mut matches_b_data).enq() {
+                    eprintln!("Failed to read b: {}", e);
+                    break;
+                }
+                if let Err(e) = matches_a_buffer.read(&mut matches_a_data).enq() {
+                    eprintln!("Failed to read a: {}", e);
+                    break;
+                }
+                if let Err(e) = matches_index_buffer.read(&mut matches_index_data).enq() {
+                    eprintln!("Failed to read index: {}", e);
+                    break;
+                }
+
+                let mut matches_prefix_id_data = vec![0u8; num_matches];
+                if let Err(e) = matches_prefix_id_buffer
+                    .read(&mut matches_prefix_id_data)
+                    .enq()
+                {
+                    eprintln!("Failed to read prefix_id: {}", e);
+                    break;
+                }
+
+                // Process matches
+                for i in 0..num_matches {
+                    let b = matches_b_data[i];
+                    let a = matches_a_data[i];
+                    let index = matches_index_data[i];
+                    let prefix_id = matches_prefix_id_data[i];
+                    let path = [config.seed0, config.seed1, b, a, 0, index];
+                    event_sender.potential_match(path, prefix_id);
+                }
+            }
+
+            // Update counters
+            generated_since_last_report += GPU_WORK_SIZE;
+            global_generated.fetch_add(GPU_WORK_SIZE, Ordering::Relaxed);
+
+            // Report progress
+            if last_report.elapsed() >= REPORT_INTERVAL {
+                event_sender.progress(generated_since_last_report);
+                generated_since_last_report = 0;
+                last_report = Instant::now();
+            }
+
+            counter += GPU_WORK_SIZE;
+        }
+
+        // Send stopped event with final stats
+        let total_generated = global_generated.load(Ordering::Relaxed);
+        let elapsed = start_time.elapsed();
+        event_sender.stopped(total_generated, elapsed);
+    }
+
+    fn init_opencl(
+        device_index: usize,
+        platform_index: usize,
+    ) -> Result<(Device, Context, Queue), String> {
+        // Get platform by index
+        let platforms = Platform::list();
+        let platform = platforms.get(platform_index).ok_or_else(|| {
+            format!(
+                "Platform index {} not found (only {} platforms available)",
+                platform_index,
+                platforms.len()
+            )
+        })?;
+
+        // Get device by index
+        let devices =
+            Device::list_all(*platform).map_err(|e| format!("Failed to list devices: {}", e))?;
+        let device = devices.get(device_index).ok_or_else(|| {
+            format!(
+                "Device index {} not found (only {} devices available)",
+                device_index,
+                devices.len()
+            )
+        })?;
+
+        let context = Context::builder()
+            .platform(*platform)
+            .devices(*device)
+            .build()
+            .map_err(|e| format!("Failed to create context: {}", e))?;
+        let queue = Queue::new(&context, *device, None)
+            .map_err(|e| format!("Failed to create queue: {}", e))?;
+
+        Ok((*device, context, queue))
+    }
+
+    fn build_kernel_program(device: Device, context: Context) -> Result<Program, String> {
+        let batch_search_src = include_str!(concat!(env!("OUT_DIR"), "/batch_address_search"));
+
+        // Wait for any other GPU that might be compiling
+        while KERNEL_COMPILING
+            .compare_exchange_weak(false, true, Ordering::Acquire, Ordering::Relaxed)
+            .is_err()
+        {
+            // Another GPU is compiling, wait a bit
+            thread::sleep(Duration::from_millis(100));
+        }
+
+        // We have the "lock", compile the kernel
+        let result = Program::builder()
+            .devices(device)
+            .src(batch_search_src)
+            .build(&context)
+            .map_err(|e| format!("Failed to build program: {}", e));
+
+        // Release the "lock"
+        KERNEL_COMPILING.store(false, Ordering::Release);
+
+        result
+    }
+
+    fn prepare_gpu_ranges(
+        prefixes: &[crate::prefix::Prefix],
+    ) -> Vec<crate::opencl::gpu_cache::Hash160RangeGpu> {
+        let mut gpu_ranges = Vec::new();
+
+        for (prefix_id, prefix) in prefixes.iter().enumerate() {
+            for range in &prefix.ranges {
+                gpu_ranges.push(crate::opencl::gpu_cache::Hash160RangeGpu {
+                    low: range.low,
+                    high: range.high,
+                    prefix_id: prefix_id as u8,
+                });
+            }
+        }
+
+        gpu_ranges
+    }
+}
+
+impl Workbench for GpuWorkbench {
+    fn start(&self) {
+        Self::worker_loop(
+            self.config.clone(),
+            Arc::clone(&self.stop_signal),
+            Arc::clone(&self.global_generated),
+            self.event_sender.clone(),
+            self.device_index,
+            self.platform_index,
+        );
+    }
+
+    fn wait(&self) {
+        // No-op: work is already done in start()
+    }
+
+    fn total_generated(&self) -> u64 {
+        self.global_generated.load(Ordering::Relaxed)
+    }
+}

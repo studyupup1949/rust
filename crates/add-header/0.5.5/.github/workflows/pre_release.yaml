@@ -1,0 +1,48 @@
+name: Pre Release
+
+on:
+  workflow_call:
+    inputs:
+      bump-version:
+        type: string
+      bump-msrv:
+        type: boolean
+  workflow_dispatch:
+    inputs:
+      bump-version:
+        description: "Bump version: (e.g. -> 3.6.1)"
+        type: string
+      bump-msrv:
+        type: boolean
+
+permissions: 
+  contents: write
+
+jobs:
+  run-ci:
+    uses: ./.github/workflows/ci.yaml
+
+  cargo-deny:
+    uses: ./.github/workflows/cargo_deny.yaml
+  
+  update-msrv:
+    uses: ./.github/workflows/msrv.yaml
+    with:
+      bump-msrv: ${{ inputs.bump-msrv }}
+
+  tag-name:
+    uses: ./.github/workflows/get-tag-name.yaml
+    with:
+      bump-version-input: ${{ inputs.bump-version }}
+ 
+  bump-version:
+    needs: [tag-name]
+    uses: ./.github/workflows/bump_version.yaml
+    with:
+      bump-version: ${{ needs.tag-name.outputs.bump-version-output  }}
+  
+  update-attribution:
+    needs: [tag-name, bump-version]
+    uses: ./.github/workflows/update_attributions.yaml
+    with:
+      bump-version: ${{ needs.tag-name.outputs.bump-version-output  }}

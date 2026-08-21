@@ -1,0 +1,92 @@
+<h1>Adapton in Rust</h1>
+
+<p>A general-purpose <strong>Incremental Computation</strong> (IC) library for Rust.</p>
+
+<p><strong>Based on</strong>:</p>
+
+<ul>
+<li><p><a href="http://arxiv.org/abs/1503.07792">the paper <em>Incremental Computation with Names</em>, 2015</a>.</p></li>
+<li><p><a href="https://github.com/plum-umd/adapton.ocaml">an earlier OCaml implementation</a>.</p></li>
+</ul>
+
+<h2>Development Activities</h2>
+
+<ul>
+<li><p>Building Adapton in Rust around core interface, the
+<a href="https://github.com/plum-umd/adapton.rust/blob/master/src/adapton_sigs.rs#L7"><code>Adapton</code> trait</a>.</p></li>
+<li><p>The library implements this interface with an imperative data structure,
+<a href="https://github.com/plum-umd/adapton.rust/blob/master/src/adapton_state.rs"><code>AdaptonState</code></a>.</p></li>
+<li><p>I am learning Rust in the process.  See detailed Q&amp;A below.</p></li>
+</ul>
+
+<p><strong>Testing:</strong></p>
+
+<ul>
+<li><p>Lazy Evaluation (simple, pure caching).</p></li>
+<li><p>Function Caching:</p>
+
+<ul>
+<li>Implements Bill Pugh's notion of IC, pure function caching.</li>
+</ul></li>
+<li><p>Structural Adapton:</p>
+
+<ul>
+<li>changeable input cells</li>
+<li>bidirectional DCG structure</li>
+<li>dirtying traversal; repair traversal.</li>
+</ul></li>
+<li><p>Nominal Adapton:</p>
+
+<ul>
+<li>first-class names</li>
+<li>nominal memoization</li>
+</ul></li>
+<li><p><a href="https://github.com/plum-umd/adapton.rust/blob/master/src/structures.rs"><strong>Incremental Data Structures and Algorithms</strong></a>.</p>
+
+<ul>
+<li>generic list and tree traits</li>
+<li>balanced trees from lists ("unfold")</li>
+<li>tree folds (lr, rl, up)</li>
+<li>mergesort</li>
+</ul></li>
+</ul>
+
+<h1>Future work</h1>
+
+<h2>Data Structures and Algorithms</h2>
+
+<ul>
+<li>tries that represent sets, maps,</li>
+<li>generic fixed-point loop</li>
+<li>graphs, graph exploration algorithms (e.g., search)</li>
+</ul>
+
+<h1>Technical Debt</h1>
+
+<h2>Pending issues:</h2>
+
+<ul>
+<li>Canonical balanced trees for sequences: Where should data go? Only at leaves (B-Tree style)?</li>
+<li>List/Tree intro forms should take unboxed, references, or boxes?
+error: type annotations required: cannot resolve <code>&lt;_ as structures::ListT&lt;A, _&gt;&gt;::List == _</code> [E0284]</li>
+<li>Implement <code>ArtId::Structural</code> for cell and thunk to do hashing internally, not externally.</li>
+</ul>
+
+<h2>Rust Q&amp;A</h2>
+
+<ul>
+<li><p>http://users.rust-lang.org/t/trait-objects-with-associated-types/746/16?u=matthewhammer</p></li>
+<li><p>The concept of "object safety" seems to bite me a lot in naive designs:</p></li>
+</ul>
+
+<p><code>
+src/adapton_impl.rs:653:51: 653:111 error: cannot convert to a trait object because trait `adapton_impl::Producer` is not object-safe [E0038]
+...
+src/adapton_impl.rs:653:51: 653:111 note: method `eq` references the `Self` type in its arguments or return type
+</code></p>
+
+<p>I sidestepped this problem in <code>adapton_state.rs</code> twice: by writing <code>Producer::copy</code> and the <code>ShapeShifter</code> trait.  Both avoid returning a <code>Self</code>.</p>
+
+<ul>
+<li>Do I need really need <code>Rc&lt;Box&lt;Fn (_) -&gt; _&gt;&gt;</code> instead of <code>Rc&lt;Fn (_) -&gt; _&gt;</code>? (Why?)</li>
+</ul>

@@ -1,0 +1,22 @@
+use ahash::{{ AHashMap, AHashSet }};
+use crate::AHASH_STATE;
+
+
+
+lazy_static::lazy_static! {{
+	/// # Main Suffixes.
+	pub static ref PSL_MAIN: AHashSet<&'static str> = {{
+		let mut out: AHashSet<&'static str> = AHashSet::with_capacity_and_hasher({main_len}, AHASH_STATE);
+
+{main_inserts}
+		out
+	}};
+
+	/// # Weird Suffixes.
+	pub static ref PSL_WILD: AHashMap<&'static str, Vec<&'static str>> = {{
+		let mut out: AHashMap<&'static str, Vec<&'static str>> = AHashMap::with_capacity_and_hasher({wild_len}, AHASH_STATE);
+
+{wild_inserts}
+		out
+	}};
+}}

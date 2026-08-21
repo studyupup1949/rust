@@ -1,0 +1,30 @@
+load("@buckal//:wrapper.bzl", "rust_library")
+
+rust_library(
+    name = "adenosine_pds",
+    srcs = glob(["**/*.rs"]),
+    crate = "adenosine_pds",
+    crate_root = "src/lib.rs",
+    edition = "2021",
+
+    visibility = ["PUBLIC"],
+    deps = [
+        "//third-party/rust/crates/adenosine/0.4.0:adenosine",
+        "//third-party/rust/crates/anyhow/1.0.104:anyhow",
+        "//third-party/rust/crates/askama/0.11.1:askama",
+        "//third-party/rust/crates/bcrypt/0.13.0:bcrypt",
+        "//third-party/rust/crates/data-encoding/2.11.1:data_encoding",
+        "//third-party/rust/crates/dotenvy/0.15.7:dotenvy",
+        "//third-party/rust/crates/lazy_static/1.5.0:lazy_static",
+        "//third-party/rust/crates/libipld/0.14.0:libipld",
+        "//third-party/rust/crates/log/0.4.33:log",
+        "//third-party/rust/crates/pretty_env_logger/0.4.0:pretty_env_logger",
+        "//third-party/rust/crates/rouille/3.6.2:rouille",
+        "//third-party/rust/crates/rusqlite/0.26.3:rusqlite",
+        "//third-party/rust/crates/rusqlite_migration/1.3.1:rusqlite_migration",
+        "//third-party/rust/crates/serde/1.0.229:serde",
+        "//third-party/rust/crates/serde_json/1.0.151:serde_json",
+        "//third-party/rust/crates/structopt/0.3.26:structopt",
+        "//third-party/rust/crates/tokio/1.53.1:tokio",
+    ],
+)

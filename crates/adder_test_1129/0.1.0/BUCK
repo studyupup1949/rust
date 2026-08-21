@@ -1,0 +1,14 @@
+load("@buckal//:wrapper.bzl", "rust_binary")
+
+rust_binary(
+    name = "adder_test_1129",
+    srcs = glob(["**/*.rs"]),
+    crate = "adder_test_1129",
+    crate_root = "src/main.rs",
+    edition = "2021",
+
+    visibility = ["PUBLIC"],
+    deps = [
+        "//third-party/rust/crates/add_one_test_1129/0.1.0:add_one_test_1129",
+    ],
+)

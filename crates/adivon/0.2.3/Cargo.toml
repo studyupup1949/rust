@@ -1,0 +1,12 @@
+[package]
+name = "adivon"
+version = "0.2.3"
+authors = ["Shuyu Wang <andelf@gmail.com>"]
+description = "Data Structures from the <<Algorithms, 4ed.>> book."
+homepage = "https://github.com/andelf/rust-adivon"
+repository = "https://github.com/andelf/rust-adivon.git"
+keywords = [
+  "algorithm",
+  "book"
+]
+license = "MIT"

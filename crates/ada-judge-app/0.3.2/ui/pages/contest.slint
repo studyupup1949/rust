@@ -1,0 +1,168 @@
+import { AJTheme } from "../aj-theme.slint";
+import { AJAppState, AJContestState } from "../aj-state.slint";
+import { AJContestCallbacks, AJAppCallbacks } from "../aj-callbacks.slint";
+import { AJLanguage } from "../models/testing.slint";
+import { AJText, AJTextType } from "../components/aj-text.slint";
+import { AJButton } from "../components/aj-button.slint";
+import { AJDropdown } from "../components/aj-dropdown.slint";
+import { AJLeaderboard } from "../components/aj-leaderboard.slint";
+import { AJProblemCard } from "../components/aj-problem-card.slint";
+import { AJSubmissions } from "../components/aj-submissions.slint";
+import { AJContestCard } from "../components/aj-contest-card.slint";
+import { AJSubmissionCard } from "../components/aj-submission-card.slint";
+import { AJIcon } from "../components/aj-icon.slint";
+
+export component ContestPage {
+    property <AJLanguage> language: {
+        if language-dropdown.current-index == 0 {
+            AJLanguage.Rust
+        } else if language-dropdown.current-index == 1 {
+            AJLanguage.Clang
+        } else if language-dropdown.current-index == 2 {
+            AJLanguage.Clangpp
+        } else if language-dropdown.current-index == 3 {
+            AJLanguage.Go
+        } else {
+            AJLanguage.Python
+        }
+    };
+
+    HorizontalLayout {
+        spacing: AJTheme.spacing;
+
+        VerticalLayout {
+            horizontal-stretch: 1;
+            alignment: start;
+            spacing: AJTheme.spacing;
+
+            AJButton {
+                text: @tr("назад");
+
+                text-halign: right;
+
+                AJIcon {
+                    source: @image-url("../../radix-icons/reset.svg");
+                    x: AJTheme.fit-space;
+                    y: (parent.height - self.height) / 2;
+                }
+
+                clicked => {
+                    AJAppState.page = 3;
+                    AJAppState.in-contest = false;
+                    AJContestState.reset();
+                }
+            }
+
+            AJContestCard {
+                index: AJContestState.index;
+                show-enter-button: false;
+            }
+
+            problems-dropdown := AJDropdown {
+                z: 100;
+                current-index <=> AJContestState.current-problem-index;
+                variants: AJContestState.problems-names;
+                changed current-index => {
+                    AJAppCallbacks.reload()
+                }
+            }
+
+            HorizontalLayout {
+                z: 10;
+                spacing: AJTheme.spacing;
+
+                language-dropdown := AJDropdown {
+                    variants: ["Rust", "C", "C++", "Go", "Python"];
+                }
+
+                AJButton {
+                    text: AJContestState.solution-picked ? @tr("изменить файл ({})", AJContestState.solution-name) : @tr("выбрать файл");
+
+                    text-halign: left;
+
+                    AJIcon {
+                        source: AJContestState.solution-picked ? @image-url("../../radix-icons/pencil-1.svg") : @image-url("../../radix-icons/upload.svg");
+                        x: parent.width - self.width - AJTheme.fit-space;
+                        y: (parent.height - self.height) / 2;
+                    }
+
+                    clicked => {
+                        AJContestCallbacks.pick-solution-file()
+                    }
+                }
+
+                AJButton {
+                    text: @tr("отослать");
+
+                    text-halign: left;
+
+                    AJIcon {
+                        source: AJContestState.solution-picked ? @image-url("../../radix-icons/paper-plane.svg") : @image-url("../../radix-icons/circle-backslash.svg");
+                        x: parent.width - self.width - AJTheme.fit-space;
+                        y: (parent.height - self.height) / 2;
+                    }
+
+                    clicked => {
+                        if AJContestState.solution-picked {
+                            AJContestCallbacks.submit(language, AJAppState.contests[AJContestState.index].id, AJContestState.problems[AJContestState.current-problem-index].id)
+                        }
+                    }
+                }
+
+                if AJContestState.problems[language-dropdown.current-index].can-manage:
+                AJButton {
+                    text: @tr("ретест");
+
+                    text-halign: left;
+
+                    AJIcon {
+                        source: @image-url("../../radix-icons/update.svg");
+                        x: parent.width - self.width - AJTheme.fit-space;
+                        y: (parent.height - self.height) / 2;
+                    }
+
+                    clicked => {
+                        AJContestCallbacks.retest-problem(AJContestState.problems[AJContestState.current-problem-index].id)
+                    }
+                }
+            }
+
+            AJSubmissions { }
+        }
+
+        VerticalLayout {
+            alignment: start;
+            spacing: AJTheme.spacing;
+
+            HorizontalLayout {
+                spacing: AJTheme.spacing;
+
+                VerticalLayout {
+                    spacing: AJTheme.spacing;
+                    horizontal-stretch: 1;
+                    alignment: start;
+
+                    AJProblemCard {
+                        problem: AJContestState.problems[AJContestState.current-problem-index];
+                    }
+                }
+
+                VerticalLayout {
+                    spacing: AJTheme.spacing;
+                    horizontal-stretch: 1;
+                    alignment: end;
+
+                    AJSubmissionCard { }
+                }
+            }
+
+            VerticalLayout {
+                horizontal-stretch: 1;
+                alignment: start;
+                spacing: AJTheme.spacing;
+
+                AJLeaderboard { }
+            }
+        }
+    }
+}

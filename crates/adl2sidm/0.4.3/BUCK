@@ -1,0 +1,14 @@
+load("@buckal//:wrapper.bzl", "rust_library")
+
+rust_library(
+    name = "adl2sidm",
+    srcs = glob(["**/*.rs"]),
+    crate = "adl2sidm",
+    crate_root = "src/lib.rs",
+    edition = "2024",
+
+    visibility = ["PUBLIC"],
+    deps = [
+        "//third-party/rust/crates/adl2rsdm/0.5.6:adl2rsdm",
+    ],
+)

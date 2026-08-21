@@ -1,0 +1,302 @@
+import { AJTheme } from "../aj-theme.slint";
+import { AJContestState } from "../aj-state.slint";
+import { AJProblemsCallbacks } from "../aj-callbacks.slint";
+import { AJProblem, AJProblemType } from "../models/problems.slint";
+import { ScrollView } from "std-widgets.slint";
+import { AJText, AJTextType } from "aj-text.slint";
+import { AJInput, AJInputType } from "aj-input.slint";
+import { AJButton } from "aj-button.slint";
+import { AJCheckbox } from "aj-checkbox.slint";
+import { AJSubgroupCard } from "aj-subgroup-card.slint";
+import { AJIcon } from "aj-icon.slint";
+
+export component AJProblemCard inherits Rectangle {
+    in property <AJProblem> problem;
+    in property <bool> show-id;
+
+    width: 355px;
+    height: 304px;
+
+    background: AJTheme.primary-container;
+
+    border-radius: AJTheme.border-radius;
+
+    VerticalLayout {
+        padding: AJTheme.padding;
+        spacing: AJTheme.spacing;
+
+        HorizontalLayout {
+            spacing: AJTheme.spacing;
+
+            Rectangle {
+                border-radius: AJTheme.border-radius;
+                clip: true;
+
+                scroll-title := ScrollView {
+                    width: 200px;
+                    viewport-width: problem-title.width + AJTheme.fit-space;
+
+                    problem-title := AJText {
+                        text: show-id ? "#\{problem.id} \{problem.name}" : "#\{problem.problem-index + 1} \{problem.name}";
+                        type: AJTextType.Heading;
+                        color: AJTheme.container-text;
+                    }
+                }
+
+                Rectangle {
+                    visible: scroll-title.viewport-x < 0;
+                    x: 0;
+                    y: 0;
+                    width: 24px;
+                    height: parent.height;
+                    background: @linear-gradient(-90deg, AJTheme.primary-container.transparentize(100%), AJTheme.primary-container.transparentize(0%));
+                }
+
+                Rectangle {
+                    visible: scroll-title.viewport-x + scroll-title.viewport-width > scroll-title.width;
+                    x: parent.width - self.width;
+                    y: 0;
+                    width: 24px;
+                    height: parent.height;
+                    background: @linear-gradient(90deg, AJTheme.primary-container.transparentize(100%), AJTheme.primary-container.transparentize(0%));
+                }
+            }
+
+            AJButton {
+                visible: problem.can-manage;
+                text: @tr("удалить");
+
+                background: AJTheme.container-error;
+                text-color: AJTheme.error-text;
+
+                text-halign: left;
+
+                AJIcon {
+                    source: @image-url("../../radix-icons/trash.svg");
+                    color: AJTheme.error-text;
+                    x: parent.width - self.width - AJTheme.fit-space;
+                    y: (parent.height - self.height) / 2;
+                }
+
+                delete-problem-popup := PopupWindow {
+                    close-policy: PopupClosePolicy.close-on-click-outside;
+
+                    function close-popup() {
+                        self.close()
+                    }
+
+                    Rectangle {
+                        background: AJTheme.secondary-container;
+
+                        border-radius: AJTheme.border-radius;
+
+                        VerticalLayout {
+                            padding: AJTheme.padding;
+                            spacing: AJTheme.spacing;
+
+                            AJText {
+                                text: @tr("Требуется рут-доступ");
+                                type: AJTextType.Medium;
+                                color: AJTheme.container-text;
+                            }
+
+                            login := AJInput {
+                                placeholder: @tr("логин");
+                            }
+
+                            password := AJInput {
+                                placeholder: @tr("пароль");
+                                type: AJInputType.Password;
+                            }
+
+                            password-confirmation := AJInput {
+                                placeholder: @tr("подтвердите пароль");
+                                type: AJInputType.Password;
+                            }
+
+                            deletion-confirmation := AJCheckbox {
+                                text: @tr("подтвердите удаление");
+                            }
+
+                            AJButton {
+                                text: @tr("удалить");
+                                background: AJTheme.container-error;
+                                text-color: AJTheme.error-text;
+
+                                text-halign: left;
+
+                                AJIcon {
+                                    source: {
+                                        if !login.text.is-empty && !password.text.is-empty && password.text == password-confirmation.text && deletion-confirmation.value {
+                                            @image-url("../../radix-icons/trash.svg")
+                                        } else {
+                                            @image-url("../../radix-icons/circle-backslash.svg")
+                                        }
+                                    };
+                                    color: AJTheme.error-text;
+                                    x: parent.width - self.width - AJTheme.fit-space;
+                                    y: (parent.height - self.height) / 2;
+                                }
+
+                                clicked => {
+                                    if !login.text.is-empty && !password.text.is-empty && password.text == password-confirmation.text && deletion-confirmation.value {
+                                        AJProblemsCallbacks.delete-problem(problem.id, login.text, password.text, password-confirmation.text, deletion-confirmation.value);
+                                    }
+                                }
+                            }
+
+                            AJButton {
+                                text: @tr("отменить");
+                                text-halign: right;
+
+                                AJIcon {
+                                    source: @image-url("../../radix-icons/reset.svg");
+                                    x: AJTheme.fit-space;
+                                    y: (parent.height - self.height) / 2;
+                                }
+                                clicked => {
+                                    close-popup()
+                                }
+                            }
+                        }
+                    }
+                }
+                clicked => {
+                    delete-problem-popup.show()
+                }
+            }
+        }
+
+        if problem.type == AJProblemType.Interactive: AJText {
+            text: @tr("Это интерактивная задача.");
+            font-weight: AJTheme.font-weight-heading;
+            color: AJTheme.container-text;
+        }
+
+        if problem.type == AJProblemType.RunTwice: AJText {
+            text: @tr("Это задача с двойным запуском.");
+            font-weight: AJTheme.font-weight-heading;
+            color: AJTheme.container-text;
+        }
+
+        if problem.type == AJProblemType.RunTwiceInteractive: AJText {
+            text: @tr("Это интерактивная задача с двойным запуском.");
+            font-weight: AJTheme.font-weight-heading;
+            color: AJTheme.container-text;
+        }
+
+        if problem.type == AJProblemType.RunTwiceFirstInteractive: AJText {
+            text: @tr("Это задача с двойным запуском с первым интерактивным запуском.");
+            font-weight: AJTheme.font-weight-heading;
+            color: AJTheme.container-text;
+        }
+
+        if problem.type == AJProblemType.RunTwiceSecondInteractive: AJText {
+            text: @tr("Это задача с двойным запуском со вторым интерактивным запуском.");
+            font-weight: AJTheme.font-weight-heading;
+            color: AJTheme.container-text;
+        }
+
+        if problem.merge-subgroups: AJText {
+            text: @tr("Это задача со слиянием подгрупп.");
+            font-weight: AJTheme.font-weight-heading;
+            color: AJTheme.container-text;
+        }
+
+        HorizontalLayout {
+            AJText {
+                text: @tr("ограничение по времени");
+                horizontal-stretch: 1;
+                horizontal-alignment: left;
+                vertical-alignment: center;
+                color: AJTheme.container-text;
+            }
+
+            AJText {
+                text: @tr("{}мс", problem.time_limit_ms);
+                font-italic: true;
+                horizontal-stretch: 1;
+                horizontal-alignment: right;
+                vertical-alignment: center;
+                color: AJTheme.container-text;
+            }
+        }
+
+        HorizontalLayout {
+            AJText {
+                text: @tr("ограничение по памяти");
+                horizontal-stretch: 1;
+                horizontal-alignment: left;
+                vertical-alignment: center;
+                color: AJTheme.container-text;
+            }
+
+            AJText {
+                text: @tr("{}МБ", problem.memory_limit_mb);
+                font-italic: true;
+                horizontal-stretch: 1;
+                horizontal-alignment: right;
+                vertical-alignment: center;
+                color: AJTheme.container-text;
+            }
+        }
+
+        AJText {
+            text: @tr("Подгруппы");
+            type: AJTextType.Medium;
+            color: AJTheme.container-text;
+        }
+
+        Rectangle {
+            clip: true;
+            border-radius: AJTheme.border-radius;
+
+            scroll := ScrollView {
+                VerticalLayout {
+                    spacing: AJTheme.spacing;
+
+                    for subgroup[index] in problem.subgroups: AJSubgroupCard {
+                        problem: problem;
+                        index: index;
+                    }
+                }
+            }
+
+            Rectangle {
+                visible: scroll.viewport-y < 0;
+                x: 0;
+                y: 0;
+                width: parent.width;
+                height: 24px;
+                background: @linear-gradient(0deg, AJTheme.primary-container.transparentize(100%), AJTheme.primary-container.transparentize(0%));
+            }
+
+            Rectangle {
+                visible: scroll.viewport-y + scroll.viewport-height > scroll.height;
+                x: 0;
+                y: parent.height - self.height;
+                width: parent.width;
+                height: 24px;
+                background: @linear-gradient(180deg, AJTheme.primary-container.transparentize(100%), AJTheme.primary-container.transparentize(0%));
+            }
+
+            Rectangle {
+                visible: scroll.viewport-x < 0;
+                x: 0;
+                y: 0;
+                width: 24px;
+                height: parent.height;
+                background: @linear-gradient(-90deg, AJTheme.primary-container.transparentize(100%), AJTheme.primary-container.transparentize(0%));
+            }
+
+            Rectangle {
+                visible: scroll.viewport-x + scroll.viewport-width > scroll.width;
+                x: parent.width - self.width;
+                y: 0;
+                width: 24px;
+                height: parent.height;
+                background: @linear-gradient(90deg, AJTheme.primary-container.transparentize(100%), AJTheme.primary-container.transparentize(0%));
+            }
+        }
+    }
+}

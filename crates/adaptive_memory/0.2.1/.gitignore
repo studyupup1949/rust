@@ -1,0 +1,6 @@
+/target
+
+# Benchmark
+bench/data/
+bench/results/
+bench/.venv/

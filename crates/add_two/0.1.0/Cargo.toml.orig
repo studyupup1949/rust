@@ -1,0 +1,8 @@
+[package]
+name = "add_two"
+version = "0.1.0"
+edition = "2021"
+description = "Adds two to a number"
+license = "MIT"
+
+[dependencies]

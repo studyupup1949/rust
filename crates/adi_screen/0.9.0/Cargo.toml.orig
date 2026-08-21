@@ -1,0 +1,42 @@
+# "adi_screen" crate - Licensed under the MIT LICENSE
+#  * Copyright (c) 2017-2018  Jeron A. Lau <jeron.lau@plopgrizzly.com>
+#                             _        _
+#                            /@\——————/@\
+# .———  .                   |   o    o   |     .————      .            .
+# |   | |  .———   .———   .——.     []     .——.  |      .——    ———: ———: | .   .
+# |   | |  |   |  |   |  \   \   <##>   /   /  |      |   |    /    /  | |   |
+# |———  |  |   |  |   |   |   ¯        ¯   |   |   -- |   |   /    /   |  \ /
+# |     |  |   |  |———    |                |   |    | |   |  /    /    |   |
+# |     |   ———   |       |                |    ————  |   | :——— :———  |   |
+#                 |        \              /                              __/
+#                           ¯————————————¯
+
+[package]
+name = "adi_screen"
+version = "0.9.0"
+authors = [
+	"Jeron A. Lau <jeron.lau@plopgrizzly.com>",
+]
+
+license = "MIT"
+documentation = "https://docs.rs/adi_screen"
+homepage = "http://plopgrizzly.com/adi_screen"
+repository = "https://github.com/plopgrizzly/adi_screen"
+
+readme = "readme.md"
+description = "Interface with a computer/phone screen screen to render graphics."
+keywords = [ "vulkan", "graphics", "gui", "hardware", "rendering" ]
+categories = ["gui", "game-engines", "hardware-support", "multimedia::video",
+	"rendering::graphics-api"]
+
+exclude = [
+	"examples/*", "code_of_conduct.md", "contributing.md", ".gitignore",
+	"_config.yml", "ISSUE_TEMPLATE.md", "icon.png", "icon.ico"
+]
+
+[dependencies]
+adi_clock = "^0.3"
+ami = "^0.8"
+adi_gpu = "^0.7"
+aci_png = "^0.6"
+fonterator = "^0.1"

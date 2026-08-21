@@ -1,0 +1,9 @@
+[package]
+name = "ad-hoc-result"
+version = "0.1.0"
+edition = "2024"
+license = "MIT"
+description = "A Rust library that extends the standard Result type with an AdHoc variant for returning fallback values alongside errors."
+repository = "https://github.com/su-z/ad-hoc-result"
+
+[dependencies]

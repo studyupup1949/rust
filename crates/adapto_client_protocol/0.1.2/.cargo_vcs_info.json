@@ -1,0 +1,6 @@
+{
+  "git": {
+    "sha1": "7dcb9ba9a53639b61cff76bd115845b57483fdfc"
+  },
+  "path_in_vcs": "crates/adapto_client_protocol"
+}

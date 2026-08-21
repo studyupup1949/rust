@@ -1,0 +1,30 @@
+import { AJDateTime } from "others.slint";
+
+export enum AJContestStatus {
+    BeforeStart,
+    Ongoing,
+    Finished,
+    Upsolving
+}
+
+export struct AJContest {
+    id: int,
+    owner-id: int,
+    name: string,
+    statements-url: string,
+    editorial-url: string,
+    starts-at: AJDateTime,
+    ends-at: AJDateTime,
+    status: AJContestStatus,
+    can-manage: bool,
+    hidden: bool,
+    upsolving-opened: bool,
+    hide-solutions: bool,
+}
+
+export struct AJLeaderboardRow {
+    user-id: int,
+    username: string,
+    scores: [int],
+    total-score: int,
+}

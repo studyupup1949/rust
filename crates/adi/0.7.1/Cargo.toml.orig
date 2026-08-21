@@ -1,0 +1,39 @@
+# "adi" crate - Licensed under the MIT LICENSE
+#  * Copyright (c) 2017-2018  Jeron A. Lau <jeron.lau@plopgrizzly.com>
+#                             _        _
+#                            /@\——————/@\
+# .———  .                   |   o    o   |     .————      .            .
+# |   | |  .———   .———   .——.     []     .——.  |      .——    ———: ———: | .   .
+# |   | |  |   |  |   |  \   \   <##>   /   /  |      |   |    /    /  | |   |
+# |———  |  |   |  |   |   |   ¯        ¯   |   |   -- |   |   /    /   |  \ /
+# |     |  |   |  |———    |                |   |    | |   |  /    /    |   |
+# |     |   ———   |       |                |    ————  |   | :——— :———  |   |
+#                 |        \              /                              __/
+#                           ¯————————————¯
+
+[package]
+name = "adi"
+version = "0.7.1"
+authors = [
+	"Jeron A. Lau <jeron.lau@plopgrizzly.com>",
+]
+
+license = "MIT"
+documentation = "http://plopgrizzly.com/adi/doc"
+homepage = "http://plopgrizzly.com/adi"
+repository = "https://github.com/plopgrizzly/adi"
+
+readme = "readme.md"
+description = "Create platform-agnostic apps and video games"
+keywords = ["graphics", "gui", "input", "hardware"]
+categories = ["gui", "game-engines", "hardware-support", "multimedia",
+    "rendering::graphics-api"]
+
+exclude = [
+	"examples/*", "code_of_conduct.md", "contributing.md", ".gitignore",
+	"_config.yml", "ISSUE_TEMPLATE.md", "icon.png", "icon.ico", "doc/*",
+	"changelog.md", "TODO"
+]
+
+[dependencies]
+adi_screen = "0.8.0"

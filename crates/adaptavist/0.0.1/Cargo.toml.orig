@@ -1,0 +1,13 @@
+[package]
+name = "adaptavist"
+version = "0.0.1"
+description = "Rust providing functionality for Jira Test Management (tm4j)"
+keywords = ["testing", "jira"]
+repository = "https://github.com/mirecl/adaptavist"
+authors = ["Grazhdankov Andrei <grazhdankov@gmail.com>"]
+readme = "README.md"
+license = "MIT"
+edition = "2021"
+
+[dependencies]
+

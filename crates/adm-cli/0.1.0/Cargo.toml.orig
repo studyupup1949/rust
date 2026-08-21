@@ -1,0 +1,16 @@
+[package]
+name = "adm-cli"
+version = "0.1.0"
+authors = ["Alex Hamilton <alex.hamilton@ou.edu>"]
+edition = "2018"
+description = "Smart device management utility."
+license = "Apache-2.0/MIT"
+
+[dependencies]
+adm = { path = "adm", version = "0.1.0" }
+structopt = "0.2.14"
+actix = "0.7.9"
+serde = "1.0.83"
+toml = "0.4.10"
+
+[workspace]

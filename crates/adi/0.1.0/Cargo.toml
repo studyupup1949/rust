@@ -1,0 +1,42 @@
+[package]
+name = "adi"
+version = "0.1.0"
+authors = ["Jeron Aldaron Lau <jeron.lau@plopgrizzly.tech>"]
+
+description = """
+    Aldaron's Device Interface, or ADI is a rust library for creating \
+    cross-platform applications and video games.  It's goal is to be an \
+    powerful, easy-to-use, and minimal SDL-esque library.  It is developed \
+    by Plop Grizzly.
+"""
+
+keywords = [
+	"Vulkan", "Graphics", "GUI", "Input", "Hardware"
+]
+
+categories = [
+	"gui", "game-engines", "hardware-support", "multimedia",
+	"rendering::graphics-api"
+]
+
+license = "GPL-3.0"
+documentation = "http://adi.plopgrizzly.tech/"
+homepage = "http://adi.plopgrizzly.tech/"
+repository = "https://github.com/plopgrizzly/adi"
+build = "build.rs"
+publish = true
+readme = "README.md"
+exclude = [ "examples/*", "docs/*", ".gitignore", "LICENSE", "README.md",
+	"src/screen/shaders/compile.sh", "src/screen/shaders/glslangValidator",
+	"src/screen/shaders/color.frag", "src/screen/shaders/color.vert",
+	"src/screen/shaders/texture.frag", "src/screen/shaders/texture.vert",
+	"src/screen/ffi/vulkan-old.rs", "src/screen/ffi/android.rs",
+	"src/screen/ffi/wayland.rs", "src/third-party/VKstatic.1.lib" ]
+
+[lib]
+name = "adi"
+
+[dependencies]
+
+[build-dependencies.gcc]
+version = "0.3.38"

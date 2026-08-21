@@ -1,0 +1,16 @@
+load("@buckal//:wrapper.bzl", "rust_library")
+
+rust_library(
+    name = "adbc_core",
+    srcs = glob(["**/*.rs"]),
+    crate = "adbc_core",
+    crate_root = "src/lib.rs",
+    edition = "2021",
+    features = ["default"],
+
+    visibility = ["PUBLIC"],
+    deps = [
+        "//third-party/rust/crates/arrow-array/54.3.1:arrow_array",
+        "//third-party/rust/crates/arrow-schema/54.3.1:arrow_schema",
+    ],
+)

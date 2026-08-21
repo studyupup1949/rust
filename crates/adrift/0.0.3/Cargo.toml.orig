@@ -1,0 +1,18 @@
+[package]
+name = "adrift"
+version = "0.0.3"
+edition = { workspace = true }
+authors = { workspace = true }
+keywords = { workspace = true }
+license = { workspace = true }
+readme = { workspace = true }
+repository = { workspace = true }
+description = "Adrift a web framework for Rust"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+adrift_macros = { path = "../adrift_macros", version = "0.0.2" }
+adrift_core = { path = "../adrift_core", version = "0.0.2" }
+tokio = { version = "1.35.1", features = ["full"] }
+once_cell = "1.19.0"

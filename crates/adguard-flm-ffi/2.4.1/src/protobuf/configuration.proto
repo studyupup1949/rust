@@ -1,0 +1,89 @@
+syntax = "proto3";
+
+package filter_list_manager;
+
+option java_multiple_files = true;
+option java_package = "com.adguard.flm.protobuf";
+option java_outer_classname = "ConfigurationProto";
+
+enum FilterListType {
+  STANDARD = 0;
+  DNS = 1;
+}
+
+// FLM Requests proxy mode
+enum RawRequestProxyMode {
+  // System proxy will be used
+  USE_SYSTEM_PROXY = 0;
+  // All proxies disabled
+  NO_PROXY = 1;
+  // Use custom proxy
+  USE_CUSTOM_PROXY = 2;
+}
+
+message FiltersCompilationPolicy {
+  // List of literal constants for filters conditional compilation.
+  repeated string constants = 1;
+}
+
+message Configuration {
+  FilterListType filter_list_type = 1;
+
+  // Absolute path for library working directory.
+  // This will be used for database operating.
+  // If value is "None", `cwd` will be used.
+  optional string working_directory = 2;
+
+  // Locale that needs to be used to extract localized names and descriptions.
+  // Locale `en-GB` will be normalized to internal `en_GB` representation.
+  // Default value: en.
+  string locale = 3;
+
+  // Default period for expires in seconds (unless specified in "Expires", or its value is too small).
+  // Default value: 86400 (1 day).
+  // Values < 3600 will be clamped to 3600.
+  int32 default_filter_list_expires_period_sec = 4;
+
+  // Settings for filters compilation or collection from compiled parts.
+  // 
+  // ### Compilation
+  // During the update, each filter will be "compiled" into main filter and its includes.
+  // Main filter remains unchanged. But in includes, (include, if/else/endif) directives will be resolved, using this policy. 
+  // Recursive includes will be inlined.
+  // 
+  // ### Collection
+  // When you get filters, they will be collected from compiled parts (main filter + includes).
+  // All directives in main filter will be resolved, using this policy, and includes will be injected. 
+  optional FiltersCompilationPolicy filters_compilation_policy = 5;
+
+  // URL of the index (filters.json) file.
+  string metadata_url = 6;
+
+  // URL of the locales (filters_i18n.json) file.
+  string metadata_locales_url = 7;
+
+  // Requests timeouts in milliseconds. Default value 60000 (60 seconds).
+  int32 request_timeout_ms = 8;
+
+  // “Uplifting” a database is a set of measures that brings the database up to date:
+  bool auto_lift_up_database = 9;
+
+  // Proxy mode
+  RawRequestProxyMode request_proxy_mode = 10;
+
+  // Custom proxy addr for requests
+  string request_custom_proxy_addr = 11;
+
+  // Client app name
+  string app_name = 12;
+
+  // Client app version
+  string version = 13;
+
+  // Should ignore expires for local urls during update
+  bool should_ignore_expires_for_local_urls = 14;
+
+  // Optional key for signing and verifying integrity of filter rules.
+  // If set, rules will be signed on write and verified on read.
+  optional string integrity_key = 15;
+}

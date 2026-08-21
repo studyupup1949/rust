@@ -1,0 +1,17 @@
+load("@buckal//:wrapper.bzl", "rust_library")
+
+rust_library(
+    name = "adafruit_itsy_bitsy_rp2040",
+    srcs = glob(["**/*.rs"]),
+    crate = "adafruit_itsy_bitsy_rp2040",
+    crate_root = "src/lib.rs",
+    edition = "2018",
+    features = ["default"],
+
+    visibility = ["PUBLIC"],
+    deps = [
+        "//third-party/rust/crates/cortex-m/0.7.8:cortex_m",
+        "//third-party/rust/crates/embedded-time/0.12.1:embedded_time",
+        "//third-party/rust/crates/rp2040-hal/0.4.0:rp2040_hal",
+    ],
+)

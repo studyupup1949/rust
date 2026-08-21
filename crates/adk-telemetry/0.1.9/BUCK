@@ -1,0 +1,21 @@
+load("@buckal//:wrapper.bzl", "rust_library")
+
+rust_library(
+    name = "adk_telemetry",
+    srcs = glob(["**/*.rs"]),
+    crate = "adk_telemetry",
+    crate_root = "src/lib.rs",
+    edition = "2024",
+
+    visibility = ["PUBLIC"],
+    deps = [
+        "//third-party/rust/crates/opentelemetry-otlp/0.14.0:opentelemetry_otlp",
+        "//third-party/rust/crates/opentelemetry/0.21.0:opentelemetry",
+        "//third-party/rust/crates/opentelemetry_sdk/0.21.2:opentelemetry_sdk",
+        "//third-party/rust/crates/serde/1.0.229:serde",
+        "//third-party/rust/crates/serde_json/1.0.151:serde_json",
+        "//third-party/rust/crates/tracing-opentelemetry/0.22.0:tracing_opentelemetry",
+        "//third-party/rust/crates/tracing-subscriber/0.3.23:tracing_subscriber",
+        "//third-party/rust/crates/tracing/0.1.44:tracing",
+    ],
+)

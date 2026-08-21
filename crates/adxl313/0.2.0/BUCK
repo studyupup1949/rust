@@ -1,0 +1,15 @@
+load("@buckal//:wrapper.bzl", "rust_library")
+
+rust_library(
+    name = "adxl313",
+    srcs = glob(["**/*.rs"]),
+    crate = "adxl313",
+    crate_root = "src/lib.rs",
+    edition = "2018",
+
+    visibility = ["PUBLIC"],
+    deps = [
+        "//third-party/rust/crates/accelerometer/0.11.0:accelerometer",
+        "//third-party/rust/crates/embedded-hal/0.2.7:embedded_hal",
+    ],
+)

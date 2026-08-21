@@ -1,0 +1,18 @@
+dotfiles:
+  f_zshrc:
+    dst: /tmp/adot_tests/link/dst/.zshrc
+    src: zshrc
+    type: link
+  f_aliases:
+    dst: /tmp/adot_tests/link/dst/.aliases
+    src: aliases
+    type: link
+profiles:
+  base:
+    dotfiles:
+      - f_zshrc
+  test-host:
+    dotfiles:
+      - f_aliases
+    include:
+      - base

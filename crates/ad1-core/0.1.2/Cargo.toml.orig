@@ -1,0 +1,54 @@
+[package]
+name = "ad1-core"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+repository.workspace = true
+authors.workspace = true
+description = "Pure-Rust reader for the AccessData AD1 logical image container (FTK Imager / Custom Content Image)"
+
+[[example]]
+name = "dump_fixture"
+required-features = ["testfix"]
+
+[lib]
+# The bare crate name `ad1` is free on crates.io, so import as `use ad1::…` while
+# the published PACKAGE is `ad1-core` (the fleet reader/analyzer split). If a
+# popular third-party `ad1` ever appears, fall back to `ad1_core` imports.
+name = "ad1"
+path = "src/lib.rs"
+
+[features]
+# Spec-faithful AD1 fixture builder (`ad1::testfix`), shared by this crate's
+# integration tests AND `ad1-forensic`'s. Off by default; never compiled into a
+# normal/published build. Uses independent zlib (flate2) + RustCrypto md5/sha1 as
+# ground truth so chunk/addressing/hash bugs are still caught.
+testfix = ["dep:md-5", "dep:sha1"]
+# Adapt `Ad1Reader` to the forensic-vfs `FileSystem` trait (see `src/vfs.rs`) so
+# an AD1 logical image's file tree composes as `Arc<dyn FileSystem>` in the
+# forensic-vfs engine, like the DAR / ISO 9660 / UDF adapters.
+vfs = ["dep:forensic-vfs"]
+
+[dependencies]
+flate2    = { workspace = true }
+thiserror = { workspace = true }
+# Shared panic-free bounded byte readers (replaces the local bytes.rs; its
+# `off + 4` also fixes a latent usize-overflow the local copy could hit).
+safe-read = "0.2"
+md-5      = { workspace = true, optional = true }
+sha1      = { workspace = true, optional = true }
+# forensic-vfs — the read-only FileSystem navigation contract. Optional so the
+# bare reader stays dependency-light; the `vfs` feature turns on the adapter.
+forensic-vfs = { version = "0.7", optional = true }
+
+[dev-dependencies]
+# Integration tests build fixtures via the `testfix` feature and write to a tempdir.
+ad1-core = { path = ".", features = ["testfix"] }
+tempfile = { workspace = true }
+md-5     = { workspace = true }
+sha1     = { workspace = true }
+flate2   = { workspace = true } # craft short/corrupt zlib chunks in robustness tests
+
+[lints]
+workspace = true

@@ -1,0 +1,15 @@
+load("@buckal//:wrapper.bzl", "rust_library")
+
+rust_library(
+    name = "addin1c_test",
+    srcs = glob(["**/*.rs"]),
+    crate = "addin1c_test",
+    crate_root = "src/lib.rs",
+    edition = "2021",
+
+    visibility = ["PUBLIC"],
+    deps = [
+        "//third-party/rust/crates/libloading/0.8.9:libloading",
+        "//third-party/rust/crates/utf16_lit/2.0.2:utf16_lit",
+    ],
+)

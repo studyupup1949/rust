@@ -1,0 +1,252 @@
+//! Advanced conflict resolution strategies for GLR parsing
+//!
+//! This module provides additional conflict resolution capabilities beyond the basic resolver,
+//! including precedence and associativity-based conflict resolution, and detailed conflict
+//! analysis statistics.
+
+use crate::{Action, ParseTable};
+use adze_ir::{Associativity, Grammar, PrecedenceKind, SymbolId};
+use std::collections::HashMap;
+
+/// Statistics about conflict resolution
+#[derive(Debug, Clone, Default)]
+pub struct ConflictStats {
+    /// Number of shift/reduce conflicts found.
+    pub shift_reduce_conflicts: usize,
+    /// Number of reduce/reduce conflicts found.
+    pub reduce_reduce_conflicts: usize,
+    /// Conflicts resolved via precedence.
+    pub precedence_resolved: usize,
+    /// Conflicts resolved via associativity.
+    pub associativity_resolved: usize,
+    /// Conflicts left for explicit GLR forking.
+    pub explicit_glr: usize,
+    /// Conflicts resolved by default strategy.
+    pub default_resolved: usize,
+}
+
+/// Advanced conflict analyzer
+pub struct ConflictAnalyzer {
+    /// Statistics about conflicts found
+    stats: ConflictStats,
+}
+
+impl Default for ConflictAnalyzer {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
+impl ConflictAnalyzer {
+    pub fn new() -> Self {
+        Self {
+            stats: ConflictStats::default(),
+        }
+    }
+
+    /// Analyze conflicts in a parse table and return statistics
+    pub fn analyze_table(&mut self, _table: &ParseTable) -> ConflictStats {
+        self.stats = ConflictStats::default();
+
+        // In the actual ParseTable implementation, we'd need to check for multiple
+        // actions for the same state/symbol combination. For now, this is a simplified
+        // version that assumes conflicts are represented differently.
+
+        // Note: The current ParseTable structure doesn't support multiple actions
+        // per state/symbol pair, which is needed for GLR parsing.
+
+        self.stats.clone()
+    }
+
+    #[allow(dead_code)]
+    fn categorize_conflicts(&mut self, actions: &[Action]) {
+        let shifts = actions
+            .iter()
+            .filter(|a| matches!(a, Action::Shift(_)))
+            .count();
+        let reduces = actions
+            .iter()
+            .filter(|a| matches!(a, Action::Reduce(_)))
+            .count();
+
+        if shifts > 0 && reduces > 0 {
+            self.stats.shift_reduce_conflicts += shifts * reduces;
+        }
+
+        if reduces > 1 {
+            self.stats.reduce_reduce_conflicts += reduces * (reduces - 1) / 2;
+        }
+    }
+
+    pub fn get_stats(&self) -> &ConflictStats {
+        &self.stats
+    }
+}
+
+/// Precedence-based conflict resolver
+pub struct PrecedenceResolver {
+    /// Token precedences extracted from grammar
+    token_precedences: HashMap<SymbolId, (i16, Associativity)>,
+    /// Rule precedences (by the symbol they produce)
+    symbol_precedences: HashMap<SymbolId, (i16, Associativity)>,
+}
+
+impl PrecedenceResolver {
+    /// Creates a new resolver by extracting precedence information from the grammar.
+    pub fn new(grammar: &Grammar) -> Self {
+        let mut token_precedences = HashMap::new();
+        let mut symbol_precedences = HashMap::new();
+
+        // Extract precedence from precedence declarations
+        for prec in &grammar.precedences {
+            for &symbol in &prec.symbols {
+                token_precedences.insert(symbol, (prec.level, prec.associativity));
+            }
+        }
+
+        // Extract precedence from rules
+        for (symbol_id, rules) in &grammar.rules {
+            for rule in rules {
+                if let Some(PrecedenceKind::Static(level)) = &rule.precedence
+                    && let Some(assoc) = rule.associativity
+                {
+                    symbol_precedences.insert(*symbol_id, (*level, assoc));
+                }
+            }
+        }
+
+        Self {
+            token_precedences,
+            symbol_precedences,
+        }
+    }
+
+    /// Check if a shift/reduce conflict can be resolved by precedence
+    pub fn can_resolve_shift_reduce(
+        &self,
+        shift_symbol: SymbolId,
+        reduce_symbol: SymbolId,
+    ) -> Option<PrecedenceDecision> {
+        let shift_prec = self.token_precedences.get(&shift_symbol)?;
+        let reduce_prec = self.symbol_precedences.get(&reduce_symbol)?;
+
+        if shift_prec.0 > reduce_prec.0 {
+            Some(PrecedenceDecision::PreferShift)
+        } else if reduce_prec.0 > shift_prec.0 {
+            Some(PrecedenceDecision::PreferReduce)
+        } else {
+            // Same precedence - check associativity
+            match reduce_prec.1 {
+                Associativity::Left => Some(PrecedenceDecision::PreferReduce),
+                Associativity::Right => Some(PrecedenceDecision::PreferShift),
+                Associativity::None => Some(PrecedenceDecision::Error),
+            }
+        }
+    }
+}
+
+/// Outcome of a precedence-based conflict resolution attempt.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum PrecedenceDecision {
+    /// Shift is preferred (higher precedence or right-associative).
+    PreferShift,
+    /// Reduce is preferred (higher precedence or left-associative).
+    PreferReduce,
+    /// Non-associative conflict; should be reported as an error.
+    Error,
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::{Action, LexMode, ParseTable, StateId};
+    use adze_ir::{
+        Associativity, Grammar, Precedence, PrecedenceKind, ProductionId, Rule, Symbol, SymbolId,
+    };
+    use std::collections::BTreeMap;
+
+    #[test]
+    fn test_conflict_analyzer() {
+        let table = ParseTable {
+            action_table: vec![vec![vec![Action::Shift(StateId(1))]]],
+            goto_table: vec![],
+            symbol_metadata: vec![],
+            state_count: 1,
+            symbol_count: 1,
+            symbol_to_index: BTreeMap::new(),
+            index_to_symbol: vec![],
+            external_scanner_states: vec![],
+            rules: vec![],
+            nonterminal_to_index: BTreeMap::new(),
+            goto_indexing: crate::GotoIndexing::NonterminalMap,
+            eof_symbol: SymbolId(0),
+            start_symbol: SymbolId(1),
+            grammar: Grammar::new("test".to_string()),
+            initial_state: StateId(0),
+            token_count: 1,
+            external_token_count: 0,
+            lex_modes: vec![
+                LexMode {
+                    lex_state: 0,
+                    external_lex_state: 0
+                };
+                1
+            ],
+            extras: vec![],
+            dynamic_prec_by_rule: vec![],
+            rule_assoc_by_rule: vec![],
+            alias_sequences: vec![],
+            field_names: vec![],
+            field_map: BTreeMap::new(),
+        };
+
+        let mut analyzer = ConflictAnalyzer::new();
+        let stats = analyzer.analyze_table(&table);
+
+        // Since the current ParseTable doesn't support multiple actions,
+        // we expect no conflicts
+        assert_eq!(stats.shift_reduce_conflicts, 0);
+        assert_eq!(stats.reduce_reduce_conflicts, 0);
+    }
+
+    #[test]
+    fn test_precedence_resolver() {
+        let mut grammar = Grammar::new("test".to_string());
+
+        // Add precedence declarations
+        grammar.precedences.push(Precedence {
+            level: 1,
+            associativity: Associativity::Left,
+            symbols: vec![SymbolId(1)],
+        });
+
+        grammar.precedences.push(Precedence {
+            level: 2,
+            associativity: Associativity::Right,
+            symbols: vec![SymbolId(2)],
+        });
+
+        // Add a rule with precedence
+        grammar.rules.insert(
+            SymbolId(3),
+            vec![Rule {
+                lhs: SymbolId(3),
+                rhs: vec![Symbol::Terminal(SymbolId(1))],
+                precedence: Some(PrecedenceKind::Static(1)),
+                associativity: Some(Associativity::Left),
+                fields: vec![],
+                production_id: ProductionId(0),
+            }],
+        );
+
+        let resolver = PrecedenceResolver::new(&grammar);
+
+        // Test shift has higher precedence
+        let decision = resolver.can_resolve_shift_reduce(SymbolId(2), SymbolId(3));
+        assert_eq!(decision, Some(PrecedenceDecision::PreferShift));
+
+        // Test same precedence with left associativity
+        let decision = resolver.can_resolve_shift_reduce(SymbolId(1), SymbolId(3));
+        assert_eq!(decision, Some(PrecedenceDecision::PreferReduce));
+    }
+}

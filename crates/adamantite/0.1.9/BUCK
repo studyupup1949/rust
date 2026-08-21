@@ -1,0 +1,21 @@
+load("@buckal//:wrapper.bzl", "rust_binary")
+
+rust_binary(
+    name = "adamantite",
+    srcs = glob(["**/*.rs"]),
+    crate = "adamantite",
+    crate_root = "src/main.rs",
+    edition = "2024",
+
+    visibility = ["PUBLIC"],
+    deps = [
+        "//third-party/rust/crates/chrono/0.4.45:chrono",
+        "//third-party/rust/crates/clap/4.6.6:clap",
+        "//third-party/rust/crates/crossterm/0.29.0:crossterm",
+        "//third-party/rust/crates/csv/1.4.0:csv",
+        "//third-party/rust/crates/num/0.4.3:num",
+        "//third-party/rust/crates/ratatui/0.30.2:ratatui",
+        "//third-party/rust/crates/serde/1.0.229:serde",
+        "//third-party/rust/crates/sysinfo/0.38.4:sysinfo",
+    ],
+)

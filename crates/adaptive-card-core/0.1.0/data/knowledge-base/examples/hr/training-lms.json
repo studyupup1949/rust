@@ -1,0 +1,593 @@
+{
+  "id": "hr/training-lms",
+  "title": "Training & Learning Management \u2014 Course Catalog and Progress",
+  "description": "Learning management card with course catalog, enrollment status, progress tracking, completion certificates, and upcoming trainings. Uses ImageSet for course thumbnails, progress bars, and FactSet for completion stats.",
+  "category": "hr",
+  "tags": [
+    "hr",
+    "training",
+    "lms",
+    "learning",
+    "course",
+    "education",
+    "enrollment",
+    "certificate",
+    "progress"
+  ],
+  "use_cases": [
+    "Browse available courses in catalog",
+    "Track training progress and completions",
+    "Enroll in new courses",
+    "View certificates and transcripts"
+  ],
+  "host_targets": [
+    "generic",
+    "teams",
+    "web_chat"
+  ],
+  "complexity": "intermediate",
+  "card": {
+    "$schema": "http://adaptivecards.io/schemas/adaptive-card.json",
+    "type": "AdaptiveCard",
+    "version": "1.5",
+    "metadata": {
+      "webUrl": "https://greentic.io/cards/training-lms",
+      "demo_mode": true
+    },
+    "body": [
+      {
+        "type": "Container",
+        "id": "lmsMenu",
+        "isVisible": true,
+        "style": "emphasis",
+        "bleed": true,
+        "items": [
+          {
+            "type": "ColumnSet",
+            "columns": [
+              {
+                "type": "Column",
+                "width": "auto",
+                "items": [
+                  {
+                    "type": "Image",
+                    "url": "https://img.icons8.com/fluency/96/graduation-cap.png",
+                    "size": "Medium"
+                  }
+                ],
+                "verticalContentAlignment": "Center"
+              },
+              {
+                "type": "Column",
+                "width": "stretch",
+                "items": [
+                  {
+                    "type": "TextBlock",
+                    "text": "Learning & Training",
+                    "size": "ExtraLarge",
+                    "weight": "Bolder",
+                    "color": "Accent"
+                  },
+                  {
+                    "type": "TextBlock",
+                    "text": "Browse courses, track certifications, and complete compliance training.",
+                    "spacing": "None",
+                    "isSubtle": true,
+                    "wrap": true
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "type": "Container",
+            "style": "attention",
+            "spacing": "Medium",
+            "items": [
+              {
+                "type": "TextBlock",
+                "text": "\u26a0\ufe0f Mandatory Training Due",
+                "weight": "Bolder",
+                "color": "Attention"
+              },
+              {
+                "type": "TextBlock",
+                "text": "\"Data Privacy & GDPR Awareness\" \u2014 Due: April 30, 2026",
+                "size": "Small",
+                "wrap": true,
+                "spacing": "None"
+              }
+            ]
+          },
+          {
+            "type": "Container",
+            "style": "good",
+            "spacing": "Small",
+            "items": [
+              {
+                "type": "ColumnSet",
+                "columns": [
+                  {
+                    "type": "Column",
+                    "width": "1",
+                    "items": [
+                      {
+                        "type": "TextBlock",
+                        "text": "Completed",
+                        "size": "Small",
+                        "isSubtle": true,
+                        "horizontalAlignment": "Center"
+                      },
+                      {
+                        "type": "TextBlock",
+                        "text": "12",
+                        "weight": "Bolder",
+                        "color": "Good",
+                        "size": "Large",
+                        "horizontalAlignment": "Center",
+                        "spacing": "None"
+                      }
+                    ]
+                  },
+                  {
+                    "type": "Column",
+                    "width": "1",
+                    "items": [
+                      {
+                        "type": "TextBlock",
+                        "text": "In Progress",
+                        "size": "Small",
+                        "isSubtle": true,
+                        "horizontalAlignment": "Center"
+                      },
+                      {
+                        "type": "TextBlock",
+                        "text": "3",
+                        "weight": "Bolder",
+                        "color": "Accent",
+                        "size": "Large",
+                        "horizontalAlignment": "Center",
+                        "spacing": "None"
+                      }
+                    ]
+                  },
+                  {
+                    "type": "Column",
+                    "width": "1",
+                    "items": [
+                      {
+                        "type": "TextBlock",
+                        "text": "Certificates",
+                        "size": "Small",
+                        "isSubtle": true,
+                        "horizontalAlignment": "Center"
+                      },
+                      {
+                        "type": "TextBlock",
+                        "text": "5",
+                        "weight": "Bolder",
+                        "color": "Accent",
+                        "size": "Large",
+                        "horizontalAlignment": "Center",
+                        "spacing": "None"
+                      }
+                    ]
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "type": "ActionSet",
+            "spacing": "Medium",
+            "actions": [
+              {
+                "type": "Action.ToggleVisibility",
+                "title": "\ud83d\udcda Course Catalog",
+                "style": "positive",
+                "targetElements": [
+                  {
+                    "elementId": "lmsMenu",
+                    "isVisible": false
+                  },
+                  {
+                    "elementId": "lmsCatalog",
+                    "isVisible": true
+                  }
+                ]
+              },
+              {
+                "type": "Action.ToggleVisibility",
+                "title": "\ud83d\udccb My Learning Path",
+                "targetElements": [
+                  {
+                    "elementId": "lmsMenu",
+                    "isVisible": false
+                  },
+                  {
+                    "elementId": "lmsPath",
+                    "isVisible": true
+                  }
+                ]
+              },
+              {
+                "type": "Action.ToggleVisibility",
+                "title": "\ud83c\udfc5 Certifications",
+                "targetElements": [
+                  {
+                    "elementId": "lmsMenu",
+                    "isVisible": false
+                  },
+                  {
+                    "elementId": "lmsCerts",
+                    "isVisible": true
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "type": "Container",
+        "id": "lmsCatalog",
+        "isVisible": false,
+        "items": [
+          {
+            "type": "TextBlock",
+            "text": "\ud83d\udcda Course Catalog",
+            "size": "Large",
+            "weight": "Bolder",
+            "color": "Accent"
+          },
+          {
+            "type": "Input.Text",
+            "id": "lms_search",
+            "label": "Search courses",
+            "placeholder": "e.g. Azure, Python, Leadership..."
+          },
+          {
+            "type": "Input.ChoiceSet",
+            "id": "lms_filter",
+            "label": "Category",
+            "value": "all",
+            "choices": [
+              {
+                "title": "All Categories",
+                "value": "all"
+              },
+              {
+                "title": "\u2601\ufe0f Cloud & Infrastructure",
+                "value": "cloud"
+              },
+              {
+                "title": "\ud83d\udcca Data & AI",
+                "value": "data_ai"
+              },
+              {
+                "title": "\ud83d\udcbb Software Engineering",
+                "value": "engineering"
+              },
+              {
+                "title": "\ud83d\udee1\ufe0f Security & Compliance",
+                "value": "security"
+              },
+              {
+                "title": "\ud83e\udd1d Soft Skills & Leadership",
+                "value": "leadership"
+              },
+              {
+                "title": "\ud83d\udccb Mandatory / Compliance",
+                "value": "mandatory"
+              }
+            ]
+          },
+          {
+            "type": "TextBlock",
+            "text": "Recommended For You",
+            "weight": "Bolder",
+            "spacing": "Medium"
+          },
+          {
+            "type": "Container",
+            "style": "good",
+            "items": [
+              {
+                "type": "TextBlock",
+                "text": "Azure Databricks Advanced \u2014 Data Engineering",
+                "weight": "Bolder"
+              },
+              {
+                "type": "TextBlock",
+                "text": "\u2601\ufe0f Cloud  \u2022  8 hours  \u2022  \u2b50 4.7  \u2022  Certificate included",
+                "size": "Small",
+                "isSubtle": true,
+                "spacing": "None",
+                "wrap": true
+              }
+            ]
+          },
+          {
+            "type": "Container",
+            "style": "default",
+            "separator": true,
+            "items": [
+              {
+                "type": "TextBlock",
+                "text": "Rust for Production Systems",
+                "weight": "Bolder"
+              },
+              {
+                "type": "TextBlock",
+                "text": "\ud83d\udcbb Engineering  \u2022  12 hours  \u2022  \u2b50 4.9  \u2022  Advanced",
+                "size": "Small",
+                "isSubtle": true,
+                "spacing": "None",
+                "wrap": true
+              }
+            ]
+          },
+          {
+            "type": "Container",
+            "style": "default",
+            "separator": true,
+            "items": [
+              {
+                "type": "TextBlock",
+                "text": "Leading Remote Teams Effectively",
+                "weight": "Bolder"
+              },
+              {
+                "type": "TextBlock",
+                "text": "\ud83e\udd1d Leadership  \u2022  4 hours  \u2022  \u2b50 4.5  \u2022  Beginner-friendly",
+                "size": "Small",
+                "isSubtle": true,
+                "spacing": "None",
+                "wrap": true
+              }
+            ]
+          },
+          {
+            "type": "Container",
+            "style": "attention",
+            "separator": true,
+            "items": [
+              {
+                "type": "TextBlock",
+                "text": "\u26a0\ufe0f Data Privacy & GDPR Awareness (MANDATORY)",
+                "weight": "Bolder",
+                "color": "Attention"
+              },
+              {
+                "type": "TextBlock",
+                "text": "\ud83d\udee1\ufe0f Compliance  \u2022  2 hours  \u2022  Due: Apr 30  \u2022  Required for all staff",
+                "size": "Small",
+                "isSubtle": true,
+                "spacing": "None",
+                "wrap": true
+              }
+            ]
+          },
+          {
+            "type": "Input.ChoiceSet",
+            "id": "lms_enroll",
+            "label": "Enroll in a course",
+            "choices": [
+              {
+                "title": "Azure Databricks Advanced",
+                "value": "databricks_adv"
+              },
+              {
+                "title": "Rust for Production Systems",
+                "value": "rust_prod"
+              },
+              {
+                "title": "Leading Remote Teams",
+                "value": "remote_leadership"
+              },
+              {
+                "title": "Data Privacy & GDPR (Mandatory)",
+                "value": "gdpr_mandatory"
+              }
+            ]
+          },
+          {
+            "type": "ActionSet",
+            "spacing": "Medium",
+            "actions": [
+              {
+                "type": "Action.Submit",
+                "title": "\ud83d\udce5 Enroll Now",
+                "style": "positive",
+                "data": {
+                  "action": "enroll_course",
+                  "demo_mode": true
+                }
+              },
+              {
+                "type": "Action.ToggleVisibility",
+                "title": "\u2190 Back",
+                "targetElements": [
+                  {
+                    "elementId": "lmsCatalog",
+                    "isVisible": false
+                  },
+                  {
+                    "elementId": "lmsMenu",
+                    "isVisible": true
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "type": "Container",
+        "id": "lmsPath",
+        "isVisible": false,
+        "items": [
+          {
+            "type": "TextBlock",
+            "text": "\ud83d\udccb My Learning Path",
+            "size": "Large",
+            "weight": "Bolder",
+            "color": "Accent"
+          },
+          {
+            "type": "TextBlock",
+            "text": "In Progress",
+            "weight": "Bolder",
+            "spacing": "Medium"
+          },
+          {
+            "type": "FactSet",
+            "facts": [
+              {
+                "title": "Azure AI Engineer (DP-100)",
+                "value": "\u23f3 65% \u2014 Module 6 of 10"
+              },
+              {
+                "title": "Advanced Databricks",
+                "value": "\u23f3 30% \u2014 Module 3 of 8"
+              },
+              {
+                "title": "GDPR Awareness",
+                "value": "\u2b1c Not started \u2014 Due Apr 30"
+              }
+            ]
+          },
+          {
+            "type": "TextBlock",
+            "text": "Recently Completed",
+            "weight": "Bolder",
+            "spacing": "Medium"
+          },
+          {
+            "type": "FactSet",
+            "facts": [
+              {
+                "title": "Azure Data Engineer (DP-203)",
+                "value": "\u2705 Completed Mar 15"
+              },
+              {
+                "title": "Agile Project Management",
+                "value": "\u2705 Completed Feb 28"
+              },
+              {
+                "title": "Workplace Safety 2026",
+                "value": "\u2705 Completed Jan 10"
+              }
+            ]
+          },
+          {
+            "type": "ActionSet",
+            "spacing": "Medium",
+            "actions": [
+              {
+                "type": "Action.Submit",
+                "title": "\u25b6\ufe0f Continue Learning",
+                "style": "positive",
+                "data": {
+                  "action": "resume_course",
+                  "course": "dp100",
+                  "demo_mode": true
+                }
+              },
+              {
+                "type": "Action.ToggleVisibility",
+                "title": "\u2190 Back",
+                "targetElements": [
+                  {
+                    "elementId": "lmsPath",
+                    "isVisible": false
+                  },
+                  {
+                    "elementId": "lmsMenu",
+                    "isVisible": true
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "type": "Container",
+        "id": "lmsCerts",
+        "isVisible": false,
+        "items": [
+          {
+            "type": "TextBlock",
+            "text": "\ud83c\udfc5 My Certifications",
+            "size": "Large",
+            "weight": "Bolder",
+            "color": "Accent"
+          },
+          {
+            "type": "FactSet",
+            "facts": [
+              {
+                "title": "Azure Data Engineer DP-203",
+                "value": "\u2705 Valid until Mar 2028"
+              },
+              {
+                "title": "Azure AI Fundamentals AI-900",
+                "value": "\u2705 Valid until Jun 2027"
+              },
+              {
+                "title": "Databricks Lakehouse Fundamentals",
+                "value": "\u2705 No expiry"
+              },
+              {
+                "title": "Agile Certified Practitioner",
+                "value": "\u26a0\ufe0f Expires Dec 2026"
+              },
+              {
+                "title": "ISO 27001 Awareness",
+                "value": "\u2705 Valid until Jan 2027"
+              }
+            ]
+          },
+          {
+            "type": "TextBlock",
+            "text": "\u26a0\ufe0f 1 certification expiring within 9 months. Consider renewal.",
+            "size": "Small",
+            "color": "Warning",
+            "wrap": true,
+            "spacing": "Medium"
+          },
+          {
+            "type": "ActionSet",
+            "spacing": "Medium",
+            "actions": [
+              {
+                "type": "Action.Submit",
+                "title": "\ud83d\udce5 Download All Certificates",
+                "data": {
+                  "action": "download_certs",
+                  "demo_mode": true
+                }
+              },
+              {
+                "type": "Action.ToggleVisibility",
+                "title": "\u2190 Back",
+                "targetElements": [
+                  {
+                    "elementId": "lmsCerts",
+                    "isVisible": false
+                  },
+                  {
+                    "elementId": "lmsMenu",
+                    "isVisible": true
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  "notes": "Multi-section card using Action.ToggleVisibility for in-card navigation. All non-main sections hidden by default."
+}

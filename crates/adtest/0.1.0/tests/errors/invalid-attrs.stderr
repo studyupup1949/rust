@@ -1,0 +1,5 @@
+error: Invalid attribute passed only setup and cleanup are allowed
+ --> tests/errors/invalid-attrs.rs:5:18
+  |
+5 | #[adtest::adtest(somethings)]
+  |                  ^^^^^^^^^^

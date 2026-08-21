@@ -1,0 +1,14 @@
+load("@buckal//:wrapper.bzl", "rust_library")
+
+rust_library(
+    name = "adflib",
+    srcs = glob(["**/*.rs"]),
+    crate = "adflib",
+    crate_root = "src/lib.rs",
+    edition = "2021",
+
+    visibility = ["PUBLIC"],
+    deps = [
+        "//third-party/rust/crates/clap/4.6.6:clap",
+    ],
+)

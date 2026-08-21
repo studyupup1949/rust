@@ -1,0 +1,523 @@
+{
+  "id": "it/asset-management",
+  "title": "IT Asset Management \u2014 Hardware Inventory and Assignment",
+  "description": "IT asset tracking card with hardware inventory, assignment history, maintenance schedules, and request new equipment form. Uses FactSet for asset details, ColumnSet for inventory grids, and status indicators.",
+  "category": "it",
+  "tags": [
+    "it",
+    "asset",
+    "inventory",
+    "hardware",
+    "equipment",
+    "assignment",
+    "maintenance",
+    "tracking",
+    "laptop"
+  ],
+  "use_cases": [
+    "Track company laptops and devices",
+    "Request new equipment",
+    "Log asset maintenance and repairs",
+    "Assign hardware to employees"
+  ],
+  "host_targets": [
+    "generic",
+    "teams",
+    "web_chat"
+  ],
+  "complexity": "intermediate",
+  "card": {
+    "$schema": "http://adaptivecards.io/schemas/adaptive-card.json",
+    "type": "AdaptiveCard",
+    "version": "1.5",
+    "metadata": {
+      "webUrl": "https://greentic.io/cards/asset-management",
+      "demo_mode": true
+    },
+    "body": [
+      {
+        "type": "Container",
+        "id": "assetMenu",
+        "isVisible": true,
+        "style": "emphasis",
+        "bleed": true,
+        "items": [
+          {
+            "type": "ColumnSet",
+            "columns": [
+              {
+                "type": "Column",
+                "width": "auto",
+                "items": [
+                  {
+                    "type": "Image",
+                    "url": "https://img.icons8.com/fluency/96/laptop-settings.png",
+                    "size": "Medium"
+                  }
+                ],
+                "verticalContentAlignment": "Center"
+              },
+              {
+                "type": "Column",
+                "width": "stretch",
+                "items": [
+                  {
+                    "type": "TextBlock",
+                    "text": "Asset Management",
+                    "size": "ExtraLarge",
+                    "weight": "Bolder",
+                    "color": "Accent"
+                  },
+                  {
+                    "type": "TextBlock",
+                    "text": "View your assigned assets, request hardware, or report issues.",
+                    "spacing": "None",
+                    "isSubtle": true,
+                    "wrap": true
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "type": "ActionSet",
+            "spacing": "Medium",
+            "actions": [
+              {
+                "type": "Action.ToggleVisibility",
+                "title": "\ud83d\udcbb My Assets",
+                "style": "positive",
+                "targetElements": [
+                  {
+                    "elementId": "assetMenu",
+                    "isVisible": false
+                  },
+                  {
+                    "elementId": "myAssets",
+                    "isVisible": true
+                  }
+                ]
+              },
+              {
+                "type": "Action.ToggleVisibility",
+                "title": "\ud83d\udce6 Request Hardware",
+                "targetElements": [
+                  {
+                    "elementId": "assetMenu",
+                    "isVisible": false
+                  },
+                  {
+                    "elementId": "requestAsset",
+                    "isVisible": true
+                  }
+                ]
+              },
+              {
+                "type": "Action.ToggleVisibility",
+                "title": "\u26a0\ufe0f Report Issue",
+                "targetElements": [
+                  {
+                    "elementId": "assetMenu",
+                    "isVisible": false
+                  },
+                  {
+                    "elementId": "reportIssue",
+                    "isVisible": true
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "type": "Container",
+        "id": "myAssets",
+        "isVisible": false,
+        "items": [
+          {
+            "type": "TextBlock",
+            "text": "\ud83d\udcbb My Assigned Assets",
+            "size": "Large",
+            "weight": "Bolder",
+            "color": "Accent"
+          },
+          {
+            "type": "Container",
+            "style": "good",
+            "items": [
+              {
+                "type": "TextBlock",
+                "text": "MacBook Pro 14\" M3 Pro",
+                "weight": "Bolder"
+              },
+              {
+                "type": "FactSet",
+                "facts": [
+                  {
+                    "title": "Asset ID",
+                    "value": "LAP-2024-0156"
+                  },
+                  {
+                    "title": "Serial",
+                    "value": "C02X1234HKDT"
+                  },
+                  {
+                    "title": "Assigned",
+                    "value": "Jan 15, 2024"
+                  },
+                  {
+                    "title": "Warranty",
+                    "value": "\u2705 Until Jan 2027"
+                  },
+                  {
+                    "title": "Condition",
+                    "value": "Good"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "type": "Container",
+            "style": "good",
+            "separator": true,
+            "items": [
+              {
+                "type": "TextBlock",
+                "text": "Dell UltraSharp 27\" U2723QE Monitor",
+                "weight": "Bolder"
+              },
+              {
+                "type": "FactSet",
+                "facts": [
+                  {
+                    "title": "Asset ID",
+                    "value": "MON-2024-0089"
+                  },
+                  {
+                    "title": "Assigned",
+                    "value": "Jan 15, 2024"
+                  },
+                  {
+                    "title": "Warranty",
+                    "value": "\u2705 Until Jan 2027"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "type": "Container",
+            "style": "warning",
+            "separator": true,
+            "items": [
+              {
+                "type": "TextBlock",
+                "text": "Logitech MX Master 3S Mouse",
+                "weight": "Bolder"
+              },
+              {
+                "type": "FactSet",
+                "facts": [
+                  {
+                    "title": "Asset ID",
+                    "value": "PER-2023-0412"
+                  },
+                  {
+                    "title": "Assigned",
+                    "value": "Aug 5, 2023"
+                  },
+                  {
+                    "title": "Warranty",
+                    "value": "\u26a0\ufe0f Expired Aug 2025"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "type": "ActionSet",
+            "spacing": "Medium",
+            "actions": [
+              {
+                "type": "Action.Submit",
+                "title": "\ud83d\udce5 Export Asset List",
+                "data": {
+                  "action": "export_assets",
+                  "demo_mode": true
+                }
+              },
+              {
+                "type": "Action.ToggleVisibility",
+                "title": "\u2190 Back",
+                "targetElements": [
+                  {
+                    "elementId": "myAssets",
+                    "isVisible": false
+                  },
+                  {
+                    "elementId": "assetMenu",
+                    "isVisible": true
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "type": "Container",
+        "id": "requestAsset",
+        "isVisible": false,
+        "items": [
+          {
+            "type": "TextBlock",
+            "text": "\ud83d\udce6 Request New Hardware",
+            "size": "Large",
+            "weight": "Bolder",
+            "color": "Accent"
+          },
+          {
+            "type": "Input.ChoiceSet",
+            "id": "asset_category",
+            "label": "Category",
+            "isRequired": true,
+            "choices": [
+              {
+                "title": "\ud83d\udcbb Laptop",
+                "value": "laptop"
+              },
+              {
+                "title": "\ud83d\udda5\ufe0f Monitor",
+                "value": "monitor"
+              },
+              {
+                "title": "\u2328\ufe0f Keyboard",
+                "value": "keyboard"
+              },
+              {
+                "title": "\ud83d\uddb1\ufe0f Mouse / Trackpad",
+                "value": "mouse"
+              },
+              {
+                "title": "\ud83c\udfa7 Headset / Audio",
+                "value": "headset"
+              },
+              {
+                "title": "\ud83d\udcf1 Mobile Device",
+                "value": "mobile"
+              },
+              {
+                "title": "\ud83d\udd0c Dock / Hub / Adapter",
+                "value": "dock"
+              },
+              {
+                "title": "\ud83e\ude91 Ergonomic (Chair/Desk)",
+                "value": "ergonomic"
+              },
+              {
+                "title": "\u2753 Other",
+                "value": "other"
+              }
+            ]
+          },
+          {
+            "type": "Input.ChoiceSet",
+            "id": "asset_reason",
+            "label": "Reason",
+            "isRequired": true,
+            "choices": [
+              {
+                "title": "\ud83c\udd95 New hire setup",
+                "value": "new_hire"
+              },
+              {
+                "title": "\ud83d\udd04 Replacement (broken/defective)",
+                "value": "replacement"
+              },
+              {
+                "title": "\u2b06\ufe0f Upgrade needed",
+                "value": "upgrade"
+              },
+              {
+                "title": "\u2795 Additional equipment",
+                "value": "additional"
+              }
+            ]
+          },
+          {
+            "type": "Input.Text",
+            "id": "asset_specs",
+            "label": "Preferred Specs / Model",
+            "placeholder": "e.g. Dell WD19S USB-C Dock, or minimum 16GB RAM laptop"
+          },
+          {
+            "type": "Input.Text",
+            "id": "asset_justification",
+            "label": "Business Justification",
+            "placeholder": "Why is this needed for your role?",
+            "isMultiline": true,
+            "isRequired": true
+          },
+          {
+            "type": "Input.ChoiceSet",
+            "id": "asset_urgency",
+            "label": "Urgency",
+            "value": "normal",
+            "choices": [
+              {
+                "title": "\ud83d\udd34 Critical \u2014 Cannot work without it",
+                "value": "critical"
+              },
+              {
+                "title": "\ud83d\udfe1 Normal \u2014 Within 1-2 weeks",
+                "value": "normal"
+              },
+              {
+                "title": "\ud83d\udfe2 Low \u2014 Whenever available",
+                "value": "low"
+              }
+            ]
+          },
+          {
+            "type": "ActionSet",
+            "spacing": "Medium",
+            "actions": [
+              {
+                "type": "Action.Submit",
+                "title": "\ud83d\udce4 Submit Request",
+                "style": "positive",
+                "data": {
+                  "action": "request_hardware",
+                  "demo_mode": true
+                }
+              },
+              {
+                "type": "Action.ToggleVisibility",
+                "title": "\u2190 Back",
+                "targetElements": [
+                  {
+                    "elementId": "requestAsset",
+                    "isVisible": false
+                  },
+                  {
+                    "elementId": "assetMenu",
+                    "isVisible": true
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "type": "Container",
+        "id": "reportIssue",
+        "isVisible": false,
+        "items": [
+          {
+            "type": "TextBlock",
+            "text": "\u26a0\ufe0f Report Asset Issue",
+            "size": "Large",
+            "weight": "Bolder",
+            "color": "Accent"
+          },
+          {
+            "type": "Input.ChoiceSet",
+            "id": "issue_asset",
+            "label": "Affected Asset",
+            "isRequired": true,
+            "choices": [
+              {
+                "title": "LAP-2024-0156 \u2014 MacBook Pro 14\"",
+                "value": "LAP-2024-0156"
+              },
+              {
+                "title": "MON-2024-0089 \u2014 Dell UltraSharp 27\"",
+                "value": "MON-2024-0089"
+              },
+              {
+                "title": "PER-2023-0412 \u2014 Logitech MX Master 3S",
+                "value": "PER-2023-0412"
+              }
+            ]
+          },
+          {
+            "type": "Input.ChoiceSet",
+            "id": "issue_type",
+            "label": "Issue Type",
+            "isRequired": true,
+            "choices": [
+              {
+                "title": "\ud83d\udc94 Hardware defect / broken",
+                "value": "defect"
+              },
+              {
+                "title": "\ud83d\udc0c Performance degradation",
+                "value": "performance"
+              },
+              {
+                "title": "\ud83d\udd0b Battery issue",
+                "value": "battery"
+              },
+              {
+                "title": "\ud83d\udcfa Display / screen problem",
+                "value": "display"
+              },
+              {
+                "title": "\ud83d\udd0a Audio issue",
+                "value": "audio"
+              },
+              {
+                "title": "\ud83d\udcf6 Connectivity issue",
+                "value": "connectivity"
+              },
+              {
+                "title": "\ud83d\udd12 Lost / Stolen",
+                "value": "lost"
+              }
+            ]
+          },
+          {
+            "type": "Input.Text",
+            "id": "issue_description",
+            "label": "Describe the Issue",
+            "isMultiline": true,
+            "isRequired": true
+          },
+          {
+            "type": "ActionSet",
+            "spacing": "Medium",
+            "actions": [
+              {
+                "type": "Action.Submit",
+                "title": "\ud83d\udce4 Report Issue",
+                "style": "positive",
+                "data": {
+                  "action": "report_asset_issue",
+                  "demo_mode": true
+                }
+              },
+              {
+                "type": "Action.ToggleVisibility",
+                "title": "\u2190 Back",
+                "targetElements": [
+                  {
+                    "elementId": "reportIssue",
+                    "isVisible": false
+                  },
+                  {
+                    "elementId": "assetMenu",
+                    "isVisible": true
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  "notes": "Multi-section card using Action.ToggleVisibility for in-card navigation. All non-main sections hidden by default."
+}

@@ -1,0 +1,43 @@
+# Copyright Jeron A. Lau 2017 - 2018.
+# Dual-licensed under either the MIT License or the Boost Software License,
+# Version 1.0.  (See accompanying file LICENSE_1_0.txt or copy at
+# https://www.boost.org/LICENSE_1_0.txt)
+#
+# XXXX  X                    /5\——————/5\       XXXX      X           X
+# X   X X   XXX   XXXX      |   0    0   |     X      XXX   XXXX XXXX X X   X
+# X   X X  X   X  X   X  /"\|     <>     |/"\  X      X   X    X    X X X   X
+# XXXX  X  X   X  X   X  \  \\_  ====  _//  /  X   XX X   X   X    X  X  X X
+# X     X  X   X  XXXX    \_              _/   X    X X   X  X    X   X   X
+# X     X   XXX   X       / \            / \    XXXX  X   X XXXX XXXX X   X
+#                 X       \                /                            XX
+#                          --____________--
+
+[package]
+name = "adi_screen"
+version = "0.12.0"
+authors = [
+	"Jeron A. Lau <jeron.lau@plopgrizzly.com>",
+]
+license = "MIT / BSL-1.0"
+documentation = "https://docs.rs/adi_screen"
+homepage = "https://gitlab.com/plopgrizzly/adi/"
+repository = "https://gitlab.com/plopgrizzly/adi/adi_screen"
+readme = "README.md"
+description = "Interface with a computer/phone screen screen to render graphics."
+keywords = [ "vulkan", "graphics", "gui", "hardware", "rendering" ]
+categories = ["gui", "game-engines", "hardware-support", "multimedia::video",
+	"rendering::graphics-api"]
+
+[dependencies]
+adi_clock = "0.3"
+adi_gpu = "0.11"
+aci_png = "0.7"
+fonterator = "0.1"
+# TODO: This is for footile.
+libc = "0.2"
+palette = "0.2"
+# footile = { version = "0.0.10", path = "footile" } # TODO: Use real footile.
+
+# TODO: This is for footile.
+[build-dependencies]
+cc = "1.0"

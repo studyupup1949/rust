@@ -1,0 +1,17 @@
+load("@buckal//:wrapper.bzl", "rust_library")
+
+rust_library(
+    name = "admixture",
+    srcs = glob(["**/*.rs"]),
+    crate = "admixture",
+    crate_root = "src/lib.rs",
+    edition = "2024",
+
+    visibility = ["PUBLIC"],
+    deps = [
+        "//third-party/rust/crates/admixture-macros/0.1.0:admixture_macros",
+        "//third-party/rust/crates/thiserror/1.0.69:thiserror",
+        "//third-party/rust/crates/tokio/1.53.1:tokio",
+        "//third-party/rust/crates/tracing/0.1.44:tracing",
+    ],
+)

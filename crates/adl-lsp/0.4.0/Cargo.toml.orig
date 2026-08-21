@@ -1,0 +1,25 @@
+[package]
+name = "adl-lsp"
+version = "0.4.0"
+edition = "2024"
+description = "Language Server Protocol implementation for ADL"
+license = "MIT"
+
+[dependencies]
+anyhow = "1.0"
+async-lsp = { version = "0.2.2", features = ["tokio"] }
+clap = { version = "4.5.39", features = ["derive"] }
+lsp-types = "0.95.0"
+serde = "1.0.219"
+tokio = { version = "1.27.0", features = ["full" ] }
+tower = "0.5.2"
+tracing = "0.1.41"
+tracing-subscriber = "0.3.19"
+tree-sitter = "0.25.6"
+tree-sitter-adl = { version = "0.3.2" }
+
+# useful for local development
+# tree-sitter-adl = { version = "0.3.2", path = "../../../tree-sitter-adl" }
+
+[dev-dependencies]
+insta = { version = "1.39.0", features = ["yaml"] }

@@ -1,0 +1,13 @@
+name: Benchmark
+
+on:
+  workflow_dispatch:
+
+concurrency:
+  group: benchmark
+  cancel-in-progress: true
+
+jobs:
+  rust-benchmark:
+    name: Rust benchmark
+    uses: ./.github/workflows/rust-benchmark.yaml

@@ -1,0 +1,9 @@
+[package]
+name = "adar-registry"
+version = "0.1.0"
+edition = "2021"
+license = "MIT"
+description = "Advanced Architecture (ADAR) is a collection of architectural tools that help you write more readable and performant code."
+repository = "https://github.com/nandee95/adar/tree/main/adar_registry"
+keywords = ["registry", "resource", "event", "observer"]
+documentation = "https://docs.rs/adar-registry"

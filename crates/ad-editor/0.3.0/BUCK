@@ -1,0 +1,26 @@
+load("@buckal//:wrapper.bzl", "rust_library")
+
+rust_library(
+    name = "ad_editor",
+    srcs = glob(["**/*.rs"]),
+    crate = "ad_editor",
+    crate_root = "src/lib.rs",
+    edition = "2021",
+
+    visibility = ["PUBLIC"],
+    deps = [
+        "//third-party/rust/crates/ad_event/0.3.0:ad_event",
+        "//third-party/rust/crates/libc/0.2.189:libc",
+        "//third-party/rust/crates/libloading/0.8.9:libloading",
+        "//third-party/rust/crates/lsp-types/0.97.0:lsp_types",
+        "//third-party/rust/crates/ninep/0.3.0:ninep",
+        "//third-party/rust/crates/serde/1.0.229:serde",
+        "//third-party/rust/crates/serde_json/1.0.151:serde_json",
+        "//third-party/rust/crates/streaming-iterator/0.1.9:streaming_iterator",
+        "//third-party/rust/crates/toml/0.8.23:toml",
+        "//third-party/rust/crates/tracing-subscriber/0.3.23:tracing_subscriber",
+        "//third-party/rust/crates/tracing/0.1.44:tracing",
+        "//third-party/rust/crates/tree-sitter/0.24.7:tree_sitter",
+        "//third-party/rust/crates/unicode-width/0.2.2:unicode_width",
+    ],
+)

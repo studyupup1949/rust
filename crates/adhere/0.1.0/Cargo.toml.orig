@@ -1,0 +1,9 @@
+[package]
+name = "adhere"
+version = "0.1.0"
+edition = "2024"
+description = "Specification compliance checking for multimedia file formats."
+license = "MIT"
+repository = "https://github.com/ubmu/adhere"
+
+[dependencies]

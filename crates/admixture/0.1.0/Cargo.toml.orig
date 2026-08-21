@@ -1,0 +1,22 @@
+[package]
+name = "admixture"
+description = "Core traits and macros for managing service lifecycles in integration tests"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+repository.workspace = true
+readme.workspace = true
+
+[dependencies]
+admixture-macros = { workspace = true }
+thiserror = { workspace = true }
+tokio = { workspace = true }
+tracing = { workspace = true }
+
+[dev-dependencies]
+assert2 = "0.3"
+eyre = "0.6.12"
+tracing-subscriber = "0.3"
+axum = "0.7"
+reqwest = { version = "0.12", features = ["json"] }
+serde = { version = "1.0", features = ["derive"] }

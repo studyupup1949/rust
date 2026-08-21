@@ -1,0 +1,19 @@
+load("@buckal//:wrapper.bzl", "rust_library")
+
+rust_library(
+    name = "adm",
+    srcs = glob(["**/*.rs"]),
+    crate = "adm",
+    crate_root = "src/lib.rs",
+    edition = "2018",
+
+    visibility = ["PUBLIC"],
+    deps = [
+        "//third-party/rust/crates/dirs/1.0.5:dirs",
+        "//third-party/rust/crates/lazy_static/1.5.0:lazy_static",
+        "//third-party/rust/crates/lifxi/0.1.1:lifxi",
+        "//third-party/rust/crates/serde/1.0.229:serde",
+        "//third-party/rust/crates/serde_derive/1.0.229:serde_derive",
+        "//third-party/rust/crates/toml/0.4.10:toml",
+    ],
+)

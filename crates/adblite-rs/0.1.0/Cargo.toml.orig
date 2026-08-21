@@ -1,0 +1,13 @@
+[package]
+name = "adblite-rs"
+version = "0.1.0"
+edition = "2021"
+description = "Shared ADB command utilities"
+license = "MIT OR Apache-2.0"
+
+[lib]
+name = "adb_rs"
+
+[dependencies]
+serde = { version = "1", features = ["derive"] }
+thiserror = "2.0.18"

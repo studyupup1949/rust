@@ -1,0 +1,670 @@
+{
+  "id": "hr/leave-management",
+  "title": "HR Leave Management \u2014 Request, Approve, and Track Leave",
+  "description": "Complete leave management card with KPI dashboard (remaining/used/pending days), new leave request form with type/dates/reason inputs, pending approvals list, and leave history. Uses ToggleVisibility for multi-section navigation, ColumnSet for KPI metrics, Container styles for status indicators.",
+  "category": "hr",
+  "tags": [
+    "hr",
+    "leave",
+    "management",
+    "approval",
+    "form",
+    "dashboard",
+    "kpi",
+    "toggle-visibility",
+    "employee"
+  ],
+  "use_cases": [
+    "Employee requests time off with dates and reason",
+    "Manager views and approves pending leave requests",
+    "Dashboard showing leave balance and history",
+    "Multi-section HR self-service portal"
+  ],
+  "host_targets": [
+    "generic",
+    "teams",
+    "web_chat"
+  ],
+  "complexity": "advanced",
+  "card": {
+    "$schema": "http://adaptivecards.io/schemas/adaptive-card.json",
+    "type": "AdaptiveCard",
+    "version": "1.5",
+    "metadata": {
+      "webUrl": "https://greentic.io/cards/hr-leave-management",
+      "demo_mode": true
+    },
+    "body": [
+      {
+        "type": "Container",
+        "id": "leaveMenu",
+        "isVisible": true,
+        "style": "emphasis",
+        "bleed": true,
+        "items": [
+          {
+            "type": "ColumnSet",
+            "columns": [
+              {
+                "type": "Column",
+                "width": "auto",
+                "items": [
+                  {
+                    "type": "Image",
+                    "url": "https://img.icons8.com/fluency/96/calendar-plus.png",
+                    "size": "Medium"
+                  }
+                ],
+                "verticalContentAlignment": "Center"
+              },
+              {
+                "type": "Column",
+                "width": "stretch",
+                "items": [
+                  {
+                    "type": "TextBlock",
+                    "text": "Leave Management",
+                    "size": "ExtraLarge",
+                    "weight": "Bolder",
+                    "color": "Accent"
+                  },
+                  {
+                    "type": "TextBlock",
+                    "text": "Request time off, check your balance, or manage existing leave.",
+                    "spacing": "None",
+                    "isSubtle": true,
+                    "wrap": true
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "type": "Container",
+            "style": "good",
+            "spacing": "Medium",
+            "items": [
+              {
+                "type": "TextBlock",
+                "text": "Your Leave Balance (2026)",
+                "weight": "Bolder"
+              },
+              {
+                "type": "ColumnSet",
+                "columns": [
+                  {
+                    "type": "Column",
+                    "width": "1",
+                    "items": [
+                      {
+                        "type": "TextBlock",
+                        "text": "Annual",
+                        "size": "Small",
+                        "isSubtle": true,
+                        "horizontalAlignment": "Center"
+                      },
+                      {
+                        "type": "TextBlock",
+                        "text": "8",
+                        "size": "ExtraLarge",
+                        "weight": "Bolder",
+                        "color": "Good",
+                        "horizontalAlignment": "Center",
+                        "spacing": "None"
+                      },
+                      {
+                        "type": "TextBlock",
+                        "text": "of 12 days",
+                        "size": "Small",
+                        "isSubtle": true,
+                        "horizontalAlignment": "Center",
+                        "spacing": "None"
+                      }
+                    ]
+                  },
+                  {
+                    "type": "Column",
+                    "width": "1",
+                    "items": [
+                      {
+                        "type": "TextBlock",
+                        "text": "Sick",
+                        "size": "Small",
+                        "isSubtle": true,
+                        "horizontalAlignment": "Center"
+                      },
+                      {
+                        "type": "TextBlock",
+                        "text": "5",
+                        "size": "ExtraLarge",
+                        "weight": "Bolder",
+                        "color": "Accent",
+                        "horizontalAlignment": "Center",
+                        "spacing": "None"
+                      },
+                      {
+                        "type": "TextBlock",
+                        "text": "of 6 days",
+                        "size": "Small",
+                        "isSubtle": true,
+                        "horizontalAlignment": "Center",
+                        "spacing": "None"
+                      }
+                    ]
+                  },
+                  {
+                    "type": "Column",
+                    "width": "1",
+                    "items": [
+                      {
+                        "type": "TextBlock",
+                        "text": "Personal",
+                        "size": "Small",
+                        "isSubtle": true,
+                        "horizontalAlignment": "Center"
+                      },
+                      {
+                        "type": "TextBlock",
+                        "text": "3",
+                        "size": "ExtraLarge",
+                        "weight": "Bolder",
+                        "color": "Accent",
+                        "horizontalAlignment": "Center",
+                        "spacing": "None"
+                      },
+                      {
+                        "type": "TextBlock",
+                        "text": "of 3 days",
+                        "size": "Small",
+                        "isSubtle": true,
+                        "horizontalAlignment": "Center",
+                        "spacing": "None"
+                      }
+                    ]
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "type": "ActionSet",
+            "spacing": "Medium",
+            "actions": [
+              {
+                "type": "Action.ToggleVisibility",
+                "title": "\ud83d\udcdd Request Leave",
+                "style": "positive",
+                "targetElements": [
+                  {
+                    "elementId": "leaveMenu",
+                    "isVisible": false
+                  },
+                  {
+                    "elementId": "leaveRequest",
+                    "isVisible": true
+                  }
+                ]
+              },
+              {
+                "type": "Action.ToggleVisibility",
+                "title": "\ud83d\udccb View Pending Requests",
+                "targetElements": [
+                  {
+                    "elementId": "leaveMenu",
+                    "isVisible": false
+                  },
+                  {
+                    "elementId": "leavePending",
+                    "isVisible": true
+                  }
+                ]
+              },
+              {
+                "type": "Action.ToggleVisibility",
+                "title": "\ud83d\udcca Leave History",
+                "targetElements": [
+                  {
+                    "elementId": "leaveMenu",
+                    "isVisible": false
+                  },
+                  {
+                    "elementId": "leaveHistory",
+                    "isVisible": true
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "type": "Container",
+        "id": "leaveRequest",
+        "isVisible": false,
+        "items": [
+          {
+            "type": "TextBlock",
+            "text": "\ud83d\udcdd New Leave Request",
+            "size": "Large",
+            "weight": "Bolder",
+            "color": "Accent"
+          },
+          {
+            "type": "Input.ChoiceSet",
+            "id": "leave_type",
+            "label": "Leave Type",
+            "isRequired": true,
+            "errorMessage": "Select a leave type.",
+            "choices": [
+              {
+                "title": "\ud83c\udfd6\ufe0f Annual Leave (8 days remaining)",
+                "value": "annual"
+              },
+              {
+                "title": "\ud83e\udd12 Sick Leave (5 days remaining)",
+                "value": "sick"
+              },
+              {
+                "title": "\ud83d\udc64 Personal Leave (3 days remaining)",
+                "value": "personal"
+              },
+              {
+                "title": "\ud83d\udea8 Emergency Leave",
+                "value": "emergency"
+              },
+              {
+                "title": "\ud83e\udd31 Parental Leave",
+                "value": "parental"
+              },
+              {
+                "title": "\ud83d\udcda Study Leave",
+                "value": "study"
+              },
+              {
+                "title": "\ud83d\udc92 Marriage Leave",
+                "value": "marriage"
+              },
+              {
+                "title": "\ud83d\udd4a\ufe0f Bereavement Leave",
+                "value": "bereavement"
+              }
+            ]
+          },
+          {
+            "type": "ColumnSet",
+            "columns": [
+              {
+                "type": "Column",
+                "width": "1",
+                "items": [
+                  {
+                    "type": "Input.Date",
+                    "id": "leave_start",
+                    "label": "Start Date",
+                    "isRequired": true,
+                    "errorMessage": "Select a start date."
+                  }
+                ]
+              },
+              {
+                "type": "Column",
+                "width": "1",
+                "items": [
+                  {
+                    "type": "Input.Date",
+                    "id": "leave_end",
+                    "label": "End Date",
+                    "isRequired": true,
+                    "errorMessage": "Select an end date."
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "type": "Input.ChoiceSet",
+            "id": "leave_duration_type",
+            "label": "Duration",
+            "value": "full_day",
+            "choices": [
+              {
+                "title": "Full Day(s)",
+                "value": "full_day"
+              },
+              {
+                "title": "Half Day \u2014 Morning",
+                "value": "half_am"
+              },
+              {
+                "title": "Half Day \u2014 Afternoon",
+                "value": "half_pm"
+              }
+            ]
+          },
+          {
+            "type": "Input.Text",
+            "id": "leave_reason",
+            "label": "Reason / Notes",
+            "placeholder": "Brief description (required for 3+ days)...",
+            "isMultiline": true,
+            "maxLength": 500
+          },
+          {
+            "type": "Input.Text",
+            "id": "leave_handover",
+            "label": "Handover / Coverage",
+            "placeholder": "Who will cover your tasks while you are away?"
+          },
+          {
+            "type": "Input.Toggle",
+            "id": "leave_attach_doc",
+            "title": "I have a supporting document (e.g. medical certificate)",
+            "value": "false"
+          },
+          {
+            "type": "Input.ChoiceSet",
+            "id": "leave_approver",
+            "label": "Approving Manager",
+            "value": "direct_manager",
+            "choices": [
+              {
+                "title": "Direct Manager (auto-detected)",
+                "value": "direct_manager"
+              },
+              {
+                "title": "Department Head",
+                "value": "dept_head"
+              },
+              {
+                "title": "HR Manager",
+                "value": "hr_manager"
+              }
+            ]
+          },
+          {
+            "type": "ActionSet",
+            "spacing": "Medium",
+            "actions": [
+              {
+                "type": "Action.Submit",
+                "title": "\ud83d\udce4 Submit Request",
+                "style": "positive",
+                "data": {
+                  "action": "submit_leave_request",
+                  "demo_mode": true
+                }
+              },
+              {
+                "type": "Action.ToggleVisibility",
+                "title": "\u2190 Back",
+                "targetElements": [
+                  {
+                    "elementId": "leaveRequest",
+                    "isVisible": false
+                  },
+                  {
+                    "elementId": "leaveMenu",
+                    "isVisible": true
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "type": "Container",
+        "id": "leavePending",
+        "isVisible": false,
+        "items": [
+          {
+            "type": "TextBlock",
+            "text": "\ud83d\udccb Pending Leave Requests",
+            "size": "Large",
+            "weight": "Bolder",
+            "color": "Accent"
+          },
+          {
+            "type": "Container",
+            "style": "warning",
+            "items": [
+              {
+                "type": "ColumnSet",
+                "columns": [
+                  {
+                    "type": "Column",
+                    "width": "stretch",
+                    "items": [
+                      {
+                        "type": "TextBlock",
+                        "text": "\ud83c\udfd6\ufe0f Annual Leave",
+                        "weight": "Bolder"
+                      },
+                      {
+                        "type": "TextBlock",
+                        "text": "May 12 \u2013 May 19, 2026 (5 work days)",
+                        "spacing": "None",
+                        "size": "Small"
+                      },
+                      {
+                        "type": "TextBlock",
+                        "text": "Reason: Family trip to Japan",
+                        "spacing": "None",
+                        "size": "Small",
+                        "isSubtle": true
+                      }
+                    ]
+                  },
+                  {
+                    "type": "Column",
+                    "width": "auto",
+                    "items": [
+                      {
+                        "type": "TextBlock",
+                        "text": "\u23f3 Pending",
+                        "color": "Warning",
+                        "weight": "Bolder"
+                      },
+                      {
+                        "type": "TextBlock",
+                        "text": "Submitted Apr 10",
+                        "size": "Small",
+                        "isSubtle": true,
+                        "spacing": "None"
+                      }
+                    ],
+                    "verticalContentAlignment": "Center"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "type": "Container",
+            "style": "good",
+            "separator": true,
+            "items": [
+              {
+                "type": "ColumnSet",
+                "columns": [
+                  {
+                    "type": "Column",
+                    "width": "stretch",
+                    "items": [
+                      {
+                        "type": "TextBlock",
+                        "text": "\ud83d\udcda Study Leave",
+                        "weight": "Bolder"
+                      },
+                      {
+                        "type": "TextBlock",
+                        "text": "Jun 7, 2026 (1 day)",
+                        "spacing": "None",
+                        "size": "Small"
+                      },
+                      {
+                        "type": "TextBlock",
+                        "text": "Reason: UT exam \u2014 Teknik Informatika",
+                        "spacing": "None",
+                        "size": "Small",
+                        "isSubtle": true
+                      }
+                    ]
+                  },
+                  {
+                    "type": "Column",
+                    "width": "auto",
+                    "items": [
+                      {
+                        "type": "TextBlock",
+                        "text": "\u2705 Approved",
+                        "color": "Good",
+                        "weight": "Bolder"
+                      },
+                      {
+                        "type": "TextBlock",
+                        "text": "Apr 8",
+                        "size": "Small",
+                        "isSubtle": true,
+                        "spacing": "None"
+                      }
+                    ],
+                    "verticalContentAlignment": "Center"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "type": "Input.ChoiceSet",
+            "id": "pending_action",
+            "label": "Quick Action",
+            "value": "none",
+            "choices": [
+              {
+                "title": "No action",
+                "value": "none"
+              },
+              {
+                "title": "\u274c Cancel: Annual Leave (May 12-19)",
+                "value": "cancel_annual_may"
+              },
+              {
+                "title": "\u270f\ufe0f Edit: Annual Leave (May 12-19)",
+                "value": "edit_annual_may"
+              }
+            ]
+          },
+          {
+            "type": "ActionSet",
+            "spacing": "Medium",
+            "actions": [
+              {
+                "type": "Action.Submit",
+                "title": "Apply Action",
+                "style": "positive",
+                "data": {
+                  "action": "leave_pending_action",
+                  "demo_mode": true
+                }
+              },
+              {
+                "type": "Action.ToggleVisibility",
+                "title": "\u2190 Back",
+                "targetElements": [
+                  {
+                    "elementId": "leavePending",
+                    "isVisible": false
+                  },
+                  {
+                    "elementId": "leaveMenu",
+                    "isVisible": true
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "type": "Container",
+        "id": "leaveHistory",
+        "isVisible": false,
+        "items": [
+          {
+            "type": "TextBlock",
+            "text": "\ud83d\udcca Leave History (2026)",
+            "size": "Large",
+            "weight": "Bolder",
+            "color": "Accent"
+          },
+          {
+            "type": "FactSet",
+            "facts": [
+              {
+                "title": "Jan 2 \u2013 Jan 3",
+                "value": "\ud83c\udfd6\ufe0f Annual (2d) \u2014 \u2705 Taken"
+              },
+              {
+                "title": "Feb 14",
+                "value": "\ud83d\udc64 Personal (1d) \u2014 \u2705 Taken"
+              },
+              {
+                "title": "Mar 10",
+                "value": "\ud83e\udd12 Sick (1d) \u2014 \u2705 Taken"
+              },
+              {
+                "title": "Mar 28 \u2013 Mar 29",
+                "value": "\ud83c\udfd6\ufe0f Annual (2d) \u2014 \u2705 Taken"
+              },
+              {
+                "title": "May 12 \u2013 May 19",
+                "value": "\ud83c\udfd6\ufe0f Annual (5d) \u2014 \u23f3 Pending"
+              },
+              {
+                "title": "Jun 7",
+                "value": "\ud83d\udcda Study (1d) \u2014 \u2705 Approved"
+              }
+            ]
+          },
+          {
+            "type": "TextBlock",
+            "text": "Total days used: 6  \u2022  Pending: 5  \u2022  Remaining: 10",
+            "isSubtle": true,
+            "size": "Small",
+            "spacing": "Medium"
+          },
+          {
+            "type": "ActionSet",
+            "actions": [
+              {
+                "type": "Action.Submit",
+                "title": "\ud83d\udce5 Export to CSV",
+                "data": {
+                  "action": "export_leave_history",
+                  "format": "csv",
+                  "demo_mode": true
+                }
+              },
+              {
+                "type": "Action.ToggleVisibility",
+                "title": "\u2190 Back",
+                "targetElements": [
+                  {
+                    "elementId": "leaveHistory",
+                    "isVisible": false
+                  },
+                  {
+                    "elementId": "leaveMenu",
+                    "isVisible": true
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  "notes": "Single-card multi-section app using Action.ToggleVisibility for navigation. All sections hidden by default (isVisible:false) except the main view. Card version 1.5 for broad host compatibility."
+}

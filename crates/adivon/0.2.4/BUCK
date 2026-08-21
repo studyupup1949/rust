@@ -1,0 +1,15 @@
+load("@buckal//:wrapper.bzl", "rust_library")
+
+rust_library(
+    name = "adivon",
+    srcs = glob(["**/*.rs"]),
+    crate = "adivon",
+    crate_root = "src/lib.rs",
+    edition = "2015",
+
+    visibility = ["PUBLIC"],
+    deps = [
+        "//third-party/rust/crates/rand/0.10.2:rand",
+        "//third-party/rust/crates/vec_map/0.8.2:vec_map",
+    ],
+)

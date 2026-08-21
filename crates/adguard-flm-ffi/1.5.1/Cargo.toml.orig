@@ -1,0 +1,30 @@
+[package]
+name = "adguard-flm-ffi"
+version = "1.5.1"
+edition = "2021"
+homepage.workspace = true
+license-file.workspace = true
+repository.workspace = true
+description = "Foreign function interface crate for filter list manager library"
+
+[lib]
+crate-type = ["cdylib", "staticlib", "rlib"]
+name = "filter_list_manager_ffi"
+
+[dependencies]
+adguard-flm = { version = "1.5.1", default-features = false }
+thiserror.workspace = true
+uniffi.workspace = true
+protobuf = "3.5.1"
+prost = "0.13.2"
+prost-types = "0.13.2"
+enum_stringify = "0.6.0"
+
+[features]
+default = ["adguard-flm/default"]
+rusqlite-bundled = ["adguard-flm/rusqlite-bundled"]
+rustls-tls = ["adguard-flm/rustls-tls"]
+
+[build-dependencies]
+uniffi.workspace = true
+windres = "0.2"

@@ -1,0 +1,31 @@
+load("@buckal//:wrapper.bzl", "rust_library")
+
+rust_library(
+    name = "adversaria",
+    srcs = glob(["**/*.rs"]),
+    crate = "adversaria",
+    crate_root = "src/lib.rs",
+    edition = "2021",
+
+    visibility = ["PUBLIC"],
+    deps = [
+        "//third-party/rust/crates/anyhow/1.0.104:anyhow",
+        "//third-party/rust/crates/async-trait/0.1.92:async_trait",
+        "//third-party/rust/crates/chrono/0.4.45:chrono",
+        "//third-party/rust/crates/clap/4.6.6:clap",
+        "//third-party/rust/crates/colored/2.2.0:colored",
+        "//third-party/rust/crates/comfy-table/7.2.2:comfy_table",
+        "//third-party/rust/crates/indicatif/0.17.11:indicatif",
+        "//third-party/rust/crates/libloading/0.8.9:libloading",
+        "//third-party/rust/crates/reqwest/0.11.27:reqwest",
+        "//third-party/rust/crates/serde/1.0.229:serde",
+        "//third-party/rust/crates/serde_json/1.0.151:serde_json",
+        "//third-party/rust/crates/serde_yaml/0.9.33:serde_yaml",
+        "//third-party/rust/crates/thiserror/1.0.69:thiserror",
+        "//third-party/rust/crates/tokio/1.53.1:tokio",
+        "//third-party/rust/crates/tracing-subscriber/0.3.23:tracing_subscriber",
+        "//third-party/rust/crates/tracing/0.1.44:tracing",
+        "//third-party/rust/crates/uuid/1.24.0:uuid",
+        "//third-party/rust/crates/walkdir/2.5.0:walkdir",
+    ],
+)

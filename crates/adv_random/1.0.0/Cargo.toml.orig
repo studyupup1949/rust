@@ -1,0 +1,19 @@
+[package]
+name = "adv_random"
+version = "1.0.0"
+authors = ["Mark Davis <markeyd83@gmail.com>"]
+edition = "2021"
+readme = "README.md"
+license = "MIT OR Apache-2.0"
+repository = "https://github.com/mdavisJr/adv_random"
+description = "Create random numbers or strings based off a rule or multiple rules"
+keywords = ["rand", "random", "rule", "string", "password"]
+
+[lib]
+crate-type = ["lib", "cdylib"]
+
+[dependencies]
+once_cell = "^1.17"
+rand = "^0"
+getrandom = { version = "^0.2", features = ["js"] }
+

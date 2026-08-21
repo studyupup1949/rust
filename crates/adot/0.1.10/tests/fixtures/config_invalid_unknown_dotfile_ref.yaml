@@ -1,0 +1,9 @@
+dotfiles:
+  f_exists:
+    dst: /tmp/adot_tests/dst
+    src: exists
+    type: link
+profiles:
+  test-host:
+    dotfiles:
+      - f_does_not_exist

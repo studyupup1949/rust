@@ -1,0 +1,11 @@
+dotfiles:
+  f_ok:
+    dst: /tmp/adot_tests/dst
+    src: ok
+    type: link
+profiles:
+  test-host:
+    dotfiles:
+      - f_ok
+    include:
+      - nonexistent_profile

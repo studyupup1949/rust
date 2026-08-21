@@ -1,0 +1,7 @@
+error: Setup already defined
+ --> tests/errors/multiple-setups.rs:5:1
+  |
+5 | #[adtest::adtest(setup = setup, setup = setup)]
+  | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  |
+  = note: this error originates in the attribute macro `adtest::adtest` (in Nightly builds, run with -Z macro-backtrace for more info)

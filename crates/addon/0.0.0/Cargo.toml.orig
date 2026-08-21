@@ -1,0 +1,12 @@
+[package]
+name = "addon"
+version = "0.0.0"
+edition = "2024"
+description = "(STUB) A collection of brand-new data structures and types extending the Rust standard library."
+license = "MIT OR Apache-2.0"
+repository = "https://codeberg.org/razkar/addon"
+readme = "README.md"
+keywords = ["data-structures", "std", "extension", "types"]
+categories = ["data-structures", "rust-patterns"]
+
+[dependencies]

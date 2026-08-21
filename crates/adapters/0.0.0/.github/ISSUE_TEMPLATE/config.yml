@@ -1,0 +1,8 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Ask a Question
+    url: https://github.com/muhammad-fiaz/adapters/discussions
+    about: Ask questions, clear up doubts, or get help using Adapters.
+  - name: Sponsor Project
+    url: https://pay.muhammadfiaz.com
+    about: Support the maintenance and premium feature updates of Adapters.

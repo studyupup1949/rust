@@ -1,0 +1,14 @@
+load("@buckal//:wrapper.bzl", "rust_binary")
+
+rust_binary(
+    name = "ado_test",
+    srcs = glob(["**/*.rs"]),
+    crate = "ado_test",
+    crate_root = "src/main.rs",
+    edition = "2021",
+
+    visibility = ["PUBLIC"],
+    deps = [
+        "//third-party/rust/crates/serde/1.0.229:serde",
+    ],
+)

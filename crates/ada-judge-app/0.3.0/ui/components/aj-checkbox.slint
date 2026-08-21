@@ -1,0 +1,32 @@
+import { AJTheme } from "../aj-theme.slint";
+import { AJText } from "aj-text.slint";
+import { AJButton } from "aj-button.slint";
+import { AJIcon } from "aj-icon.slint";
+
+export component AJCheckbox inherits HorizontalLayout {
+    in property <string> text;
+    in-out property <bool> value;
+
+    spacing: AJTheme.spacing;
+
+    AJButton {
+        text: text;
+
+        text-color: value ? AJTheme.contest-ongoing-text : AJTheme.error-text;
+
+        background: value ? AJTheme.contest-ongoing : AJTheme.container-error;
+
+        text-halign: left;
+
+        AJIcon {
+            source: value ? @image-url("../../radix-icons/check.svg") : @image-url("../../radix-icons/cross-2.svg");
+            color: value ? AJTheme.contest-ongoing-text : AJTheme.error-text;
+            x: parent.width - self.width - AJTheme.fit-space;
+            y: (parent.height - self.height) / 2;
+        }
+
+        clicked => {
+            value = !value;
+        }
+    }
+}

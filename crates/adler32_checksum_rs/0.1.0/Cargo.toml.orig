@@ -1,0 +1,19 @@
+[package]
+name = "adler32_checksum_rs"
+version = "0.1.0"
+edition = "2021"
+license-file = "LICENSE"
+readme = "README.md"
+keywords = ["hash", "checksum", "api"]
+description = "Adler32 checksum"
+repository = "https://github.com/Derghust/adler32_checksum_rs"
+
+[dependencies]
+rand = "0.8.5"
+byteorder = "1.4.3"
+rayon = "1.7.0"
+criterion = { version = "0.4.0", features = [ "html_reports" ] }
+
+[[bench]]
+name = "adler32_checksum_benchmark"
+harness = false

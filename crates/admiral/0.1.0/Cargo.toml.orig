@@ -1,0 +1,30 @@
+[package]
+name = "admiral"
+version = "0.1.0"
+edition = "2018"
+description = "Admiral test runner"
+license = "MIT OR Apache-2.0"
+
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[workspace]
+members = [
+    "admiral-derive",
+    "admiral-types"
+]
+
+[dependencies]
+quote = "1.0.9"
+rustc-test = "0.3.1"
+# syn = "1.0.74"
+syn = {version="1.0.57",features=["full","fold"]}
+admiral-derive = { path = "./admiral-derive", version = "= 0.1.0"}
+admiral-types = {path = "./admiral-types", version = "= 0.1.0"}
+actix-rt = "2.2.0"
+tokio = {version="1.9.0", features=["macros","rt"]}
+futures = "0.3.16"
+
+[lib]
+name = "admiral"
+path = "src/lib.rs"

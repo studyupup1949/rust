@@ -1,0 +1,15 @@
+load("@buckal//:wrapper.bzl", "rust_library")
+
+rust_library(
+    name = "adapters",
+    srcs = glob(["**/*.rs"]),
+    crate = "adapters",
+    crate_root = "src/lib.rs",
+    edition = "2024",
+
+    visibility = ["PUBLIC"],
+    deps = [
+        "//third-party/rust/crates/adapters-macros/0.0.0:adapters_macros",
+        "//third-party/rust/crates/regex/1.13.1:regex",
+    ],
+)

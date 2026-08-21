@@ -1,0 +1,13 @@
+[package]
+name = "address"
+version = "0.1.0"
+authors = ["Nicholas Deapen <nik@deapen.com>"]
+edition = "2018"
+keywords = ["network", "internet", "ip", "domain", "endpoint"]
+license = "MIT"
+description = "This library aids in processing network addresses."
+repository = "https://github.com/nikdeapen/address"
+homepage = "https://github.com/nikdeapen/address"
+readme = "README.md"
+
+[dependencies]

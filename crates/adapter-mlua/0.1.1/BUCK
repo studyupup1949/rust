@@ -1,0 +1,15 @@
+load("@buckal//:wrapper.bzl", "rust_library")
+
+rust_library(
+    name = "adapter_mlua",
+    srcs = glob(["**/*.rs"]),
+    crate = "adapter_mlua",
+    crate_root = "src/lib.rs",
+    edition = "2021",
+
+    visibility = ["PUBLIC"],
+    deps = [
+        "//third-party/rust/crates/adapter/0.1.1:adapter",
+        "//third-party/rust/crates/mlua/0.9.9:mlua",
+    ],
+)

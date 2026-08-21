@@ -1,0 +1,13 @@
+[package]
+name = "ade-common"
+version = "0.1.0"
+edition = "2021"
+description = "Common utilities and test helpers for ADE graph crates."
+license = "MIT OR Apache-2.0"
+repository = "https://github.com/riccardoscalco/ade"
+homepage = "https://github.com/riccardoscalco/ade"
+keywords = ["graph", "utilities", "common", "helpers", "test"]
+categories = ["development-tools::debugging", "development-tools::testing"]
+
+[features]
+test-helpers = []

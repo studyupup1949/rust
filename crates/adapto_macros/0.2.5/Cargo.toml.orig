@@ -1,0 +1,22 @@
+[package]
+name = "adapto_macros"
+description = "Derive macros for Adapto — #[derive(Resource)] and field metadata"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+authors.workspace = true
+repository.workspace = true
+homepage.workspace = true
+
+[lib]
+proc-macro = true
+
+[dependencies]
+syn = { version = "2", features = ["full", "extra-traits"] }
+quote = "1"
+proc-macro2 = "1"
+
+[dev-dependencies]
+adapto_store = { path = "../adapto_store" }
+serde = { workspace = true }
+serde_json = { workspace = true }

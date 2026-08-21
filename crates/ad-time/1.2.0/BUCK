@@ -1,0 +1,17 @@
+load("@buckal//:wrapper.bzl", "rust_library")
+
+rust_library(
+    name = "ad_time",
+    srcs = glob(["**/*.rs"]),
+    crate = "ad_time",
+    crate_root = "src/lib.rs",
+    edition = "2021",
+
+    visibility = ["PUBLIC"],
+    deps = [
+        "//third-party/rust/crates/getrandom/0.3.4:getrandom",
+        "//third-party/rust/crates/rand/0.9.5:rand",
+        "//third-party/rust/crates/socket2/0.5.10:socket2",
+        "//third-party/rust/crates/thiserror/2.0.20:thiserror",
+    ],
+)

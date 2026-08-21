@@ -1,0 +1,15 @@
+load("@buckal//:wrapper.bzl", "rust_library")
+
+rust_library(
+    name = "adze_governance_matrix_core_impl",
+    srcs = glob(["**/*.rs"]),
+    crate = "adze_governance_matrix_core_impl",
+    crate_root = "src/lib.rs",
+    edition = "2024",
+    features = ["default"],
+
+    visibility = ["PUBLIC"],
+    deps = [
+        "//third-party/rust/crates/adze-bdd-governance-core/0.1.0:adze_bdd_governance_core",
+    ],
+)

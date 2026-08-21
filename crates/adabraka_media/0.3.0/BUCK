@@ -1,0 +1,14 @@
+load("@buckal//:wrapper.bzl", "rust_library")
+
+rust_library(
+    name = "adabraka_media",
+    srcs = glob(["**/*.rs"]),
+    crate = "adabraka_media",
+    crate_root = "src/media.rs",
+    edition = "2024",
+
+    visibility = ["PUBLIC"],
+    deps = [
+        "//third-party/rust/crates/anyhow/1.0.104:anyhow",
+    ],
+)

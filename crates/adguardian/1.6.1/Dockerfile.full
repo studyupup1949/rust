@@ -1,0 +1,28 @@
+# syntax=docker/dockerfile:1
+
+# glibc (Debial) based Docker image for AdGuardian-Term
+# Because the ultra-lightweight scratch version doesn't work on 32-bit arch
+
+# Build: compile the binary for the TARGET arch
+FROM rust:1.90-slim-bookworm AS builder
+RUN apt-get update \
+    && apt-get install -y --no-install-recommends build-essential cmake clang perl \
+    && rm -rf /var/lib/apt/lists/*
+WORKDIR /app
+COPY . .
+ARG TARGETPLATFORM
+RUN --mount=type=cache,target=/usr/local/cargo/registry,id=cargo-reg-full-${TARGETPLATFORM} \
+    cargo build --release && cp target/release/adguardian /adguardian
+
+# Runtime: minimal glibc base with CA certs, run as non-root
+FROM debian:bookworm-slim
+LABEL org.opencontainers.image.title="AdGuardian-Term" \
+      org.opencontainers.image.description="Real-time traffic monitoring for AdGuard Home, in your terminal" \
+      org.opencontainers.image.source="https://github.com/Lissy93/AdGuardian-Term" \
+      org.opencontainers.image.licenses="MIT"
+RUN apt-get update \
+    && apt-get install -y --no-install-recommends ca-certificates \
+    && rm -rf /var/lib/apt/lists/*
+COPY --from=builder /adguardian /usr/local/bin/adguardian
+USER 65534:65534
+ENTRYPOINT ["/usr/local/bin/adguardian"]

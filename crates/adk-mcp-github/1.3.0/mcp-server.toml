@@ -1,0 +1,123 @@
+server_id = "mcp_github"
+display_name = "GitHub"
+version = "1.3.0"
+domain = "developer-tools"
+sdk_version = "0.1.0"
+risk_level = "high"
+writes_allowed = "gated"
+transports = ["stdio"]
+credentials = ["vault://github-token"]
+governance_gates = []
+environments = ["development", "staging", "production"]
+
+[[tools]]
+name = "search_repos"
+description = "Search GitHub repositories by query"
+risk_class = "read_only"
+requires_approval = false
+credential_bindings = ["vault://github-token"]
+
+[[tools]]
+name = "get_repo"
+description = "Get repository details including default branch, language, and stats"
+risk_class = "read_only"
+requires_approval = false
+credential_bindings = ["vault://github-token"]
+
+[[tools]]
+name = "list_branches"
+description = "List branches for a repository"
+risk_class = "read_only"
+requires_approval = false
+credential_bindings = ["vault://github-token"]
+
+[[tools]]
+name = "get_file_contents"
+description = "Get file contents from a repository (decoded from base64)"
+risk_class = "read_only"
+requires_approval = false
+credential_bindings = ["vault://github-token"]
+
+[[tools]]
+name = "search_code"
+description = "Search code across GitHub repositories"
+risk_class = "read_only"
+requires_approval = false
+credential_bindings = ["vault://github-token"]
+
+[[tools]]
+name = "list_pull_requests"
+description = "List pull requests for a repository"
+risk_class = "read_only"
+requires_approval = false
+credential_bindings = ["vault://github-token"]
+
+[[tools]]
+name = "get_pull_request"
+description = "Get a specific pull request with merge status and stats"
+risk_class = "read_only"
+requires_approval = false
+credential_bindings = ["vault://github-token"]
+
+[[tools]]
+name = "get_pr_diff"
+description = "Get the diff for a pull request"
+risk_class = "read_only"
+requires_approval = false
+credential_bindings = ["vault://github-token"]
+
+[[tools]]
+name = "create_review"
+description = "Create a review on a pull request"
+risk_class = "external_write"
+requires_approval = true
+credential_bindings = ["vault://github-token"]
+
+[[tools]]
+name = "create_issue"
+description = "Create a new issue in a repository"
+risk_class = "external_write"
+requires_approval = false
+credential_bindings = ["vault://github-token"]
+
+[[tools]]
+name = "update_issue"
+description = "Update an existing issue (title, body, state, labels)"
+risk_class = "external_write"
+requires_approval = false
+credential_bindings = ["vault://github-token"]
+
+[[tools]]
+name = "create_pull_request"
+description = "Create a new pull request"
+risk_class = "external_write"
+requires_approval = true
+credential_bindings = ["vault://github-token"]
+
+[[tools]]
+name = "merge_pull_request"
+description = "Merge a pull request (merge, squash, or rebase)"
+risk_class = "external_write"
+requires_approval = true
+credential_bindings = ["vault://github-token"]
+
+[[tools]]
+name = "create_branch"
+description = "Create a new branch from a SHA"
+risk_class = "external_write"
+requires_approval = false
+credential_bindings = ["vault://github-token"]
+
+[[tools]]
+name = "delete_branch"
+description = "Delete a branch"
+risk_class = "destructive"
+requires_approval = true
+credential_bindings = ["vault://github-token"]
+
+[[tools]]
+name = "delete_repo"
+description = "Delete a repository (DANGEROUS — irreversible)"
+risk_class = "destructive"
+requires_approval = true
+credential_bindings = ["vault://github-token"]

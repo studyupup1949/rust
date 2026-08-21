@@ -1,0 +1,39 @@
+TODO:
+
+0.x.y: ( Internal Changes or Bugfix Release )
+	* Drop gcc-rs dependency and write all of the C code in Rust
+	* Better way to change to and from validation layers
+
+0.x.y: ( Internal Changes or Bugfix Release )
+	* Figure out a way to statically link Vulkan
+
+0.x.y: ( Internal Changes or Bugfix Release )
+	* Automatically Decrease to 30fps if running behind too much.
+
+0.x.y: ( Internal Changes or Bugfix Release )
+	* Make scrolling fast work on windows ( increments of 120 )
+
+0.x.y: ( Internal Changes or Bugfix Release )
+	* Fix vkBeginCommandBuffer occasionally not being called when it's
+		needed.
+
+0.x.y: ( Internal Changes or Bugfix Release )
+	* Divide library into multiple smaller libraries for each device
+
+0.x.0: ( Add Support or Change API )
+	* Implement Wayland Support
+
+0.x.0: ( Add Support or Change API )
+	* Implement Android Support
+
+0.x.0: ( Add Support or Change API )
+	* Implement Raspberry Pi Direct to Display Support
+
+0.x.0: ( Add Support or Change API )
+	* Implement OpenGL + MacOS support
+
+0.x.0: ( Add Support or Change API )
+	* Implement WebAssembly + OpenGL support
+
+0.x.0: ( Add Support or Change API )
+	* Implement OpenGL backwards compatibility for Windows.

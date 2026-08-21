@@ -1,0 +1,19 @@
+//! CLI command implementations.
+
+mod config;
+mod doctor;
+mod edit;
+mod generate;
+mod init;
+mod link;
+mod list;
+mod new;
+
+pub use config::config_with_discovery;
+pub use doctor::doctor;
+pub use edit::edit;
+pub use generate::{generate_book, generate_graph, generate_toc};
+pub use init::init;
+pub use link::link;
+pub use list::list;
+pub use new::new;

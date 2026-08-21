@@ -1,0 +1,15 @@
+load("@buckal//:wrapper.bzl", "rust_library")
+
+rust_library(
+    name = "adiantum",
+    srcs = glob(["**/*.rs"]),
+    crate = "adiantum",
+    crate_root = "src/lib.rs",
+    edition = "2021",
+
+    visibility = ["PUBLIC"],
+    deps = [
+        "//third-party/rust/crates/cipher/0.4.4:cipher",
+        "//third-party/rust/crates/poly1305/0.8.0:poly1305",
+    ],
+)

@@ -1,0 +1,213 @@
+{
+  "id": "patterns/employee-onboarding",
+  "title": "Employee Onboarding Welcome with Steps",
+  "description": "Accent welcome header with personalized greeting + markdown link, data-bound step cards (emphasis style), numbered steps with app icons and CTAs, icon link list in accent footer. Alternating container styles.",
+  "category": "patterns",
+  "tags": [
+    "onboarding",
+    "HR",
+    "welcome",
+    "steps",
+    "checklist",
+    "new-hire",
+    "links"
+  ],
+  "use_cases": [
+    "New employee onboarding",
+    "App setup guide",
+    "Step-by-step instructions",
+    "Welcome with useful links"
+  ],
+  "host_targets": [
+    "generic",
+    "teams",
+    "web_chat"
+  ],
+  "complexity": "intermediate",
+  "card": {
+    "type": "AdaptiveCard",
+    "body": [
+      {
+        "type": "Container",
+        "items": [
+          {
+            "type": "ColumnSet",
+            "columns": [
+              {
+                "type": "Column",
+                "width": "stretch",
+                "items": [
+                  {
+                    "type": "TextBlock",
+                    "text": "Hi, ${name} and welcome to ${company_name}!",
+                    "wrap": true,
+                    "size": "ExtraLarge",
+                    "weight": "Bolder",
+                    "horizontalAlignment": "Left"
+                  },
+                  {
+                    "type": "TextBlock",
+                    "text": "On this Card we've collected all the key steps to get started with your work apps. Just follow along or [contact HR](${contact_hr}) at any point if you have any questions.",
+                    "wrap": true,
+                    "spacing": "Medium"
+                  }
+                ],
+                "verticalContentAlignment": "Center"
+              },
+              {
+                "type": "Column",
+                "width": "150px",
+                "verticalContentAlignment": "Center",
+                "items": [
+                  {
+                    "type": "Image",
+                    "url": "https://placeholder.greentic.com/welcome-illustration.png",
+                    "width": "118px"
+                  }
+                ],
+                "horizontalAlignment": "Right"
+              }
+            ]
+          }
+        ],
+        "style": "accent"
+      },
+      {
+        "type": "Container",
+        "items": [
+          {
+            "type": "ColumnSet",
+            "columns": [
+              {
+                "type": "Column",
+                "width": "60px",
+                "items": [
+                  {
+                    "type": "Image",
+                    "url": "${app_icon}",
+                    "width": "70px"
+                  }
+                ]
+              },
+              {
+                "type": "Column",
+                "width": "stretch",
+                "items": [
+                  {
+                    "type": "TextBlock",
+                    "text": "Step ${step}",
+                    "wrap": true,
+                    "size": "Large",
+                    "horizontalAlignment": "Center",
+                    "weight": "Bolder"
+                  },
+                  {
+                    "type": "TextBlock",
+                    "text": "${title}",
+                    "wrap": true,
+                    "size": "Default",
+                    "horizontalAlignment": "Center"
+                  },
+                  {
+                    "type": "TextBlock",
+                    "text": "${description}",
+                    "wrap": true,
+                    "horizontalAlignment": "Center",
+                    "weight": "Lighter"
+                  },
+                  {
+                    "type": "ActionSet",
+                    "actions": [
+                      {
+                        "type": "Action.OpenUrl",
+                        "title": "${button_label}",
+                        "url": "${button_link}",
+                        "id": "btn-${button_label}"
+                      }
+                    ],
+                    "horizontalAlignment": "Center"
+                  }
+                ]
+              }
+            ]
+          }
+        ],
+        "style": "emphasis",
+        "$data": "${steps}"
+      },
+      {
+        "type": "Container",
+        "style": "accent",
+        "items": [
+          {
+            "type": "ColumnSet",
+            "columns": [
+              {
+                "type": "Column",
+                "width": 33,
+                "items": [
+                  {
+                    "type": "TextBlock",
+                    "text": "Some more useful links for the future...",
+                    "wrap": true,
+                    "size": "Large"
+                  }
+                ],
+                "verticalContentAlignment": "Center"
+              },
+              {
+                "type": "Column",
+                "width": 66,
+                "items": [
+                  {
+                    "type": "Image",
+                    "url": "https://placeholder.greentic.com/useful-links-illustration.png"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "type": "ColumnSet",
+            "columns": [
+              {
+                "type": "Column",
+                "width": "25px",
+                "items": [
+                  {
+                    "type": "Image",
+                    "url": "${link_icon}",
+                    "width": "25px"
+                  }
+                ],
+                "verticalContentAlignment": "Center"
+              },
+              {
+                "type": "Column",
+                "width": "stretch",
+                "items": [
+                  {
+                    "type": "TextBlock",
+                    "text": "${link_label}",
+                    "wrap": true
+                  }
+                ],
+                "verticalContentAlignment": "Center"
+              }
+            ],
+            "horizontalAlignment": "Left",
+            "selectAction": {
+              "type": "Action.OpenUrl",
+              "id": "link-${link_label}",
+              "url": "${link_href}"
+            },
+            "$data": "${useful_links}"
+          }
+        ]
+      }
+    ],
+    "$schema": "http://adaptivecards.io/schemas/adaptive-card.json",
+    "version": "1.2"
+  },
+  "notes": ""
+}

@@ -1,0 +1,14 @@
+load("@buckal//:wrapper.bzl", "rust_library")
+
+rust_library(
+    name = "adjective_adjective_animal",
+    srcs = glob(["**/*.rs"]),
+    crate = "adjective_adjective_animal",
+    crate_root = "src/lib.rs",
+    edition = "2015",
+
+    visibility = ["PUBLIC"],
+    deps = [
+        "//third-party/rust/crates/rand/0.5.6:rand",
+    ],
+)

@@ -1,0 +1,26 @@
+[package]
+name = "adsb_deku"
+version = "0.5.0"
+edition = "2021"
+license = "MIT"
+description = "Decoder for ADS-B(Automatic Depedent Surveillance-Broadcast) - written with deku"
+repository = "https://github.com/wcampbel0x2a/adsb_deku"
+keywords = ["deku", "adsb", "aerorust", "airplane", "radar"]
+categories = ["aerospace::protocols", "parsing"]
+rust-version = "1.58.1"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+
+[dependencies]
+deku = "0.12"
+
+[dev-dependencies]
+hex = "0.4"
+hexlit = "0.5"
+assert_hex = "0.2"
+criterion = "0.3"
+
+[[bench]]
+name = "decoding"
+harness = false

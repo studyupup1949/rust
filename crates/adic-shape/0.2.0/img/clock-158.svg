@@ -1,0 +1,67 @@
+<svg class="adic-clock" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+<style>
+svg {
+    background: white;
+}
+svg .clock-circle {
+    fill: transparent;
+    stroke: black;
+    stroke-width: 0.2;
+}
+svg .clock-zero-val-circle {
+    fill: transparent;
+    stroke: red;
+    stroke-width: 0.2;
+}
+svg .clock-val-circle {
+    fill: transparent;
+    stroke: black;
+    stroke-width: 0.2;
+    stroke-dasharray: 1, 4;
+}
+svg .clock-hand-path {
+    fill: transparent;
+    stroke: black;
+    stroke-width: 0.2;
+}
+svg .clock-head-circle {
+    fill: black;
+    stroke: black;
+    stroke-width: 0.2;
+}
+svg .tick-label {
+    fill: black;
+    text-anchor: middle;
+    dominant-baseline: middle;
+}
+</style>
+<circle class="clock-circle" cx="50" cy="50" r="40"/>
+<circle class="clock-val-circle" cx="50" cy="50" r="5.71429"/>
+<circle class="clock-val-circle" cx="50" cy="50" r="11.42857"/>
+<circle class="clock-val-circle" cx="50" cy="50" r="17.14286"/>
+<circle class="clock-val-circle" cx="50" cy="50" r="22.85714"/>
+<circle class="clock-val-circle" cx="50" cy="50" r="28.57143"/>
+<circle class="clock-val-circle" cx="50" cy="50" r="34.28571"/>
+<path class="clock-hand-path" d="M 50 50 L 46.64123 54.62295"/>
+<circle class="clock-head-circle" cx="46.64123" cy="54.62295" r="0.5"/>
+<path class="clock-hand-path" d="M 50 50 L 60.34088 54.86605"/>
+<circle class="clock-head-circle" cx="60.34088" cy="54.86605" r="0.5"/>
+<path class="clock-hand-path" d="M 50 50 L 67.07658 51.50602"/>
+<circle class="clock-head-circle" cx="67.07658" cy="51.50602" r="0.5"/>
+<path class="clock-hand-path" d="M 50 50 L 72.85361 50.4021"/>
+<circle class="clock-head-circle" cx="72.85361" cy="50.4021" r="0.5"/>
+<path class="clock-hand-path" d="M 50 50 L 58.92461 22.85819"/>
+<circle class="clock-head-circle" cx="58.92461" cy="22.85819" r="0.5"/>
+<path class="clock-hand-path" d="M 50 50 L 52.1769 15.78346"/>
+<circle class="clock-head-circle" cx="52.1769" cy="15.78346" r="0.5"/>
+<path class="clock-hand-path" d="M 50 12 L 50 10"/>
+<path class="clock-hand-path" d="M 86.14015 38.25735 L 88.04226 37.63932"/>
+<path class="clock-hand-path" d="M 72.33584 80.74265 L 73.51141 82.36068"/>
+<path class="clock-hand-path" d="M 27.66416 80.74265 L 26.48859 82.36068"/>
+<path class="clock-hand-path" d="M 13.85985 38.25735 L 11.95774 37.63932"/>
+<text class="tick-label" dx="0" dy="-4" style="position: fixed; font-size: 4pt;" x="50" y="10">0</text>
+<text class="tick-label" dx="3.80423" dy="-1.23607" style="position: fixed; font-size: 4pt;" x="88.04226" y="37.63932">1</text>
+<text class="tick-label" dx="2.35114" dy="3.23607" style="position: fixed; font-size: 4pt;" x="73.51141" y="82.36068">2</text>
+<text class="tick-label" dx="-2.35114" dy="3.23607" style="position: fixed; font-size: 4pt;" x="26.48859" y="82.36068">3</text>
+<text class="tick-label" dx="-3.80423" dy="-1.23607" style="position: fixed; font-size: 4pt;" x="11.95774" y="37.63932">4</text>
+</svg>

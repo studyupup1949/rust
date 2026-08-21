@@ -1,0 +1,32 @@
+syntax = "proto3";
+
+package ada.v1;
+
+import "google/protobuf/timestamp.proto";
+
+option go_package = "github.com/eleven-am/ada-sdk/go/gen/ada/v1;adav1";
+
+enum BrowserCapability {
+  BROWSER_CAPABILITY_UNSPECIFIED = 0;
+  BROWSER_CAPABILITY_READ = 1;
+  BROWSER_CAPABILITY_INGEST = 2;
+  BROWSER_CAPABILITY_STREAM_EVENTS = 3;
+  BROWSER_CAPABILITY_STREAM_SIGNALS = 4;
+}
+
+message MintBrowserSessionRequest {
+  string principal_id = 1;
+  repeated BrowserCapability capabilities = 2;
+  int32 ttl_seconds = 3;
+}
+
+message MintBrowserSessionResponse {
+  string token = 1;
+  google.protobuf.Timestamp expires_at = 2;
+  repeated BrowserCapability capabilities = 3;
+  string principal_id = 4;
+}
+
+service BrowserSessionService {
+  rpc MintBrowserSession(MintBrowserSessionRequest) returns (MintBrowserSessionResponse);
+}

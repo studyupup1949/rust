@@ -1,0 +1,15 @@
+[package]
+name = "ad-ess"
+version = "0.1.1"
+edition = "2021"
+license = "GPL-3.0-or-later"
+description = "Distribution matching for arbitrary distributions with low rate-loss."
+repository = "https://github.com/kit-cel/ad-ess"
+readme = "README.md"
+keywords = ["shaping", "probabilistic", "ess", "oess", "communications"]
+categories = ["science", "simulation"]
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+rug = "1.18.0"

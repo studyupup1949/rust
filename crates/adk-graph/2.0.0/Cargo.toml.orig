@@ -1,0 +1,80 @@
+[package]
+name = "adk-graph"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+authors.workspace = true
+description = "Graph-based workflow orchestration for ADK-Rust agents"
+repository = "https://github.com/zavora-ai/adk-rust"
+documentation = "https://docs.rs/adk-graph"
+readme = "README.md"
+keywords = ["ai", "agents", "workflow", "graph", "langgraph"]
+categories = ["science", "asynchronous"]
+
+[dependencies]
+adk-core.workspace = true
+
+async-trait.workspace = true
+async-stream.workspace = true
+futures.workspace = true
+tokio = { workspace = true, features = ["sync", "time", "fs", "io-util", "macros"] }
+serde.workspace = true
+serde_json.workspace = true
+chrono.workspace = true
+uuid.workspace = true
+thiserror.workspace = true
+tracing.workspace = true
+
+# Optional SQLite checkpointer
+sqlx = { version = "0.8", features = ["runtime-tokio", "sqlite"], optional = true }
+
+# Optional node caching dependencies
+blake3 = { version = "1", optional = true }
+fred = { version = "10", optional = true }
+
+# Optional delta checkpoint dependency
+similar = { version = "3", optional = true }
+
+# Optional functional API dependencies
+tokio-util = { version = "0.7", features = ["rt"], optional = true }
+
+# Optional action node dependencies
+adk-action = { workspace = true, optional = true }
+regex = { workspace = true, optional = true }
+reqwest = { workspace = true, optional = true }
+tokio-cron-scheduler = { version = "0.15", optional = true }
+
+[features]
+default = []
+sqlite = ["sqlx"]
+node-cache = ["dep:blake3"]
+redis-cache = ["node-cache", "dep:fred"]
+delta-checkpoint = ["dep:similar"]
+time-travel = []
+functional = ["dep:tokio-util"]
+
+# Action node feature flags
+action = ["dep:adk-action", "dep:regex"]
+action-trigger = ["action", "dep:tokio-cron-scheduler"]
+action-http = ["action", "dep:reqwest"]
+action-db = ["action"]
+action-db-mongo = ["action"]
+action-db-redis = ["action"]
+action-code = ["action"]
+action-email = ["action"]
+action-rss = ["action-http"]
+action-full = ["action", "action-trigger", "action-http", "action-db", "action-code", "action-email", "action-rss"]
+
+full = ["sqlite", "action-full"]
+
+[dev-dependencies]
+# Internal dev-deps are path-only (no version) so cargo strips them from the
+# published manifest — they can never block or reorder a crates.io publish.
+tokio = { workspace = true, features = ["rt", "macros", "test-util"] }
+proptest = "1.5"
+adk-action = { path = "../adk-action" }
+# For `SimpleToolContext` when testing a graph exposed as a tool.
+adk-tool = { path = "../adk-tool" }
+# For composing SequentialAgent/ParallelAgent/LoopAgent as graph nodes.
+adk-agent = { path = "../adk-agent" }

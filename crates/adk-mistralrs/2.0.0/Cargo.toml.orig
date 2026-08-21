@@ -1,0 +1,81 @@
+[package]
+name = "adk-mistralrs"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+authors.workspace = true
+description = "mistral.rs integration for ADK-Rust - native local LLM inference with Gemma 4, Qwen 3.5, Voxtral, and 50+ model architectures"
+repository.workspace = true
+readme = "README.md"
+keywords = ["ai", "agent", "adk", "llm", "local-inference"]
+categories = ["api-bindings", "asynchronous"]
+publish = true  # Now publishable! mistralrs is on crates.io as of v0.8.0
+
+[dependencies]
+# ADK core dependencies
+adk-core = { workspace = true }
+adk-telemetry = { workspace = true }
+
+# Async runtime
+async-trait = "0.1"
+tokio = { workspace = true, features = ["rt", "sync", "macros"] }
+futures = { workspace = true }
+async-stream = "0.3"
+
+# Serialization
+serde = { workspace = true }
+serde_json = { workspace = true }
+
+# Error handling and logging
+anyhow = "1.0"
+tracing = { workspace = true }
+thiserror = "2.0"
+
+# Utilities
+indexmap = { version = "2.0", features = ["serde"] }
+image = "0.25"
+uuid = { version = "1.0", features = ["v4"] }
+base64 = "0.22"
+
+# mistral.rs - native Rust LLM inference engine
+# Published on crates.io since v0.8.0 (April 2026)
+# Supports: Gemma 4, Qwen 3.5, Voxtral, 50+ architectures, agentic runtime
+mistralrs = "0.8"
+
+# Optional HTTP client for URL image loading
+reqwest = { workspace = true, optional = true }
+
+[dev-dependencies]
+proptest = "1.0"
+tokio-test = "0.4"
+criterion = { version = "0.5", features = ["async_tokio"] }
+
+[features]
+default = []
+
+# Enable URL-based image loading
+reqwest = ["dep:reqwest"]
+
+# Enable real inference benchmarks (requires model downloads)
+bench-inference = []
+
+# Accelerator features (passed through to mistralrs)
+cuda = ["mistralrs/cuda"]
+metal = ["mistralrs/metal"]
+mkl = ["mistralrs/mkl"]
+accelerate = ["mistralrs/accelerate"]
+
+# Flash attention variants (requires compatible hardware)
+flash-attn = ["cuda", "mistralrs/flash-attn"]
+cudnn = ["mistralrs/cudnn"]
+
+# Multi-GPU via NCCL
+nccl = ["cuda", "mistralrs/nccl"]
+
+# Ring distributed backend
+ring = ["mistralrs/ring"]
+
+[[bench]]
+name = "inference_benchmark"
+harness = false

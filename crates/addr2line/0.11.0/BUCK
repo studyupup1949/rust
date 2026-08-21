@@ -1,0 +1,18 @@
+load("@buckal//:wrapper.bzl", "rust_library")
+
+rust_library(
+    name = "addr2line",
+    srcs = glob(["**/*.rs"]),
+    crate = "addr2line",
+    crate_root = "src/lib.rs",
+    edition = "2015",
+    features = ["default"],
+
+    visibility = ["PUBLIC"],
+    deps = [
+        "//third-party/rust/crates/fallible-iterator/0.2.0:fallible_iterator",
+        "//third-party/rust/crates/gimli/0.20.0:gimli",
+        "//third-party/rust/crates/lazycell/1.3.0:lazycell",
+        "//third-party/rust/crates/smallvec/1.15.2:smallvec",
+    ],
+)

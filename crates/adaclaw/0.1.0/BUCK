@@ -1,0 +1,34 @@
+load("@buckal//:wrapper.bzl", "rust_binary")
+
+rust_binary(
+    name = "adaclaw",
+    srcs = glob(["**/*.rs"]),
+    crate = "adaclaw",
+    crate_root = "src/main.rs",
+    edition = "2024",
+
+    visibility = ["PUBLIC"],
+    deps = [
+        "//third-party/rust/crates/adaclaw-channels/0.1.0:adaclaw_channels",
+        "//third-party/rust/crates/adaclaw-core/0.1.0:adaclaw_core",
+        "//third-party/rust/crates/adaclaw-memory/0.1.0:adaclaw_memory",
+        "//third-party/rust/crates/adaclaw-providers/0.1.0:adaclaw_providers",
+        "//third-party/rust/crates/adaclaw-security/0.1.0:adaclaw_security",
+        "//third-party/rust/crates/adaclaw-server/0.1.0:adaclaw_server",
+        "//third-party/rust/crates/adaclaw-tools/0.1.0:adaclaw_tools",
+        "//third-party/rust/crates/anyhow/1.0.104:anyhow",
+        "//third-party/rust/crates/async-trait/0.1.92:async_trait",
+        "//third-party/rust/crates/clap/4.6.6:clap",
+        "//third-party/rust/crates/futures-util/0.3.34:futures_util",
+        "//third-party/rust/crates/regex/1.13.1:regex",
+        "//third-party/rust/crates/reqwest/0.11.27:reqwest",
+        "//third-party/rust/crates/serde/1.0.229:serde",
+        "//third-party/rust/crates/serde_json/1.0.151:serde_json",
+        "//third-party/rust/crates/tokio-util/0.7.19:tokio_util",
+        "//third-party/rust/crates/tokio/1.53.1:tokio",
+        "//third-party/rust/crates/toml/0.8.23:toml",
+        "//third-party/rust/crates/tracing-subscriber/0.3.23:tracing_subscriber",
+        "//third-party/rust/crates/tracing/0.1.44:tracing",
+        "//third-party/rust/crates/uuid/1.24.0:uuid",
+    ],
+)

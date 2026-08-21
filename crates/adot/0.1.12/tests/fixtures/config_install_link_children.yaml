@@ -1,0 +1,9 @@
+dotfiles:
+  d_dir:
+    dst: /tmp/adot_tests/install_link_children/dst/
+    src: dir
+    type: link_children
+profiles:
+  test-host:
+    dotfiles:
+      - d_dir

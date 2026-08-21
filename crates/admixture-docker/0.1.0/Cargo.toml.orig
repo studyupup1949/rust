@@ -1,0 +1,39 @@
+[package]
+name = "admixture-docker"
+description = "Docker container service abstractions for admixture via testcontainers"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+repository.workspace = true
+readme.workspace = true
+
+[features]
+default = []
+sqlx-postgres = ["dep:sqlx", "dep:testcontainers-modules"]
+fred-redis = ["dep:fred", "dep:testcontainers-modules"]
+
+[dependencies]
+admixture = { workspace = true }
+admixture-docker-macros = { workspace = true }
+testcontainers = { workspace = true }
+thiserror = { workspace = true }
+tokio = { workspace = true }
+tracing = { workspace = true }
+
+# Optional: Postgres support
+sqlx = { workspace = true, optional = true }
+testcontainers-modules = { workspace = true, optional = true }
+
+# Optional: Redis support
+fred = { workspace = true, optional = true }
+
+[dev-dependencies]
+admixture = { workspace = true }
+admixture-harness = { workspace = true }
+sqlx = { workspace = true }
+fred = { workspace = true }
+testcontainers-modules = { workspace = true }
+eyre = "0.6.12"
+assert2 = "0.3"
+tokio = { workspace = true }
+tracing-subscriber = "0.3"

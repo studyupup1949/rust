@@ -1,0 +1,951 @@
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: PACKAGE VERSION\n"
+"POT-Creation-Date: 2026-07-20 15:17+0000\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"Language: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=1; plural=0;\n"
+
+#: ui/components/aj-datetime-input.slint:21
+msgctxt "AJDateTimeInput"
+msgid "ДД"
+msgstr ""
+
+#: ui/components/aj-datetime-input.slint:26
+#: ui/components/aj-datetime-input.slint:26
+msgctxt "AJDateTimeInput"
+msgid "ММ"
+msgstr ""
+
+#: ui/components/aj-datetime-input.slint:31
+msgctxt "AJDateTimeInput"
+msgid "ГГГГ"
+msgstr ""
+
+#: ui/components/aj-datetime-input.slint:36
+msgctxt "AJDateTimeInput"
+msgid "ЧЧ"
+msgstr ""
+
+#: ui/components/aj-datetime-input.slint:46
+msgctxt "AJDateTimeInput"
+msgid "СС"
+msgstr ""
+
+#: ui/components/aj-submission-card.slint:26
+msgctxt "AJSubmissionCard"
+msgid "Посылка #{}"
+msgstr ""
+
+#: ui/components/aj-submission-card.slint:34
+msgctxt "AJSubmissionCard"
+msgid "подгруппы"
+msgstr ""
+
+#: ui/components/aj-submission-card.slint:34
+msgctxt "AJSubmissionCard"
+msgid "тесты"
+msgstr ""
+
+#: ui/components/aj-submission-card.slint:38
+msgctxt "AJSubmissionCard"
+msgid "Результаты подгрупп"
+msgstr ""
+
+#: ui/components/aj-submission-card.slint:38
+msgctxt "AJSubmissionCard"
+msgid "Результаты тестов"
+msgstr ""
+
+#: ui/components/aj-admin-badge.slint:30
+msgctxt "AJAdminBadge"
+msgid "не админ"
+msgstr ""
+
+#: ui/components/aj-admin-badge.slint:32
+msgctxt "AJAdminBadge"
+msgid "бета-тестер"
+msgstr ""
+
+#: ui/components/aj-admin-badge.slint:34
+msgctxt "AJAdminBadge"
+msgid "админ"
+msgstr ""
+
+#: ui/components/aj-admin-badge.slint:36
+msgctxt "AJAdminBadge"
+msgid "владелец"
+msgstr ""
+
+#: ui/components/aj-subgroup-result-card.slint:32
+msgctxt "AJSubgroupResultCard"
+msgid "вердикт"
+msgstr ""
+
+#: ui/components/aj-subgroup-result-card.slint:42
+msgctxt "AJSubgroupResultCard"
+msgid "пройдена"
+msgstr ""
+
+#: ui/components/aj-subgroup-result-card.slint:44
+msgctxt "AJSubgroupResultCard"
+msgid "ошибка выполнения"
+msgstr ""
+
+#: ui/components/aj-subgroup-result-card.slint:46
+msgctxt "AJSubgroupResultCard"
+msgid "превышено ограничение по времени"
+msgstr ""
+
+#: ui/components/aj-subgroup-result-card.slint:48
+msgctxt "AJSubgroupResultCard"
+msgid "превышено ограничение по памяти"
+msgstr ""
+
+#: ui/components/aj-subgroup-result-card.slint:50
+msgctxt "AJSubgroupResultCard"
+msgid "ошибка безопасности"
+msgstr ""
+
+#: ui/components/aj-subgroup-result-card.slint:52
+msgctxt "AJSubgroupResultCard"
+msgid "неправильный ответ"
+msgstr ""
+
+#: ui/components/aj-subgroup-result-card.slint:54
+msgctxt "AJSubgroupResultCard"
+msgid "неправильный формат вывода"
+msgstr ""
+
+#: ui/components/aj-subgroup-result-card.slint:56
+msgctxt "AJSubgroupResultCard"
+msgid "пропущена"
+msgstr ""
+
+#: ui/components/aj-subgroup-result-card.slint:58
+msgctxt "AJSubgroupResultCard"
+msgid "тестируется"
+msgstr ""
+
+#: ui/components/aj-subgroup-result-card.slint:71
+msgctxt "AJSubgroupResultCard"
+msgid "тест"
+msgstr ""
+
+#: ui/components/aj-subgroup-result-card.slint:91
+msgctxt "AJSubgroupResultCard"
+msgid "баллы"
+msgstr ""
+
+#: ui/components/aj-submissions.slint:39
+msgctxt "AJSubmissions"
+msgid "Посылки"
+msgstr ""
+
+#: ui/components/aj-submissions.slint:47
+msgctxt "AJSubmissions"
+msgid "все посылки"
+msgstr ""
+
+#: ui/components/aj-submissions.slint:56
+msgctxt "AJSubmissions"
+msgid "Посылок пока что нет"
+msgstr ""
+
+#: ui/components/aj-submissions.slint:81
+msgctxt "AJSubmissions"
+msgid "когда"
+msgstr ""
+
+#: ui/components/aj-submissions.slint:89
+msgctxt "AJSubmissions"
+msgid "кто"
+msgstr ""
+
+#: ui/components/aj-submissions.slint:97
+msgctxt "AJSubmissions"
+msgid "язык"
+msgstr ""
+
+#: ui/components/aj-submissions.slint:105
+msgctxt "AJSubmissions"
+msgid "вердикт"
+msgstr ""
+
+#: ui/components/aj-submissions.slint:113
+msgctxt "AJSubmissions"
+msgid "баллы"
+msgstr ""
+
+#: ui/components/aj-submissions.slint:177
+msgctxt "AJSubmissions"
+msgid "полное решение"
+msgstr ""
+
+#: ui/components/aj-submissions.slint:179
+msgctxt "AJSubmissions"
+msgid "частичное решение"
+msgstr ""
+
+#: ui/components/aj-submissions.slint:181
+msgctxt "AJSubmissions"
+msgid "в очереди"
+msgstr ""
+
+#: ui/components/aj-submissions.slint:183
+msgctxt "AJSubmissions"
+msgid "компилируется"
+msgstr ""
+
+#: ui/components/aj-submissions.slint:185
+msgctxt "AJSubmissions"
+msgid "ошибка компиляции"
+msgstr ""
+
+#: ui/components/aj-submissions.slint:187
+msgctxt "AJSubmissions"
+msgid "тестируется"
+msgstr ""
+
+#: ui/components/aj-submissions.slint:189
+msgctxt "AJSubmissions"
+msgid "некорректная задача"
+msgstr ""
+
+#: ui/components/aj-submissions.slint:191
+msgctxt "AJSubmissions"
+msgid "некорректный запрос"
+msgstr ""
+
+#: ui/components/aj-submissions.slint:193
+msgctxt "AJSubmissions"
+msgid "баг"
+msgstr ""
+
+#: ui/components/aj-submissions.slint:212
+msgctxt "AJSubmissions"
+msgid "скачать"
+msgstr ""
+
+#: ui/components/aj-submissions.slint:228
+msgctxt "AJSubmissions"
+msgid "подробнее"
+msgstr ""
+
+#: ui/components/aj-subgroup-card.slint:30
+msgctxt "AJSubgroupCard"
+msgid "тип"
+msgstr ""
+
+#: ui/components/aj-subgroup-card.slint:38
+msgctxt "AJSubgroupCard"
+msgid "основная"
+msgstr ""
+
+#: ui/components/aj-subgroup-card.slint:38
+msgctxt "AJSubgroupCard"
+msgid "примеры"
+msgstr ""
+
+#: ui/components/aj-subgroup-card.slint:49
+msgctxt "AJSubgroupCard"
+msgid "тесты"
+msgstr ""
+
+#: ui/components/aj-subgroup-card.slint:68
+msgctxt "AJSubgroupCard"
+msgid "требуемые подгруппы"
+msgstr ""
+
+#: ui/components/aj-subgroup-card.slint:88
+msgctxt "AJSubgroupCard"
+msgid "баллы"
+msgstr ""
+
+#: ui/components/aj-subgroup-card.slint:108
+msgctxt "AJSubgroupCard"
+msgid "баллы за тест"
+msgstr ""
+
+#: ui/components/aj-alert.slint:47
+msgctxt "AJAlert"
+msgid "ошибка"
+msgstr ""
+
+#: ui/components/aj-alert.slint:49
+msgctxt "AJAlert"
+msgid "успешно"
+msgstr ""
+
+#: ui/components/aj-test-result-card.slint:40
+msgctxt "AJTestResultCard"
+msgid "пройден"
+msgstr ""
+
+#: ui/components/aj-test-result-card.slint:42
+msgctxt "AJTestResultCard"
+msgid "ошибка выполнения"
+msgstr ""
+
+#: ui/components/aj-test-result-card.slint:44
+msgctxt "AJTestResultCard"
+msgid "превышено ограничение по времени"
+msgstr ""
+
+#: ui/components/aj-test-result-card.slint:46
+msgctxt "AJTestResultCard"
+msgid "превышено ограничение по памяти"
+msgstr ""
+
+#: ui/components/aj-test-result-card.slint:48
+msgctxt "AJTestResultCard"
+msgid "ошибка безопасности"
+msgstr ""
+
+#: ui/components/aj-test-result-card.slint:50
+msgctxt "AJTestResultCard"
+msgid "неправильный ответ"
+msgstr ""
+
+#: ui/components/aj-test-result-card.slint:52
+msgctxt "AJTestResultCard"
+msgid "неправильный формат вывода"
+msgstr ""
+
+#: ui/components/aj-test-result-card.slint:54
+msgctxt "AJTestResultCard"
+msgid "пропущен"
+msgstr ""
+
+#: ui/components/aj-test-result-card.slint:56
+msgctxt "AJTestResultCard"
+msgid "тестируется"
+msgstr ""
+
+#: ui/components/aj-test-result-card.slint:70
+msgctxt "AJTestResultCard"
+msgid "баллы"
+msgstr ""
+
+#: ui/components/aj-problem-card.slint:67
+#: ui/components/aj-problem-card.slint:67
+msgctxt "AJProblemCard"
+msgid "удалить"
+msgstr ""
+
+#: ui/components/aj-problem-card.slint:98
+msgctxt "AJProblemCard"
+msgid "Требуется рут-доступ"
+msgstr ""
+
+#: ui/components/aj-problem-card.slint:104
+msgctxt "AJProblemCard"
+msgid "логин"
+msgstr ""
+
+#: ui/components/aj-problem-card.slint:108
+msgctxt "AJProblemCard"
+msgid "пароль"
+msgstr ""
+
+#: ui/components/aj-problem-card.slint:113
+msgctxt "AJProblemCard"
+msgid "подтвердите пароль"
+msgstr ""
+
+#: ui/components/aj-problem-card.slint:118
+msgctxt "AJProblemCard"
+msgid "подтвердите удаление"
+msgstr ""
+
+#: ui/components/aj-problem-card.slint:149
+msgctxt "AJProblemCard"
+msgid "отменить"
+msgstr ""
+
+#: ui/components/aj-problem-card.slint:171
+msgctxt "AJProblemCard"
+msgid "Это интерактивная задача."
+msgstr ""
+
+#: ui/components/aj-problem-card.slint:177
+msgctxt "AJProblemCard"
+msgid "Это задача с двойным запуском."
+msgstr ""
+
+#: ui/components/aj-problem-card.slint:183
+msgctxt "AJProblemCard"
+msgid "Это интерактивная задача с двойным запуском."
+msgstr ""
+
+#: ui/components/aj-problem-card.slint:189
+msgctxt "AJProblemCard"
+msgid "Это задача с двойным запуском с первым интерактивным запуском."
+msgstr ""
+
+#: ui/components/aj-problem-card.slint:195
+msgctxt "AJProblemCard"
+msgid "Это задача с двойным запуском со вторым интерактивным запуском."
+msgstr ""
+
+#: ui/components/aj-problem-card.slint:201
+msgctxt "AJProblemCard"
+msgid "Это задача со слиянием подгрупп."
+msgstr ""
+
+#: ui/components/aj-problem-card.slint:208
+msgctxt "AJProblemCard"
+msgid "ограничение по времени"
+msgstr ""
+
+#: ui/components/aj-problem-card.slint:216
+msgctxt "AJProblemCard"
+msgid "{}мс"
+msgstr ""
+
+#: ui/components/aj-problem-card.slint:227
+msgctxt "AJProblemCard"
+msgid "ограничение по памяти"
+msgstr ""
+
+#: ui/components/aj-problem-card.slint:235
+msgctxt "AJProblemCard"
+msgid "{}МБ"
+msgstr ""
+
+#: ui/components/aj-problem-card.slint:245
+msgctxt "AJProblemCard"
+msgid "Подгруппы"
+msgstr ""
+
+#: ui/components/aj-contest-card.slint:64
+msgctxt "AJContestCard"
+msgid "не начался"
+msgstr ""
+
+#: ui/components/aj-contest-card.slint:66
+msgctxt "AJContestCard"
+msgid "идёт"
+msgstr ""
+
+#: ui/components/aj-contest-card.slint:68
+msgctxt "AJContestCard"
+msgid "завершён"
+msgstr ""
+
+#: ui/components/aj-contest-card.slint:70
+msgctxt "AJContestCard"
+msgid "дорешка"
+msgstr ""
+
+#: ui/components/aj-contest-card.slint:86
+msgctxt "AJContestCard"
+msgid "условия задач"
+msgstr ""
+
+#: ui/components/aj-contest-card.slint:108
+msgctxt "AJContestCard"
+msgid "разбор задач"
+msgstr ""
+
+#: ui/components/aj-contest-card.slint:131
+#: ui/components/aj-contest-card.slint:131
+msgctxt "AJContestCard"
+msgid "начало в"
+msgstr ""
+
+#: ui/components/aj-contest-card.slint:170
+#: ui/components/aj-contest-card.slint:170
+msgctxt "AJContestCard"
+msgid "конец в"
+msgstr ""
+
+#: ui/components/aj-contest-card.slint:212
+msgctxt "AJContestCard"
+msgid "войти"
+msgstr ""
+
+#: ui/components/aj-contest-card.slint:237
+#: ui/components/aj-contest-card.slint:237
+msgctxt "AJContestCard"
+msgid "изменить"
+msgstr ""
+
+#: ui/components/aj-contest-card.slint:270
+msgctxt "AJContestCard"
+msgid "название"
+msgstr ""
+
+#: ui/components/aj-contest-card.slint:293
+msgctxt "AJContestCard"
+msgid "ссылка на условия"
+msgstr ""
+
+#: ui/components/aj-contest-card.slint:298
+msgctxt "AJContestCard"
+msgid "ссылка на разбор"
+msgstr ""
+
+#: ui/components/aj-contest-card.slint:303
+msgctxt "AJContestCard"
+msgid "скрыть"
+msgstr ""
+
+#: ui/components/aj-contest-card.slint:308
+msgctxt "AJContestCard"
+msgid "открыть дорешку"
+msgstr ""
+
+#: ui/components/aj-contest-card.slint:313
+msgctxt "AJContestCard"
+msgid "скрыть решения"
+msgstr ""
+
+#: ui/components/aj-contest-card.slint:339
+#: ui/components/aj-contest-card.slint:339
+msgctxt "AJContestCard"
+msgid "отменить"
+msgstr ""
+
+#: ui/components/aj-contest-card.slint:362
+#: ui/components/aj-contest-card.slint:362
+msgctxt "AJContestCard"
+msgid "удалить"
+msgstr ""
+
+#: ui/components/aj-contest-card.slint:390
+msgctxt "AJContestCard"
+msgid "Требуется рут-доступ"
+msgstr ""
+
+#: ui/components/aj-contest-card.slint:396
+msgctxt "AJContestCard"
+msgid "логин"
+msgstr ""
+
+#: ui/components/aj-contest-card.slint:400
+msgctxt "AJContestCard"
+msgid "пароль"
+msgstr ""
+
+#: ui/components/aj-contest-card.slint:405
+msgctxt "AJContestCard"
+msgid "подтвердите пароль"
+msgstr ""
+
+#: ui/components/aj-contest-card.slint:410
+msgctxt "AJContestCard"
+msgid "подтвердите удаление"
+msgstr ""
+
+#: ui/components/aj-leaderboard.slint:27
+msgctxt "AJLeaderboard"
+msgid "Таблица лидеров"
+msgstr ""
+
+#: ui/components/aj-leaderboard.slint:34
+msgctxt "AJLeaderboard"
+msgid "Таблица лидеров недоступна до конца контеста"
+msgstr ""
+
+#: ui/components/aj-leaderboard.slint:59
+msgctxt "AJLeaderboard"
+msgid "кто"
+msgstr ""
+
+#: ui/main.slint:51
+msgctxt "AJMainWindow"
+msgid "обновить"
+msgstr ""
+
+#: ui/pages/login.slint:15
+msgctxt "LoginPage"
+msgid "назад"
+msgstr ""
+
+#: ui/pages/login.slint:29
+msgctxt "LoginPage"
+msgid "Вход в аккаунт"
+msgstr ""
+
+#: ui/pages/login.slint:34
+msgctxt "LoginPage"
+msgid "логин"
+msgstr ""
+
+#: ui/pages/login.slint:38
+msgctxt "LoginPage"
+msgid "пароль"
+msgstr ""
+
+#: ui/pages/login.slint:43
+msgctxt "LoginPage"
+msgid "войти"
+msgstr ""
+
+#: ui/pages/user-profile.slint:20
+msgctxt "UserProfilePage"
+msgid "назад"
+msgstr ""
+
+#: ui/pages/user-profile.slint:34
+msgctxt "UserProfilePage"
+msgid "Профиль"
+msgstr ""
+
+#: ui/pages/user-profile.slint:49
+msgctxt "UserProfilePage"
+msgid "логин"
+msgstr ""
+
+#: ui/pages/user-profile.slint:59
+msgctxt "UserProfilePage"
+msgid "уровень админа"
+msgstr ""
+
+#: ui/pages/welcome.slint:13
+msgctxt "WelcomePage"
+msgid "Добро пожаловать!"
+msgstr ""
+
+#: ui/pages/welcome.slint:18
+msgctxt "WelcomePage"
+msgid "войти"
+msgstr ""
+
+#: ui/pages/welcome.slint:34
+msgctxt "WelcomePage"
+msgid "создать аккаунт"
+msgstr ""
+
+#: ui/pages/contest.slint:39
+msgctxt "ContestPage"
+msgid "назад"
+msgstr ""
+
+#: ui/pages/contest.slint:79
+msgctxt "ContestPage"
+msgid "изменить файл ({})"
+msgstr ""
+
+#: ui/pages/contest.slint:79
+msgctxt "ContestPage"
+msgid "выбрать файл"
+msgstr ""
+
+#: ui/pages/contest.slint:95
+msgctxt "ContestPage"
+msgid "отослать"
+msgstr ""
+
+#: ui/pages/contest.slint:114
+msgctxt "ContestPage"
+msgid "ретест"
+msgstr ""
+
+#: ui/pages/register.slint:15
+msgctxt "RegisterPage"
+msgid "назад"
+msgstr ""
+
+#: ui/pages/register.slint:29
+msgctxt "RegisterPage"
+msgid "Создание аккаунта"
+msgstr ""
+
+#: ui/pages/register.slint:34
+msgctxt "RegisterPage"
+msgid "логин"
+msgstr ""
+
+#: ui/pages/register.slint:38
+msgctxt "RegisterPage"
+msgid "пароль"
+msgstr ""
+
+#: ui/pages/register.slint:43
+msgctxt "RegisterPage"
+msgid "подтвердите пароль"
+msgstr ""
+
+#: ui/pages/register.slint:48
+msgctxt "RegisterPage"
+msgid "создать аккаунт"
+msgstr ""
+
+#: ui/pages/home.slint:19
+msgctxt "HomePage"
+msgid "Профиль: {}"
+msgstr ""
+
+#: ui/pages/home.slint:35
+msgctxt "HomePage"
+msgid "Задачи"
+msgstr ""
+
+#: ui/pages/home.slint:52
+msgctxt "HomePage"
+msgid "Контесты"
+msgstr ""
+
+#: ui/pages/home.slint:59 ui/pages/home.slint:124
+msgctxt "HomePage"
+msgid "создать"
+msgstr ""
+
+#: ui/pages/home.slint:86
+msgctxt "HomePage"
+msgid "название"
+msgstr ""
+
+#: ui/pages/home.slint:90
+msgctxt "HomePage"
+msgid "начало в"
+msgstr ""
+
+#: ui/pages/home.slint:97
+msgctxt "HomePage"
+msgid "конец в"
+msgstr ""
+
+#: ui/pages/home.slint:104
+msgctxt "HomePage"
+msgid "ссылка на условия"
+msgstr ""
+
+#: ui/pages/home.slint:108
+msgctxt "HomePage"
+msgid "ссылка на разбор"
+msgstr ""
+
+#: ui/pages/home.slint:112
+msgctxt "HomePage"
+msgid "скрыть"
+msgstr ""
+
+#: ui/pages/home.slint:116
+msgctxt "HomePage"
+msgid "открыть дорешку"
+msgstr ""
+
+#: ui/pages/home.slint:120
+msgctxt "HomePage"
+msgid "скрыть решения"
+msgstr ""
+
+#: ui/pages/home.slint:148
+msgctxt "HomePage"
+msgid "отменить"
+msgstr ""
+
+#: ui/pages/home.slint:170
+msgctxt "HomePage"
+msgid "все контесты"
+msgstr ""
+
+#: ui/pages/home.slint:179
+msgctxt "HomePage"
+msgid "Контестов пока что нет"
+msgstr ""
+
+#: ui/pages/account-profile.slint:21
+msgctxt "AccountProfilePage"
+msgid "назад"
+msgstr ""
+
+#: ui/pages/account-profile.slint:35
+msgctxt "AccountProfilePage"
+msgid "Профиль"
+msgstr ""
+
+#: ui/pages/account-profile.slint:40
+msgctxt "AccountProfilePage"
+msgid "ваш id"
+msgstr ""
+
+#: ui/pages/account-profile.slint:50
+msgctxt "AccountProfilePage"
+msgid "вы вошли как"
+msgstr ""
+
+#: ui/pages/account-profile.slint:60
+msgctxt "AccountProfilePage"
+msgid "ваш уровень админа"
+msgstr ""
+
+#: ui/pages/account-profile.slint:69
+msgctxt "AccountProfilePage"
+msgid "аккаунт был создан"
+msgstr ""
+
+#: ui/pages/account-profile.slint:79
+msgctxt "AccountProfilePage"
+msgid "выйти"
+msgstr ""
+
+#: ui/pages/account-profile.slint:95
+msgctxt "AccountProfilePage"
+msgid "удалить аккаунт"
+msgstr ""
+
+#: ui/pages/account-profile.slint:125
+msgctxt "AccountProfilePage"
+msgid "Требуется рут-доступ"
+msgstr ""
+
+#: ui/pages/account-profile.slint:131
+msgctxt "AccountProfilePage"
+msgid "логин"
+msgstr ""
+
+#: ui/pages/account-profile.slint:135
+msgctxt "AccountProfilePage"
+msgid "пароль"
+msgstr ""
+
+#: ui/pages/account-profile.slint:140
+msgctxt "AccountProfilePage"
+msgid "подтвердите пароль"
+msgstr ""
+
+#: ui/pages/account-profile.slint:145
+msgctxt "AccountProfilePage"
+msgid "подтвердите удаление"
+msgstr ""
+
+#: ui/pages/account-profile.slint:149
+msgctxt "AccountProfilePage"
+msgid "удалить"
+msgstr ""
+
+#: ui/pages/account-profile.slint:176
+msgctxt "AccountProfilePage"
+msgid "отменить"
+msgstr ""
+
+#: ui/pages/user-private-profile.slint:33
+msgctxt "UserPrivateProfilePage"
+msgid "назад"
+msgstr ""
+
+#: ui/pages/user-private-profile.slint:47
+msgctxt "UserPrivateProfilePage"
+msgid "Профиль"
+msgstr ""
+
+#: ui/pages/user-private-profile.slint:62
+#: ui/pages/user-private-profile.slint:62
+msgctxt "UserPrivateProfilePage"
+msgid "логин"
+msgstr ""
+
+#: ui/pages/user-private-profile.slint:72
+msgctxt "UserPrivateProfilePage"
+msgid "уровень админа"
+msgstr ""
+
+#: ui/pages/user-private-profile.slint:85
+msgctxt "UserPrivateProfilePage"
+msgid "не админ"
+msgstr ""
+
+#: ui/pages/user-private-profile.slint:85
+msgctxt "UserPrivateProfilePage"
+msgid "бета-тестер"
+msgstr ""
+
+#: ui/pages/user-private-profile.slint:85
+msgctxt "UserPrivateProfilePage"
+msgid "админ"
+msgstr ""
+
+#: ui/pages/user-private-profile.slint:85
+msgctxt "UserPrivateProfilePage"
+msgid "владелец"
+msgstr ""
+
+#: ui/pages/user-private-profile.slint:89
+msgctxt "UserPrivateProfilePage"
+msgid "изменить"
+msgstr ""
+
+#: ui/pages/user-private-profile.slint:106
+msgctxt "UserPrivateProfilePage"
+msgid "аккаунт был создан"
+msgstr ""
+
+#: ui/pages/user-private-profile.slint:116
+msgctxt "UserPrivateProfilePage"
+msgid "удалить аккаунт"
+msgstr ""
+
+#: ui/pages/user-private-profile.slint:146
+msgctxt "UserPrivateProfilePage"
+msgid "Требуется рут-доступ"
+msgstr ""
+
+#: ui/pages/user-private-profile.slint:156
+msgctxt "UserPrivateProfilePage"
+msgid "пароль"
+msgstr ""
+
+#: ui/pages/user-private-profile.slint:161
+msgctxt "UserPrivateProfilePage"
+msgid "подтвердите пароль"
+msgstr ""
+
+#: ui/pages/user-private-profile.slint:166
+msgctxt "UserPrivateProfilePage"
+msgid "подтвердите удаление"
+msgstr ""
+
+#: ui/pages/user-private-profile.slint:170
+msgctxt "UserPrivateProfilePage"
+msgid "удалить"
+msgstr ""
+
+#: ui/pages/user-private-profile.slint:197
+msgctxt "UserPrivateProfilePage"
+msgid "отменить"
+msgstr ""
+
+#: ui/pages/problems.slint:20
+msgctxt "ProblemsPage"
+msgid "назад"
+msgstr ""
+
+#: ui/pages/problems.slint:37
+msgctxt "ProblemsPage"
+msgid "Задачи"
+msgstr ""
+
+#: ui/pages/problems.slint:43
+msgctxt "ProblemsPage"
+msgid "изменить задачу для добавления ({}))"
+msgstr ""
+
+#: ui/pages/problems.slint:43
+msgctxt "ProblemsPage"
+msgid "выбрать задачу для добавления"
+msgstr ""
+
+#: ui/pages/problems.slint:59
+msgctxt "ProblemsPage"
+msgid "создать"
+msgstr ""
+
+#: ui/pages/problems.slint:79
+msgctxt "ProblemsPage"
+msgid "все задачи"
+msgstr ""
+
+#: ui/pages/problems.slint:88
+msgctxt "ProblemsPage"
+msgid "Задач пока что нет"
+msgstr ""

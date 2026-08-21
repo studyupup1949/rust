@@ -1,0 +1,17 @@
+[package]
+name = "advancedresearch-rigid_body"
+version = "0.1.0"
+authors = ["Sven Nilsen <bvssvni@gmail.com>"]
+edition = "2018"
+description = "A minimalistic rigid body library"
+license = "MIT"
+keywords = ["rigid", "body", "physics", "3d", "advancedresearch"]
+readme = "README.md"
+repository = "https://github.com/advancedresearch/rigid_body.git"
+homepage = "https://github.com/advancedresearch/rigid_body"
+
+[lib]
+name = "rigid_body"
+
+[dependencies]
+vecmath = "1.0.0"

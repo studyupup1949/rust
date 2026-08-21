@@ -1,0 +1,9 @@
+[package]
+name        = "advent"
+version     = "0.2.2"
+authors     = ["Aldrin J D'Souza <code@aldrin.co>"]
+description = "Solutions to Advent of Code puzzles"
+license     = "MIT"
+readme      = "README.md"
+homepage    = "https://github.com/aldrin/advent"
+keywords    = ["puzzles"]

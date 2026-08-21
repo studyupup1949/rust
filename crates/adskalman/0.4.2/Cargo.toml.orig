@@ -1,0 +1,24 @@
+[package]
+name = "adskalman"
+repository = "https://github.com/strawlab/adskalman-rs"
+version = "0.4.2"
+authors = ["Andrew Straw <strawman@astraw.com>"]
+edition = "2018"
+description = "Kalman filter and Rauch-Tung-Striebel smoothing implementation using nalgebra, no_std"
+license = "MIT/Apache-2.0"
+readme = "README.md"
+keywords = ["kalman", "bayesian"]
+categories = ["algorithms", "no-std", "science", "science::robotics"]
+
+[dependencies]
+nalgebra = {version="0.23", default-features=false, features=["libm"]}
+num-traits = {version="0.2", default-features=false}
+log = { version = "0.4", optional=true }
+approx = {version="0.4", default-features=false}
+
+[features]
+default = ["std"]
+std = ["log"]
+
+[workspace]
+members = ["examples"]

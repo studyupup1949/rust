@@ -1,0 +1,17 @@
+load("@buckal//:wrapper.bzl", "rust_library")
+
+rust_library(
+    name = "ades",
+    srcs = glob(["**/*.rs"]),
+    crate = "ades",
+    crate_root = "src/lib.rs",
+    edition = "2018",
+
+    visibility = ["PUBLIC"],
+    deps = [
+        "//third-party/rust/crates/aoko/0.2.22:aoko",
+        "//third-party/rust/crates/clap/3.2.25:clap",
+        "//third-party/rust/crates/lazy_static/1.5.0:lazy_static",
+        "//third-party/rust/crates/openssl/0.10.81:openssl",
+    ],
+)

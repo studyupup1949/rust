@@ -1,0 +1,44 @@
+name: Publish to crates.io
+
+on:
+  push:
+    tags: ["v*"]
+
+env:
+  CARGO_TERM_COLOR: always
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    environment: release  # Optional: for enhanced security
+    permissions:
+      id-token: write     # Required for OIDC token exchange
+    steps:
+      - uses: actions/checkout@v6
+      - uses: dtolnay/rust-toolchain@stable
+      - uses: seq-rs/actions/rust-cache@v1
+      # - uses: rust-lang/crates-io-auth-action@v1
+      #   id: auth
+
+      - run: cargo test --workspace --features __doctests
+
+      # publish order matters: core -> derive -> facade
+      # || true skips already-published versions so unchanged crates don't block the pipeline
+      - run: cargo publish -p addrezz_core || true
+        env:
+          CARGO_REGISTRY_TOKEN: ${{ secrets.CARGO_REGISTRY_TOKEN }}
+          # CARGO_REGISTRY_TOKEN: ${{ steps.auth.outputs.token }}
+
+      - run: sleep 15 # crates.io index propagation
+
+      - run: cargo publish -p addrezz_macros || true
+        env:
+          CARGO_REGISTRY_TOKEN: ${{ secrets.CARGO_REGISTRY_TOKEN }}
+          # CARGO_REGISTRY_TOKEN: ${{ steps.auth.outputs.token }}
+
+      - run: sleep 15
+
+      - run: cargo publish -p addrezz
+        env:
+          CARGO_REGISTRY_TOKEN: ${{ secrets.CARGO_REGISTRY_TOKEN }}
+          # CARGO_REGISTRY_TOKEN: ${{ steps.auth.outputs.token }}

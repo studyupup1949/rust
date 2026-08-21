@@ -1,0 +1,13 @@
+---
+source: src/parser/diagnostics.rs
+expression: parsed.unwrap().collect_diagnostics(contents)
+---
+- range:
+    start:
+      line: 6
+      character: 4
+    end:
+      line: 6
+      character: 27
+  severity: 1
+  message: imports must be declared at the beginning of a module

@@ -1,0 +1,667 @@
+{
+  "id": "data-viz/kpi-dashboard",
+  "title": "KPI Dashboard \u2014 Metrics Grid with Trends and Alerts",
+  "description": "Executive KPI dashboard with metric cards (revenue, users, conversion), trend indicators (up/down arrows with percentages), status colors (good/warning/attention), and drill-down actions. Uses ColumnSet grid for KPIs, TextBlock ExtraLarge for values, and color-coded Container styles.",
+  "category": "data-viz",
+  "tags": [
+    "dashboard",
+    "kpi",
+    "metrics",
+    "analytics",
+    "data-viz",
+    "executive",
+    "trends",
+    "performance",
+    "reporting"
+  ],
+  "use_cases": [
+    "Executive dashboard with key metrics",
+    "Sales pipeline visualization",
+    "Operational health monitoring",
+    "Weekly business review"
+  ],
+  "host_targets": [
+    "generic",
+    "teams",
+    "web_chat"
+  ],
+  "complexity": "intermediate",
+  "card": {
+    "$schema": "http://adaptivecards.io/schemas/adaptive-card.json",
+    "type": "AdaptiveCard",
+    "version": "1.5",
+    "metadata": {
+      "webUrl": "https://greentic.io/cards/kpi-dashboard",
+      "demo_mode": true
+    },
+    "body": [
+      {
+        "type": "Container",
+        "id": "kpiMenu",
+        "isVisible": true,
+        "style": "emphasis",
+        "bleed": true,
+        "items": [
+          {
+            "type": "ColumnSet",
+            "columns": [
+              {
+                "type": "Column",
+                "width": "auto",
+                "items": [
+                  {
+                    "type": "Image",
+                    "url": "https://img.icons8.com/fluency/96/combo-chart.png",
+                    "size": "Medium"
+                  }
+                ],
+                "verticalContentAlignment": "Center"
+              },
+              {
+                "type": "Column",
+                "width": "stretch",
+                "items": [
+                  {
+                    "type": "TextBlock",
+                    "text": "KPI Dashboard",
+                    "size": "ExtraLarge",
+                    "weight": "Bolder",
+                    "color": "Accent"
+                  },
+                  {
+                    "type": "TextBlock",
+                    "text": "Track your personal and team performance metrics.",
+                    "spacing": "None",
+                    "isSubtle": true,
+                    "wrap": true
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "type": "ActionSet",
+            "spacing": "Medium",
+            "actions": [
+              {
+                "type": "Action.ToggleVisibility",
+                "title": "\ud83d\udc64 My KPIs",
+                "style": "positive",
+                "targetElements": [
+                  {
+                    "elementId": "kpiMenu",
+                    "isVisible": false
+                  },
+                  {
+                    "elementId": "kpiPersonal",
+                    "isVisible": true
+                  }
+                ]
+              },
+              {
+                "type": "Action.ToggleVisibility",
+                "title": "\ud83d\udc65 Team Dashboard",
+                "targetElements": [
+                  {
+                    "elementId": "kpiMenu",
+                    "isVisible": false
+                  },
+                  {
+                    "elementId": "kpiTeam",
+                    "isVisible": true
+                  }
+                ]
+              },
+              {
+                "type": "Action.ToggleVisibility",
+                "title": "\ud83d\udcca Project Health",
+                "targetElements": [
+                  {
+                    "elementId": "kpiMenu",
+                    "isVisible": false
+                  },
+                  {
+                    "elementId": "kpiProject",
+                    "isVisible": true
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "type": "Container",
+        "id": "kpiPersonal",
+        "isVisible": false,
+        "items": [
+          {
+            "type": "TextBlock",
+            "text": "\ud83d\udc64 My KPIs \u2014 Q1 2026",
+            "size": "Large",
+            "weight": "Bolder",
+            "color": "Accent"
+          },
+          {
+            "type": "ColumnSet",
+            "columns": [
+              {
+                "type": "Column",
+                "width": "1",
+                "style": "good",
+                "items": [
+                  {
+                    "type": "TextBlock",
+                    "text": "Utilization",
+                    "size": "Small",
+                    "isSubtle": true,
+                    "horizontalAlignment": "Center"
+                  },
+                  {
+                    "type": "TextBlock",
+                    "text": "87%",
+                    "weight": "Bolder",
+                    "size": "ExtraLarge",
+                    "color": "Good",
+                    "horizontalAlignment": "Center",
+                    "spacing": "None"
+                  },
+                  {
+                    "type": "TextBlock",
+                    "text": "Target: 80%",
+                    "size": "Small",
+                    "isSubtle": true,
+                    "horizontalAlignment": "Center",
+                    "spacing": "None"
+                  }
+                ]
+              },
+              {
+                "type": "Column",
+                "width": "1",
+                "style": "good",
+                "items": [
+                  {
+                    "type": "TextBlock",
+                    "text": "On-Time",
+                    "size": "Small",
+                    "isSubtle": true,
+                    "horizontalAlignment": "Center"
+                  },
+                  {
+                    "type": "TextBlock",
+                    "text": "94%",
+                    "weight": "Bolder",
+                    "size": "ExtraLarge",
+                    "color": "Good",
+                    "horizontalAlignment": "Center",
+                    "spacing": "None"
+                  },
+                  {
+                    "type": "TextBlock",
+                    "text": "Target: 90%",
+                    "size": "Small",
+                    "isSubtle": true,
+                    "horizontalAlignment": "Center",
+                    "spacing": "None"
+                  }
+                ]
+              },
+              {
+                "type": "Column",
+                "width": "1",
+                "style": "warning",
+                "items": [
+                  {
+                    "type": "TextBlock",
+                    "text": "CSAT",
+                    "size": "Small",
+                    "isSubtle": true,
+                    "horizontalAlignment": "Center"
+                  },
+                  {
+                    "type": "TextBlock",
+                    "text": "4.2",
+                    "weight": "Bolder",
+                    "size": "ExtraLarge",
+                    "color": "Warning",
+                    "horizontalAlignment": "Center",
+                    "spacing": "None"
+                  },
+                  {
+                    "type": "TextBlock",
+                    "text": "Target: 4.5",
+                    "size": "Small",
+                    "isSubtle": true,
+                    "horizontalAlignment": "Center",
+                    "spacing": "None"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "type": "TextBlock",
+            "text": "Detailed Metrics",
+            "weight": "Bolder",
+            "spacing": "Medium"
+          },
+          {
+            "type": "FactSet",
+            "facts": [
+              {
+                "title": "Projects delivered",
+                "value": "6 of 7 (86%) \u2705"
+              },
+              {
+                "title": "Avg sprint velocity",
+                "value": "42 pts/sprint \u2b06\ufe0f (+8% vs Q4)"
+              },
+              {
+                "title": "Code review turnaround",
+                "value": "4.2 hrs avg \u2705 (target: <8h)"
+              },
+              {
+                "title": "Documentation coverage",
+                "value": "72% \u26a0\ufe0f (target: 80%)"
+              },
+              {
+                "title": "Mentoring sessions",
+                "value": "8 sessions \u2705 (target: 6)"
+              },
+              {
+                "title": "Client escalations",
+                "value": "1 \u2705 (target: <3)"
+              }
+            ]
+          },
+          {
+            "type": "Container",
+            "style": "attention",
+            "spacing": "Medium",
+            "items": [
+              {
+                "type": "TextBlock",
+                "text": "\u26a0\ufe0f Action Items",
+                "weight": "Bolder",
+                "color": "Attention"
+              },
+              {
+                "type": "TextBlock",
+                "text": "CSAT below target \u2014 Review client feedback from MAP project. Documentation coverage at 72% \u2014 Prioritize API docs for ANTAM chatbot.",
+                "wrap": true,
+                "size": "Small"
+              }
+            ]
+          },
+          {
+            "type": "ActionSet",
+            "spacing": "Medium",
+            "actions": [
+              {
+                "type": "Action.Submit",
+                "title": "\ud83d\udce5 Download Full Report",
+                "data": {
+                  "action": "download_kpi_report",
+                  "demo_mode": true
+                }
+              },
+              {
+                "type": "Action.ToggleVisibility",
+                "title": "\u2190 Back",
+                "targetElements": [
+                  {
+                    "elementId": "kpiPersonal",
+                    "isVisible": false
+                  },
+                  {
+                    "elementId": "kpiMenu",
+                    "isVisible": true
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "type": "Container",
+        "id": "kpiTeam",
+        "isVisible": false,
+        "items": [
+          {
+            "type": "TextBlock",
+            "text": "\ud83d\udc65 Team Dashboard \u2014 Q1 2026",
+            "size": "Large",
+            "weight": "Bolder",
+            "color": "Accent"
+          },
+          {
+            "type": "TextBlock",
+            "text": "Delivery Team (7 members)",
+            "weight": "Bolder",
+            "spacing": "Medium"
+          },
+          {
+            "type": "ColumnSet",
+            "columns": [
+              {
+                "type": "Column",
+                "width": "1",
+                "style": "good",
+                "items": [
+                  {
+                    "type": "TextBlock",
+                    "text": "Team Util.",
+                    "size": "Small",
+                    "isSubtle": true,
+                    "horizontalAlignment": "Center"
+                  },
+                  {
+                    "type": "TextBlock",
+                    "text": "82%",
+                    "weight": "Bolder",
+                    "size": "Large",
+                    "color": "Good",
+                    "horizontalAlignment": "Center",
+                    "spacing": "None"
+                  }
+                ]
+              },
+              {
+                "type": "Column",
+                "width": "1",
+                "style": "good",
+                "items": [
+                  {
+                    "type": "TextBlock",
+                    "text": "On-Time",
+                    "size": "Small",
+                    "isSubtle": true,
+                    "horizontalAlignment": "Center"
+                  },
+                  {
+                    "type": "TextBlock",
+                    "text": "91%",
+                    "weight": "Bolder",
+                    "size": "Large",
+                    "color": "Good",
+                    "horizontalAlignment": "Center",
+                    "spacing": "None"
+                  }
+                ]
+              },
+              {
+                "type": "Column",
+                "width": "1",
+                "style": "good",
+                "items": [
+                  {
+                    "type": "TextBlock",
+                    "text": "CSAT",
+                    "size": "Small",
+                    "isSubtle": true,
+                    "horizontalAlignment": "Center"
+                  },
+                  {
+                    "type": "TextBlock",
+                    "text": "4.4",
+                    "weight": "Bolder",
+                    "size": "Large",
+                    "color": "Good",
+                    "horizontalAlignment": "Center",
+                    "spacing": "None"
+                  }
+                ]
+              },
+              {
+                "type": "Column",
+                "width": "1",
+                "style": "warning",
+                "items": [
+                  {
+                    "type": "TextBlock",
+                    "text": "Attrition",
+                    "size": "Small",
+                    "isSubtle": true,
+                    "horizontalAlignment": "Center"
+                  },
+                  {
+                    "type": "TextBlock",
+                    "text": "14%",
+                    "weight": "Bolder",
+                    "size": "Large",
+                    "color": "Warning",
+                    "horizontalAlignment": "Center",
+                    "spacing": "None"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "type": "TextBlock",
+            "text": "Individual Performance",
+            "weight": "Bolder",
+            "spacing": "Medium"
+          },
+          {
+            "type": "FactSet",
+            "facts": [
+              {
+                "title": "Dewi Sari",
+                "value": "\u2b50 92% util  \u2022  96% on-time  \u2022  4.8 CSAT"
+              },
+              {
+                "title": "Reza Pratama",
+                "value": "\u2b50 88% util  \u2022  93% on-time  \u2022  4.5 CSAT"
+              },
+              {
+                "title": "Siti Nurhaliza",
+                "value": "\u2705 85% util  \u2022  90% on-time  \u2022  4.3 CSAT"
+              },
+              {
+                "title": "Fajar Nugroho",
+                "value": "\u2705 80% util  \u2022  91% on-time  \u2022  4.4 CSAT"
+              },
+              {
+                "title": "New Hire #1",
+                "value": "\ud83c\udd95 Onboarding \u2014 No data yet"
+              },
+              {
+                "title": "Intern (Lisa)",
+                "value": "\ud83d\udcda Training \u2014 2 weeks in"
+              }
+            ]
+          },
+          {
+            "type": "ActionSet",
+            "spacing": "Medium",
+            "actions": [
+              {
+                "type": "Action.Submit",
+                "title": "\ud83d\udce5 Export Team Report",
+                "data": {
+                  "action": "export_team_kpi",
+                  "demo_mode": true
+                }
+              },
+              {
+                "type": "Action.ToggleVisibility",
+                "title": "\u2190 Back",
+                "targetElements": [
+                  {
+                    "elementId": "kpiTeam",
+                    "isVisible": false
+                  },
+                  {
+                    "elementId": "kpiMenu",
+                    "isVisible": true
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "type": "Container",
+        "id": "kpiProject",
+        "isVisible": false,
+        "items": [
+          {
+            "type": "TextBlock",
+            "text": "\ud83d\udcca Project Health Overview",
+            "size": "Large",
+            "weight": "Bolder",
+            "color": "Accent"
+          },
+          {
+            "type": "Container",
+            "style": "good",
+            "items": [
+              {
+                "type": "TextBlock",
+                "text": "\ud83d\udfe2 MAP FAS Migration",
+                "weight": "Bolder"
+              },
+              {
+                "type": "FactSet",
+                "facts": [
+                  {
+                    "title": "Status",
+                    "value": "On Track"
+                  },
+                  {
+                    "title": "Sprint",
+                    "value": "Sprint 14 of 18"
+                  },
+                  {
+                    "title": "Budget used",
+                    "value": "72% (within plan)"
+                  },
+                  {
+                    "title": "Risks",
+                    "value": "None active"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "type": "Container",
+            "style": "warning",
+            "separator": true,
+            "items": [
+              {
+                "type": "TextBlock",
+                "text": "\ud83d\udfe1 Telkom University AI Ops",
+                "weight": "Bolder"
+              },
+              {
+                "type": "FactSet",
+                "facts": [
+                  {
+                    "title": "Status",
+                    "value": "At Risk \u2014 SOW amendment pending"
+                  },
+                  {
+                    "title": "Phase",
+                    "value": "POC validation"
+                  },
+                  {
+                    "title": "Budget used",
+                    "value": "45% (ahead of plan)"
+                  },
+                  {
+                    "title": "Risks",
+                    "value": "1 \u2014 Scope creep on ML pipeline"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "type": "Container",
+            "style": "good",
+            "separator": true,
+            "items": [
+              {
+                "type": "TextBlock",
+                "text": "\ud83d\udfe2 ANTAM AI Chatbot",
+                "weight": "Bolder"
+              },
+              {
+                "type": "FactSet",
+                "facts": [
+                  {
+                    "title": "Status",
+                    "value": "On Track"
+                  },
+                  {
+                    "title": "Phase",
+                    "value": "UAT"
+                  },
+                  {
+                    "title": "Budget used",
+                    "value": "88% (Phase 1 wrap-up)"
+                  },
+                  {
+                    "title": "Risks",
+                    "value": "None active"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "type": "Container",
+            "style": "good",
+            "separator": true,
+            "items": [
+              {
+                "type": "TextBlock",
+                "text": "\ud83d\udfe2 Bank Indonesia Sentrix",
+                "weight": "Bolder"
+              },
+              {
+                "type": "FactSet",
+                "facts": [
+                  {
+                    "title": "Status",
+                    "value": "Completed \u2014 In maintenance"
+                  },
+                  {
+                    "title": "CSAT",
+                    "value": "4.7 / 5.0"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "type": "ActionSet",
+            "spacing": "Medium",
+            "actions": [
+              {
+                "type": "Action.ToggleVisibility",
+                "title": "\u2190 Back",
+                "targetElements": [
+                  {
+                    "elementId": "kpiProject",
+                    "isVisible": false
+                  },
+                  {
+                    "elementId": "kpiMenu",
+                    "isVisible": true
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  "notes": "Multi-section card using Action.ToggleVisibility for in-card navigation. All non-main sections hidden by default."
+}

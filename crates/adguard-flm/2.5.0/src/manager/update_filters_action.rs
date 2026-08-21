@@ -1,0 +1,1590 @@
+use crate::filters::indexes::entities::IndexEntity;
+use crate::filters::parser::diff_updates::batch_patches_container::BatchPatchesContainer;
+use crate::filters::parser::diff_updates::process_diff_path::process_diff_path;
+use crate::filters::parser::filter_compiler::FilterCompiler;
+use crate::filters::parser::filter_contents_provider::diff_path_provider::DiffPathProvider;
+use crate::filters::parser::metadata::parsers::expires::process_expires;
+use crate::filters::parser::metadata::KnownMetadataProperty;
+use crate::filters::parser::parser_error::FilterParserErrorContext;
+use crate::io::fetch_by_schemes::fetch_json_by_scheme;
+use crate::io::get_scheme;
+use crate::io::http::blocking_client::BlockingClient;
+use crate::io::url_schemes::UrlSchemes;
+use crate::manager::filter_lists_builder::FullFilterListBuilder;
+use crate::manager::models::update_result::UpdateFilterError;
+use crate::manager::models::UpdateResult;
+use crate::storage::entities::diff_update_entity::DiffUpdateEntity;
+use crate::storage::entities::filter::filter_entity::FilterEntity;
+use crate::storage::entities::filter::filter_include_entity::FilterIncludeEntity;
+use crate::storage::entities::rules_list::rules_list_entity::RulesListEntity;
+use crate::storage::repositories::diff_updates_repository::{DiffUpdateRepository, DiffUpdatesMap};
+use crate::storage::repositories::filter_includes_repository::FilterIncludesRepository;
+use crate::storage::repositories::filter_repository::FilterRepository;
+use crate::storage::repositories::rules_list_repository::{
+    MapFilterIdOnRulesString, RulesListRepository,
+};
+use crate::storage::repositories::Repository;
+use crate::storage::sql_generators::operator::SQLOperator;
+use crate::storage::with_transaction;
+use crate::storage::DbConnectionManager;
+use crate::utils::integrity;
+use crate::utils::memory::heap;
+use crate::{Configuration, FLMError, FLMResult, FilterId, FilterParserError};
+use chrono::{DateTime, ParseError, Utc};
+use rusqlite::types::Value;
+use rusqlite::{Connection, Transaction};
+use std::collections::HashMap;
+use std::str::FromStr;
+use std::sync::{Arc, Mutex};
+use std::time::Instant;
+
+/// Maximum number of concurrent downloads
+const MAX_CONCURRENT_DOWNLOADS: usize = 16;
+
+/// Compiled filter entry with metadata
+struct CompilationListEntry<'compiler> {
+    /// Index of the filter in the list
+    index: usize,
+    /// ID of the filter
+    filter_id: FilterId,
+    /// Base entity
+    filter: FilterEntity,
+    /// Filter compiler with all filter data
+    compiler: FilterCompiler<'compiler>,
+    /// Result of compilation
+    compilation_result: Result<String, FilterParserErrorContext>,
+}
+
+/// Tries to update passed filters
+#[allow(clippy::unwrap_or_default)]
+pub(super) fn update_filters_action(
+    records: Vec<FilterEntity>,
+    db_connection_manager: &DbConnectionManager,
+    ignore_filters_expiration: bool,
+    ignore_filters_status: bool,
+    loose_timeout: i32,
+    configuration: &Configuration,
+) -> FLMResult<UpdateResult> {
+    let filter_repository = FilterRepository::new();
+    let rule_list_repository = RulesListRepository::new();
+    let diff_updates_repository = DiffUpdateRepository::new();
+    let filter_includes_repository = FilterIncludesRepository::new();
+
+    let current_time = Utc::now().timestamp();
+    let mut filter_entities: Vec<FilterEntity> = Vec::with_capacity(records.len());
+    let mut rules_entities: Vec<RulesListEntity> = Vec::with_capacity(records.len());
+    let mut includes_entities: Vec<FilterIncludeEntity> = Vec::new();
+
+    let mut update_result = UpdateResult {
+        updated_list: vec![],
+        remaining_filters_count: 0,
+        filters_errors: vec![],
+    };
+
+    let filter_ids = records
+        .iter()
+        .filter_map(|filter| filter.filter_id)
+        .collect::<Vec<FilterId>>();
+
+    let (mut diff_updates_map, mut rules_map, mut disabled_rules_map, rules_hashes, includes_map) =
+        db_connection_manager.execute_db(|conn: Connection| {
+            let diff_updates_map = diff_updates_repository
+                .select_map(&conn, &filter_ids)
+                .map_err(FLMError::from_database)?;
+
+            let (rules_map, disabled_rules_map, rules_hashes) = rule_list_repository
+                .select_rules_maps(&conn, &filter_ids)
+                .map_err(FLMError::from_database)?;
+
+            let includes_map = filter_includes_repository
+                .select_mapped(&conn, None)
+                .map_err(FLMError::from_database)?;
+
+            Ok((
+                diff_updates_map,
+                rules_map,
+                disabled_rules_map,
+                rules_hashes,
+                includes_map,
+            ))
+        })?;
+
+    let shared_http_client = BlockingClient::new(configuration)?;
+
+    let mut compilation_infos: Vec<(FilterId, FilterEntity, FilterCompiler)> = vec![];
+    let mut should_get_latest_filters_versions: bool = false;
+    let batch_patches_container = BatchPatchesContainer::factory();
+    for filter in records {
+        if !ignore_filters_status && !filter.is_enabled {
+            continue;
+        }
+
+        if filter.download_url.is_empty() {
+            continue;
+        }
+
+        let filter_id = match filter.filter_id {
+            Some(filter_id) => filter_id,
+            None => {
+                update_result.filters_errors.push(UpdateFilterError {
+                    filter_id: 0,
+                    message: "Cannot get filter contents from database".to_string(),
+                    filter_url: Some(filter.download_url),
+                    http_client_error: None,
+                });
+
+                continue;
+            }
+        };
+
+        let build_compiler_result = build_compiler(
+            ignore_filters_expiration,
+            filter_id,
+            configuration,
+            &mut diff_updates_map,
+            current_time,
+            &mut rules_map,
+            &batch_patches_container,
+            &filter,
+            &shared_http_client,
+        );
+
+        let mut compiler = match build_compiler_result {
+            // An error occurred
+            Err(why) => {
+                update_result.filters_errors.push(UpdateFilterError {
+                    filter_id,
+                    message: why.to_string(),
+                    filter_url: Some(filter.download_url),
+                    http_client_error: None,
+                });
+
+                continue;
+            }
+
+            // Not ready for update
+            Ok((None, _)) => {
+                continue;
+            }
+
+            Ok((Some(filter_compiler), filter_will_use_diff_update)) => {
+                // Should check index for new versions
+                if !filter_will_use_diff_update && !filter.is_custom() {
+                    should_get_latest_filters_versions = true;
+                }
+
+                filter_compiler
+            }
+        };
+
+        if !filter.is_custom() {
+            compiler.should_skip_checksum_validation(false);
+        }
+
+        compilation_infos.push((filter_id, filter, compiler));
+    }
+
+    // Get latest filters versions
+    // only if at least one index filter is present,
+    // and it is not used diff update
+    let last_index_filter_versions = get_latest_filters_versions(
+        should_get_latest_filters_versions,
+        &shared_http_client,
+        configuration.metadata_url.as_str(),
+    )?;
+
+    // Pre-filter: skip filters with up-to-date versions
+    compilation_infos.retain(|(filter_id, filter, _)| {
+        if let Some(new_version) = last_index_filter_versions.get(filter_id) {
+            if !filter.version.is_empty() && &filter.version == new_version &&
+                // Extra spike, 'cause we may already have metadata, but not the filters
+                // This stupid spike is here, 'cause we MIGHT fall in situation,
+                // when filter metadata.version is provided, it is up-to-date, BUT empty rules object is saved
+                rules_map.get(filter_id).map(|old_rules| !old_rules.is_empty()).unwrap_or_default()
+            {
+                return false;
+            }
+        }
+
+        true
+    });
+    let rows_count = compilation_infos.len();
+
+    // Multithreaded filter compilation
+    let compile_results = compile_concurrently(
+        compilation_infos,
+        rows_count,
+        &mut update_result,
+        loose_timeout as u64,
+    );
+
+    // Put here processed_filters
+    let mut diff_path_entities: Vec<DiffUpdateEntity> = vec![];
+    // Compilers with successful filter downloads
+    let mut successful_compilers_with_result: Vec<(FilterId, FilterCompiler)> =
+        Vec::with_capacity(rows_count);
+
+    // Collect successfully compiled filters
+    for compilation_entry in compile_results.into_iter() {
+        if let Err(err) = compilation_entry.compilation_result {
+            // NoContent means update just unavailable yet
+            if err.error != FilterParserError::NoContent {
+                update_result.filters_errors.push(UpdateFilterError {
+                    filter_id: compilation_entry.filter_id,
+                    message: err.to_string(),
+                    filter_url: Some(compilation_entry.filter.download_url),
+                    http_client_error: Some(err.error)
+                        .filter(|e| matches!(e, FilterParserError::Network(_)))
+                        .map(|e| e.to_string()),
+                });
+            }
+
+            continue;
+        }
+
+        // compiler is None only on panic (already recorded as error above)
+        successful_compilers_with_result
+            .push((compilation_entry.filter_id, compilation_entry.compiler));
+    }
+
+    let successful_filter_ids = successful_compilers_with_result
+        .iter()
+        .map(|entity| entity.0.into())
+        .collect::<Vec<Value>>();
+
+    update_result.updated_list = db_connection_manager.execute_db(|mut conn: Connection| {
+        // Retrieve filters once again, cuz properties may have changed
+        let mut new_filters_map = filter_repository
+            .select_mapped(
+                &conn,
+                Some(SQLOperator::FieldIn("filter_id", successful_filter_ids)),
+            )
+            .map_err(FLMError::from_database)?;
+
+        // Gets from db second time, because filters may have changes
+        for (filter_id, compiler) in successful_compilers_with_result {
+            let Some(mut filter) = new_filters_map.remove(&filter_id) else {
+                update_result.filters_errors.push(UpdateFilterError {
+                    filter_id,
+                    message: format!(
+                        "Filter with id \"{}\" is gone from database while updating",
+                        filter_id
+                    ),
+                    filter_url: None,
+                    http_client_error: None,
+                });
+
+                continue;
+            };
+
+            let expires = match compiler.get_metadata(KnownMetadataProperty::Expires) {
+                value if value.is_empty() => 0i32,
+                value => process_expires(value.as_str()),
+            };
+
+            let diff_path = compiler.get_metadata(KnownMetadataProperty::DiffPath);
+
+            filter.expires = expires;
+            filter.last_download_time = current_time;
+
+            filter.last_update_time = match compiler
+                .get_metadata(KnownMetadataProperty::TimeUpdated)
+                .as_str()
+            {
+                time_slice if !time_slice.is_empty() => DateTime::from_str(time_slice)
+                    .unwrap_or_else(|_: ParseError| Utc::now())
+                    .timestamp(),
+
+                _ => Utc::now().timestamp(),
+            };
+
+            // Should update `parsed info` only for custom filters
+            if filter.is_custom() {
+                filter.homepage = compiler.get_metadata(KnownMetadataProperty::Homepage);
+                if !filter.is_user_title() {
+                    filter.title = compiler.get_metadata(KnownMetadataProperty::Title);
+                }
+                if !filter.is_user_description() {
+                    filter.description = compiler.get_metadata(KnownMetadataProperty::Description);
+                }
+            }
+
+            filter.version = compiler.get_metadata(KnownMetadataProperty::Version);
+            filter.license = compiler.get_metadata(KnownMetadataProperty::License);
+            filter.checksum = compiler.get_metadata(KnownMetadataProperty::Checksum);
+
+            let mut compiled_filter_entities = compiler.into_entities(filter_id);
+            compiled_filter_entities.rules_list_entity.disabled_text =
+                disabled_rules_map.remove(&filter_id).unwrap_or_default();
+
+            if !ignore_filters_expiration {
+                // Check that filter contents are really changed
+                if let Some(current_filter_hash) =
+                    compiled_filter_entities.rules_list_entity.get_text_hash()
+                {
+                    if let Some(old_filter_hash) = rules_hashes.get(&filter_id) {
+                        // Old filter has hash, and it is the same as current
+                        if !old_filter_hash.is_empty() && current_filter_hash == old_filter_hash {
+                            // We should check includes
+                            let current_includes =
+                                &compiled_filter_entities.filter_includes_entities;
+
+                            match includes_map.get(&filter_id) {
+                                Some(old_includes) if !old_includes.is_empty() => {
+                                    // Has includes and includes counts are the same
+                                    if old_includes.len() == current_includes.len() {
+                                        let all_includes_are_same = old_includes
+                                            .iter()
+                                            .zip(current_includes)
+                                            .all(|(old_include, current_include)| {
+                                                old_include.get_body_hash()
+                                                    == current_include.get_body_hash()
+                                            });
+
+                                        if all_includes_are_same {
+                                            // Filter is not changed
+                                            continue;
+                                        }
+                                    }
+                                }
+
+                                // Old filter has no includes
+                                Some(old_includes) if old_includes.is_empty() => {
+                                    // Current filter has no includes too
+                                    if current_includes.is_empty() {
+                                        continue;
+                                    }
+                                }
+
+                                None => {
+                                    // Old filter has no includes
+                                    if current_includes.is_empty() {
+                                        continue;
+                                    }
+                                }
+
+                                _ => {}
+                            }
+                        }
+                    }
+                }
+            }
+
+            // All pushes should be made below this line
+            if !diff_path.is_empty() {
+                match process_diff_path(filter_id, diff_path) {
+                    Ok(Some(entity)) => diff_path_entities.push(entity),
+                    Err(why) => update_result.filters_errors.push(UpdateFilterError {
+                        filter_id,
+                        message: why.to_string(),
+                        filter_url: Some(filter.download_url.clone()),
+                        http_client_error: None,
+                    }),
+                    _ => {}
+                }
+            }
+
+            integrity::sign_entities_if_needed(
+                configuration,
+                &mut compiled_filter_entities.rules_list_entity,
+                &mut compiled_filter_entities.filter_includes_entities,
+            );
+
+            rules_entities.push(compiled_filter_entities.rules_list_entity);
+            includes_entities.append(&mut compiled_filter_entities.filter_includes_entities);
+            filter_entities.push(filter);
+        }
+
+        with_transaction(&mut conn, |transaction: &Transaction| {
+            filter_repository.insert(transaction, &filter_entities)?;
+            diff_updates_repository.insert(transaction, &diff_path_entities)?;
+            rule_list_repository.insert(transaction, &rules_entities)?;
+            filter_includes_repository.replace_entities_for_filters(transaction, &includes_entities)
+        })?;
+
+        let new_rules_map = rules_entities
+            .into_iter()
+            .fold(HashMap::new(), |mut acc, rule| {
+                acc.insert(rule.filter_id, rule);
+                acc
+            });
+
+        let new_filters_includes_map =
+            includes_entities
+                .into_iter()
+                .fold(HashMap::new(), |mut acc, filter_include| {
+                    acc.entry(filter_include.filter_id)
+                        .or_insert(vec![])
+                        .push(filter_include);
+                    acc
+                });
+
+        let mut builder = FullFilterListBuilder::new(&configuration.locale);
+        builder.set_rules_map(new_rules_map);
+        builder.set_filters_includes_map(new_filters_includes_map);
+
+        builder.build_full_filter_lists(conn, filter_entities, configuration)
+    })?;
+
+    Ok(update_result)
+}
+
+/// Filter compilers factory logic
+#[inline]
+fn build_compiler<'deps: 'compiler, 'compiler>(
+    ignore_filters_expiration: bool,
+    filter_id: FilterId,
+    configuration: &'deps Configuration,
+    diff_updates_map: &mut DiffUpdatesMap,
+    current_time: i64,
+    rules_map: &mut MapFilterIdOnRulesString,
+    batch_patches_container: &Arc<Mutex<BatchPatchesContainer>>,
+    filter: &FilterEntity,
+    shared_http_client: &'deps BlockingClient,
+) -> FLMResult<(Option<FilterCompiler<'compiler>>, bool)> {
+    let expires_duration = configuration.resolve_right_expires_value(filter.expires) as i64;
+
+    let ready_for_full_update = current_time > filter.last_download_time + expires_duration;
+
+    let mut filter_will_use_diff_update: bool = false;
+
+    // We force full filter update through http or filter is ready for full update
+    if ignore_filters_expiration || ready_for_full_update {
+        return Ok((
+            Some(FilterCompiler::factory(configuration, shared_http_client)),
+            filter_will_use_diff_update,
+        ));
+    }
+
+    if let Some(diff_update_info) = diff_updates_map.remove(&filter_id) {
+        // if we have diff updates, we should check next_update time
+        if current_time > diff_update_info.next_check_time {
+            return match rules_map.remove(&filter_id) {
+                Some(rules) => {
+                    // All set. We can apply diff update
+                    let provider = DiffPathProvider::new(
+                        diff_update_info.next_path,
+                        rules,
+                        Arc::clone(batch_patches_container),
+                        shared_http_client,
+                    );
+
+                    filter_will_use_diff_update = true;
+
+                    Ok((
+                        Some(FilterCompiler::with_custom_provider(
+                            heap(provider),
+                            configuration,
+                        )),
+                        filter_will_use_diff_update,
+                    ))
+                }
+                None => FLMError::make_err(
+                    "Strange behaviour. Cannot get filter contents from database",
+                ),
+            };
+        }
+    }
+
+    // If there is no chance for update this filter, it is local we should ignore expires
+    if configuration.should_ignore_expires_for_local_urls
+        && UrlSchemes::from(get_scheme(filter.download_url.as_str())) == UrlSchemes::File
+    {
+        return Ok((
+            Some(FilterCompiler::factory(configuration, shared_http_client)),
+            filter_will_use_diff_update,
+        ));
+    }
+
+    Ok((None, filter_will_use_diff_update))
+}
+
+/// Compiles filters concurrently, using work-stealing algorithm
+fn compile_concurrently<'compilers>(
+    compilation_infos: Vec<(FilterId, FilterEntity, FilterCompiler<'compilers>)>,
+    infos_count: usize,
+    update_result: &mut UpdateResult,
+    loose_timeout: u64,
+) -> Vec<CompilationListEntry<'compilers>> {
+    let is_use_timeout = loose_timeout > 0;
+    let start_time = Instant::now();
+    let num_workers = MAX_CONCURRENT_DOWNLOADS.min(infos_count);
+    let thread_errors = Mutex::new(Vec::<UpdateFilterError>::new());
+    let work = Mutex::new(compilation_infos.into_iter().enumerate());
+
+    // Parallel compilation: download and compile filters concurrently
+    let mut compilation_list = std::thread::scope(|s| {
+        let handles = (0..num_workers)
+            .map(|_| {
+                s.spawn(|| {
+                    let mut thread_results: Vec<CompilationListEntry> = Vec::new();
+
+                    while !is_use_timeout || start_time.elapsed().as_secs() <= loose_timeout {
+                        match work.lock() {
+                            Ok(mut tasks_list) => {
+                                // Get next task
+                                if let Some((index, (filter_id, filter, mut compiler))) =
+                                    tasks_list.next()
+                                {
+                                    // Unlock tasks list before compilation
+                                    drop(tasks_list);
+
+                                    // Download and compile filter
+                                    let compilation_result = compiler.compile(&filter.download_url);
+
+                                    thread_results.push(CompilationListEntry {
+                                        index,
+                                        filter_id,
+                                        filter,
+                                        compiler,
+                                        compilation_result,
+                                    });
+
+                                    // Continue working
+                                    continue;
+                                }
+                            }
+
+                            Err(why) => {
+                                // This thread is panicked
+                                let panic_reason = format!("Thread panic: {}", why);
+
+                                // Give up, if lock is poisoned
+                                thread_errors
+                                    .lock()
+                                    .unwrap()
+                                    .push(UpdateFilterError::with_message(panic_reason));
+                            }
+                        }
+
+                        // Could not continue working
+                        break;
+                    }
+
+                    thread_results
+                })
+            })
+            .collect::<Vec<_>>();
+
+        // Join all threads
+        handles
+            .into_iter()
+            // Let it empty if thread panicked
+            .flat_map(|h| h.join().unwrap_or_else(|_| Vec::new()))
+            .collect::<Vec<_>>()
+    });
+
+    // Set count of unprocessed filters
+    update_result.remaining_filters_count = (infos_count - compilation_list.len()) as i32;
+
+    // Try to put errors into update result, if there are any
+    match thread_errors.into_inner() {
+        Ok(errors) if !errors.is_empty() => {
+            update_result.filters_errors.extend(errors);
+        }
+        _ => {}
+    }
+
+    // Sort compilation list by index, to restore original order
+    compilation_list.sort_by_key(|entry| entry.index);
+
+    compilation_list
+}
+
+/// Gets the latest versions of index filters from the server
+fn get_latest_filters_versions(
+    should_get_latest_filters_versions: bool,
+    shared_http_client: &BlockingClient,
+    metadata_url: &str,
+) -> FLMResult<HashMap<FilterId, String>> {
+    if !should_get_latest_filters_versions {
+        return Ok(HashMap::new());
+    }
+
+    let index = fetch_json_by_scheme::<IndexEntity>(
+        metadata_url,
+        get_scheme(metadata_url).into(),
+        shared_http_client,
+    )?;
+
+    let mut last_index_filter_versions = HashMap::with_capacity(index.filters.len());
+    for entity in index.filters {
+        last_index_filter_versions.insert(entity.filterId, entity.version);
+    }
+
+    Ok(last_index_filter_versions)
+}
+
+#[cfg(test)]
+mod tests {
+    use super::update_filters_action;
+    use crate::filters::parser::{
+        DIRECTIVE_ELSE, DIRECTIVE_ENDIF, DIRECTIVE_IF, DIRECTIVE_INCLUDE,
+    };
+    use crate::storage::entities::filter::filter_entity::FilterEntity;
+    use crate::storage::entities::filter::filter_include_entity::FilterIncludeEntity;
+    use crate::storage::entities::rules_list::rules_list_entity::{
+        RulesListEntity, RulesListEntityCallsMock,
+    };
+    use crate::storage::repositories::filter_includes_repository::FilterIncludesRepository;
+    use crate::storage::repositories::filter_repository::FilterRepository;
+    use crate::storage::repositories::rules_list_repository::RulesListRepository;
+    use crate::storage::repositories::Repository;
+    use crate::storage::with_transaction;
+    use crate::storage::DbConnectionManager;
+    use crate::test_utils::tests_fixtures::TestsFixtures;
+    use crate::test_utils::tests_path;
+    use crate::{string, Configuration, FilterId, CUSTOM_FILTERS_GROUP_ID};
+    use chrono::Utc;
+    use mimicry::Mock;
+    use rusqlite::Connection;
+    use std::thread;
+    use url::Url;
+
+    #[allow(clippy::field_reassign_with_default)]
+    #[test]
+    fn test_update_filters_action() {
+        let source = DbConnectionManager::factory_test().unwrap();
+        unsafe { source.lift_up_database().unwrap() }
+
+        let mut fixtures = TestsFixtures::new();
+
+        // This creates filter in the fixtures folder
+        let mut write_rules = |rules: RulesListEntity| -> (Url, RulesListEntity) {
+            let filter_url = fixtures.write(
+                &format!(
+                    "update_filters_action_{}_{:?}",
+                    rules.filter_id,
+                    thread::current().id()
+                ),
+                &rules.text,
+            );
+
+            (filter_url, rules)
+        };
+
+        let first_filter_id = 1;
+        let second_filter_id = 2;
+        let third_filter_id = -100011;
+        let fourth_filter_id = -100012;
+        let fifth_filter_id = 5;
+
+        let user_rules_count_new = 2;
+
+        let mut filter1 = FilterEntity::default();
+        filter1.filter_id = Some(first_filter_id);
+        filter1.group_id = 1;
+        filter1.is_enabled = true;
+        filter1.title = String::from("Filter1");
+        let (download_url1, rules1) = write_rules(RulesListEntity::with_disabled_text(
+            first_filter_id,
+            string!("Filter1\nNonFilter1"),
+            string!("NonFilter1"),
+            0,
+        ));
+
+        filter1.download_url = download_url1.to_string();
+
+        let mut filter2 = FilterEntity::default();
+        filter2.group_id = 1;
+        filter2.filter_id = Some(second_filter_id);
+        filter2.title = String::from("Filter2");
+        let (download_url2, rules2) = write_rules(RulesListEntity::with_disabled_text(
+            second_filter_id,
+            string!("Filter2\nNonFilter2"),
+            string!("NonFilter2"),
+            0,
+        ));
+        filter2.download_url = download_url2.to_string();
+
+        let mut filter3 = FilterEntity::default();
+        filter3.filter_id = Some(third_filter_id);
+        filter3.title = String::from("Filter3");
+        filter3.is_enabled = true;
+        let (download_url3, rules3) = write_rules(RulesListEntity::with_disabled_text(
+            third_filter_id,
+            string!("Filter3\nNonFilter3"),
+            string!("NonFilter3"),
+            0,
+        ));
+        filter3.download_url = download_url3.to_string();
+
+        // This filter shouldn't be updated
+        let mut filter4 = FilterEntity::default();
+        filter4.filter_id = Some(fourth_filter_id);
+        filter4.title = String::from("Filter4");
+        filter4.last_download_time = Utc::now().timestamp();
+        filter4.last_update_time = Utc::now().timestamp();
+        filter4.is_enabled = true;
+        let (download_url4, rules4) = write_rules(RulesListEntity::with_disabled_text(
+            fourth_filter_id,
+            string!("Filter4\nNonFilter4"),
+            string!("NonFilter4"),
+            0,
+        ));
+        filter4.download_url = download_url4.to_string();
+
+        // Special case - not yet installed filter
+        let mut filter5 = FilterEntity::default();
+        filter5.filter_id = Some(fifth_filter_id);
+        filter5.group_id = 1;
+        filter5.title = String::from("Filter5");
+        filter5.is_enabled = true;
+        // Another special case: Rules is not installed, but version already came from metadata.
+        // Expected behaviour: rules must be installed
+        filter5.version = String::from("2.0.1");
+        let (download_url5, mut rules5) = write_rules(RulesListEntity::with_disabled_text(
+            fifth_filter_id,
+            string!("\n!Version: 2.0.1\nFilter5\nNonFilter5"),
+            string!(),
+            user_rules_count_new,
+        ));
+        filter5.download_url = download_url5.to_string();
+
+        let filters_repo = FilterRepository::new();
+        let rules_repo = RulesListRepository::new();
+
+        let installed_filters = source
+            .execute_db(|mut connection: Connection| {
+                let tx = connection.transaction().unwrap();
+                filters_repo
+                    .insert(&tx, &vec![filter1, filter2, filter3, filter4, filter5])
+                    .unwrap();
+
+                rules_repo
+                    .insert(
+                        &tx,
+                        &vec![
+                            rules1.clone(),
+                            rules2.clone(),
+                            rules3.clone(),
+                            rules4.clone(),
+                        ],
+                    )
+                    .unwrap();
+
+                tx.commit().unwrap();
+
+                let installed_filters = filters_repo
+                    .select_filters_except_bootstrapped(&connection)
+                    .unwrap()
+                    .unwrap();
+
+                let rules_lists_count = rules_repo
+                    .select_rules_except_bootstrapped(&connection)
+                    .unwrap()
+                    .unwrap()
+                    .len();
+
+                assert_eq!(rules_lists_count, 4);
+
+                Ok(installed_filters)
+            })
+            .unwrap();
+
+        assert_eq!(installed_filters.len(), 5);
+
+        // Write new data into all filters
+        let (_, mut new_rules1) = write_rules(RulesListEntity::with_disabled_text(
+            first_filter_id,
+            string!("Filter1_new\nNonFilter1_new"),
+            rules1.disabled_text,
+            user_rules_count_new,
+        ));
+
+        let _ = write_rules(RulesListEntity::with_disabled_text(
+            second_filter_id,
+            string!("Filter2_new\nNonFilter2_new"),
+            rules2.clone().disabled_text,
+            user_rules_count_new,
+        ));
+
+        let (_, mut new_rules3) = write_rules(RulesListEntity::with_disabled_text(
+            third_filter_id,
+            string!("Filter3_new\nNonFilter3_new"),
+            rules3.disabled_text,
+            user_rules_count_new,
+        ));
+
+        let _ = write_rules(RulesListEntity::with_disabled_text(
+            fourth_filter_id,
+            string!("Filter4_new\nNonFilter4_new"),
+            rules4.clone().disabled_text,
+            user_rules_count_new,
+        ));
+
+        let mut conf = Configuration::default();
+        conf.metadata_url = Url::from_file_path(tests_path("fixtures/filters.json"))
+            .unwrap()
+            .to_string();
+
+        let result =
+            update_filters_action(installed_filters, &source, false, false, 0, &conf).unwrap();
+
+        let updated_ids = result
+            .updated_list
+            .iter()
+            .map(|item| item.id)
+            .collect::<Vec<FilterId>>();
+
+        // No errors here
+        assert!(result.filters_errors.is_empty());
+
+        // Filters 1,3,5
+        assert_eq!(updated_ids.len(), 3);
+        // First filter is enabled and ready for update by expires
+        assert!(updated_ids
+            .iter()
+            .find(|id| id == &&first_filter_id)
+            .is_some());
+        // Third filter is enabled and ready for update by expires
+        assert!(updated_ids
+            .iter()
+            .find(|id| id == &&third_filter_id)
+            .is_some());
+        // Fifth filter is just installed
+        assert!(updated_ids
+            .iter()
+            .find(|id| id == &&fifth_filter_id)
+            .is_some());
+
+        source
+            .execute_db(|connection: Connection| {
+                let rules = rules_repo
+                    .select_rules_except_bootstrapped(&connection)
+                    .unwrap()
+                    .unwrap();
+
+                let first_filter = rules
+                    .iter()
+                    .find(|rules| rules.filter_id == first_filter_id)
+                    .unwrap();
+
+                let second_filter = rules
+                    .iter()
+                    .find(|rules| rules.filter_id == second_filter_id)
+                    .unwrap();
+
+                let third_filter = rules
+                    .iter()
+                    .find(|rules| rules.filter_id == third_filter_id)
+                    .unwrap();
+
+                let fourth_filter = rules
+                    .iter()
+                    .find(|rules| rules.filter_id == fourth_filter_id)
+                    .unwrap();
+
+                let fifth_filter = rules
+                    .iter()
+                    .find(|rules| rules.filter_id == fifth_filter_id)
+                    .unwrap();
+
+                new_rules1.set_has_directives(false);
+                new_rules3.set_has_directives(false);
+                rules5.set_has_directives(false);
+
+                // These will be updated
+                assert_eq!(first_filter, &new_rules1);
+                assert_eq!(third_filter, &new_rules3);
+
+                // These weren't update
+                assert_eq!(second_filter, &rules2);
+                assert_eq!(fourth_filter, &rules4);
+
+                // This will be written as new during the update
+                assert_eq!(fifth_filter, &rules5);
+
+                Ok(())
+            })
+            .unwrap()
+    }
+
+    #[allow(clippy::field_reassign_with_default)]
+    #[test]
+    fn test_force_update_filters_action() {
+        let source = DbConnectionManager::factory_test().unwrap();
+        unsafe { source.lift_up_database().unwrap() }
+
+        let mut fixtures = TestsFixtures::new();
+
+        // This creates filter in the fixtures folder
+        let mut write_rules = |rules: RulesListEntity| -> (Url, RulesListEntity) {
+            let filter_url = fixtures.write(
+                &format!(
+                    "update_filters_action_{}_{:?}",
+                    rules.filter_id,
+                    thread::current().id()
+                ),
+                &rules.text,
+            );
+
+            (filter_url, rules)
+        };
+
+        let first_filter_id = 1;
+        let second_filter_id = 2;
+        let third_filter_id = -100011;
+        let fourth_filter_id = -100012;
+        let fifth_filter_id = 5;
+        let sixth_filter_id = 6;
+
+        let user_rules_count_new = 2;
+
+        let mut filter1 = FilterEntity::default();
+        filter1.filter_id = Some(first_filter_id);
+        filter1.group_id = 1;
+        filter1.is_enabled = true;
+        filter1.title = String::from("Filter1");
+        let (download_url1, rules1) = write_rules(RulesListEntity::with_disabled_text(
+            first_filter_id,
+            string!("Filter1\nNonFilter1"),
+            string!("NonFilter1"),
+            0,
+        ));
+        filter1.download_url = download_url1.to_string();
+
+        let mut filter2 = FilterEntity::default();
+        filter2.group_id = 1;
+        filter2.filter_id = Some(second_filter_id);
+        filter2.title = String::from("Filter2");
+        let (download_url2, rules2) = write_rules(RulesListEntity::with_disabled_text(
+            second_filter_id,
+            string!("Filter2\nNonFilter2"),
+            string!("NonFilter2"),
+            0,
+        ));
+        filter2.download_url = download_url2.to_string();
+
+        let mut filter3 = FilterEntity::default();
+        filter3.filter_id = Some(third_filter_id);
+        filter3.title = String::from("Filter3");
+        filter3.is_enabled = true;
+        let (download_url3, rules3) = write_rules(RulesListEntity::with_disabled_text(
+            third_filter_id,
+            string!("Filter3\nNonFilter3"),
+            string!("NonFilter3"),
+            0,
+        ));
+        filter3.download_url = download_url3.to_string();
+
+        // This filter shouldn't be updated
+        let mut filter4 = FilterEntity::default();
+        filter4.filter_id = Some(fourth_filter_id);
+        filter4.title = String::from("Filter4");
+        filter4.last_download_time = Utc::now().timestamp();
+        filter4.last_update_time = Utc::now().timestamp();
+        filter4.is_enabled = true;
+        let (download_url4, rules4) = write_rules(RulesListEntity::with_disabled_text(
+            fourth_filter_id,
+            string!("Filter4\nNonFilter4"),
+            string!("NonFilter4"),
+            0,
+        ));
+        filter4.download_url = download_url4.to_string();
+
+        // Special case - not yet installed filter
+        let mut filter5 = FilterEntity::default();
+        filter5.filter_id = Some(fifth_filter_id);
+        filter5.group_id = 1;
+        filter5.title = String::from("Filter5");
+        filter5.is_enabled = true;
+        // Another special case: Rules is not installed, but version already came from metadata.
+        // Expected behaviour: rules must be installed
+        filter5.version = String::from("2.0.1");
+        let (download_url5, mut rules5) = write_rules(RulesListEntity::with_disabled_text(
+            fifth_filter_id,
+            string!("\n!Version: 2.0.1\nFilter5\nNonFilter5"),
+            string!(),
+            user_rules_count_new,
+        ));
+        filter5.download_url = download_url5.to_string();
+
+        let mut filter6 = FilterEntity::default();
+        filter6.filter_id = Some(sixth_filter_id);
+        filter6.is_enabled = true;
+        filter6.download_url = String::from("https://123");
+
+        let filters_repo = FilterRepository::new();
+        let rules_repo = RulesListRepository::new();
+
+        let installed_filters = source
+            .execute_db(|mut connection: Connection| {
+                let tx = connection.transaction().unwrap();
+                filters_repo
+                    .insert(
+                        &tx,
+                        &vec![filter1, filter2, filter3, filter4, filter5, filter6],
+                    )
+                    .unwrap();
+
+                rules_repo
+                    .insert(
+                        &tx,
+                        &vec![
+                            rules1.clone(),
+                            rules2.clone(),
+                            rules3.clone(),
+                            rules4.clone(),
+                        ],
+                    )
+                    .unwrap();
+
+                tx.commit().unwrap();
+
+                let installed_filters = filters_repo
+                    .select_filters_except_bootstrapped(&connection)
+                    .unwrap()
+                    .unwrap();
+
+                let rules_lists_count = rules_repo
+                    .select_rules_except_bootstrapped(&connection)
+                    .unwrap()
+                    .unwrap()
+                    .len();
+
+                assert_eq!(rules_lists_count, 4);
+
+                Ok(installed_filters)
+            })
+            .unwrap();
+
+        assert_eq!(installed_filters.len(), 6);
+
+        // Write new data into all filters
+        let (_, mut new_rules1) = write_rules(RulesListEntity::with_disabled_text(
+            first_filter_id,
+            string!("Filter1_new\nNonFilter1_new"),
+            rules1.clone().disabled_text,
+            user_rules_count_new,
+        ));
+
+        let (_, mut new_rules2) = write_rules(RulesListEntity::with_disabled_text(
+            second_filter_id,
+            string!("Filter2_new\nNonFilter2_new"),
+            rules2.clone().disabled_text,
+            user_rules_count_new,
+        ));
+
+        let (_, mut new_rules3) = write_rules(RulesListEntity::with_disabled_text(
+            third_filter_id,
+            string!("Filter3_new\nNonFilter3_new"),
+            rules3.clone().disabled_text,
+            user_rules_count_new,
+        ));
+
+        let (_, mut new_rules4) = write_rules(RulesListEntity::with_disabled_text(
+            fourth_filter_id,
+            string!("Filter4_new\nNonFilter4_new"),
+            rules4.clone().disabled_text,
+            user_rules_count_new,
+        ));
+
+        let mut conf = Configuration::default();
+        conf.metadata_url = Url::from_file_path(tests_path("fixtures/filters.json"))
+            .unwrap()
+            .to_string();
+
+        let result =
+            update_filters_action(installed_filters, &source, true, true, 0, &conf).unwrap();
+
+        let updated_ids = result
+            .updated_list
+            .iter()
+            .map(|item| item.id)
+            .collect::<Vec<FilterId>>();
+
+        // Update filter error for filter 6
+        assert_eq!(result.filters_errors.len(), 1);
+        assert!(result.filters_errors[0].filter_url.is_some());
+        assert!(result.filters_errors[0].http_client_error.is_some());
+
+        // All filters were updated
+        assert_eq!(updated_ids.len(), 5);
+
+        // First filter is enabled and ready for update by expires
+        assert!(updated_ids
+            .iter()
+            .find(|id| id == &&first_filter_id)
+            .is_some());
+        // Third filter is enabled and ready for update by expires
+        assert!(updated_ids
+            .iter()
+            .find(|id| id == &&third_filter_id)
+            .is_some());
+        // Fifth filter is just installed
+        assert!(updated_ids
+            .iter()
+            .find(|id| id == &&fifth_filter_id)
+            .is_some());
+
+        source
+            .execute_db(|connection: Connection| {
+                let rules = rules_repo
+                    .select_rules_except_bootstrapped(&connection)
+                    .unwrap()
+                    .unwrap();
+
+                let first_filter = rules
+                    .iter()
+                    .find(|rules| rules.filter_id == first_filter_id)
+                    .unwrap();
+
+                let second_filter = rules
+                    .iter()
+                    .find(|rules| rules.filter_id == second_filter_id)
+                    .unwrap();
+
+                let third_filter = rules
+                    .iter()
+                    .find(|rules| rules.filter_id == third_filter_id)
+                    .unwrap();
+
+                let fourth_filter = rules
+                    .iter()
+                    .find(|rules| rules.filter_id == fourth_filter_id)
+                    .unwrap();
+
+                let fifth_filter = rules
+                    .iter()
+                    .find(|rules| rules.filter_id == fifth_filter_id)
+                    .unwrap();
+
+                new_rules1.set_has_directives(false);
+                new_rules2.set_has_directives(false);
+                new_rules3.set_has_directives(false);
+                new_rules4.set_has_directives(false);
+                rules5.set_has_directives(false);
+
+                // These will be updated
+                assert_eq!(first_filter, &new_rules1);
+                assert_eq!(third_filter, &new_rules3);
+
+                // These weren't update
+                assert_eq!(second_filter, &new_rules2);
+                assert_eq!(fourth_filter, &new_rules4);
+
+                // This will be written as new during the update
+                assert_eq!(fifth_filter, &rules5);
+
+                // Update methods should set has_directives to false if there are no directives
+                assert!(!fifth_filter.has_directives());
+
+                Ok(())
+            })
+            .unwrap()
+    }
+
+    #[test]
+    fn test_filter_compiler_and_collector() {
+        let path = tests_path("fixtures/includes/main.txt");
+        let main_url = Url::from_file_path(path).unwrap();
+
+        let source = DbConnectionManager::factory_test().unwrap();
+        unsafe { source.lift_up_database().unwrap() }
+
+        let mut custom_filter = FilterEntity::default();
+        custom_filter.download_url = string!(main_url);
+        custom_filter.is_enabled = true;
+
+        let list = source
+            .execute_db(move |mut connection| {
+                let filter_repo = FilterRepository::new();
+                with_transaction(&mut connection, |tx| {
+                    let inserted_filter = filter_repo.only_insert_row(tx, custom_filter).unwrap();
+
+                    let rule = RulesListEntity::with_disabled_text(
+                        inserted_filter.filter_id.unwrap(),
+                        string!(),
+                        string!("Disabled text"),
+                        0,
+                    );
+
+                    RulesListRepository::new().insert(&tx, &[rule])
+                })
+                .unwrap();
+
+                let list = filter_repo
+                    .select_filters_except_bootstrapped(&connection)
+                    .unwrap()
+                    .unwrap();
+
+                Ok(list)
+            })
+            .unwrap();
+
+        let updated_result =
+            update_filters_action(list, &source, true, true, 0, &Configuration::default()).unwrap();
+
+        // Only and exactly one filter was updated
+        assert_eq!(updated_result.updated_list.len(), 1);
+
+        let updated_filter = updated_result.updated_list.first().unwrap();
+        let updated_filter_rules = updated_filter.rules.as_ref().unwrap();
+        let text = updated_filter_rules.rules.join("\n");
+
+        let directives = [
+            DIRECTIVE_INCLUDE,
+            DIRECTIVE_ELSE,
+            DIRECTIVE_ENDIF,
+            DIRECTIVE_IF,
+        ];
+
+        // Nested include included
+        let part3_included = text.contains(&string!("! Hello from included_part3"));
+        assert!(part3_included);
+
+        // Part2 also be included
+        let part2_included = text.contains(&string!("! Hello from included_part2"));
+        assert!(part2_included);
+
+        // Should not be included
+        assert!(!text.contains("Should not be included"));
+
+        // First include file will be included two times: #hash2 and without hash
+        let first_file_included_times = updated_filter_rules
+            .rules
+            .iter()
+            .filter(|line| *line == "! Hello from included_part1")
+            .count();
+        assert_eq!(first_file_included_times, 2);
+
+        // Disabled text was saved
+        assert_eq!(
+            updated_filter_rules.disabled_rules.join("\n"),
+            "Disabled text"
+        );
+
+        // All directives were removed
+        directives.iter().for_each(|directive| {
+            assert!(!text.contains(directive));
+        });
+
+        // Check database one more time
+        source
+            .execute_db(|connection| {
+                let includes = FilterIncludesRepository::new()
+                    .select_mapped(&connection, None)
+                    .unwrap()
+                    .remove(&updated_filter_rules.filter_id)
+                    .unwrap();
+
+                /*
+                    Must be 4 includes:
+                    - ./included_part.txt#hash1
+                    - ./included_part.txt#hash2
+                    - ./included_part.txt
+                    - ./included_part2.txt
+
+                    !#include ./included_part3.txt won't be here, because it will be inlined in part2
+                */
+                assert_eq!(includes.len(), 4);
+
+                // Part3 not here, because it is inlined
+                let part3_include = includes
+                    .iter()
+                    .any(|include| include.absolute_url.contains("included_part3.txt"));
+                assert!(!part3_include);
+
+                // #hash1 is here
+                let hash1_include = includes
+                    .iter()
+                    .any(|include| include.absolute_url.contains("included_part.txt#hash1"));
+                assert!(hash1_include);
+
+                // #hash2 is here
+                let hash2_include = includes
+                    .iter()
+                    .any(|include| include.absolute_url.contains("included_part.txt#hash2"));
+                assert!(hash2_include);
+
+                // ./included_part.txt is here
+                let included_part = includes
+                    .iter()
+                    .any(|include| include.absolute_url.ends_with("included_part.txt"));
+                assert!(included_part);
+
+                Ok(())
+            })
+            .unwrap();
+    }
+
+    #[test]
+    fn test_update_filters_hash_with_includes_unchanged() {
+        const INCLUDE_FILE_NAME: &str = "include_test_update_filters_hash_with_includes_unchanged";
+        const MAIN_FILE_NAME: &str = "main_test_update_filters_hash_with_includes_unchanged";
+        const FILTER_ID: i32 = -42;
+
+        let source = DbConnectionManager::factory_test().unwrap();
+        unsafe { source.lift_up_database().unwrap() }
+
+        // Fixtures files
+        let mut fixtures = TestsFixtures::new();
+        let include_body = "||example.org^";
+        let include_url = fixtures.write(INCLUDE_FILE_NAME, include_body);
+
+        let main_body = format!("bbbbb\n!#include {}\n", &include_url);
+        let main_url = fixtures.write(MAIN_FILE_NAME, &main_body);
+
+        // Prepare entities for DB
+        let mut filter = FilterEntity::default();
+        filter.filter_id = Some(FILTER_ID);
+        filter.group_id = CUSTOM_FILTERS_GROUP_ID;
+        filter.is_enabled = true;
+        filter.download_url = main_url.to_string();
+        filter.title = string!("TestFilter");
+
+        let rules_entity = RulesListEntity::make(FILTER_ID, main_body.to_string(), 0);
+        let include_entity = FilterIncludeEntity::make(
+            FILTER_ID,
+            include_url.to_string(),
+            1,
+            include_body.to_string(),
+        );
+
+        let filters_repo = FilterRepository::new();
+        let rules_repo = RulesListRepository::new();
+        let includes_repo = FilterIncludesRepository::new();
+
+        // Insert initial state
+        source
+            .execute_db(|mut conn: Connection| {
+                let tx = conn.transaction().unwrap();
+                filters_repo.insert(&tx, &[filter.clone()]).unwrap();
+                rules_repo.insert(&tx, &[rules_entity]).unwrap();
+                includes_repo
+                    .replace_entities_for_filters(&tx, &[include_entity])
+                    .unwrap();
+                tx.commit().unwrap();
+                Ok(())
+            })
+            .unwrap();
+
+        // Run update (files unchanged)
+        let conf = Configuration::default();
+        let result = update_filters_action(vec![filter], &source, false, false, 0, &conf).unwrap();
+
+        // Should NOT update because hash and includes are unchanged
+        assert!(result.updated_list.is_empty());
+    }
+
+    #[test]
+    fn test_update_filters_hash_with_includes_changed() {
+        const INCLUDE_FILE_NAME: &str = "include_test_update_filters_hash_with_includes_changed";
+        const MAIN_FILE_NAME: &str = "main_test_update_filters_hash_with_includes_changed";
+        const FILTER_ID: i32 = -43;
+
+        let source = DbConnectionManager::factory_test().unwrap();
+        unsafe { source.lift_up_database().unwrap() }
+
+        let mut fixtures = TestsFixtures::new();
+
+        // Initial include file content
+        let include_body_v1 = "||example.org^";
+        let include_url = fixtures.write(INCLUDE_FILE_NAME, include_body_v1);
+
+        let main_body = format!("aaaa\n!#include {}\n", include_url);
+        let main_url = fixtures.write(MAIN_FILE_NAME, &main_body);
+
+        let mut filter = FilterEntity::default();
+        filter.filter_id = Some(FILTER_ID);
+        filter.group_id = CUSTOM_FILTERS_GROUP_ID;
+        filter.is_enabled = true;
+        filter.download_url = main_url.to_string();
+        filter.title = string!("TestFilter2");
+
+        let rules_entity = RulesListEntity::make(FILTER_ID, main_body, 0);
+        let include_entity_v1 = FilterIncludeEntity::make(
+            FILTER_ID,
+            include_url.to_string(),
+            1,
+            include_body_v1.to_string(),
+        );
+
+        let filters_repo = FilterRepository::new();
+        let rules_repo = RulesListRepository::new();
+        let includes_repo = FilterIncludesRepository::new();
+
+        // Insert initial version into DB
+        source
+            .execute_db(|mut conn: Connection| {
+                let tx = conn.transaction().unwrap();
+                filters_repo.insert(&tx, &[filter.clone()]).unwrap();
+                rules_repo.insert(&tx, &[rules_entity.clone()]).unwrap();
+                includes_repo
+                    .replace_entities_for_filters(&tx, &[include_entity_v1.clone()])
+                    .unwrap();
+                tx.commit().unwrap();
+                Ok(())
+            })
+            .unwrap();
+
+        // Now change include file contents (simulate remote update)
+        fixtures.write(INCLUDE_FILE_NAME, "||changed.example.org^");
+
+        let _guard = RulesListEntityCallsMock::default().set_as_mock();
+
+        // Run update
+        let conf = Configuration::default();
+        let result = update_filters_action(vec![filter], &source, false, false, 0, &conf).unwrap();
+
+        // Should update because include body hash changed
+        assert_eq!(result.updated_list.len(), 1);
+        assert_eq!(result.updated_list[0].id, FILTER_ID);
+        assert_eq!(_guard.into_inner().called_times.into_inner(), 1);
+    }
+
+    #[test]
+    fn test_local_urls_update_when_ignore_expires_enabled() {
+        let source = DbConnectionManager::factory_test().unwrap();
+        unsafe { source.lift_up_database().unwrap() }
+
+        let mut fixtures = TestsFixtures::new();
+
+        let first_filter_id: FilterId = -11;
+        let second_filter_id: FilterId = -12;
+
+        // Create two enabled local filters: one with explicit expires, one without
+        const FILTER1_NAME: &str = "local_ignore_expires_enabled_1";
+        let mut filter1 = FilterEntity::default();
+        filter1.filter_id = Some(first_filter_id);
+        filter1.is_enabled = true;
+        filter1.title = String::from("LocalFilter1");
+        filter1.expires = 7200; // explicitly set expires
+        filter1.last_download_time = Utc::now().timestamp(); // just downloaded
+        let rules1 = RulesListEntity::with_disabled_text(
+            first_filter_id,
+            string!("some\nexample"),
+            string!(""),
+            2,
+        );
+        let download_url1 = fixtures.write(FILTER1_NAME, rules1.text.as_str());
+        filter1.download_url = download_url1.to_string();
+
+        const FILTER2_NAME: &str = "local_ignore_expires_enabled_2";
+        let mut filter2 = FilterEntity::default();
+        filter2.filter_id = Some(second_filter_id);
+        filter2.is_enabled = true;
+        filter2.title = String::from("LocalFilter2");
+        filter2.expires = 0; // not set
+        filter2.last_download_time = Utc::now().timestamp(); // just downloaded
+        let rules2 = RulesListEntity::with_disabled_text(
+            second_filter_id,
+            string!("that\nfilter"),
+            string!(""),
+            2,
+        );
+
+        let download_url2 = fixtures.write(FILTER2_NAME, rules2.text.as_str());
+        filter2.download_url = download_url2.to_string();
+
+        // Insert initial state into DB
+        let filters_repo = FilterRepository::new();
+        let rules_repo = RulesListRepository::new();
+
+        source
+            .execute_db(|mut connection: Connection| {
+                with_transaction(&mut connection, |tx| {
+                    filters_repo.insert(&tx, &[filter1, filter2])?;
+                    rules_repo.insert(&tx, &[rules1, rules2])
+                })
+            })
+            .unwrap();
+
+        // Overwrite files with new content to simulate available updates
+        let _ = fixtures.write(FILTER1_NAME, "some new example\nsome second line");
+        let _ = fixtures.write(FILTER2_NAME, "this->filter\n(*that).filter");
+
+        // Configuration: enable ignoring expires for local URLs
+        let mut conf = Configuration::default();
+        conf.should_ignore_expires_for_local_urls = true;
+        conf.metadata_url = Url::from_file_path(tests_path("fixtures/filters.json"))
+            .unwrap()
+            .to_string();
+
+        // Call without ignore_filters_expiration (false)
+        let installed_filters = source
+            .execute_db(|connection: Connection| {
+                Ok(filters_repo
+                    .select_filters_except_bootstrapped(&connection)
+                    .unwrap()
+                    .unwrap())
+            })
+            .unwrap();
+
+        let result =
+            update_filters_action(installed_filters, &source, false, false, 0, &conf).unwrap();
+
+        // Both local filters must be updated immediately
+        let updated_ids = result
+            .updated_list
+            .iter()
+            .map(|item| item.id)
+            .collect::<Vec<FilterId>>();
+
+        assert!(result.filters_errors.is_empty());
+        assert_eq!(updated_ids.len(), 2);
+        assert!(updated_ids.contains(&first_filter_id));
+        assert!(updated_ids.contains(&second_filter_id));
+    }
+
+    #[test]
+    fn test_local_urls_not_updated_when_ignore_expires_disabled() {
+        let source = DbConnectionManager::factory_test().unwrap();
+        unsafe { source.lift_up_database().unwrap() }
+
+        let mut fixtures = TestsFixtures::new();
+
+        let filter_id: FilterId = -21;
+
+        const FILTER_NAME: &str = "local_ignore_expires_disabled";
+        let mut filter = FilterEntity::default();
+        filter.filter_id = Some(filter_id);
+        filter.is_enabled = true;
+        filter.title = string!("LocalFilterNoIgnore");
+        filter.expires = 0; // not set; minimal clamp to 3600 will apply
+        filter.last_download_time = Utc::now().timestamp(); // just downloaded
+        let rules = RulesListEntity::with_disabled_text(filter_id, string!("a\nb"), string!(""), 2);
+
+        let download_url = fixtures.write(FILTER_NAME, rules.text.as_str());
+        filter.download_url = download_url.to_string();
+
+        let filters_repo = FilterRepository::new();
+        let rules_repo = RulesListRepository::new();
+
+        source
+            .execute_db(|mut connection: Connection| {
+                with_transaction(&mut connection, |tx| {
+                    filters_repo.insert(&tx, &[filter])?;
+                    rules_repo.insert(&tx, &[rules])
+                })
+            })
+            .unwrap();
+
+        // Overwrite with new content that would be visible if update happened
+        let _ = fixtures.write(FILTER_NAME, "new a()\nnew b()");
+
+        // Config: should_ignore_expires_for_local_urls is disabled (default)
+        let mut conf = Configuration::default();
+        conf.should_ignore_expires_for_local_urls = false;
+        conf.metadata_url = Url::from_file_path(tests_path("fixtures/filters.json"))
+            .unwrap()
+            .to_string();
+
+        let installed_filters = source
+            .execute_db(|connection: Connection| {
+                Ok(filters_repo
+                    .select_filters_except_bootstrapped(&connection)
+                    .unwrap()
+                    .unwrap())
+            })
+            .unwrap();
+
+        let result =
+            update_filters_action(installed_filters, &source, false, false, 0, &conf).unwrap();
+
+        // Should NOT update because minimal expires (1 hour) applies when ignore flag is off
+        assert!(result.filters_errors.is_empty());
+        assert!(result.updated_list.is_empty());
+    }
+}

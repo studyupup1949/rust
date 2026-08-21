@@ -1,0 +1,29 @@
+#!/bin/sh
+set -e -u
+
+usage() {
+    echo "Usage: ./$0 <year> <day> <part>"
+    exit 1
+}
+
+if [ $# != 3 ]; then
+    usage
+fi
+
+export AOC_REPEAT=100000000
+AOC_YEAR=$1
+AOC_DAY=$2
+AOC_PART=$3
+
+echo "Profiling $AOC_YEAR-$AOC_DAY-$AOC_PART"
+
+CARGO_PROFILE_RELEASE_DEBUG=true RUSTFLAGS='-g' cargo build --profile=release-quickbuild --bins
+
+set +e
+echo "Collecting perf.data..."
+timeout 5s \
+    perf record --call-graph dwarf --delay 10 \
+      ../../target/release/advent-of-code \
+        $AOC_YEAR $AOC_DAY $AOC_PART \
+          < src/year${AOC_YEAR}/day`printf "%02d" ${AOC_DAY}`_input.txt
+set -e

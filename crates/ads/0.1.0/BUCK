@@ -1,0 +1,17 @@
+load("@buckal//:wrapper.bzl", "rust_library")
+
+rust_library(
+    name = "ads",
+    srcs = glob(["**/*.rs"]),
+    crate = "ads",
+    crate_root = "src/lib.rs",
+    edition = "2018",
+
+    visibility = ["PUBLIC"],
+    deps = [
+        "//third-party/rust/crates/byteorder/1.5.0:byteorder",
+        "//third-party/rust/crates/crossbeam-channel/0.5.16:crossbeam_channel",
+        "//third-party/rust/crates/itertools/0.10.5:itertools",
+        "//third-party/rust/crates/thiserror/1.0.69:thiserror",
+    ],
+)

@@ -1,0 +1,16 @@
+[package]
+name = "addrezz_macros"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+description = "Proc macros for addrezz"
+license = "MIT OR Apache-2.0"
+
+[lib]
+proc-macro = true
+
+[dependencies]
+syn = { version = "3", features = ["full"] }
+quote = "1"
+proc-macro2 = "1"
+addrezz_core = { path = "../addrezz_core", version = "=0.1.0", default-features = false }

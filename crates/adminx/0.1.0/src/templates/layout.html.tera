@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="en" class="h-full">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>{% block title %}Admin Panel{% endblock title %}</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    function setTheme(mode) {
+      document.documentElement.classList.toggle('dark', mode === 'dark');
+    }
+
+    function toggleMenu() {
+      document.getElementById('mobile-menu').classList.toggle('hidden');
+    }
+  </script>
+</head>
+<body class="h-full flex flex-col bg-gray-100 dark:bg-gray-900 text-gray-900 dark:text-gray-100">
+
+  <!-- Header -->
+  <header class="bg-[#101332] text-white sticky top-0 z-50 shadow w-full">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex justify-between items-center h-16">
+      <div class="flex items-center">
+        <h1 class="text-lg font-bold mr-6">Admin Panel</h1>
+
+        <!-- Desktop Nav -->
+        <nav class="hidden md:flex gap-4">
+          {% for menu in menus %}
+            {% if menu.children %}
+              <div class="relative group">
+                <button class="hover:underline">{{ menu.title }}</button>
+                <div class="absolute hidden group-hover:block bg-white text-black dark:bg-gray-800 dark:text-white mt-2 rounded shadow p-2 z-10">
+                  {% for child in menu.children %}
+                    <a href="{{ child.path }}" class="block hover:underline">{{ child.title }}</a>
+                  {% endfor %}
+                </div>
+              </div>
+            {% else %}
+              <a href="{{ menu.path }}" class="hover:underline">{{ menu.title }}</a>
+            {% endif %}
+          {% endfor %}
+        </nav>
+      </div>
+
+      <!-- Right Controls -->
+      <div class="flex items-center gap-4">
+        <div class="hidden md:flex gap-2">
+          <label><input type="radio" name="theme" value="light" onchange="setTheme(this.value)" checked /> Light</label>
+          <label><input type="radio" name="theme" value="dark" onchange="setTheme(this.value)" /> Dark</label>
+        </div>
+        <a href="/logout" class="bg-[#101332] border border-white px-3 py-1 rounded hover:bg-white hover:text-[#101332]">Logout</a>
+        <button class="md:hidden" onclick="toggleMenu()">
+          <svg class="w-6 h-6" fill="none" stroke="white" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+              d="M4 6h16M4 12h16M4 18h16"></path>
+          </svg>
+        </button>
+      </div>
+    </div>
+
+    <!-- Mobile Menu -->
+    <div id="mobile-menu" class="hidden md:hidden px-4 pb-4">
+      <nav class="flex flex-col gap-2 text-white">
+        {% for menu in menus %}
+          {% if menu.children %}
+            <div>
+              <button class="hover:underline">{{ menu.title }}</button>
+              <div class="ml-4 mt-1">
+                {% for child in menu.children %}
+                  <a href="{{ child.path }}" class="block hover:underline">{{ child.title }}</a>
+                {% endfor %}
+              </div>
+            </div>
+          {% else %}
+            <a href="{{ menu.path }}" class="hover:underline">{{ menu.title }}</a>
+          {% endif %}
+        {% endfor %}
+
+        <!-- Theme Toggle for Mobile -->
+        <div class="flex gap-2 mt-2">
+          <label><input type="radio" name="theme" value="light" onchange="setTheme(this.value)" checked /> Light</label>
+          <label><input type="radio" name="theme" value="dark" onchange="setTheme(this.value)" /> Dark</label>
+        </div>
+      </nav>
+    </div>
+  </header>
+
+  <!-- Main -->
+  <main class="flex-grow p-4 max-w-7xl mx-auto w-full">
+    {% block content %}{% endblock content %}
+  </main>
+
+  <!-- Footer -->
+  <footer class="bg-[#101332] text-white p-4 text-center sticky bottom-0 w-full">
+    &copy; {{ now() | date(format="%Y") }} AdminX Panel
+  </footer>
+
+</body>
+</html>

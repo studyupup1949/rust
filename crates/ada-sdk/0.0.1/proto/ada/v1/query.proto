@@ -1,0 +1,241 @@
+syntax = "proto3";
+
+package ada.v1;
+
+import "ada/v1/common.proto";
+import "google/protobuf/struct.proto";
+import "google/protobuf/timestamp.proto";
+
+option go_package = "github.com/eleven-am/ada-sdk/go/gen/ada/v1;adav1";
+
+message Source {
+  string document_id = 1;
+  string document_title = 2;
+  string chunk_id = 3;
+}
+
+message ActorConnection {
+  string actor_id = 1;
+  string predicate = 2;
+  double weight = 3;
+}
+
+message Actor {
+  string id = 1;
+  string name = 2;
+  string type = 3;
+  string description = 4;
+  repeated string aliases = 5;
+  repeated ActorConnection connections = 6;
+  double relevance = 7;
+}
+
+message KnowledgeItem {
+  string id = 1;
+  string kind = 2;
+  double relevance = 3;
+  double confidence = 4;
+  string summary = 5;
+  Source source = 6;
+  google.protobuf.Struct data = 7;
+}
+
+message TensionSide {
+  string summary = 1;
+  double confidence = 2;
+  Source source = 3;
+}
+
+message Tension {
+  string id = 1;
+  string summary = 2;
+  TensionSide side_a = 3;
+  TensionSide side_b = 4;
+  string status = 5;
+}
+
+message Insights {
+  repeated BehaviorPattern patterns = 1;
+  repeated Interaction interactions = 2;
+}
+
+message Metadata {
+  int32 total_items = 1;
+  int64 search_duration_ms = 2;
+  bool degraded = 3;
+  repeated string degradation_reasons = 4;
+  bool cache_hit = 5;
+}
+
+message ContradictionsRequest {
+  string entity_id = 1;
+  string query = 2;
+  int32 limit = 3;
+  string principal_id = 100;
+}
+
+message ContradictionPair {
+  string id = 1;
+  string claim_a = 2;
+  string claim_b = 3;
+  string classification = 4;
+  string rationale = 5;
+  google.protobuf.Struct data = 6;
+}
+
+message ContradictionsResponse {
+  string query = 1;
+  Actor subject = 2;
+  repeated ContradictionPair pairs = 3;
+  repeated Tension tensions = 4;
+  repeated KnowledgeItem evidence = 5;
+  repeated Actor actors = 6;
+  repeated Community communities = 7;
+  repeated Summary summaries = 8;
+  Metadata metadata = 9;
+}
+
+message EntityDossierRequest {
+  string entity_id = 1;
+  google.protobuf.Timestamp as_of = 2;
+  string principal_id = 100;
+}
+
+message EntityDossierResponse {
+  Actor subject = 1;
+  string name = 2;
+  repeated string aliases = 3;
+  google.protobuf.Struct properties = 4;
+  repeated KnowledgeItem knowledge = 5;
+  repeated KnowledgeItem atoms = 6;
+  repeated KnowledgeItem relations = 7;
+  repeated KnowledgeItem trackings = 8;
+  repeated Actor actors = 9;
+  repeated Tension tensions = 10;
+  Insights insights = 11;
+  repeated Community communities = 12;
+  repeated Summary summaries = 13;
+  Metadata metadata = 14;
+}
+
+message RecallRequest {
+  string query = 1;
+  int32 top_k = 2;
+  repeated string focus = 3;
+  repeated string status_filter = 4;
+  google.protobuf.Timestamp as_of = 5;
+  optional bool dedup = 6;
+  bool enable_ppr = 7;
+  optional bool enable_hybrid = 8;
+  bool enable_reranking = 9;
+  int32 token_budget = 10;
+  double diversity = 11;
+  optional bool denoise = 12;
+  int32 graph_hops = 13;
+  google.protobuf.Timestamp known_at = 14;
+  string principal_id = 100;
+}
+
+message RecallResponse {
+  string query = 1;
+  repeated KnowledgeItem knowledge = 2;
+  repeated Actor actors = 3;
+  repeated Tension tensions = 4;
+  Insights insights = 5;
+  repeated Community communities = 6;
+  repeated Summary summaries = 7;
+  Metadata metadata = 8;
+}
+
+message TimelineRequest {
+  google.protobuf.Timestamp since = 1;
+  google.protobuf.Timestamp until = 2;
+  string entity_id = 3;
+  int32 limit = 4;
+  repeated string types = 5;
+  string principal_id = 100;
+}
+
+message TimelineEntry {
+  google.protobuf.Timestamp timestamp = 1;
+  string type = 2;
+  string id = 3;
+  string content = 4;
+  google.protobuf.Struct data = 5;
+}
+
+message TimelineResponse {
+  google.protobuf.Timestamp since = 1;
+  google.protobuf.Timestamp until = 2;
+  Actor subject = 3;
+  repeated TimelineEntry entries = 4;
+  repeated Actor actors = 5;
+  repeated Tension tensions = 6;
+  repeated Community communities = 7;
+  repeated Summary summaries = 8;
+  Metadata metadata = 9;
+}
+
+message CommunityDossierRequest {
+  string community_id = 1;
+  int32 top_k = 2;
+  string principal_id = 100;
+}
+
+message CommunityDossierResponse {
+  Community community = 1;
+  repeated Actor members = 2;
+  repeated KnowledgeItem evidence = 3;
+  repeated Tension tensions = 4;
+  repeated Summary summaries = 5;
+  Metadata metadata = 6;
+}
+
+message ChangeRecallRequest {
+  google.protobuf.Timestamp since = 1;
+  google.protobuf.Timestamp until = 2;
+  int32 top_k = 3;
+  repeated string focus = 4;
+  repeated string status_filter = 5;
+  string principal_id = 100;
+}
+
+message ChangeRecallResponse {
+  google.protobuf.Timestamp since = 1;
+  google.protobuf.Timestamp until = 2;
+  repeated KnowledgeItem changes = 3;
+  repeated Actor actors = 4;
+  repeated Tension tensions = 5;
+  repeated Community communities = 6;
+  repeated Summary summaries = 7;
+  Metadata metadata = 8;
+}
+
+message RelationshipDossierRequest {
+  string left_entity_id = 1;
+  string right_entity_id = 2;
+  google.protobuf.Timestamp as_of = 3;
+  int32 top_k = 4;
+  string principal_id = 100;
+}
+
+message RelationshipDossierResponse {
+  Actor left = 1;
+  Actor right = 2;
+  repeated KnowledgeItem connections = 3;
+  repeated KnowledgeItem shared = 4;
+  repeated Tension tensions = 5;
+  repeated Community communities = 6;
+  repeated Summary summaries = 7;
+  Metadata metadata = 8;
+}
+
+service RecallService {
+  rpc Recall (RecallRequest) returns (RecallResponse);
+  rpc EntityDossier (EntityDossierRequest) returns (EntityDossierResponse);
+  rpc Timeline (TimelineRequest) returns (TimelineResponse);
+  rpc Contradictions (ContradictionsRequest) returns (ContradictionsResponse);
+  rpc CommunityDossier (CommunityDossierRequest) returns (CommunityDossierResponse);
+  rpc ChangeRecall (ChangeRecallRequest) returns (ChangeRecallResponse);
+  rpc RelationshipDossier (RelationshipDossierRequest) returns (RelationshipDossierResponse);
+}

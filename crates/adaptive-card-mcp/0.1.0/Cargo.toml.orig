@@ -1,0 +1,43 @@
+[package]
+name = "adaptive-card-mcp"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+repository.workspace = true
+homepage.workspace = true
+authors.workspace = true
+description = "MCP server exposing Adaptive Cards v1.6 tools (validate, optimize, transform, analyze) over stdio for any LLM client"
+documentation = "https://github.com/greenticai/greentic-adaptive-card-mcp#readme"
+readme = "README.md"
+keywords = ["mcp", "adaptive-cards", "model-context", "llm", "cli"]
+categories = ["command-line-utilities", "development-tools"]
+
+[package.metadata.binstall]
+pkg-url = "{ repo }/releases/download/v{ version }/{ name }-v{ version }-{ target }.tgz"
+pkg-fmt = "tgz"
+bin-dir = "{ name }-v{ version }-{ target }/{ bin }{ binary-ext }"
+
+[[bin]]
+name = "adaptive-card-mcp"
+path = "src/main.rs"
+
+[dependencies]
+adaptive-card-core = { path = "../adaptive-card-core", version = "0.1.0" }
+serde.workspace = true
+serde_json.workspace = true
+anyhow.workspace = true
+tracing.workspace = true
+tracing-subscriber.workspace = true
+tokio.workspace = true
+rmcp = { version = "1.4", features = ["server", "transport-io"] }
+axum = "0.8"
+clap = { version = "4", features = ["derive", "env"] }
+schemars = "1.2"
+
+[dev-dependencies]
+serde_json.workspace = true
+assert_cmd = "2"
+
+[lints.rust]
+unsafe_code = "forbid"

@@ -1,0 +1,16 @@
+[package]
+name = "advancedresearch-agent_safety_layers"
+version = "0.1.0"
+authors = ["Sven Nilsen <bvssvni@gmail.com>"]
+edition = "2018"
+description = "Construct agents that are wrapped in safety layers"
+license = "MIT OR Apache-2.0"
+readme = "README.md"
+repository = "https://github.com/advancedresearch/agent_safety_layers.git"
+homepage = "https://github.com/advancedresearch/agent_safety_layers"
+exclude = []
+
+[lib]
+name = "agent_safety_layers"
+
+[dependencies]

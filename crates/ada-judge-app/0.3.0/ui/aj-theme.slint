@@ -1,0 +1,57 @@
+export global AJTheme {
+    in property <brush> background: #4B3D89;
+    in property <brush> button: #A483FF;
+
+    // Containers
+    in property <brush> primary-container: button;
+    in property <brush> secondary-container: #677CE6;
+    in property <brush> container-error: #e65855;
+
+    // Text
+    in property <brush> default-text: #84ACE4;
+    in property <brush> error-text: #801b18;
+    in property <brush> button-text: container-text;
+    in property <brush> contest-before-start-text: #4E3177;
+    in property <brush> contest-ongoing-text: #266656;
+    in property <brush> contest-finished-text: button-text;
+    in property <brush> contest-upsolving-text: container-text;
+    in property <brush> container-text: #273A72;
+    in property <brush> contest-status-text: #DEDDF1;
+
+    // Badges
+    in property <brush> not-admin-badge: #B7B0E7;
+    in property <brush> beta-tester-badge: secondary-container;
+    in property <brush> admin-badge: #FF7302;
+    in property <brush> owner-badge: #FFBF11;
+
+    // Contests' statuses
+    in property <brush> contest-before-start: #DB96EB;
+    in property <brush> contest-ongoing: #3ED1AC;
+    in property <brush> contest-finished: button;
+    in property <brush> contest-upsolving: secondary-container;
+
+    // Font sizes
+    in property <length> font-size-paragraph: 16px;
+    in property <length> font-size-medium: 20px;
+    in property <length> font-size-heading: 24px;
+
+    // Font weights
+    in property <int> font-weight-paragraph: 300;
+    in property <int> font-weight-medium: 500;
+    in property <int> font-weight-heading: 700;
+
+    // Border
+    in property <length> border-width: 2px;
+    in property <length> border-radius: 10px;
+
+    // Layout
+    in property <length> padding: 15px;
+    in property <length> spacing: 5px;
+    in property <length> fit-space: 10px;
+
+    // Animation
+    in property <duration> animation-duration-short: 300ms;
+    in property <duration> animation-duration-medium: 1s;
+    in property <duration> animation-duration-long: 3s;
+    in property <percent> hovered-scale: 103%;
+}

@@ -1,0 +1,48 @@
+import { AJTheme } from "../aj-theme.slint";
+import { ListView, ScrollView } from "std-widgets.slint";
+import { AJText, AJTextType } from "aj-text.slint";
+import { AJButton } from "aj-button.slint";
+
+export component AJDropdown inherits Rectangle {
+    in property <[string]> variants;
+    in-out property <int> current-index;
+
+    width: self.min-width + AJTheme.fit-space;
+    height: 30px;
+
+    background: AJTheme.button;
+
+    border-radius: AJTheme.border-radius;
+
+    popup := PopupWindow {
+        Rectangle {
+            border-radius: AJTheme.border-radius;
+            background: AJTheme.secondary-container;
+
+            ScrollView {
+                min-width: 250px;
+                min-height: 150px;
+
+                VerticalLayout {
+                    padding: AJTheme.padding;
+                    spacing: AJTheme.spacing;
+
+                    for variant[index] in variants: AJButton {
+                        text: variant;
+                        clicked => {
+                            current-index = index;
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    AJButton {
+        text: variants[current_index];
+        width: 100%;
+        clicked => {
+            popup.show()
+        }
+    }
+}

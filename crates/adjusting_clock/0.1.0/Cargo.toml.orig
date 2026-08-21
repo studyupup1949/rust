@@ -1,0 +1,10 @@
+[package]
+name = "adjusting_clock"
+version = "0.1.0"
+edition = "2021"
+description = "Measure time, while synchronizing it with an external source, for example adjusting the clock of a client to match the time one of a server."
+repository = "https://github.com/vilcans/adjusting_clock"
+documentation = "https://docs.rs/adjusting_clock"
+keywords = ["time", "clock", "synchronization"]
+categories = ["network-programming"]
+license = "MIT OR Apache-2.0"

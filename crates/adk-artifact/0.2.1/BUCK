@@ -1,0 +1,16 @@
+load("@buckal//:wrapper.bzl", "rust_library")
+
+rust_library(
+    name = "adk_artifact",
+    srcs = glob(["**/*.rs"]),
+    crate = "adk_artifact",
+    crate_root = "src/lib.rs",
+    edition = "2024",
+
+    visibility = ["PUBLIC"],
+    deps = [
+        "//third-party/rust/crates/adk-core/0.2.1:adk_core",
+        "//third-party/rust/crates/async-trait/0.1.92:async_trait",
+        "//third-party/rust/crates/tokio/1.53.1:tokio",
+    ],
+)

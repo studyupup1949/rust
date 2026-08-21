@@ -1,0 +1,597 @@
+//! Pure functions and rank-polymorphic execution engine
+//! 
+//! Functions have 1, 2, or 3 `&Value` parameters (monadic, dyadic, triadic) and a boolean mode switch (false by default, enabled by \` command).
+
+use std::collections::VecDeque;
+use std::ptr::NonNull;
+use bitvec::prelude::*;
+use malachite::{Natural, Rational};
+use malachite::base::num::arithmetic::traits::{Abs, CheckedLogBase, CheckedRoot, CheckedSqrt, DivMod, Factorial, Mod, ModInverse, ModPow, Pow, Reciprocal};
+use malachite::base::num::basic::traits::{NegativeOne, Zero, One};
+use crate::errors::FnErr::{self, *};
+use crate::structs::Value::{self, *};
+use crate::conv::*;
+use crate::RE_CACHE;
+
+/// Monadic function definition
+pub(crate) type Mon = fn(&Value, bool) -> Result<Value, FnErr>;
+/// Monadic template with standard type matching
+macro_rules! mon {
+    ($name:ident $($pa:pat, $m:pat => $op:expr),*) => {
+		pub(crate) fn $name(a: &Value, m: bool) -> Result<Value, FnErr> {
+			match (a, m) {
+				$(($pa, $m) => $op,)*
+				_ => Err(Type1(a.into()))
+			}
+		}
+	}
+}
+
+/// Dyadic function definition
+pub(crate) type Dya = fn(&Value, &Value, bool) -> Result<Value, FnErr>;
+/// Dyadic template with standard type matching
+macro_rules! dya {
+    ($name:ident $($pa:pat, $pb:pat, $m:pat => $op:expr),*) => {
+		pub(crate) fn $name(a: &Value, b: &Value, m: bool) -> Result<Value, FnErr> {
+			match (a, b, m) {
+				$(($pa, $pb, $m) => $op,)*
+				_ => Err(Type2(a.into(), b.into()))
+			}
+		}
+	}
+}
+
+/// Triadic function definition
+pub(crate) type Tri = fn(&Value, &Value, &Value, bool) -> Result<Value, FnErr>;
+/// Triadic template with standard type matching
+macro_rules! tri {
+    ($name:ident $($pa:pat, $pb:pat, $pc:pat, $m:pat => $op:expr),*) => {
+		pub(crate) fn $name(a: &Value, b: &Value, c: &Value, m: bool) -> Result<Value, FnErr> {
+			match (a, b, c, m) {
+				$(($pa, $pb, $pc, $m) => $op,)*
+				_ => Err(Type3(a.into(), b.into(), c.into()))
+			}
+		}
+	}
+}
+
+/// execute monadic fn, pseudorecursion through nested arrays
+pub(crate) fn exec1(f: Mon, a: &Value, m: bool) -> Result<Value, FnErr> {
+	if let A(aa) = a { unsafe {	//iterate through array, bfs without recursion
+		//NonNull pointers are required because of aliasing rules, soundness is ensured manually
+		let mut az: Vec<Value> = Vec::new();	//resulting array
+		let mut q: VecDeque<(&Vec<Value>, NonNull<Vec<Value>>)> = VecDeque::new();	//queue of source/destination arrays
+		q.push_back((aa, (&mut az).into()));
+		while let Some((src, mut dst)) = q.pop_front() {	//keep reading from front of queue
+			for val in src {	//iterate through current layer
+				if let A(nsrc) = val {	//array encountered, pseudorecursion needed
+					dst.as_mut().push(A(Vec::new()));	//allocate destination, mirroring the source's array nesting
+					let A(ndst) = dst.as_mut().last_mut().unwrap_unchecked() else { std::hint::unreachable_unchecked() };	//get pointer to destination
+					q.push_back((nsrc, ndst.into()));	//add nested source and destination arrays to queue
+				}
+				else {	//scalar value, compute and store result
+					dst.as_mut().push(f(val, m)?);
+				}
+			}
+		}
+		Ok(A(az))
+	}}
+	else {	//just call function
+		f(a, m)
+	}
+}
+
+/// execute dyadic fn, pseudorecursion through nested arrays
+pub(crate) fn exec2(f: Dya, a: &Value, b: &Value, m: bool) -> Result<Value, FnErr> {
+	match (a, b) {
+		(A(_), A(_)) | (A(_), _) | (_, A(_)) => { unsafe {	//iterate through array(s), bfs without recursion
+			//NonNull pointers are required because of aliasing rules, soundness is ensured manually
+			let mut az: Vec<Value> = Vec::new();	//resulting array
+			let mut q: VecDeque<(&Value, &Value, NonNull<Vec<Value>>)> = VecDeque::new();	//queue of source/destination arrays, scalar values in 0,1 get promoted later
+			q.push_back((a, b, (&mut az).into()));
+			while let Some((a, b, mut dst)) = q.pop_front() {	//keep reading from front of queue
+				for (va, vb) in {lenck2(a, b)?; PromotingIter::from(a).zip(PromotingIter::from(b))} {
+					match (va, vb) {
+						(A(_), A(_)) | (A(_), _) | (_, A(_)) => {	//one or both elements are arrays
+							dst.as_mut().push(A(Vec::new()));	//allocate destination, mirroring the source's array nesting
+							let A(ndst) = dst.as_mut().last_mut().unwrap_unchecked() else { std::hint::unreachable_unchecked() };	//get pointer to destination
+							q.push_back((va, vb, ndst.into()));	//add nested source and destination arrays to queue
+						}
+						(_, _) => {	//scalar value, compute and store result
+							dst.as_mut().push(f(va, vb, m)?);
+						}
+					}
+				}
+			}
+			Ok(A(az))
+		}}
+		(_, _) => {	//just call function
+			f(a, b, m)
+		}
+	}
+}
+
+/// execute triadic fn, pseudorecursion through nested arrays
+pub(crate) fn exec3(f: Tri, a: &Value, b: &Value, c: &Value, m: bool) -> Result<Value, FnErr> {
+	match (a, b, c) {
+		(A(_), A(_), A(_)) |
+		(A(_), A(_), _) | (A(_), _, A(_)) | (_, A(_), A(_)) |
+		(A(_), _, _) | (_, A(_), _) | (_, _, A(_)) => { unsafe {	//iterate through array(s), bfs without recursion
+			//NonNull pointers are required because of aliasing rules, soundness is ensured manually
+			let mut az: Vec<Value> = Vec::new();	//resulting array
+			let mut q: VecDeque<(&Value, &Value, &Value, NonNull<Vec<Value>>)> = VecDeque::new();	//queue of source/destination arrays, scalar values in 0,1,2 get promoted later
+			q.push_back((a, b, c, (&mut az).into()));
+			while let Some((a, b, c, mut dst)) = q.pop_front() {    //keep reading from front of queue
+				for ((va, vb), vc) in {lenck3(a, b, c)?; PromotingIter::from(a).zip(PromotingIter::from(b)).zip(PromotingIter::from(c))} {
+					match (va, vb, vc) {
+						(A(_), A(_), A(_)) |
+						(A(_), A(_), _) | (A(_), _, A(_)) | (_, A(_), A(_)) |
+						(A(_), _, _) | (_, A(_), _) | (_, _, A(_)) => {	//one, two, or three elements are arrays
+							dst.as_mut().push(A(Vec::new()));	//allocate destination, mirroring the source's array nesting
+							let A(ndst) = dst.as_mut().last_mut().unwrap_unchecked() else { std::hint::unreachable_unchecked() };	//get pointer to destination
+							q.push_back((va, vb, vc, ndst.into()));	//add nested source and destination arrays to queue
+						}
+						(_, _, _) => {	//scalar value, compute and store result
+							dst.as_mut().push(f(va, vb, vc, m)?);
+						}
+					}
+				}
+			}
+			Ok(A(az))
+		}}
+		(_, _, _) => {	//just call function
+			f(a, b, c, m)
+		}
+	}
+}
+
+dya!(add
+	B(ba), B(bb), _ => {	//concat booleans
+		let mut res = ba.to_owned();
+		res.append(&mut bb.to_owned());
+		Ok(B(res))
+	},
+
+	N(ra), N(rb), _ => Ok(N(ra + rb)),	//add numbers
+	
+	S(sa), S(sb), _ => Ok(S(sa.to_owned() + sb))	//concat strings
+);
+
+dya!(sub
+	N(ra), N(rb), _ => Ok(N(ra - rb))	//subtract numbers
+);
+
+dya!(mul
+	B(ba), B(bb), _ => {	//boolean and
+		if ba.len() == bb.len() {
+			Ok(B(ba.clone() & bb))
+		}
+		else {
+			Err(Arith(
+				format!("Booleans of different lengths: {}, {}", ba.len(), bb.len())
+			))
+		}
+	},
+
+	N(ra), N(rb), _ => Ok(N(ra * rb)),	//multiply numbers
+	
+	S(sa), N(rb), _ => {	//repeat string
+		let ib = r_i(rb)?;
+		match usize::try_from(&ib) {
+			Ok(ub) if sa.len().checked_mul(ub).is_some() => Ok(S(sa.repeat(ub))),
+			_ => Err(Index(ib.to_owned()))
+		}
+	}
+);
+
+dya!(div
+	B(ba), B(bb), _ => {	//boolean or
+		if ba.len() == bb.len() {
+			Ok(B(ba.clone() | bb))
+		}
+		else {
+			Err(Arith(
+				format!("Booleans of different lengths: {}, {}", ba.len(), bb.len())
+			))
+		}
+	},
+	
+	N(ra), N(rb), _ => {	//divide numbers
+		if *rb != Rational::ZERO {
+			Ok(N(ra / rb))
+		}
+		else {	//undefined
+			Err(Arith("Division by 0".into()))
+		}
+	}
+);
+
+mon!(neg
+	B(ba), _ => {	//negate boolean
+		Ok(B(!ba.to_owned()))
+	},
+	
+	N(ra), _ => Ok(N(ra.reciprocal()))	//reciprocate number
+);
+
+dya!(pow
+	B(ba), B(bb), _ => {	//boolean xor
+		if ba.len() == bb.len() {
+			Ok(B(ba.clone() ^ bb))
+		}
+		else {
+			Err(Arith(
+				format!("Booleans of different lengths: {}, {}", ba.len(), bb.len())
+			))
+		}
+	},
+	
+	N(ra), N(rb), _ => {	//raise number to power
+		if *ra == Rational::ZERO && *rb < Rational::ZERO {	//undefined
+			Err(Arith("Negative power of 0".into()))
+		}
+		else if let Ok(ub) = u64::try_from(&rb.abs()) {
+			if *rb < Rational::ZERO {
+				Ok(N(ra.reciprocal().pow(ub)))
+			}
+			else {
+				Ok(N(ra.pow(ub)))
+			}
+		}
+		else {
+			let (fa, fb) = (r_f(ra), r_f(rb));
+			f_r(fa.powf(fb)).map(N)
+		}
+	},
+	
+	S(sa), S(sb), false => {	//find substring by literal
+		if let Some(bidx) = sa.find(sb) {	//byte position
+			Ok(N(sa.char_indices().position(|(cidx, _)| cidx==bidx).unwrap().into()))	//char position
+		}
+		else {
+			Ok(N(Rational::NEGATIVE_ONE))
+		}
+	},
+	
+	S(sa), S(sb), true => {	//find substring by regex
+		let re = RE_CACHE.get(sb).map_err(Custom)?;
+		if let Some(m) = re.find(sa) {	//find match
+			Ok(A(vec![
+				N(sa.char_indices().position(|(cidx, _)| cidx==m.start()).unwrap().into()),	//char position of start
+				N(m.as_str().chars().count().into())	//char length of match
+			]))
+		}
+		else {
+			Ok(N(Rational::NEGATIVE_ONE))
+		}
+	}
+);
+
+mon!(sqrt
+	B(ba), _ => {	//reverse boolean
+		let mut bz = ba.to_owned();
+		bz.reverse();
+		Ok(B(bz))
+	},
+
+	N(ra), _ => {	//square root of number
+		if *ra < Rational::ZERO {	//undefined
+			Err(Arith("Square root of negative number".into()))
+		}
+		else if let Some(rz) = ra.checked_sqrt() {
+			Ok(N(rz))
+		}
+		else {
+			f_r(r_f(ra).sqrt()).map(N)
+		}
+	},
+
+	S(sa), _ => Ok(S(sa.chars().rev().collect()))	//reverse string
+);
+
+dya!(root
+	N(ra), N(rb), _ => {
+		if *rb == Rational::ZERO {	//undefined
+			Err(Arith("0th root".into()))
+		}
+		else if *ra == Rational::ZERO && *rb < Rational::ZERO {
+			Err(Arith("Negative root of 0".into()))
+		}
+		else if let Ok(ub) = u64::try_from(&rb.abs()) {
+			if *ra < Rational::ZERO && ub % 2 == 0 {
+				Err(Arith("Even root of negative number".into()))
+			}
+			else if let Some(rz) = ra.checked_root(ub) {
+				if *rb < Rational::ZERO {
+					Ok(N(rz.reciprocal()))
+				}
+				else {
+					Ok(N(rz))
+				}
+			}
+			else {
+				let (fa, fb) = (r_f(ra), r_f(rb));
+				f_r(fa.powf(fb.recip())).map(N)
+			}
+		}
+		else {
+			let (fa, fb) = (r_f(ra), r_f(rb));
+			f_r(fa.powf(fb.recip())).map(N)
+		}
+	}
+);
+
+mon!(log
+	B(ba), _ => Ok(N(ba.len().into())),	//length of boolean
+	
+	N(ra), _ => {
+		if *ra <= Rational::ZERO {	//undefined
+			Err(Arith("Natural logarithm of non-positive number".into()))
+		}
+		else {
+			f_r(ra.approx_log()).map(N)
+		}
+	},
+	
+	S(sa), false => Ok(N(sa.chars().count().into())),	//char length of string
+	
+	S(sa), true => Ok(N(sa.len().into()))	//byte length of string
+);
+
+dya!(logb
+	N(ra), N(rb), _ => {	//base b log of a
+		if *ra <= Rational::ZERO {
+			Err(Arith("Logarithm of non-positive number".into()))
+		}
+		else if *rb == Rational::ONE {
+			Err(Arith("Logarithm with base 1".into()))
+		}
+		else if let Some(iz) = ra.checked_log_base(rb) {
+			Ok(N(iz.into()))
+		}
+		else {
+			let (fa, fb) = (r_f(ra), r_f(rb));
+			f_r(
+				match fb {
+					std::f64::consts::E => ra.approx_log(),
+					2f64 => fa.log2(),
+					10f64 => fa.log10(),
+					_ => fa.log(fb)
+				}
+			).map(N)
+		}
+	}
+);
+
+dya!(modu
+	N(ra), N(rb), _ => {	//modulo
+		let (ia, ib) = (r_i(ra)?, r_i(rb)?);
+		if ib == Rational::ZERO {	//undefined
+			Err(Arith("Reduction mod 0".into()))
+		}
+		else {
+			Ok(N(ia.mod_op(ib).into()))
+		}
+	},
+
+	S(sa), N(rb), _ => {	//extract char
+		let ib = r_i(rb)?;
+		if let Ok(ub) = usize::try_from(&ib) {
+			Ok(S(sa.chars().nth(ub).map(|c| c.into()).unwrap_or_default()))
+		}
+		else {
+			Err(Index(ib))
+		}
+	}
+);
+
+dya!(euc
+	B(ba), N(rb), _ => {	//split boolean
+		let ib = r_i(rb)?;
+		if let Ok(ub) = usize::try_from(&ib) {
+			if ub < ba.len() {
+				let mut by = ba.to_owned();
+				let bz = by.split_off(ub);
+				Ok(A(vec![B(by), B(bz)]))
+			}
+			else {
+				Err(Index(ib))
+			}
+		}
+		else {
+			Err(Index(ib))
+		}
+	},
+
+	N(ra), N(rb), _ => {	//euclidean division
+		let (ia, ib) = (r_i(ra)?, r_i(rb)?);
+		if ib == Rational::ZERO {	//undefined
+			Err(Arith("Euclidean division by 0".into()))
+		}
+		else {
+			let (quot, rem) = ia.div_mod(ib);
+			Ok(A(vec![
+				N(quot.into()),
+				N(rem.into())
+			]))
+		}
+	},
+
+	S(sa), N(rb), _ => {	//split string at char
+		let ib = r_i(rb)?;
+		if let Ok(ub) = usize::try_from(&ib) {
+			let bidx = sa.char_indices().position(|(cidx, _)| cidx==ub).unwrap();
+			if bidx < sa.len() {
+				let mut sy = sa.to_owned();
+				let sz = sy.split_off(bidx);
+				Ok(A(vec![S(sy), S(sz)]))
+			}
+			else {
+				Err(Index(ib))
+			}
+		}
+		else {
+			Err(Index(ib))
+		}
+	}
+);
+
+tri!(bar
+	B(ba), b, c, _ => {	//selection (a ? b : c)
+		if ba.len() == 1 {	//scalar value
+			if ba[0] {Ok(b.to_owned())} else {Ok(c.to_owned())}
+		}
+		else {	//array of values for each bit
+			Ok(A(
+				ba.iter().by_vals().map(|bit| if bit {b.to_owned()} else {c.to_owned()}).collect()
+			))
+		}
+	},
+
+	N(ra), N(rb), N(rc), _ => {	//modular exponentiation (a ^ b mod c)
+		let mut na = r_n(ra)?;
+		let nb = r_n(&rb.abs())?;
+		let nc = r_n(rc)?;
+		if *rb < Rational::ZERO {	//find inverse if exponent is negative
+			let rem = &na % &nc;
+			if rem == Natural::ZERO {
+				return Err(Arith("0 can't be coprime".into()));
+			}
+			else {
+				na = (&rem).mod_inverse(&nc).ok_or_else(|| Arith(format!("{na} doesn't have a coprime mod {nc}")))?;
+			}
+		}
+		Ok(N((na % &nc).mod_pow(nb, nc).into()))
+	},
+	
+	S(sa), S(sb), S(sc), false => Ok(S(sa.replace(sb, sc))),	//replace substrings by literal
+	
+	S(sa), S(sb), S(sc), true => {	//replace substrings by regex
+		let re = RE_CACHE.get(sb).map_err(Custom)?;
+		Ok(S(re.replace_all(sa, sc).into()))
+	}
+);
+
+mon!(disc
+	B(_), _ => Ok(N(Rational::const_from_unsigned(1))),
+	N(_), _ => Ok(N(Rational::const_from_unsigned(2))),
+	S(_), _ => Ok(N(Rational::const_from_unsigned(3)))
+);
+
+dya!(eq
+	B(ba), B(bb), m => {
+		if ba.len() == bb.len() {
+			let mut bz = BitVec::new();
+			bz.push(ba == bb);
+			Ok(B(bz))
+		}
+		else if !m {
+			Err(Arith(
+				format!("Booleans of different lengths: {}, {}", ba.len(), bb.len())
+			))
+		}
+		else {	//total: false if lengths differ
+			let mut bz = BitVec::new();
+			bz.push(false);
+			Ok(B(bz))
+		}
+	},
+	N(na), N(nb), _ => {
+		let mut bz = BitVec::new();
+		bz.push(na == nb);
+		Ok(B(bz))
+	},
+	S(sa), S(sb), _ => {
+		let mut bz = BitVec::new();
+		bz.push(sa == sb);
+		Ok(B(bz))
+	},
+	_, _, true => {	//total: false if types differ
+		let mut bz = BitVec::new();
+		bz.push(false);
+		Ok(B(bz))
+	}
+);
+
+dya!(lt
+	B(ba), B(bb), _ => {
+		let mut bz = BitVec::new();
+		bz.push(
+			if ba.len() == bb.len() {ba < bb}
+			else {ba.len() < bb.len()}
+		);
+		Ok(B(bz))
+	},
+	N(na), N(nb), _ => {
+		let mut bz = BitVec::new();
+		bz.push(na < nb);
+		Ok(B(bz))
+	},
+	S(sa), S(sb), _ => {
+		let mut bz = BitVec::new();
+		bz.push(str_cmp(sa, sb).is_lt());
+		Ok(B(bz))
+	},
+	_, _, true => {	//total: false if types differ
+		let mut bz = BitVec::new();
+		bz.push(false);
+		Ok(B(bz))
+	}
+);
+
+dya!(gt
+	B(ba), B(bb), _ => {
+		let mut bz = BitVec::new();
+		bz.push(
+			if ba.len() == bb.len() {ba > bb}
+			else {ba.len() > bb.len()}
+		);
+		Ok(B(bz))
+	},
+	N(na), N(nb), _ => {
+		let mut bz = BitVec::new();
+		bz.push(na > nb);
+		Ok(B(bz))
+	},
+	S(sa), S(sb), _ => {
+		let mut bz = BitVec::new();
+		bz.push(str_cmp(sa, sb).is_gt());
+		Ok(B(bz))
+	},
+	_, _, true => {	//total: false if types differ
+		let mut bz = BitVec::new();
+		bz.push(false);
+		Ok(B(bz))
+	}
+);
+
+mon!(fac
+	N(na), _ => {	//factorial
+		if let Ok(n) = Natural::try_from(na) {
+			if let Ok(u) = u64::try_from(&n) {
+				Ok(N(Natural::factorial(u).into()))
+			}
+			else {
+				Err(Arith(format!("Factorial of {na} is unrepresentable",)))
+			}
+		}
+		else {
+			Err(Arith("Non-natural given".into()))
+		}
+	},
+
+	S(sa), _ => {	//selected constants
+		Ok(N(f_r(
+			match sa.as_str() {
+				"e" => std::f64::consts::E,
+				"pi" => std::f64::consts::PI,
+				"phi" => 1.618033988749895,
+				"gamma" => 0.5772156649015329,
+				"delta" => 4.669201609102991,
+				"alpha" => 2.5029078750958928,
+				"epsilon" => f64::EPSILON,
+				_ => {return Err(Arith(format!("Unknown constant {sa}")));}
+			}
+		)?))
+	}
+);

@@ -1,0 +1,23 @@
+[package]
+name = "adbc-driver-flightsql"
+version = "0.1.2"
+edition = "2021"
+authors = ["SwanLake"]
+description = "ADBC FlightSQL driver native library distribution for Rust"
+license = "Apache-2.0"
+repository = "https://github.com/swanlake-io/adbc-driver-flightsql"
+keywords = ["adbc", "flightsql", "arrow", "database", "apache-arrow"]
+categories = ["database"]
+
+[dependencies]
+# No runtime dependencies - just exposes the library path
+
+[dev-dependencies]
+adbc_core = "0.20"
+adbc_driver_manager = "0.20"
+
+[build-dependencies]
+reqwest = { version = "0.11", features = ["blocking", "json"] }
+serde = { version = "1.0", features = ["derive"] }
+sha2 = "0.10"
+zip = "0.6"

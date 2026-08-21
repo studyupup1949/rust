@@ -1,0 +1,38 @@
+load("@buckal//:wrapper.bzl", "rust_library")
+
+rust_library(
+    name = "adk_cli",
+    srcs = glob(["**/*.rs"]),
+    crate = "adk_cli",
+    crate_root = "src/lib.rs",
+    edition = "2024",
+    features = ["default"],
+
+    visibility = ["PUBLIC"],
+    deps = [
+        "//third-party/rust/crates/adk-agent/0.9.1:adk_agent",
+        "//third-party/rust/crates/adk-artifact/0.9.1:adk_artifact",
+        "//third-party/rust/crates/adk-core/0.9.1:adk_core",
+        "//third-party/rust/crates/adk-deploy/0.9.1:adk_deploy",
+        "//third-party/rust/crates/adk-graph/0.9.1:adk_graph",
+        "//third-party/rust/crates/adk-model/0.9.1:adk_model",
+        "//third-party/rust/crates/adk-runner/0.9.1:adk_runner",
+        "//third-party/rust/crates/adk-server/0.9.1:adk_server",
+        "//third-party/rust/crates/adk-session/0.9.1:adk_session",
+        "//third-party/rust/crates/adk-skill/0.9.1:adk_skill",
+        "//third-party/rust/crates/adk-telemetry/0.9.1:adk_telemetry",
+        "//third-party/rust/crates/adk-tool/0.9.1:adk_tool",
+        "//third-party/rust/crates/anyhow/1.0.104:anyhow",
+        "//third-party/rust/crates/axum/0.8.9:axum",
+        "//third-party/rust/crates/clap/4.6.6:clap",
+        "//third-party/rust/crates/dirs/6.0.0:dirs",
+        "//third-party/rust/crates/futures/0.3.34:futures",
+        "//third-party/rust/crates/rustyline/18.0.1:rustyline",
+        "//third-party/rust/crates/serde/1.0.229:serde",
+        "//third-party/rust/crates/serde_json/1.0.151:serde_json",
+        "//third-party/rust/crates/tokio-util/0.7.19:tokio_util",
+        "//third-party/rust/crates/tokio/1.53.1:tokio",
+        "//third-party/rust/crates/toml/0.8.23:toml",
+        "//third-party/rust/crates/tracing/0.1.44:tracing",
+    ],
+)

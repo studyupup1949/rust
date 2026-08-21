@@ -1,0 +1,15 @@
+load("@buckal//:wrapper.bzl", "rust_binary")
+
+rust_binary(
+    name = "sum",
+    srcs = glob(["**/*.rs"]),
+    crate = "sum",
+    crate_root = "src/bin/sum.rs",
+    edition = "2024",
+
+    visibility = ["PUBLIC"],
+    deps = [
+        "//third-party/rust/crates/ext/0.0.3:ext",
+        "//third-party/rust/crates/regex-automata/0.4.18:regex_automata",
+    ],
+)

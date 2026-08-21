@@ -1,0 +1,45 @@
+[package]
+name = "add-notice"
+description = "A cli tool to add notices to files"
+authors = ["AmeKnite"]
+version = "0.2.5"
+license = "MPL-2.0"
+repository = "https://github.com/ameknite/add-notice"
+readme = "README.md"
+edition = "2021"
+keywords = ["cli", "header", "notice", "license"]
+categories = ["command-line-utilities"]
+rust-version = "1.74.1"
+
+[dependencies]
+clap = { version = "4.5.16", features = ["derive"] }
+color-eyre = { version = "0.6.3", default-features = false }
+walkdir = "2.5.0"
+
+# https://doc.rust-lang.org/cargo/reference/profiles.html
+# https://github.com/johnthagen/min-sized-rust
+[profile.release]
+opt-level = "z"
+lto = true
+codegen-units = 1
+panic = "abort"
+strip = true
+
+[lints.rust]
+# https://doc.rust-lang.org/rustc/lints/listing/allowed-by-default.html#allowed-by-default-lints
+unsafe_code = "warn"
+unsafe_op_in_unsafe_fn = "warn"
+missing-abi = "warn"
+missing_docs = "warn"
+
+[lints.clippy]
+# https://rust-lang.github.io/rust-clippy/master/
+# pedantic
+pedantic = { level = "warn", priority = -1 }
+must_use_candidate = "allow"
+missing_errors_doc = "allow"
+missing_panics_doc = "allow"
+
+# restriction
+undocumented_unsafe_blocks = "warn"
+multiple_unsafe_ops_per_block = "warn"

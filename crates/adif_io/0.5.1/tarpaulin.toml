@@ -1,0 +1,6 @@
+[coverage]
+engine = "Llvm"
+exclude-files = ["temp/*", "build.rs", "examples/*"]
+
+[report]
+out = ["Html"]

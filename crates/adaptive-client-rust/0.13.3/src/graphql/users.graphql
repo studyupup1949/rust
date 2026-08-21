@@ -1,0 +1,13 @@
+query ListUsers {
+    users {
+        id
+        email
+        name
+        userType
+        createdAt
+        deleted
+        deletedAt
+        firstActivity
+        lastActivity
+    }
+}

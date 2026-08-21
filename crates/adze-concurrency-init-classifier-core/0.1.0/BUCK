@@ -1,0 +1,12 @@
+load("@buckal//:wrapper.bzl", "rust_library")
+
+rust_library(
+    name = "adze_concurrency_init_classifier_core",
+    srcs = glob(["**/*.rs"]),
+    crate = "adze_concurrency_init_classifier_core",
+    crate_root = "src/lib.rs",
+    edition = "2024",
+    features = ["default"],
+
+    visibility = ["PUBLIC"],
+)

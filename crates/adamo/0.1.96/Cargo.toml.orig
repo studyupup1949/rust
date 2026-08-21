@@ -1,0 +1,64 @@
+[package]
+name = "adamo"
+description = "Rust SDK for the Adamo Network — low-latency robotics pub/sub and video streaming."
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+repository.workspace = true
+homepage.workspace = true
+readme = "README.md"
+keywords = ["robotics", "zenoh", "pubsub", "streaming", "sdk"]
+categories = ["api-bindings", "network-programming"]
+
+[features]
+default = []
+# Enables the video pipeline (Robot, VideoTrack). The underlying libadamo
+# must have been built with the video feature; otherwise linking succeeds
+# but the video symbols will be absent at load time.
+video = []
+
+[dependencies]
+adamo-sys = { version = "0.1.96", path = "../adamo-sys" }
+serde_json = "1"
+
+[dev-dependencies]
+
+[[example]]
+name = "pubsub"
+path = "examples/pubsub.rs"
+
+[[example]]
+name = "e2e"
+path = "examples/e2e.rs"
+
+[[example]]
+name = "stats_tap"
+path = "examples/stats_tap.rs"
+
+[[example]]
+name = "verify"
+path = "examples/verify.rs"
+
+[[example]]
+name = "fabric_time"
+path = "examples/fabric_time.rs"
+
+[[example]]
+name = "robot"
+path = "examples/robot.rs"
+required-features = ["video"]
+
+[[example]]
+name = "webcam"
+path = "examples/webcam.rs"
+required-features = ["video"]
+
+[[example]]
+name = "shm"
+path = "examples/shm.rs"
+required-features = ["video"]
+
+[[example]]
+name = "parity_smoke"
+path = "examples/parity_smoke.rs"
+required-features = ["video"]

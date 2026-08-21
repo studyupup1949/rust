@@ -1,0 +1,67 @@
+import { AJTheme } from "../aj-theme.slint";
+import { AJAppState, AJUserState } from "../aj-state.slint";
+import { AJHomeCallbacks } from "../aj-callbacks.slint";
+import { AJPublicUserData } from "../models/users.slint";
+import { AJText, AJTextType } from "../components/aj-text.slint";
+import { AJInput, AJInputType } from "../components/aj-input.slint";
+import { AJAdminBadge } from "../components/aj-admin-badge.slint";
+import { AJButton } from "../components/aj-button.slint";
+import { AJDateTimeText } from "../components/aj-datetime-text.slint";
+import { AJIcon } from "../components/aj-icon.slint";
+
+export component UserProfilePage {
+    property <AJPublicUserData> user: AJAppState.opened-user-public-profile;
+
+    VerticalLayout {
+        alignment: start;
+        spacing: AJTheme.spacing;
+
+        AJButton {
+            text: "назад";
+            text-halign: right;
+
+            AJIcon {
+                source: @image-url("../../radix-icons/reset.svg");
+                x: AJTheme.fit-space;
+                y: (parent.height - self.height) / 2;
+            }
+            clicked => {
+                AJAppState.page = 5
+            }
+        }
+
+        AJText {
+            text: "Профиль";
+            type: AJTextType.Heading;
+        }
+
+        AJText {
+            text: "id";
+            type: AJTextType.Medium;
+        }
+
+        AJText {
+            text: user.id;
+            font-italic: true;
+        }
+
+        AJText {
+            text: "логин";
+            type: AJTextType.Medium;
+        }
+
+        AJText {
+            text: user.login;
+            font-italic: true;
+        }
+
+        AJText {
+            text: "уровень админа";
+            type: AJTextType.Medium;
+        }
+
+        AJAdminBadge {
+            level: user.admin-level;
+        }
+    }
+}

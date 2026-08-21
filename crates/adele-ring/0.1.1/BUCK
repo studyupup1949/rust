@@ -1,0 +1,25 @@
+load("@buckal//:wrapper.bzl", "rust_library")
+
+rust_library(
+    name = "adele_ring",
+    srcs = glob(["**/*.rs"]),
+    crate = "adele_ring",
+    crate_root = "src/lib.rs",
+    edition = "2021",
+    features = ["default"],
+
+    visibility = ["PUBLIC"],
+    deps = [
+        "//third-party/rust/crates/bytemuck/1.25.2:bytemuck",
+        "//third-party/rust/crates/log/0.4.33:log",
+        "//third-party/rust/crates/num-bigint/0.4.8:num_bigint",
+        "//third-party/rust/crates/num-integer/0.1.47:num_integer",
+        "//third-party/rust/crates/num-rational/0.4.2:num_rational",
+        "//third-party/rust/crates/num-traits/0.2.19:num_traits",
+        "//third-party/rust/crates/parking_lot/0.12.5:parking_lot",
+        "//third-party/rust/crates/pollster/0.3.0:pollster",
+        "//third-party/rust/crates/rayon/1.12.0:rayon",
+        "//third-party/rust/crates/thiserror/1.0.69:thiserror",
+        "//third-party/rust/crates/wgpu/22.1.0:wgpu",
+    ],
+)

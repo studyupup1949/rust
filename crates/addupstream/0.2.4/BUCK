@@ -1,0 +1,21 @@
+load("@buckal//:wrapper.bzl", "rust_binary")
+
+rust_binary(
+    name = "addupstream",
+    srcs = glob(["**/*.rs"]),
+    crate = "addupstream",
+    crate_root = "src/main.rs",
+    edition = "2018",
+
+    visibility = ["PUBLIC"],
+    deps = [
+        "//third-party/rust/crates/git2/0.8.0:git2",
+        "//third-party/rust/crates/log/0.4.33:log",
+        "//third-party/rust/crates/regex/1.13.1:regex",
+        "//third-party/rust/crates/reqwest/0.9.24:reqwest",
+        "//third-party/rust/crates/serde/1.0.229:serde",
+        "//third-party/rust/crates/serde_json/1.0.151:serde_json",
+        "//third-party/rust/crates/simple-error/0.1.12:simple_error",
+        "//third-party/rust/crates/structopt/0.2.18:structopt",
+    ],
+)

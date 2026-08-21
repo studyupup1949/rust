@@ -1,0 +1,14 @@
+load("@buckal//:wrapper.bzl", "rust_library")
+
+rust_library(
+    name = "advisor_core",
+    srcs = glob(["**/*.rs"]),
+    crate = "advisor_core",
+    crate_root = "src/lib.rs",
+    edition = "2024",
+
+    visibility = ["PUBLIC"],
+    deps = [
+        "//third-party/rust/crates/serde/1.0.229:serde",
+    ],
+)

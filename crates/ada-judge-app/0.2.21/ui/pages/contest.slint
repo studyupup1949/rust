@@ -1,0 +1,128 @@
+import { AJTheme } from "../aj-theme.slint";
+import { AJAppState, AJContestState } from "../aj-state.slint";
+import { AJContestCallbacks, AJAppCallbacks } from "../aj-callbacks.slint";
+import { AJLanguage } from "../models/testing.slint";
+import { AJText, AJTextType } from "../components/aj-text.slint";
+import { AJButton } from "../components/aj-button.slint";
+import { AJDropdown } from "../components/aj-dropdown.slint";
+import { AJLeaderboard } from "../components/aj-leaderboard.slint";
+import { AJProblemCard } from "../components/aj-problem-card.slint";
+import { AJSubmissions } from "../components/aj-submissions.slint";
+import { AJContestCard } from "../components/aj-contest-card.slint";
+import { AJSubmissionCard } from "../components/aj-submission-card.slint";
+
+export component ContestPage {
+    property <AJLanguage> language: {
+        if language-dropdown.current-index == 0 {
+            AJLanguage.Rust
+        } else if language-dropdown.current-index == 1 {
+            AJLanguage.Clang
+        } else if language-dropdown.current-index == 2 {
+            AJLanguage.Clangpp
+        } else if language-dropdown.current-index == 3 {
+            AJLanguage.Go
+        } else {
+            AJLanguage.Python
+        }
+    };
+
+    HorizontalLayout {
+        spacing: AJTheme.spacing;
+
+        VerticalLayout {
+            horizontal-stretch: 1;
+            alignment: start;
+            spacing: AJTheme.spacing;
+
+            AJButton {
+                text: "<< назад";
+
+                clicked => {
+                    AJAppState.page = 3;
+                }
+            }
+
+            AJContestCard {
+                index: AJContestState.index;
+                show-enter-button: false;
+            }
+
+            problems-dropdown := AJDropdown {
+                z: 100;
+                current-index <=> AJContestState.current-problem-index;
+                variants: AJContestState.problems-names;
+                changed current-index => {
+                    AJAppCallbacks.reload()
+                }
+            }
+
+            HorizontalLayout {
+                z: 10;
+                spacing: AJTheme.spacing;
+
+                language-dropdown := AJDropdown {
+                    variants: ["Rust", "C", "C++", "Go", "Python"];
+                }
+
+                AJButton {
+                    text: AJContestState.solution-picked ? "изменить файл... (\{AJContestState.solution-name})" : "выбрать файл...";
+                    clicked => {
+                        AJContestCallbacks.pick-solution-file()
+                    }
+                }
+
+                AJButton {
+                    text: "отослать";
+                    clicked => {
+                        AJContestCallbacks.submit(language, AJAppState.contests[AJContestState.index].id, AJContestState.problems[AJContestState.current-problem-index].id)
+                    }
+                }
+
+                if AJContestState.problems[language-dropdown.current-index].can-manage:
+                AJButton {
+                    text: "ретест";
+                    clicked => {
+                        AJContestCallbacks.retest-problem(AJContestState.problems[AJContestState.current-problem-index].id)
+                    }
+                }
+            }
+
+            AJSubmissions { }
+        }
+
+        VerticalLayout {
+            alignment: start;
+            spacing: AJTheme.spacing;
+
+            HorizontalLayout {
+                spacing: AJTheme.spacing;
+
+                VerticalLayout {
+                    spacing: AJTheme.spacing;
+                    horizontal-stretch: 1;
+                    alignment: start;
+
+                    AJProblemCard {
+                        problem: AJContestState.problems[AJContestState.current-problem-index];
+                    }
+                }
+
+                VerticalLayout {
+                    spacing: AJTheme.spacing;
+                    horizontal-stretch: 1;
+                    alignment: end;
+
+                    AJSubmissionCard { }
+                }
+            }
+
+            VerticalLayout {
+                horizontal-stretch: 1;
+                alignment: start;
+                spacing: AJTheme.spacing;
+
+                AJLeaderboard { }
+            }
+        }
+    }
+}

@@ -1,0 +1,22 @@
+load("@buckal//:wrapper.bzl", "rust_library")
+
+rust_library(
+    name = "advent_of_code_client",
+    srcs = glob(["**/*.rs"]),
+    crate = "advent_of_code_client",
+    crate_root = "src/lib.rs",
+    edition = "2021",
+
+    visibility = ["PUBLIC"],
+    deps = [
+        "//third-party/rust/crates/anyhow/1.0.104:anyhow",
+        "//third-party/rust/crates/clap/4.6.6:clap",
+        "//third-party/rust/crates/colored/2.2.0:colored",
+        "//third-party/rust/crates/derive-getters/0.3.0:derive_getters",
+        "//third-party/rust/crates/duration-string/0.3.0:duration_string",
+        "//third-party/rust/crates/regex/1.13.1:regex",
+        "//third-party/rust/crates/reqwest/0.11.27:reqwest",
+        "//third-party/rust/crates/serde_json/1.0.151:serde_json",
+        "//third-party/rust/crates/strum/0.25.0:strum",
+    ],
+)

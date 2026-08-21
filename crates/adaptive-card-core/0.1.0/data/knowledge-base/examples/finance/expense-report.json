@@ -1,0 +1,601 @@
+{
+  "id": "finance/expense-report",
+  "title": "Expense Report \u2014 Submit Claims with Receipt Upload and Approval",
+  "description": "Expense management card with new expense submission form (category, amount, date, receipt, description), recent claims list with status badges and approval workflow. Uses ToggleVisibility for form/history toggle, ColumnSet for claim summary cards, Container styles for approval status (good/attention/warning).",
+  "category": "finance",
+  "tags": [
+    "expense",
+    "report",
+    "finance",
+    "approval",
+    "form",
+    "receipt",
+    "reimbursement",
+    "toggle-visibility",
+    "budget"
+  ],
+  "use_cases": [
+    "Employee submits expense claim with receipt",
+    "View recent expense claims and approval status",
+    "Manager reviews and approves expense reports",
+    "Finance dashboard with expense tracking"
+  ],
+  "host_targets": [
+    "generic",
+    "teams",
+    "outlook"
+  ],
+  "complexity": "advanced",
+  "card": {
+    "$schema": "http://adaptivecards.io/schemas/adaptive-card.json",
+    "type": "AdaptiveCard",
+    "version": "1.5",
+    "metadata": {
+      "webUrl": "https://greentic.io/cards/expense-report",
+      "demo_mode": true
+    },
+    "body": [
+      {
+        "type": "Container",
+        "id": "expenseMenu",
+        "isVisible": true,
+        "style": "emphasis",
+        "bleed": true,
+        "items": [
+          {
+            "type": "ColumnSet",
+            "columns": [
+              {
+                "type": "Column",
+                "width": "auto",
+                "items": [
+                  {
+                    "type": "Image",
+                    "url": "https://img.icons8.com/fluency/96/receipt-dollar.png",
+                    "size": "Medium"
+                  }
+                ],
+                "verticalContentAlignment": "Center"
+              },
+              {
+                "type": "Column",
+                "width": "stretch",
+                "items": [
+                  {
+                    "type": "TextBlock",
+                    "text": "Expense Report",
+                    "size": "ExtraLarge",
+                    "weight": "Bolder",
+                    "color": "Accent"
+                  },
+                  {
+                    "type": "TextBlock",
+                    "text": "Submit expenses, track reimbursements, and view spending.",
+                    "spacing": "None",
+                    "isSubtle": true,
+                    "wrap": true
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "type": "Container",
+            "style": "good",
+            "spacing": "Medium",
+            "items": [
+              {
+                "type": "TextBlock",
+                "text": "April 2026 Summary",
+                "weight": "Bolder"
+              },
+              {
+                "type": "ColumnSet",
+                "columns": [
+                  {
+                    "type": "Column",
+                    "width": "1",
+                    "items": [
+                      {
+                        "type": "TextBlock",
+                        "text": "Submitted",
+                        "size": "Small",
+                        "isSubtle": true,
+                        "horizontalAlignment": "Center"
+                      },
+                      {
+                        "type": "TextBlock",
+                        "text": "Rp 4.2M",
+                        "weight": "Bolder",
+                        "color": "Accent",
+                        "horizontalAlignment": "Center",
+                        "spacing": "None"
+                      }
+                    ]
+                  },
+                  {
+                    "type": "Column",
+                    "width": "1",
+                    "items": [
+                      {
+                        "type": "TextBlock",
+                        "text": "Approved",
+                        "size": "Small",
+                        "isSubtle": true,
+                        "horizontalAlignment": "Center"
+                      },
+                      {
+                        "type": "TextBlock",
+                        "text": "Rp 3.1M",
+                        "weight": "Bolder",
+                        "color": "Good",
+                        "horizontalAlignment": "Center",
+                        "spacing": "None"
+                      }
+                    ]
+                  },
+                  {
+                    "type": "Column",
+                    "width": "1",
+                    "items": [
+                      {
+                        "type": "TextBlock",
+                        "text": "Pending",
+                        "size": "Small",
+                        "isSubtle": true,
+                        "horizontalAlignment": "Center"
+                      },
+                      {
+                        "type": "TextBlock",
+                        "text": "Rp 1.1M",
+                        "weight": "Bolder",
+                        "color": "Warning",
+                        "horizontalAlignment": "Center",
+                        "spacing": "None"
+                      }
+                    ]
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "type": "ActionSet",
+            "spacing": "Medium",
+            "actions": [
+              {
+                "type": "Action.ToggleVisibility",
+                "title": "\u2795 New Expense",
+                "style": "positive",
+                "targetElements": [
+                  {
+                    "elementId": "expenseMenu",
+                    "isVisible": false
+                  },
+                  {
+                    "elementId": "newExpense",
+                    "isVisible": true
+                  }
+                ]
+              },
+              {
+                "type": "Action.ToggleVisibility",
+                "title": "\ud83d\udccb View All Claims",
+                "targetElements": [
+                  {
+                    "elementId": "expenseMenu",
+                    "isVisible": false
+                  },
+                  {
+                    "elementId": "expenseClaims",
+                    "isVisible": true
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "type": "Container",
+        "id": "newExpense",
+        "isVisible": false,
+        "items": [
+          {
+            "type": "TextBlock",
+            "text": "\u2795 Submit New Expense",
+            "size": "Large",
+            "weight": "Bolder",
+            "color": "Accent"
+          },
+          {
+            "type": "Input.ChoiceSet",
+            "id": "expense_category",
+            "label": "Category",
+            "isRequired": true,
+            "choices": [
+              {
+                "title": "\ud83c\udf7d\ufe0f Meals & Entertainment",
+                "value": "meals"
+              },
+              {
+                "title": "\ud83d\ude97 Transportation / Fuel",
+                "value": "transport"
+              },
+              {
+                "title": "\ud83c\udfe8 Accommodation",
+                "value": "accommodation"
+              },
+              {
+                "title": "\u2708\ufe0f Travel / Flights",
+                "value": "travel"
+              },
+              {
+                "title": "\ud83d\udcf1 Phone / Internet",
+                "value": "communication"
+              },
+              {
+                "title": "\ud83d\udda5\ufe0f Software / Subscriptions",
+                "value": "software"
+              },
+              {
+                "title": "\ud83d\udce6 Office Supplies",
+                "value": "supplies"
+              },
+              {
+                "title": "\ud83d\udcda Training / Certification",
+                "value": "training"
+              },
+              {
+                "title": "\ud83c\udfe5 Medical (not covered by insurance)",
+                "value": "medical"
+              },
+              {
+                "title": "\u2753 Other",
+                "value": "other"
+              }
+            ]
+          },
+          {
+            "type": "Input.Date",
+            "id": "expense_date",
+            "label": "Date of Expense",
+            "isRequired": true,
+            "errorMessage": "Select the date."
+          },
+          {
+            "type": "ColumnSet",
+            "columns": [
+              {
+                "type": "Column",
+                "width": "2",
+                "items": [
+                  {
+                    "type": "Input.Number",
+                    "id": "expense_amount",
+                    "label": "Amount",
+                    "placeholder": "e.g. 150000",
+                    "isRequired": true,
+                    "min": 1,
+                    "errorMessage": "Enter the expense amount."
+                  }
+                ]
+              },
+              {
+                "type": "Column",
+                "width": "1",
+                "items": [
+                  {
+                    "type": "Input.ChoiceSet",
+                    "id": "expense_currency",
+                    "label": "Currency",
+                    "value": "IDR",
+                    "choices": [
+                      {
+                        "title": "IDR",
+                        "value": "IDR"
+                      },
+                      {
+                        "title": "USD",
+                        "value": "USD"
+                      },
+                      {
+                        "title": "GBP",
+                        "value": "GBP"
+                      },
+                      {
+                        "title": "JPY",
+                        "value": "JPY"
+                      },
+                      {
+                        "title": "EUR",
+                        "value": "EUR"
+                      }
+                    ]
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "type": "Input.Text",
+            "id": "expense_merchant",
+            "label": "Merchant / Vendor",
+            "placeholder": "e.g. GoFood, Grab, Tokopedia",
+            "isRequired": true
+          },
+          {
+            "type": "Input.Text",
+            "id": "expense_description",
+            "label": "Description / Business Purpose",
+            "placeholder": "e.g. Client lunch meeting with MAP Group team",
+            "isMultiline": true,
+            "isRequired": true
+          },
+          {
+            "type": "Input.ChoiceSet",
+            "id": "expense_project",
+            "label": "Charge to Project (optional)",
+            "value": "general",
+            "choices": [
+              {
+                "title": "General / Overhead",
+                "value": "general"
+              },
+              {
+                "title": "MAP FAS Migration",
+                "value": "map_fas"
+              },
+              {
+                "title": "Telkom University AI Ops",
+                "value": "telkom_aiops"
+              },
+              {
+                "title": "Bank Indonesia Sentrix",
+                "value": "bi_sentrix"
+              },
+              {
+                "title": "ANTAM AI Chatbot",
+                "value": "antam_chatbot"
+              },
+              {
+                "title": "Client Development",
+                "value": "client_dev"
+              }
+            ]
+          },
+          {
+            "type": "Input.Toggle",
+            "id": "expense_receipt",
+            "title": "I have a receipt / invoice to attach",
+            "value": "true"
+          },
+          {
+            "type": "Input.ChoiceSet",
+            "id": "expense_payment",
+            "label": "Paid with",
+            "value": "personal",
+            "choices": [
+              {
+                "title": "\ud83d\udcb3 Personal card / cash (reimbursement)",
+                "value": "personal"
+              },
+              {
+                "title": "\ud83c\udfe2 Company card",
+                "value": "company_card"
+              },
+              {
+                "title": "\ud83d\udcf1 Company GoPay / OVO",
+                "value": "company_ewallet"
+              }
+            ]
+          },
+          {
+            "type": "ActionSet",
+            "spacing": "Medium",
+            "actions": [
+              {
+                "type": "Action.Submit",
+                "title": "\ud83d\udce4 Submit Expense",
+                "style": "positive",
+                "data": {
+                  "action": "submit_expense",
+                  "demo_mode": true
+                }
+              },
+              {
+                "type": "Action.ToggleVisibility",
+                "title": "\u2190 Back",
+                "targetElements": [
+                  {
+                    "elementId": "newExpense",
+                    "isVisible": false
+                  },
+                  {
+                    "elementId": "expenseMenu",
+                    "isVisible": true
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "type": "Container",
+        "id": "expenseClaims",
+        "isVisible": false,
+        "items": [
+          {
+            "type": "TextBlock",
+            "text": "\ud83d\udccb Recent Expense Claims",
+            "size": "Large",
+            "weight": "Bolder",
+            "color": "Accent"
+          },
+          {
+            "type": "Container",
+            "style": "good",
+            "items": [
+              {
+                "type": "ColumnSet",
+                "columns": [
+                  {
+                    "type": "Column",
+                    "width": "stretch",
+                    "items": [
+                      {
+                        "type": "TextBlock",
+                        "text": "Client lunch \u2014 MAP Group",
+                        "weight": "Bolder"
+                      },
+                      {
+                        "type": "TextBlock",
+                        "text": "\ud83c\udf7d\ufe0f Meals  \u2022  Apr 8  \u2022  Rp 850,000",
+                        "size": "Small",
+                        "spacing": "None",
+                        "isSubtle": true
+                      }
+                    ]
+                  },
+                  {
+                    "type": "Column",
+                    "width": "auto",
+                    "items": [
+                      {
+                        "type": "TextBlock",
+                        "text": "\u2705 Approved",
+                        "color": "Good",
+                        "weight": "Bolder",
+                        "size": "Small"
+                      }
+                    ],
+                    "verticalContentAlignment": "Center"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "type": "Container",
+            "style": "warning",
+            "separator": true,
+            "items": [
+              {
+                "type": "ColumnSet",
+                "columns": [
+                  {
+                    "type": "Column",
+                    "width": "stretch",
+                    "items": [
+                      {
+                        "type": "TextBlock",
+                        "text": "Azure subscription \u2014 April",
+                        "weight": "Bolder"
+                      },
+                      {
+                        "type": "TextBlock",
+                        "text": "\ud83d\udda5\ufe0f Software  \u2022  Apr 1  \u2022  Rp 1,100,000",
+                        "size": "Small",
+                        "spacing": "None",
+                        "isSubtle": true
+                      }
+                    ]
+                  },
+                  {
+                    "type": "Column",
+                    "width": "auto",
+                    "items": [
+                      {
+                        "type": "TextBlock",
+                        "text": "\u23f3 Pending",
+                        "color": "Warning",
+                        "weight": "Bolder",
+                        "size": "Small"
+                      }
+                    ],
+                    "verticalContentAlignment": "Center"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "type": "Container",
+            "style": "good",
+            "separator": true,
+            "items": [
+              {
+                "type": "ColumnSet",
+                "columns": [
+                  {
+                    "type": "Column",
+                    "width": "stretch",
+                    "items": [
+                      {
+                        "type": "TextBlock",
+                        "text": "Grab to client office",
+                        "weight": "Bolder"
+                      },
+                      {
+                        "type": "TextBlock",
+                        "text": "\ud83d\ude97 Transport  \u2022  Apr 5  \u2022  Rp 245,000",
+                        "size": "Small",
+                        "spacing": "None",
+                        "isSubtle": true
+                      }
+                    ]
+                  },
+                  {
+                    "type": "Column",
+                    "width": "auto",
+                    "items": [
+                      {
+                        "type": "TextBlock",
+                        "text": "\u2705 Approved",
+                        "color": "Good",
+                        "weight": "Bolder",
+                        "size": "Small"
+                      }
+                    ],
+                    "verticalContentAlignment": "Center"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "type": "ActionSet",
+            "spacing": "Medium",
+            "actions": [
+              {
+                "type": "Action.Submit",
+                "title": "\ud83d\udce5 Export Report (PDF)",
+                "data": {
+                  "action": "export_expenses",
+                  "format": "pdf",
+                  "demo_mode": true
+                }
+              },
+              {
+                "type": "Action.ToggleVisibility",
+                "title": "\u2190 Back",
+                "targetElements": [
+                  {
+                    "elementId": "expenseClaims",
+                    "isVisible": false
+                  },
+                  {
+                    "elementId": "expenseMenu",
+                    "isVisible": true
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  "notes": "Single-card multi-section app using Action.ToggleVisibility for navigation. All sections hidden by default (isVisible:false) except the main view. Card version 1.5 for broad host compatibility."
+}

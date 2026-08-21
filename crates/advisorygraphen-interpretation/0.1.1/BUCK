@@ -1,0 +1,17 @@
+load("@buckal//:wrapper.bzl", "rust_library")
+
+rust_library(
+    name = "advisorygraphen_interpretation",
+    srcs = glob(["**/*.rs"]),
+    crate = "advisorygraphen_interpretation",
+    crate_root = "src/lib.rs",
+    edition = "2021",
+
+    visibility = ["PUBLIC"],
+    deps = [
+        "//third-party/rust/crates/advisorygraphen-core/0.1.3:advisorygraphen_core",
+        "//third-party/rust/crates/higher-graphen-core/0.4.1:higher_graphen_core",
+        "//third-party/rust/crates/higher-graphen-interpretation/0.4.1:higher_graphen_interpretation",
+        "//third-party/rust/crates/serde_json/1.0.151:serde_json",
+    ],
+)

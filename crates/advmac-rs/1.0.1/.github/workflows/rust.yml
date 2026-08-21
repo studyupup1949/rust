@@ -1,0 +1,66 @@
+# 工作流名称
+name: Rust CI (Full Cross-Platform Checks)
+
+# 触发工作流的事件
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+
+# 全局环境变量
+env:
+  CARGO_TERM_COLOR: always
+  # 设置 RUSTFLAGS 以在 Windows 上处理一些 Clippy 的链接问题（可选但推荐）
+  RUSTFLAGS: -D warnings
+
+jobs:
+  # 定义一个名为 "full-check" 的任务
+  full-check:
+    # 任务的描述性名称，会显示在 GitHub UI 中
+    # ${{ matrix.os }} 会被替换为当前运行的操作系统
+    name: Check on ${{ matrix.os }}
+
+    # 关键部分：定义构建矩阵
+    strategy:
+      # 设置为 false，这样即使一个平台的任务失败，其他平台的任务也会继续运行
+      # 这能让你看到所有平台的完整报告
+      fail-fast: false
+      matrix:
+        # 定义一个名为 os 的变量，包含我们想测试的所有平台
+        os: [ubuntu-latest, macos-latest, windows-latest]
+
+    # 使用矩阵中的变量来指定运行环境
+    runs-on: ${{ matrix.os }}
+
+    # 定义此任务的执行步骤
+    # 以下所有步骤都将在矩阵中的每个操作系统上执行
+    steps:
+      # 步骤 1: 检出代码
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      # 步骤 2: 安装 Rust 工具链
+      # dtolnay/rust-toolchain 能很好地处理跨平台安装
+      - name: Install Rust toolchain
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          components: clippy, rustfmt
+
+      # 步骤 3: 缓存 Cargo 依赖项
+      # swatinem/rust-cache 自动处理跨平台缓存，非常方便
+      - name: Cache Cargo dependencies
+        uses: swatinem/rust-cache@v2
+
+      # 步骤 4: 在当前平台运行代码格式化检查 (fmt)
+      - name: Check formatting (cargo fmt)
+        run: cargo fmt --all -- --check
+
+      # 步骤 5: 在当前平台运行 Clippy 代码质量检查
+      # -D warnings 会将所有警告视为错误
+      - name: Run Clippy
+        run: cargo clippy --all-targets --all-features
+
+      # 步骤 6: 在当前平台运行所有测试
+      - name: Run tests
+        run: cargo test --verbose --all-features

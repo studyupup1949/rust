@@ -1,0 +1,17 @@
+[package]
+name = "advent-of-code-rust-runner"
+version = "0.2.0"
+edition = "2024"
+authors = ["Chris Paterson <chris@chrispaterson.co.uk>"]
+description = "Rust framework for running Advent of Code solutions"
+readme = "README.md"
+license-file = "LICENSE"
+repository = "https://github.com/ThePants999/advent-of-code-rust-runner"
+categories = ["development-tools"]
+
+[dependencies]
+log = "0.4"
+anyhow = "1.0"
+reqwest = { version = "0.12", features = ["blocking"] }
+time = { version = "0.3" }
+clap = { version = "4", features = ["derive"] }

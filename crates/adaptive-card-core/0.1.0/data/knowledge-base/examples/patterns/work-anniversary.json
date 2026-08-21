@@ -1,0 +1,91 @@
+{
+  "id": "patterns/work-anniversary",
+  "title": "Work Anniversary Celebration",
+  "description": "Center-aligned celebration card: hero illustration, personalized headline, congratulations text, avatar row ($data on Column for horizontal team faces), warm closing. Proves elegant cards don't need complexity.",
+  "category": "patterns",
+  "tags": [
+    "anniversary",
+    "celebration",
+    "HR",
+    "recognition",
+    "team",
+    "avatar-row",
+    "minimal"
+  ],
+  "use_cases": [
+    "Work anniversary",
+    "Milestone celebration",
+    "Team recognition",
+    "Greeting card style"
+  ],
+  "host_targets": [
+    "generic",
+    "teams",
+    "web_chat"
+  ],
+  "complexity": "basic",
+  "card": {
+    "$schema": "http://adaptivecards.io/schemas/adaptive-card.json",
+    "type": "AdaptiveCard",
+    "version": "1.2",
+    "body": [
+      {
+        "type": "Image",
+        "url": "https://github.com/adaptive-cards/api-templates/blob/main/images/pablita-party-1.png?raw=true",
+        "spacing": "None",
+        "height": "220px",
+        "horizontalAlignment": "Center"
+      },
+      {
+        "type": "TextBlock",
+        "text": "It's a big deal, ${first_name}!",
+        "color": "Accent",
+        "weight": "Bolder",
+        "wrap": true,
+        "size": "ExtraLarge",
+        "horizontalAlignment": "Center",
+        "fontType": "Default",
+        "spacing": "None"
+      },
+      {
+        "type": "TextBlock",
+        "text": "We couldn't believe how quickly time has flown, but you've joined ${company_name} Inc ${anniversary} years ago!",
+        "wrap": true,
+        "horizontalAlignment": "Center",
+        "weight": "Bolder"
+      },
+      {
+        "type": "ColumnSet",
+        "columns": [
+          {
+            "type": "Column",
+            "width": "stretch",
+            "items": [
+              {
+                "type": "Image",
+                "url": "${avatar}",
+                "height": "30px",
+                "style": "Person",
+                "spacing": "None"
+              }
+            ],
+            "$data": "${appreciation_from}",
+            "spacing": "None"
+          }
+        ],
+        "spacing": "Medium",
+        "horizontalAlignment": "Center"
+      },
+      {
+        "type": "TextBlock",
+        "text": "From your entire team: we're so happy you are here and thank you for all that you have done for ${company_name}",
+        "wrap": true,
+        "horizontalAlignment": "Center",
+        "size": "Small",
+        "spacing": "Small"
+      }
+    ],
+    "speak": "Congratulations, ${first_name}! You have worked at ${company_name} for ${anniversary} years. "
+  },
+  "notes": ""
+}

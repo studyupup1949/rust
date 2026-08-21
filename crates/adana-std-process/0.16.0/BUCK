@@ -1,0 +1,15 @@
+load("@buckal//:wrapper.bzl", "rust_library")
+
+rust_library(
+    name = "adana_std_process",
+    srcs = glob(["**/*.rs"]),
+    crate = "adana_std_process",
+    crate_root = "src/lib.rs",
+    edition = "2021",
+
+    visibility = ["PUBLIC"],
+    deps = [
+        "//third-party/rust/crates/adana-script-core/0.16.2:adana_script_core",
+        "//third-party/rust/crates/anyhow/1.0.104:anyhow",
+    ],
+)

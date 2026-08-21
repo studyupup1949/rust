@@ -1,0 +1,45 @@
+[package]
+name = "adler-core"
+description = "Core engine for the Adler OSINT username-search tool."
+documentation = "https://docs.rs/adler-core"
+keywords = ["osint", "username", "reconnaissance", "sherlock", "search"]
+categories = ["web-programming::http-client", "command-line-utilities"]
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+repository.workspace = true
+homepage.workspace = true
+readme.workspace = true
+
+[dependencies]
+async-trait.workspace = true
+# Only present to unify the feature flags on the transitive
+# async-tungstenite that chromiumoxide uses — we never call it directly.
+async-tungstenite.workspace = true
+chromiumoxide.workspace = true
+fastrand.workspace = true
+futures.workspace = true
+regex.workspace = true
+reqwest.workspace = true
+scraper.workspace = true
+secrecy.workspace = true
+serde.workspace = true
+serde_json.workspace = true
+thiserror.workspace = true
+tokio = { workspace = true }
+tracing.workspace = true
+url.workspace = true
+
+[dev-dependencies]
+criterion.workspace = true
+proptest.workspace = true
+tokio = { workspace = true, features = ["macros", "rt-multi-thread", "test-util"] }
+wiremock.workspace = true
+
+[lints]
+workspace = true
+
+[[bench]]
+name = "scan"
+harness = false

@@ -1,0 +1,544 @@
+use deku::prelude::*;
+
+#[derive(Debug, PartialEq, DekuRead, DekuWrite)]
+pub struct Frame {
+    pub df: DF,
+    pub capability: Capability,
+    pub icao: [u8; 3],
+    pub me: ME,
+    #[deku(bits = "24")]
+    pub pi: u32,
+}
+
+#[derive(Debug, PartialEq, DekuRead, DekuWrite)]
+#[deku(type = "u8", bits = "5")]
+pub enum DF {
+    #[deku(id = "0b10001")]
+    ADSB,
+    #[deku(id = "0b10010")]
+    TIS_B,
+}
+
+#[derive(Debug, PartialEq, DekuRead, DekuWrite)]
+#[deku(type = "u8", bits = "3")]
+pub enum Capability {
+    #[deku(id = "0x00")]
+    Level1,
+    #[deku(id_pat = "0x01..=0x03")]
+    Reserved,
+    #[deku(id = "0x04")]
+    Level2Onground,
+    #[deku(id = "0x05")]
+    Level2Airborne,
+    #[deku(id = "0x06")]
+    Level2OnGroundOrAirborne,
+    #[deku(id = "0x07")]
+    DownlinkRequest,
+}
+
+#[derive(Debug, PartialEq, DekuRead, DekuWrite)]
+#[deku(type = "u8", bits = "5")]
+pub enum ME {
+    #[deku(id_pat = "1..=4")]
+    AircraftIdentification(Identification),
+    #[deku(id_pat = "5..=8")]
+    SurfacePosition(SurfacePosition),
+    #[deku(id_pat = "9..=18")]
+    AirbornePositionBaroAltitude(Altitude),
+    #[deku(id = "19")]
+    AirborneVelocities(AirborneVelocity),
+    #[deku(id_pat = "20..=22")]
+    AirbornePositionGNSSAltitude(Altitude),
+    #[deku(id_pat = "23..=27")]
+    Reserved,
+    #[deku(id = "28")]
+    AircraftStatus,
+    #[deku(id = "29")]
+    TargetStateAndStatusInformation,
+    #[deku(id = "31")]
+    AircraftOperationStatus(AircraftOperationStatus),
+}
+
+#[derive(Debug, PartialEq, DekuRead, DekuWrite)]
+pub struct Identification {
+    #[deku(bits = "5")]
+    pub tc: u8,
+    #[deku(bits = "3")]
+    pub ca: u8,
+    #[deku(
+        reader = "Self::read(deku::rest)",
+        writer = "Self::write(&self.cn, deku::output)"
+    )]
+    pub cn: String,
+}
+
+const CHAR_LOOKUP: &[u8; 64] = b"#ABCDEFGHIJKLMNOPQRSTUVWXYZ##### ###############0123456789######";
+
+impl Identification {
+    fn read(rest: &BitSlice<Msb0, u8>) -> Result<(&BitSlice<Msb0, u8>, String), DekuError> {
+        let mut inside_rest = rest;
+
+        let mut chars = vec![];
+        for _ in 0..=6 {
+            let (for_rest, c) = <u8>::read(inside_rest, (deku::ctx::Size::Bits(6)))?;
+            chars.push(c);
+            inside_rest = for_rest;
+        }
+        let encoded = chars
+            .into_iter()
+            .map(|b| CHAR_LOOKUP[b as usize] as char)
+            .collect::<String>();
+
+        Ok((inside_rest, encoded))
+    }
+
+    fn write(cn: &String, output: &mut BitVec<Msb0, u8>) -> Result<(), DekuError> {
+        //TODO
+        Ok(())
+    }
+}
+
+#[derive(Debug, PartialEq, DekuRead, DekuWrite)]
+pub struct Altitude {
+    #[deku(bits = "5")]
+    tc: u8,
+    ss: SurveillanceStatus,
+    #[deku(bits = "1")]
+    saf: u8,
+    #[deku(
+        reader = "Self::read(deku::rest)",
+        writer = "Self::write(&self.alt, deku::output)"
+    )]
+    alt: u16,
+    #[deku(bits = "1")]
+    t: bool,
+    f: CPRFormat,
+    #[deku(bits = "17", endian = "big")]
+    lat_cpr: u32,
+    #[deku(bits = "17", endian = "big")]
+    lon_cpr: u32,
+}
+
+impl Altitude {
+    fn read(rest: &BitSlice<Msb0, u8>) -> Result<(&BitSlice<Msb0, u8>, u16), DekuError> {
+        let (rest, l) =
+            u16::read(rest, (deku::ctx::Endian::Little, deku::ctx::Size::Bits(7))).unwrap();
+
+        let (rest, q) =
+            u16::read(rest, (deku::ctx::Endian::Little, deku::ctx::Size::Bits(1))).unwrap();
+
+        let (rest, r) =
+            u16::read(rest, (deku::ctx::Endian::Little, deku::ctx::Size::Bits(4))).unwrap();
+
+        let altitude = (l.rotate_left(4) + r)
+            .checked_mul(if q == 0 { 100 } else { 25 })
+            .and_then(|r| r.checked_sub(1000));
+        Ok((rest, altitude.unwrap()))
+    }
+
+    fn write(calt: &u16, output: &mut BitVec<Msb0, u8>) -> Result<(), DekuError> {
+        //TODO
+        Ok(())
+    }
+}
+
+#[derive(Debug, PartialEq, DekuRead, DekuWrite)]
+pub struct SurfacePosition {
+    #[deku(bits = "7")]
+    mov: u8,
+    s: StatusForGroundTrack,
+    #[deku(bits = "7")]
+    trk: u8,
+    #[deku(bits = "1")]
+    t: bool,
+    f: CPRFormat,
+    #[deku(bits = "17")]
+    lat_cpr: u32,
+    #[deku(bits = "17")]
+    lon_cpr: u32,
+}
+
+#[derive(Debug, PartialEq, DekuRead, DekuWrite)]
+#[deku(type = "u8", bits = "1")]
+pub enum StatusForGroundTrack {
+    #[deku(id = "0")]
+    Invalid,
+    #[deku(id = "1")]
+    Valid,
+}
+
+#[derive(Debug, PartialEq, DekuRead, DekuWrite)]
+#[deku(type = "u8", bits = "2")]
+pub enum SurveillanceStatus {
+    #[deku(id = "0")]
+    NoCondition,
+    #[deku(id = "1")]
+    PermanentAlert,
+    #[deku(id = "2")]
+    TemporaryAlert,
+    #[deku(id = "3")]
+    SPICondition,
+}
+
+#[derive(Debug, PartialEq, DekuRead, DekuWrite)]
+#[deku(type = "u8", bits = "1")]
+pub enum CPRFormat {
+    #[deku(id = "0")]
+    Even,
+    #[deku(id = "1")]
+    Odd,
+}
+
+//#[derive(Debug, PartialEq, DekuRead, DekuWrite)]
+//pub struct AirborneVelocity {
+//    #[deku(bits = "5")]
+//    tc: u8,
+//    st: AirborneVelocityType,
+//    #[deku(bits = "1")]
+//    ic: bool,
+//    #[deku(bits = "1")]
+//    ifr: bool,
+//    #[deku(bits = "3")]
+//    nucr: u8,
+//    #[deku(ctx = "*st")]
+//    sub_type_fields: AirborneVelocitySubFields,
+//    vrsrc: SourceBitVerticalRate,
+//    svr: SignBitVerticalRate,
+//    #[deku(
+//        bits = "9",
+//        map = "|field: u16| -> Result<_, DekuError> { Ok(64 * (field - 1)) }"
+//    )]
+//    vr: u16,
+//    #[deku(bits = "2")]
+//    reserved: u8,
+//    sdif: SignBitGNSSBaroAltitudesDiff,
+//    #[deku(
+//        bits = "7",
+//        map = "|field: u16| -> Result<_, DekuError> { Ok(25 * field) }"
+//    )]
+//    dalt: u16,
+//}
+
+pub struct AirborneVelocity {
+    heading: f64,
+    ground_speed: f64,
+    vertical_rate: i16,
+    vertical_rate_source: VerticalRateSource,
+}
+
+pub enum VerticalRateSource {
+    /// Barometric pressure altitude change rate
+    BarometricPressureAltitude,
+    /// Geometric altitude change rate
+    GeometricAltitude,
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+#[derive(Copy, Clone, Debug, PartialEq, DekuRead, DekuWrite)]
+#[deku(type = "u8", bits = "3")]
+pub enum AirborneVelocityType {
+    #[deku(id = "1")]
+    Subsonic,
+    #[deku(id = "3")]
+    Supersonic,
+}
+
+#[derive(Debug, PartialEq, DekuRead, DekuWrite)]
+#[deku(ctx = "t: AirborneVelocityType")]
+pub struct AirborneVelocitySubFields {
+    dew: DirectionEW,
+    #[deku(
+        reader = "Self::read_v(deku::rest, t)",
+        writer = "Self::write_v(&self.vew, deku::output)"
+    )]
+    vew: u16,
+    dns: DirectionNS,
+    #[deku(
+        reader = "Self::read_v(deku::rest, t)",
+        writer = "Self::write_v(&self.vns, deku::output)"
+    )]
+    vns: u16,
+}
+
+impl AirborneVelocitySubFields {
+    fn read_v(
+        rest: &BitSlice<Msb0, u8>,
+        t: AirborneVelocityType,
+    ) -> Result<(&BitSlice<Msb0, u8>, u16), DekuError> {
+        match t {
+            AirborneVelocityType::Subsonic => {
+                u16::read(rest, (deku::ctx::Endian::Big, deku::ctx::Size::Bits(10)))
+                    .map(|(rest, value)| (rest, value - 1))
+            }
+            AirborneVelocityType::Supersonic => {
+                u16::read(rest, (deku::ctx::Endian::Big, deku::ctx::Size::Bits(10)))
+                    .map(|(rest, value)| (rest, 4 * (value - 1)))
+            }
+        }
+    }
+
+    fn write_v(val: &u16, output: &mut BitVec<Msb0, u8>) -> Result<(), DekuError> {
+        //TODO
+        Ok(())
+    }
+}
+
+#[derive(Copy, Clone, Debug, PartialEq, DekuRead, DekuWrite)]
+#[deku(type = "u8", bits = "1")]
+pub enum DirectionEW {
+    #[deku(id = "0")]
+    WestToEast,
+    #[deku(id = "1")]
+    EastToWest,
+}
+
+#[derive(Copy, Clone, Debug, PartialEq, DekuRead, DekuWrite)]
+#[deku(type = "u8", bits = "1")]
+pub enum DirectionNS {
+    #[deku(id = "0")]
+    SouthToNorth,
+    #[deku(id = "1")]
+    NorthToSouth,
+}
+
+#[derive(Copy, Clone, Debug, PartialEq, DekuRead, DekuWrite)]
+#[deku(type = "u8", bits = "1")]
+pub enum SourceBitVerticalRate {
+    #[deku(id = "0")]
+    GNSS,
+    #[deku(id = "1")]
+    Barometer,
+}
+
+#[derive(Copy, Clone, Debug, PartialEq, DekuRead, DekuWrite)]
+#[deku(type = "u8", bits = "1")]
+pub enum SignBitVerticalRate {
+    #[deku(id = "0")]
+    Up,
+    #[deku(id = "1")]
+    Down,
+}
+
+#[derive(Copy, Clone, Debug, PartialEq, DekuRead, DekuWrite)]
+#[deku(type = "u8", bits = "1")]
+pub enum SignBitGNSSBaroAltitudesDiff {
+    #[deku(id = "0")]
+    Above,
+    #[deku(id = "1")]
+    Below,
+}
+
+/// Version 2
+#[derive(Debug, PartialEq, DekuRead, DekuWrite)]
+pub struct AircraftOperationStatus {
+    st: AircraftOperationStatusSubType,
+    #[deku(ctx = "*st")]
+    cc: CapacityClassCodes,
+    #[deku(bits = "16")]
+    om: u16,
+    #[deku(bits = "3")]
+    ver: u8,
+    #[deku(bits = "1")]
+    nica: u8,
+    #[deku(bits = "4")]
+    nacp: u8,
+    #[deku(bits = "2")]
+    gva: u8,
+    #[deku(bits = "2")]
+    sil: u8,
+    #[deku(bits = "1")]
+    something: u8,
+    #[deku(bits = "1")]
+    hrd: u8,
+    #[deku(bits = "1")]
+    sils: u8,
+    #[deku(bits = "1")]
+    reserved: u8,
+}
+
+#[derive(Debug, PartialEq, DekuRead, DekuWrite)]
+#[deku(id = "t", ctx = "t: AircraftOperationStatusSubType")]
+pub enum CapacityClassCodes {
+    #[deku(id = "AircraftOperationStatusSubType::Airborne")]
+    Airborne(u16),
+    #[deku(id = "AircraftOperationStatusSubType::Surface")]
+    Surface(#[deku(bits = "12")] u16, #[deku(bits = "4")] u8),
+}
+
+#[derive(Copy, Clone, Debug, PartialEq, DekuRead, DekuWrite)]
+#[deku(type = "u8", bits = "3")]
+pub enum AircraftOperationStatusSubType {
+    #[deku(id = "0")]
+    Airborne,
+    #[deku(id = "1")]
+    Surface,
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use hexlit::hex;
+
+    // #[test]
+    // fn identification() {
+    //     let bytes = hex!("8D4840D6202CC371C32CE0576098");
+    //     let v = BitSlice::<Msb0, _>::from_slice(&bytes).unwrap();
+    //     println!("{}", v);
+    //     let frame = Frame::from_bytes((&bytes, 0));
+    //     println!("{:#x?}", frame);
+    // }
+
+    //#[test]
+    //fn altitude() {
+    //    let bytes = hex!("8D40058B58C901375147EFD09357");
+    //    let frame = Frame::from_bytes((&bytes, 0));
+    //    println!("{:#x?}", frame);
+    //}
+
+    //#[test]
+    //fn surface_position() {
+    //    let bytes = hex!("8C4841753AAB238733C8CD4020B1");
+    //    let frame = Frame::from_bytes((&bytes, 0));
+    //    println!("{:#x?}", frame);
+    //}
+
+    //#[test]
+    //fn airborne_velocity() {
+    //    let bytes = hex!("8D485020994409940838175B284F");
+    //    let frame = Frame::from_bytes((&bytes, 0));
+    //    println!("{:#x?}", frame);
+    //}
+
+    //#[test]
+    //fn identification() {
+    //    let bytes = hex!("8D4840D6202CC371C32CE0576098");
+    //    let frame = Frame::from_bytes((&bytes, 0));
+    //    println!("{:#x?}", frame);
+    //}
+
+    #[test]
+    fn testing01() {
+        // from adsb-rs
+        let bytes = hex!("8D40621D58C382D690C8AC2863A7");
+        let frame = Frame::from_bytes((&bytes, 0));
+        if let ME::AirbornePositionBaroAltitude(me) = frame.unwrap().1.me {
+            assert_eq!(me.alt, 38000);
+            assert_eq!(me.lat_cpr, 93000);
+            assert_eq!(me.lon_cpr, 51372);
+            assert_eq!(me.f, CPRFormat::Even);
+        } else {
+            unreachable!();
+        }
+    }
+
+    #[test]
+    fn testing02() {
+        let bytes = hex!("8da3d42599250129780484712c50");
+        let frame = Frame::from_bytes((&bytes, 0));
+        println!("{:#?}", frame)
+    }
+
+    // dump1090
+    //
+    // *8dacc040f8210002004ab8569c35;
+    // CRC: 000000
+    // RSSI: -32.5 dBFS
+    // Score: 1800
+    // Time: 709947330.42us
+    // DF:17 AA:ACC040 CA:5 ME:F8210002004AB8
+    //  Extended Squitter Aircraft operational status (airborne) (31/0) (reliable)
+    //   ICAO Address:  ACC040 (Mode S / ADS-B)
+    //   Air/Ground:    airborne
+    //   NIC-A:         0
+    //   NIC-baro:      1
+    //   NACp:          10
+    //   GVA:           2
+    //   SIL:           3 (p <= 0.00001%, per flight hour)
+    //   SDA:           2
+    //   Aircraft Operational Status:
+    //     Version:            2
+    //     Capability classes: ACAS TS
+    //     Operational modes:
+    //     Heading ref dir:    True heading
+    //#[test]
+    //fn example() {
+    //    let bytes = hex!("8dacc040f8210002004ab8569c35");
+    //    let frame = Frame::from_bytes((&bytes, 0)).unwrap().1;
+    //    //println!("{:#?}", frame);
+    //    assert_eq!(frame.capability, Capability::Level2Airborne);
+    //    assert_eq!(frame.icao, [0xac, 0xc0, 0x40]);
+    //    if let ME::AircraftOperationStatus(status) = frame.me {
+    //        assert_eq!(status.nica, 0);
+    //        assert_eq!(status.nica, 0);
+    //    } else {
+    //        unreachable!();
+    //    }
+    //}
+
+    //#[test]
+    //fn identification() {
+    //    let bytes = hex!("8da2b728589b7256649518d79c30");
+    //    let frame = Frame::from_bytes((&bytes, 0));
+    //    println!("{:#?}", frame);
+    //}
+}
+
+//
+//  dump1090
+//
+//*8da2b728589b7256649518d79c30;
+// CRC: 000000
+// RSSI: -25.0 dBFS
+// Score: 1800
+// Time: 5636190.17us
+// DF:17 AA:A2B728 CA:5 ME:589B7256649518
+//  Extended Squitter Airborne position (barometric altitude) (11) (reliable)
+//   ICAO Address:  A2B728 (Mode S / ADS-B)
+//   Air/Ground:    airborne
+//   Baro altitude: 29975 ft
+//   CPR type:      Airborne
+//   CPR odd flag:  even
+//   CPR latitude:  39.50620 (76594)
+//   CPR longitude: -83.80801 (38168)
+//   CPR decoding:  global
+//   NIC:           8
+//   Rc:            0.186 km / 0.1 NM
+//   NIC-B:         0
+//   NACp:          8
+//   SIL:           2 (p <= 0.001%, unknown type)
+//
+//
+// Frame {
+//            df: ADSB,
+//            capability: Level2Airborne,
+//            icao: [
+//                162,
+//                183,
+//                40,
+//            ],
+//            me: AirbornePositionBaroAltitude(
+//                Altitude {
+//                    tc: WithBarometricAltitude,
+//                    ss: PermanentAlert,
+//                    saf: false,
+//                    alt: 3524,
+//                    t: true,
+//                    f: Even,
+//                    lat_cpr: 109796,
+//                    lon_cpr: 21650,
+//                },
+//            ),
+//            pi: 14793926,
+//        },
+//    ),

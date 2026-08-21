@@ -1,0 +1,238 @@
+import { AJTheme } from "../aj-theme.slint";
+import { AJAppState, AJUserState } from "../aj-state.slint";
+import { AJHomeCallbacks, AJAppCallbacks } from "../aj-callbacks.slint";
+import { ScrollView } from "std-widgets.slint";
+import { AJText, AJTextType } from "../components/aj-text.slint";
+import { AJInput, AJInputType } from "../components/aj-input.slint";
+import { AJDateTimeInput } from "../components/aj-datetime-input.slint";
+import { AJButton } from "../components/aj-button.slint";
+import { AJContestCard } from "../components/aj-contest-card.slint";
+import { AJCheckbox } from "../components/aj-checkbox.slint";
+import { AJIcon } from "../components/aj-icon.slint";
+
+export component HomePage {
+    VerticalLayout {
+        alignment: start;
+        spacing: AJTheme.spacing;
+
+        AJButton {
+            text: @tr("Профиль: {}", AJUserState.user.login);
+            text-halign: right;
+
+            AJIcon {
+                source: @image-url("../../radix-icons/person.svg");
+                x: AJTheme.fit-space;
+                y: (parent.height - self.height) / 2;
+            }
+
+            clicked => {
+                AJAppState.page = 4;
+            }
+        }
+
+        AJButton {
+            visible: AJAppState.can-create-contests;
+            text: @tr("Задачи");
+            text-halign: right;
+
+            AJIcon {
+                source: @image-url("../../radix-icons/reader.svg");
+                x: AJTheme.fit-space;
+                y: (parent.height - self.height) / 2;
+            }
+            clicked => {
+                AJAppState.page = 6;
+            }
+        }
+
+        HorizontalLayout {
+            spacing: AJTheme.spacing;
+
+            AJText {
+                text: @tr("Контесты");
+                width: self.min-width;
+                type: AJTextType.Heading;
+            }
+
+            AJButton {
+                visible: AJAppState.can-create-contests;
+                text: @tr("создать");
+
+                text-halign: left;
+
+                AJIcon {
+                    source: @image-url("../../radix-icons/plus.svg");
+                    x: parent.width - self.width - AJTheme.fit-space;
+                    y: (parent.height - self.height) / 2;
+                }
+
+                create-contest-popup := PopupWindow {
+                    close-policy: PopupClosePolicy.close-on-click-outside;
+
+                    function close-popup() {
+                        self.close()
+                    }
+
+                    Rectangle {
+                        background: AJTheme.secondary-container;
+
+                        border-radius: AJTheme.border-radius;
+
+                        VerticalLayout {
+                            padding: AJTheme.padding;
+                            spacing: AJTheme.spacing;
+
+                            name := AJInput {
+                                placeholder: @tr("название");
+                            }
+
+                            AJText {
+                                text: @tr("начало в");
+                                color: AJTheme.container-text;
+                            }
+
+                            starts-at := AJDateTimeInput { }
+
+                            AJText {
+                                text: @tr("конец в");
+                                color: AJTheme.container-text;
+                            }
+
+                            ends-at := AJDateTimeInput { }
+
+                            statements-url := AJInput {
+                                placeholder: @tr("ссылка на условия");
+                            }
+
+                            editorial-url := AJInput {
+                                placeholder: @tr("ссылка на разбор");
+                            }
+
+                            hidden := AJCheckbox {
+                                text: @tr("скрыть");
+                            }
+
+                            upsolving-opened := AJCheckbox {
+                                text: @tr("открыть дорешку");
+                            }
+
+                            hide-solutions := AJCheckbox {
+                                text: @tr("скрыть решения");
+                            }
+
+                            AJButton {
+                                text: @tr("создать");
+
+                                text-halign: left;
+
+                                AJIcon {
+                                    source: {
+                                        if !name.text.is-empty {
+                                            @image-url("../../radix-icons/plus.svg")
+                                        } else {
+                                            @image-url("../../radix-icons/circle-backslash.svg")
+                                        }
+                                    };
+                                    x: parent.width - self.width - AJTheme.fit-space;
+                                    y: (parent.height - self.height) / 2;
+                                }
+
+                                clicked => {
+                                    if !name.text.is-empty {
+                                        AJHomeCallbacks.create-contest(name.text, starts_at.date-time, ends_at.date-time, statements_url.text, editorial-url.text, hidden.value, upsolving-opened.value, hide-solutions.value);
+                                    }
+                                }
+                            }
+
+                            AJButton {
+                                text: @tr("отменить");
+                                text-halign: right;
+
+                                AJIcon {
+                                    source: @image-url("../../radix-icons/reset.svg");
+                                    x: AJTheme.fit-space;
+                                    y: (parent.height - self.height) / 2;
+                                }
+                                clicked => {
+                                    close-popup()
+                                }
+                            }
+                        }
+                    }
+                }
+                clicked => {
+                    create-contest-popup.show();
+                }
+            }
+        }
+
+        AJCheckbox {
+            text: @tr("все контесты");
+            value <=> AJAppState.all-contests;
+            changed value => {
+                AJAppCallbacks.reload()
+            }
+        }
+
+        if AJAppState.contests.length == 0:
+        AJText {
+            text: @tr("Контестов пока что нет");
+            type: AJTextType.Medium;
+            font-italic: true;
+        }
+
+        if AJAppState.contests.length != 0:
+        Rectangle {
+            clip: true;
+            border-radius: AJTheme.border-radius;
+            height: 600px;
+
+            scroll := ScrollView {
+                VerticalLayout {
+                    spacing: AJTheme.spacing;
+
+                    for contest[index] in AJAppState.contests: AJContestCard {
+                        index: index;
+                        show-enter-button: true;
+                    }
+                }
+            }
+
+            Rectangle {
+                visible: scroll.viewport-y < 0;
+                x: 0;
+                y: 0;
+                width: parent.width;
+                height: 64px;
+                background: @linear-gradient(0deg, AJTheme.background.transparentize(100%), AJTheme.background.transparentize(0%));
+            }
+
+            Rectangle {
+                visible: scroll.viewport-y + scroll.viewport-height > scroll.height;
+                x: 0;
+                y: parent.height - self.height;
+                width: parent.width;
+                height: 64px;
+                background: @linear-gradient(180deg, AJTheme.background.transparentize(100%), AJTheme.background.transparentize(0%));
+            }
+
+            Rectangle {
+                visible: scroll.viewport-x < 0;
+                x: 0;
+                y: 0;
+                width: 64px;
+                height: parent.height;
+                background: @linear-gradient(-90deg, AJTheme.background.transparentize(100%), AJTheme.background.transparentize(0%));
+            }
+
+            Rectangle {
+                visible: scroll.viewport-x + scroll.viewport-width > scroll.width;
+                x: parent.width - self.width;
+                y: 0;
+                width: 64px;
+                height: parent.height;
+                background: @linear-gradient(90deg, AJTheme.background.transparentize(100%), AJTheme.background.transparentize(0%));
+            }
+        }
+    }
+}

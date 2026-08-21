@@ -1,0 +1,9 @@
+query GetRecipe($project: IdOrKey!, $idOrKey: IdOrKey!) {
+    customRecipe(project: $project, idOrKey: $idOrKey) {
+        id
+        key
+        name
+        jsonSchema
+        downloadUrl
+    }
+}

@@ -1,0 +1,20 @@
+[package]
+name = "adafruit-aht10"
+version = "0.1.0"
+edition = "2021"
+license = "BSD-3-Clause"
+description = "A library for accessing a AHT10 temperature and humidity sensor via I2C. Using embedded-hal traits."
+homepage = "https://github.com/miathedev/adafruit-aht10"
+repository = "https://github.com/miathedev/adafruit-aht10"
+readme = "README.md"
+documentation = "https://docs.rs/adafruit-aht10"
+keywords = ["embedded-hal", "i2c", "temperature", "humidity", "aht10"]
+categories = ["embedded", "no-std"]
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+embedded-hal = "0.2.7"

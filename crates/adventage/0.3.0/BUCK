@@ -1,0 +1,16 @@
+load("@buckal//:wrapper.bzl", "rust_library")
+
+rust_library(
+    name = "adventage",
+    srcs = glob(["**/*.rs"]),
+    crate = "adventage",
+    crate_root = "src/lib.rs",
+    edition = "2021",
+
+    visibility = ["PUBLIC"],
+    deps = [
+        "//third-party/rust/crates/adventage-macros/0.3.0:adventage_macros",
+        "//third-party/rust/crates/dirs/5.0.1:dirs",
+        "//third-party/rust/crates/reqwest/0.11.27:reqwest",
+    ],
+)

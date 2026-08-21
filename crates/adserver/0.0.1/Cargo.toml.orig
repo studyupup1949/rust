@@ -1,0 +1,14 @@
+[package]
+name = "adserver"
+version = "0.0.1"
+edition = "2021"
+authors = ["paramako <paramako@gmail.com>"]
+license = "MIT"
+repository = "https://github.com/paramako/adserver"
+homepage = "https://paramako.com"
+description = """
+The server that is used to store and serve ads.
+"""
+keywords = ["adtech", "adserver", "advertising"]
+
+[dependencies]

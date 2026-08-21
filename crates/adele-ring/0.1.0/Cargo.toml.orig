@@ -1,0 +1,34 @@
+[package]
+name = "adele-ring"
+version = "0.1.0"
+edition = "2021"
+description = "Exact multi-base arithmetic engine via the Residue Number System (RNS), with a number tower from integers to symbolic expressions and first-class CPU (rayon) + GPU (wgpu) backends."
+license = "MIT OR Apache-2.0"
+
+[lib]
+name = "adele_ring"
+path = "src/lib.rs"
+
+[dependencies]
+num-bigint  = "0.4"
+num-traits  = "0.2"
+num-integer = "0.1"
+thiserror   = "1.0"
+rayon       = "1.10"
+parking_lot = "0.12"
+bytemuck    = { version = "1.14", features = ["derive"] }
+wgpu        = "22"
+pollster    = "0.3"
+log         = "0.4"
+
+[features]
+default = []
+
+[[example]]
+name = "engineering"
+
+[[example]]
+name = "float_comparison"
+
+[[example]]
+name = "benchmark_backends"

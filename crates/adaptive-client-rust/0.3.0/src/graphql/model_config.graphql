@@ -1,0 +1,11 @@
+query GetModelConfig($idOrKey: IdOrKey!) {
+    model(idOrKey: $idOrKey) {
+        id
+        key
+        computeConfig {
+            tp
+            maxSeqLen
+            kvCacheLen
+        }
+    }
+}

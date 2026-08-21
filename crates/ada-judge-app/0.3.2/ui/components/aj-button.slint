@@ -1,0 +1,47 @@
+import { AJTheme } from "../aj-theme.slint";
+import { AJText } from "aj-text.slint";
+
+export component AJButton inherits Rectangle {
+    in property <string> text;
+
+    in property <TextHorizontalAlignment> text-halign: center;
+    in property <brush> text-color: AJTheme.button-text;
+    in property <int> text-font-weight: AJTheme.font-weight-paragraph;
+
+    callback clicked();
+
+    width: self.min-width + 2 * AJTheme.fit-space;
+    height: 30px;
+    transform-scale: touch-area.has-hover ? AJTheme.hovered-scale : 100%;
+
+    background: AJTheme.button;
+
+    border-radius: AJTheme.border-radius;
+
+    touch-area := TouchArea {
+        width: parent.width;
+        height: parent.height;
+
+        clicked => {
+            clicked()
+        }
+    }
+
+    HorizontalLayout {
+        padding-left: text-halign != TextHorizontalAlignment.center ? AJTheme.fit-space: 0px;
+        padding-right: text-halign != TextHorizontalAlignment.center ? AJTheme.fit-space: 0px;
+
+        AJText {
+            text: text;
+            horizontal-alignment: text-halign;
+            vertical-alignment: center;
+            font-weight: text-font-weight;
+            color: text-color;
+        }
+    }
+
+    animate transform-scale {
+        duration: AJTheme.animation-duration-short;
+        easing: ease-in-out;
+    }
+}

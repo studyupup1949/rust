@@ -1,0 +1,30 @@
+[package]
+name = "add-ed"
+description = "Embeddable pure rust editor based on ED"
+version = "0.10.0"
+repository = "https://github.com/sidju/add-ed"
+readme = "README.md"
+categories = ["text-editors"]
+keywords = ["ed"]
+authors = ["sidju <contact@sidju.se>"]
+license = "MIT"
+edition = "2021"
+
+include = [
+  "assets/*",
+  "**/*.rs",
+  "Cargo.toml",
+]
+
+[features]
+local_io = []
+test_local_io = ["local_io"]
+initial_input_data = []
+default = ["local_io"]
+
+[dependencies]
+regex = "1"
+
+[[bin]]
+name = "classic"
+required-features = ["local_io"]

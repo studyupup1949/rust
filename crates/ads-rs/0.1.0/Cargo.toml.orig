@@ -1,0 +1,15 @@
+[package]
+name = "ads-rs"
+version = "0.1.0"
+edition = "2021"
+authors = ["FilaCo <awesome.chekushka@gmail.com>"]
+license = "MIT OR Apache-2.0"
+readme = "README.md"
+keywords = ["algorithms", "data-structures"]
+repository = "https://github.com/FilaCo/ads-rs"
+documentation = "https://docs.rs/ads-rs"
+description = "ads-rs (Algorithms and Data Structures) is a set of useful generic production-ready algorithms and data structures."
+categories = ["algorithms", "data-structures"]
+exclude = [".github/", ".husky/", ".commitlintrc.json", ".releaserc.json", "package-*.json"]
+
+[dependencies]

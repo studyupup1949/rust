@@ -1,0 +1,19 @@
+mutation AddTeamMember($input: TeamMemberSet!) {
+    setTeamMember(input: $input) {
+        user {
+            id
+            email
+            name
+        }
+        team {
+            id
+            key
+            name
+        }
+        role {
+            id
+            key
+            name
+        }
+    }
+}

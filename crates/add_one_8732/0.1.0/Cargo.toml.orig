@@ -1,0 +1,12 @@
+[package]
+name = "add_one_8732"
+version = "0.1.0"
+edition = "2021"
+description = "This package contains a function that adds one to a signed integer"
+license = "MIT"
+documentation = "https://docs.rs/add_one_8732"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+rand = "0.8.4"

@@ -1,0 +1,23 @@
+load("@buckal//:wrapper.bzl", "rust_library")
+
+rust_library(
+    name = "adapto_auth",
+    srcs = glob(["**/*.rs"]),
+    crate = "adapto_auth",
+    crate_root = "src/lib.rs",
+    edition = "2021",
+
+    visibility = ["PUBLIC"],
+    deps = [
+        "//third-party/rust/crates/adapto_runtime/0.2.5:adapto_runtime",
+        "//third-party/rust/crates/base64/0.22.1:base64",
+        "//third-party/rust/crates/chrono/0.4.45:chrono",
+        "//third-party/rust/crates/getrandom/0.2.17:getrandom",
+        "//third-party/rust/crates/hmac/0.12.1:hmac",
+        "//third-party/rust/crates/serde/1.0.229:serde",
+        "//third-party/rust/crates/serde_json/1.0.151:serde_json",
+        "//third-party/rust/crates/sha2/0.10.9:sha2",
+        "//third-party/rust/crates/thiserror/1.0.69:thiserror",
+        "//third-party/rust/crates/uuid/1.24.0:uuid",
+    ],
+)

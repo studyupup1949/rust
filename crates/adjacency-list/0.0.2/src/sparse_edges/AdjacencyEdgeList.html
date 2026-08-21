@@ -1,0 +1,165 @@
+<p>Sparse, edge first, adjacency list</p>
+<h1 id="space-complexity">Space Complexity</h1>
+<ul>
+    <li>
+        <math display="inline">
+            <mrow>
+                <mi>O</mi>
+                <mrow>
+                    <mo fence="true" form="prefix">(</mo>
+                    <mi>|</mi>
+                    <mi>V</mi>
+                    <mi>|</mi>
+                    <mo>+</mo>
+                    <mi>|</mi>
+                    <mi>E</mi>
+                    <mi>|</mi>
+                    <mo fence="true" form="postfix">)</mo>
+                </mrow>
+            </mrow>
+        </math>
+        for undirected graph
+    </li>
+    <li>
+        <math display="inline">
+            <mrow>
+                <mi>O</mi>
+                <mrow>
+                    <mo fence="true" form="prefix">(</mo>
+                    <mi>|</mi>
+                    <mi>V</mi>
+                    <mi>|</mi>
+                    <mo>+</mo>
+                    <mn>2</mn>
+                    <mi>|</mi>
+                    <mi>E</mi>
+                    <mi>|</mi>
+                    <mo fence="true" form="postfix">)</mo>
+                </mrow>
+            </mrow>
+        </math>
+        for directed graph
+    </li>
+</ul>
+<h1 id="node-time-complexity">Node Time Complexity</h1>
+<p>This structure has very good performance for nodes</p>
+<ul>
+    <li>Insert:
+        <math display="inline">
+            <mrow>
+                <mi>O</mi>
+                <mrow>
+                    <mo fence="true" form="prefix">(</mo>
+                    <mn>1</mn>
+                    <mo fence="true" form="postfix">)</mo>
+                </mrow>
+            </mrow>
+        </math>
+    </li>
+    <li>Query:
+        <math display="inline">
+            <mrow>
+                <mi>O</mi>
+                <mrow>
+                    <mo fence="true" form="prefix">(</mo>
+                    <mn>1</mn>
+                    <mo fence="true" form="postfix">)</mo>
+                </mrow>
+            </mrow>
+        </math>
+    </li>
+    <li>Removal:
+        <math display="inline">
+            <mrow>
+                <mi>O</mi>
+                <mrow>
+                    <mo fence="true" form="prefix">(</mo>
+                    <mn>1</mn>
+                    <mo fence="true" form="postfix">)</mo>
+                </mrow>
+            </mrow>
+        </math>
+    </li>
+    <li>Count:
+        <math display="inline">
+            <mrow>
+                <mi>O</mi>
+                <mrow>
+                    <mo fence="true" form="prefix">(</mo>
+                    <mn>1</mn>
+                    <mo fence="true" form="postfix">)</mo>
+                </mrow>
+            </mrow>
+        </math>
+    </li>
+    <li>Neighbors:
+        <math display="inline">
+            <mrow>
+                <mi>O</mi>
+                <mrow>
+                    <mo fence="true" form="prefix">(</mo>
+                    <mn>1</mn>
+                    <mo fence="true" form="postfix">)</mo>
+                </mrow>
+            </mrow>
+        </math>
+    </li>
+</ul>
+<h1 id="edge-time-complexity">Edge Time Complexity</h1>
+<p>This structure has linear complexity across the edges</p>
+<ul>
+    <li>Insert edge:
+        <math display="inline">
+            <mrow>
+                <mi>O</mi>
+                <mrow>
+                    <mo fence="true" form="prefix">(</mo>
+                    <mn>1</mn>
+                    <mo fence="true" form="postfix">)</mo>
+                </mrow>
+            </mrow>
+        </math>
+    </li>
+    <li>Query edge:
+        <math display="inline">
+            <mrow>
+                <mi>O</mi>
+                <mrow>
+                    <mo fence="true" form="prefix">(</mo>
+                    <mi>|</mi>
+                    <mi>V</mi>
+                    <mi>|</mi>
+                    <mo fence="true" form="postfix">)</mo>
+                </mrow>
+            </mrow>
+        </math>
+    </li>
+    <li>Removal edge:
+        <math display="inline">
+            <mrow>
+                <mi>O</mi>
+                <mrow>
+                    <mo fence="true" form="prefix">(</mo>
+                    <mi>|</mi>
+                    <mi>V</mi>
+                    <mi>|</mi>
+                    <mo fence="true" form="postfix">)</mo>
+                </mrow>
+            </mrow>
+        </math>
+    </li>
+    <li>Count edges:
+        <math display="inline">
+            <mrow>
+                <mi>O</mi>
+                <mrow>
+                    <mo fence="true" form="prefix">(</mo>
+                    <mi>|</mi>
+                    <mi>V</mi>
+                    <mi>|</mi>
+                    <mo fence="true" form="postfix">)</mo>
+                </mrow>
+            </mrow>
+        </math>
+    </li>
+</ul>

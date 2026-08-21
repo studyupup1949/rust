@@ -1,0 +1,13 @@
+[package]
+name = "adder_4702"
+version = "0.1.0"
+edition = "2021"
+description = "This package calls the `add_one` function from the `add_one` library"
+license = "MIT"
+documentation = "https://docs.rs/adder_4702"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+rand = "0.8.0"
+add_one_8732 = "0.1.0"

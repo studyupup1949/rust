@@ -1,0 +1,136 @@
+{
+  "id": "patterns/stock-price-widget",
+  "title": "Stock Price Widget with Conditional Rendering",
+  "description": "Compact widget: conditional up/down/unchanged icons via $when expressions. Color-coded change (Good/Attention). Centered layout. Refresh timestamp.",
+  "category": "patterns",
+  "tags": [
+    "stock",
+    "finance",
+    "widget",
+    "conditional",
+    "compact",
+    "ticker"
+  ],
+  "use_cases": [
+    "Stock ticker",
+    "Single metric display",
+    "Price monitor",
+    "Compact data widget"
+  ],
+  "host_targets": [
+    "generic",
+    "teams",
+    "web_chat"
+  ],
+  "complexity": "basic",
+  "card": {
+    "$schema": "http://adaptivecards.io/schemas/adaptive-card.json",
+    "type": "AdaptiveCard",
+    "version": "1.2",
+    "body": [
+      {
+        "type": "Container",
+        "items": [
+          {
+            "type": "ColumnSet",
+            "columns": [
+              {
+                "type": "Column",
+                "width": "35px",
+                "items": [
+                  {
+                    "type": "Image",
+                    "url": "https://www.adenin.com/assets/images/cisco/icon_stock_up.svg",
+                    "$when": "${Change > 0}",
+                    "horizontalAlignment": "Right"
+                  },
+                  {
+                    "type": "Image",
+                    "url": "https://www.adenin.com/assets/images/cisco/icon_stock_down.svg",
+                    "$when": "${Change < 0}",
+                    "horizontalAlignment": "Right"
+                  },
+                  {
+                    "type": "Image",
+                    "url": "https://www.adenin.com/assets/images/cisco/icon_stock_unchanged.svg",
+                    "$when": "${Change == 0}",
+                    "horizontalAlignment": "Right"
+                  }
+                ],
+                "verticalContentAlignment": "Center",
+                "horizontalAlignment": "Right",
+                "spacing": "ExtraLarge"
+              },
+              {
+                "type": "Column",
+                "width": "stretch",
+                "items": [
+                  {
+                    "type": "TextBlock",
+                    "text": "MSFT",
+                    "size": "ExtraLarge",
+                    "wrap": true,
+                    "color": "Dark",
+                    "isSubtle": true
+                  }
+                ],
+                "verticalContentAlignment": "Center",
+                "spacing": "Large"
+              },
+              {
+                "type": "Column",
+                "width": "stretch",
+                "items": [
+                  {
+                    "type": "TextBlock",
+                    "text": "$${TradePrice}",
+                    "fontType": "Default",
+                    "size": "ExtraLarge",
+                    "spacing": "None"
+                  },
+                  {
+                    "type": "TextBlock",
+                    "wrap": true,
+                    "text": "${Change} (${PercChange}%)",
+                    "spacing": "Small",
+                    "color": "Good",
+                    "$when": "${Change > 0}"
+                  },
+                  {
+                    "type": "TextBlock",
+                    "text": "${change} (${percChange}%)",
+                    "wrap": true,
+                    "spacing": "Small",
+                    "color": "Attention",
+                    "$when": "${Change < 0}"
+                  }
+                ],
+                "verticalContentAlignment": "Center"
+              }
+            ],
+            "spacing": "ExtraLarge"
+          }
+        ],
+        "spacing": "None",
+        "minHeight": "100px",
+        "backgroundImage": {
+          "verticalAlignment": "Center"
+        },
+        "verticalContentAlignment": "Center"
+      },
+      {
+        "type": "Container",
+        "items": [
+          {
+            "type": "TextBlock",
+            "text": "Last refreshed: ${int(formatDateTime(utcNow(),'mm'))} minutes ago",
+            "wrap": true,
+            "isSubtle": true,
+            "size": "Small"
+          }
+        ]
+      }
+    ]
+  },
+  "notes": ""
+}

@@ -1,0 +1,26 @@
+[package]
+name = "adafruit-lcd-backpack"
+version = "0.1.1"
+edition = "2021"
+description = "Unofficial driver for the Adafruit I2C LCD backpack"
+license = "MIT"
+readme = "README.md"
+keywords = ["adafruit", "lcd", "embedded", "i2c"]
+homepage = "https://github.com/michaelkamprath/adafruit-lcd-backpack-rust"
+repository = "https://github.com/michaelkamprath/adafruit-lcd-backpack-rust"
+categories = ["no-std", "embedded", "hardware-support"]
+
+[lib]
+name = "adafruit_lcd_backpack"
+path = "src/lib.rs"
+test = false
+bench = false
+
+[dependencies]
+embedded-hal = "0.2"
+mcp230xx = "1.0.0"
+# The defmt feature is optional, enabling formatters for defmt logging.
+defmt = { version = "0.3", optional = true }
+
+[features]
+defmt = ["dep:defmt"]

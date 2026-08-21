@@ -1,0 +1,200 @@
+{
+  "id": "patterns/safety-alert",
+  "title": "Safety Alert with Severity-Based Styling",
+  "description": "Three conditional Container elements with $when for low/medium/high severity \u2014 accent/warning/attention styles. Different icons per severity. Card-level actions.",
+  "category": "patterns",
+  "tags": [
+    "safety",
+    "alert",
+    "warning",
+    "severity",
+    "conditional",
+    "notification"
+  ],
+  "use_cases": [
+    "Safety incident alert",
+    "System status by severity",
+    "Conditional styling card",
+    "Priority-based notification"
+  ],
+  "host_targets": [
+    "generic",
+    "teams",
+    "web_chat"
+  ],
+  "complexity": "intermediate",
+  "card": {
+    "type": "AdaptiveCard",
+    "body": [
+      {
+        "type": "Container",
+        "style": "accent",
+        "items": [
+          {
+            "type": "ColumnSet",
+            "columns": [
+              {
+                "type": "Column",
+                "width": "40px",
+                "items": [
+                  {
+                    "type": "Image",
+                    "url": "https://placeholder.greentic.com/severity-low.png",
+                    "height": "30px",
+                    "width": "30px"
+                  }
+                ],
+                "verticalContentAlignment": "Center",
+                "horizontalAlignment": "Center"
+              },
+              {
+                "type": "Column",
+                "width": "stretch",
+                "items": [
+                  {
+                    "type": "TextBlock",
+                    "text": "${toUpper(severity)} ${toUpper('severity')} ",
+                    "wrap": true,
+                    "size": "Small",
+                    "weight": "Bolder",
+                    "isSubtle": true
+                  },
+                  {
+                    "type": "TextBlock",
+                    "text": "${safety_issue}",
+                    "wrap": true,
+                    "size": "Large",
+                    "weight": "Bolder",
+                    "spacing": "None"
+                  }
+                ],
+                "verticalContentAlignment": "Center"
+              }
+            ]
+          }
+        ],
+        "bleed": true,
+        "spacing": "None",
+        "$when": "${severity == 'low'}"
+      },
+      {
+        "type": "Container",
+        "style": "warning",
+        "items": [
+          {
+            "type": "ColumnSet",
+            "columns": [
+              {
+                "type": "Column",
+                "width": "40px",
+                "items": [
+                  {
+                    "type": "Image",
+                    "url": "https://placeholder.greentic.com/severity-medium.png",
+                    "height": "30px",
+                    "width": "30px",
+                    "horizontalAlignment": "Center"
+                  }
+                ],
+                "verticalContentAlignment": "Center"
+              },
+              {
+                "type": "Column",
+                "width": "stretch",
+                "items": [
+                  {
+                    "type": "TextBlock",
+                    "text": "${toUpper(severity)} ${toUpper('severity')} ",
+                    "wrap": true,
+                    "size": "Small",
+                    "weight": "Bolder",
+                    "isSubtle": true
+                  },
+                  {
+                    "type": "TextBlock",
+                    "text": "${safety_issue}",
+                    "wrap": true,
+                    "size": "Large",
+                    "weight": "Bolder",
+                    "spacing": "None"
+                  }
+                ],
+                "verticalContentAlignment": "Center"
+              }
+            ]
+          }
+        ],
+        "bleed": true,
+        "spacing": "None",
+        "$when": "${severity == 'medium'}"
+      },
+      {
+        "type": "Container",
+        "style": "attention",
+        "items": [
+          {
+            "type": "ColumnSet",
+            "columns": [
+              {
+                "type": "Column",
+                "width": "40px",
+                "items": [
+                  {
+                    "type": "Image",
+                    "url": "https://placeholder.greentic.com/severity-high.png",
+                    "height": "30px",
+                    "width": "30px",
+                    "horizontalAlignment": "Center"
+                  }
+                ],
+                "verticalContentAlignment": "Center"
+              },
+              {
+                "type": "Column",
+                "width": "stretch",
+                "items": [
+                  {
+                    "type": "TextBlock",
+                    "text": "${toUpper(severity)} ${toUpper('severity')} ",
+                    "wrap": true,
+                    "size": "Small",
+                    "weight": "Bolder",
+                    "isSubtle": true
+                  },
+                  {
+                    "type": "TextBlock",
+                    "text": "${safety_issue}",
+                    "wrap": true,
+                    "size": "Large",
+                    "weight": "Bolder",
+                    "spacing": "None"
+                  }
+                ],
+                "verticalContentAlignment": "Center"
+              }
+            ]
+          }
+        ],
+        "bleed": true,
+        "spacing": "None",
+        "$when": "${severity == 'high'}"
+      },
+      {
+        "type": "TextBlock",
+        "text": "${description}",
+        "wrap": true,
+        "size": "Medium"
+      }
+    ],
+    "actions": [
+      {
+        "type": "Action.OpenUrl",
+        "title": "${button_label}",
+        "url": "${button_url}"
+      }
+    ],
+    "$schema": "http://adaptivecards.io/schemas/adaptive-card.json",
+    "version": "1.2"
+  },
+  "notes": ""
+}

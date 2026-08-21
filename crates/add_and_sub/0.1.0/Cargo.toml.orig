@@ -1,0 +1,11 @@
+[package]
+name = "add_and_sub"
+version = "0.1.0"
+authors = ["muhammadbilalkhan1 <bk4574724@gmail.com>"]
+edition = "2018"
+
+description = "By using of this crate you can easiily add and subtract to value.For use this crateyou can write these lines in your project main.rs file.'extern crate add_and_sub;','add_and_sub::add_and_sub_fn(value_1,value_2);'"
+license = "MIT"
+repository = "https://github.com/muhammadbilalkhan1/My_Crate_or_Module_or_Library"
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+[dependencies]

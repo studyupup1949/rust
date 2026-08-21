@@ -1,0 +1,16 @@
+[package]
+name = "adar-macros"
+version = "0.1.0"
+edition = "2021"
+license = "MIT"
+description = "Advanced Architecture (ADAR) is a collection of architectural tools that help you write more readable and performant code."
+repository = "https://github.com/nandee95/adar/tree/main/adar_macros"
+documentation = "https://docs.rs/adar-macros"
+
+[lib]
+proc-macro = true
+
+[dependencies]
+proc-macro2 = "1.0.103"
+quote = "1.0.42"
+syn = { version = "2.0.110", features = ["parsing", "extra-traits"] }

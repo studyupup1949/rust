@@ -1,0 +1,86 @@
+<h1>(Nominal) Adapton in Rust</h1>
+
+<p>Based on <a href="https://github.com/plum-umd/adapton.ocaml">this OCaml implementation</a>.</p>
+
+<h2>Development Activities</h2>
+
+<ul>
+<li><p>Building Adapton in Rust "outwards" from a basic, core interface.</p>
+
+<ul>
+<li><p>The core library implements this interface.
+I will use several baby steps (see below).</p></li>
+<li><p>To run experiments, we need to implement user code.
+I will also implement simple small-step evaluators, to better
+understand and illustrate AAM + IC via Adapton.</p></li>
+</ul></li>
+<li><p>Learning Rust in the process.  See detailed Q&amp;A below.</p></li>
+</ul>
+
+<h2>TODO: Core Library</h2>
+
+<ul>
+<li><del> Basic articulation interface </del></li>
+<li><del> "Lazy recalc" (no caching). </del></li>
+</ul>
+
+<p><em>Next steps:</em></p>
+
+<ul>
+<li><p>Lazy Evaluation (simple, pure caching).</p></li>
+<li><p>Function Caching:</p>
+
+<ul>
+<li>Nominal/Classical caching, explicit eviction.</li>
+<li>Names cannot be "double-used", cells cannot change.</li>
+<li>Implements Bill Pugh's notion of IC, pure function caching.</li>
+</ul></li>
+<li><p>Full Nominal Adapton:</p>
+
+<ul>
+<li>changeable input cells,</li>
+<li>Bidirectional DCG structure structure</li>
+<li>dirtying traversals, repair traversals.</li>
+</ul></li>
+</ul>
+
+<h2>TODO: Basic Data Structures and Algorithms</h2>
+
+<ul>
+<li><del> lazy, memoized lists. </del></li>
+<li><del> mergesort. </del></li>
+<li><del> generic fixed-point loop. </del></li>
+</ul>
+
+<p><em>Next steps</em>:</p>
+
+<ul>
+<li>balanced trees to represent sequences</li>
+<li>balanced trees to represent sets</li>
+<li>graph exploration algorithms (e.g., search)</li>
+</ul>
+
+<h2>TODO: Incremental Program Evaluators</h2>
+
+<p><em>Next steps:</em></p>
+
+<ul>
+<li>Arithmetic expressions, with small-step expression trace</li>
+<li>Let-language (arithmetic and binding, no loops)</li>
+<li>Loops (first-order)</li>
+<li>Lambda abstractions, closures</li>
+</ul>
+
+<h2>Rust Q&amp;A</h2>
+
+<ul>
+<li><del> How do I .invoke an Invoke object? </del> 
+<ul>
+<li>See <code>examples/invoke.rs</code></li>
+</ul></li>
+<li><del> Can I implement data structures with sharing? </del>
+<ul>
+<li>See <code>examples/exp.rs</code> for a
+baby version of a small-step interpreter.</li>
+</ul></li>
+</ul>

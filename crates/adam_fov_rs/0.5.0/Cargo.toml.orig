@@ -1,0 +1,25 @@
+[package]
+name = "adam_fov_rs"
+description = "A rust implementation of Adam Milazzo's FOV algorithm http://www.adammil.net/blog/v125_Roguelike_Vision_Algorithms.html#mine"
+version = "0.5.0"
+edition = "2024"
+authors = ["sark", "Adam Milazzo"]
+homepage = "https://github.com/sarkahn/adam_fov_rs"
+repository = "https://github.com/sarkahn/adam_fov_rs"
+license = "MIT"
+readme = "README.md"
+keywords = ["fov", "field-of-view", "roguelike", "2d"]
+
+[dependencies.glam]
+version = "0.32.0"
+
+[dev-dependencies]
+rand = "0.8.4"
+
+[dev-dependencies.bevy]
+version = "0.19"
+default-features = false
+features = ["bevy_winit", "x11", "bevy_window"]
+
+[dev-dependencies.bevy_ascii_terminal]
+version = "0.19"

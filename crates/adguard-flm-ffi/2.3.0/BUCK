@@ -1,0 +1,18 @@
+load("@buckal//:wrapper.bzl", "rust_library")
+
+rust_library(
+    name = "filter_list_manager_ffi",
+    srcs = glob(["**/*.rs"]),
+    crate = "filter_list_manager_ffi",
+    crate_root = "src/lib.rs",
+    edition = "2021",
+    features = ["default"],
+
+    visibility = ["PUBLIC"],
+    deps = [
+        "//third-party/rust/crates/adguard-flm/2.6.2:adguard_flm",
+        "//third-party/rust/crates/enum_stringify/0.6.5:enum_stringify",
+        "//third-party/rust/crates/prost/0.13.5:prost",
+        "//third-party/rust/crates/thiserror/1.0.69:thiserror",
+    ],
+)

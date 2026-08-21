@@ -1,0 +1,28 @@
+[package]
+name = "ada-sdk"
+version = "0.0.1"
+edition = "2024"
+rust-version = "1.88"
+description = "Strictly typed Ada gRPC SDK for Rust"
+readme = "README.md"
+license = "MIT"
+authors = ["eleven-am"]
+repository = "https://github.com/eleven-am/ada-sdk"
+include = ["Cargo.toml", "README.md", "LICENSE", "build.rs", "src/**", "proto/**", "tests/**", "examples/**"]
+
+[dependencies]
+prost = "0.14.4"
+prost-types = "0.14.4"
+thiserror = "2.0.19"
+tokio = { version = "1.53.1", features = ["rt-multi-thread", "macros", "sync", "time"] }
+tokio-util = "0.7.19"
+tonic = { version = "0.14.6", features = ["transport", "tls-ring"] }
+tonic-prost = "0.14.6"
+
+[build-dependencies]
+tonic-prost-build = "0.14.6"
+
+[dev-dependencies]
+base64 = "0.22.1"
+tokio = { version = "1.53.1", features = ["rt-multi-thread", "macros", "test-util"] }
+trybuild = "1.0.118"

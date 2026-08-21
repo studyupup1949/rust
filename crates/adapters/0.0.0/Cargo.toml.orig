@@ -1,0 +1,75 @@
+[workspace]
+resolver = "3"
+members = [
+    ".",
+    "crates/adapters-macros",
+]
+default-members = ["."]
+
+[workspace.package]
+version       = "0.0.0"
+edition       = "2024"
+authors       = ["Muhammad Fiaz <contact@example.com>"]
+license       = "MIT"
+repository    = "https://github.com/muhammad-fiaz/adapters"
+homepage      = "https://muhammad-fiaz.github.io/adapters"
+documentation = "https://docs.rs/adapters"
+
+[workspace.dependencies]
+regex           = "1"
+proc-macro2     = "1"
+quote           = "1"
+syn             = { version = "2", features = ["full"] }
+adapters-macros = { path = "crates/adapters-macros", version = "0.0.0" }
+
+[package]
+name          = "adapters"
+version.workspace = true
+edition.workspace = true
+authors.workspace = true
+license.workspace = true
+repository.workspace = true
+homepage.workspace = true
+documentation.workspace = true
+description   = "A high-performance, native Rust schema validation, serialization, deserialization, and data transformation library."
+keywords      = ["schema", "validation", "serialization", "json", "transform"]
+categories    = ["data-structures", "encoding", "web-programming"]
+readme        = "README.md"
+
+[lib]
+name = "adapters"
+path = "src/lib.rs"
+
+[[example]]
+name = "basic_schema"
+
+[[example]]
+name = "explicit_schema"
+
+[[example]]
+name = "nested_models"
+
+[[example]]
+name = "transformation"
+
+[[example]]
+name = "json_parsing"
+
+[[example]]
+name = "optional_defaults"
+
+[[example]]
+name = "strict_mode"
+
+[dependencies]
+regex           = { workspace = true }
+adapters-macros = { workspace = true }
+
+[dev-dependencies]
+adapters-macros = { workspace = true }
+
+[profile.release]
+opt-level     = 3
+lto           = true
+codegen-units = 1
+strip         = true

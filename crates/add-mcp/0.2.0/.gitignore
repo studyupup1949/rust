@@ -1,0 +1,13 @@
+/target
+**/target
+Cargo.lock
+
+# Local MCP configs (created by add-mcp local installs)
+.mcp.json
+.codex/
+.cursor/
+.gemini/
+.vscode/
+.zed/
+opencode.json
+.claude/

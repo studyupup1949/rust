@@ -1,0 +1,14 @@
+load("@buckal//:wrapper.bzl", "rust_library")
+
+rust_library(
+    name = "adafruit_nrf52_bootloader_ctrl",
+    srcs = glob(["**/*.rs"]),
+    crate = "adafruit_nrf52_bootloader_ctrl",
+    crate_root = "src/lib.rs",
+    edition = "2024",
+
+    visibility = ["PUBLIC"],
+    deps = [
+        "//third-party/rust/crates/nrf52840-hal/0.19.0:nrf52840_hal",
+    ],
+)

@@ -1,0 +1,15 @@
+load("@buckal//:wrapper.bzl", "rust_library")
+
+rust_library(
+    name = "ad_rs",
+    srcs = glob(["**/*.rs"]),
+    crate = "ad_rs",
+    crate_root = "src/lib.rs",
+    edition = "2018",
+
+    visibility = ["PUBLIC"],
+    deps = [
+        "//third-party/rust/crates/ema-rs/0.1.0:ema_rs",
+        "//third-party/rust/crates/ta-common/0.1.3:ta_common",
+    ],
+)

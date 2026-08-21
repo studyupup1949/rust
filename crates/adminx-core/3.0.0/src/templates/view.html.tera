@@ -1,0 +1,34 @@
+{% extends "layout.html" %}
+{% block content %}
+  <div class="flex flex-wrap items-center justify-between gap-3 mb-6">
+    <h1 class="text-2xl font-bold text-gray-900 dark:text-white">{{ resource_name }} <span class="text-gray-400 dark:text-gray-500 font-normal">· {{ item_id | safe }}</span></h1>
+    <div class="flex items-center gap-2">
+      <a href="{{ mount | safe }}/{{ base_path | safe }}/edit/{{ item_id | safe }}" class="inline-flex items-center px-4 py-2 rounded-lg text-sm font-semibold text-white bg-gradient-to-r from-indigo-600 to-fuchsia-600 shadow hover:opacity-95 transition">Edit</a>
+      <a href="{{ mount | safe }}/{{ base_path | safe }}/list" class="inline-flex items-center px-4 py-2 rounded-lg text-sm font-medium border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-700 transition">Back</a>
+    </div>
+  </div>
+
+  {% if actions %}
+    <div class="flex flex-wrap gap-2 mb-6">
+      {% for action in actions %}
+        <form method="post" action="{{ mount | safe }}/{{ base_path | safe }}/{{ item_id | safe }}/action/{{ action.name }}" class="inline">
+          <input type="hidden" name="_csrf" value="{{ csrf_token }}">
+          <button type="submit" class="px-3 py-1.5 rounded-lg border border-indigo-300 dark:border-indigo-500/40 text-indigo-700 dark:text-indigo-300 text-sm hover:bg-indigo-50 dark:hover:bg-indigo-500/10 transition">{{ action.label }}</button>
+        </form>
+      {% endfor %}
+    </div>
+  {% endif %}
+
+  <div class="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl shadow-sm overflow-hidden max-w-2xl">
+    <table class="min-w-full text-sm">
+      <tbody class="divide-y divide-gray-200 dark:divide-gray-700">
+        {% for h in headers %}
+          <tr>
+            <th class="px-6 py-3 text-left font-medium text-gray-500 dark:text-gray-400 w-1/3 align-top">{{ h | replace(from="_", to=" ") | title }}</th>
+            <td class="px-6 py-3 text-gray-900 dark:text-gray-100">{{ record[h] | default(value="") }}</td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+{% endblock content %}

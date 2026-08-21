@@ -1,0 +1,18 @@
+[package]
+name = "adler32-simd"
+version = "0.1.0"
+edition = "2021"
+rust-version = "1.60"
+authors = ["Issa Euceph <issa@euceph.io>"]
+description = "SIMD-accelerated Adler-32 checksum with ARM NEON and x86 SSSE3 support"
+license = "MIT"
+repository = "https://github.com/euceph/adler32-simd"
+homepage = "https://github.com/euceph/adler32-simd"
+documentation = "https://docs.rs/adler32-simd"
+readme = "README.md"
+keywords = ["adler32", "checksum", "simd", "neon", "ssse3"]
+categories = ["algorithms", "no-std"]
+
+[features]
+default = ["std"]
+std = []

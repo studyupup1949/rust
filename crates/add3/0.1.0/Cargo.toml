@@ -1,0 +1,4 @@
+[package]
+name = "add3"
+version = "0.1.0"
+authors = ["Felix S. Klock II <pnkfelix@pnkfx.org>"]

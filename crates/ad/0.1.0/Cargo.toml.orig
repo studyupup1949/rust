@@ -1,0 +1,15 @@
+[package]
+name = "ad"
+version = "0.1.0"
+authors = ["Akihito KIRISAKI <kirisaki@klaraworks.net>"]
+license = "BSD-3-Clause"
+edition = "2018"
+
+description = "Automatic differentiation"
+repository = "https://github.com/kirisaki/ad"
+keyeords = ["numeric"]
+categories = ["numeric"]
+readme = "README.md"
+
+[dependencies]
+num-traits = "^0.2"

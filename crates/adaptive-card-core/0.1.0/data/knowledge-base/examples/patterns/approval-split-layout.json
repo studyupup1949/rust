@@ -1,0 +1,243 @@
+{
+  "id": "patterns/approval-split-layout",
+  "title": "Approval Request \u2014 Split Panel Layout",
+  "description": "35/65 asymmetric ColumnSet. Left panel: layered accent+emphasis containers with icon. Right panel: requester info, date range visual (from\u2192arrow\u2192to), FactSet details, positive/destructive actions.",
+  "category": "patterns",
+  "tags": [
+    "approval",
+    "split-panel",
+    "leave",
+    "PTO",
+    "HR",
+    "two-column",
+    "semantic-actions"
+  ],
+  "use_cases": [
+    "Leave approval",
+    "PTO request",
+    "Purchase approval",
+    "Any approve/reject workflow"
+  ],
+  "host_targets": [
+    "generic",
+    "teams",
+    "web_chat"
+  ],
+  "complexity": "advanced",
+  "card": {
+    "type": "AdaptiveCard",
+    "body": [
+      {
+        "type": "ColumnSet",
+        "columns": [
+          {
+            "type": "Column",
+            "items": [
+              {
+                "type": "Container",
+                "backgroundImage": {
+                  "url": "https://messagecardplayground.azurewebsites.net/assets/TxP_Background.png"
+                },
+                "items": [
+                  {
+                    "type": "Image",
+                    "horizontalAlignment": "Center",
+                    "url": "${approval_type_icon}",
+                    "height": "50px",
+                    "spacing": "None"
+                  }
+                ],
+                "bleed": true,
+                "spacing": "Small",
+                "style": "accent"
+              },
+              {
+                "type": "Container",
+                "spacing": "None",
+                "style": "emphasis",
+                "items": [
+                  {
+                    "type": "TextBlock",
+                    "size": "ExtraLarge",
+                    "weight": "Lighter",
+                    "color": "Accent",
+                    "text": "Approval request",
+                    "wrap": true
+                  },
+                  {
+                    "type": "ColumnSet",
+                    "columns": [
+                      {
+                        "type": "Column",
+                        "width": "29px",
+                        "items": [
+                          {
+                            "type": "Image",
+                            "url": "${approval_app_icon}",
+                            "height": "25px"
+                          }
+                        ]
+                      },
+                      {
+                        "type": "Column",
+                        "width": "stretch",
+                        "items": [
+                          {
+                            "type": "TextBlock",
+                            "text": "From ${approval_app}"
+                          }
+                        ],
+                        "spacing": "None",
+                        "height": "stretch",
+                        "verticalContentAlignment": "Center"
+                      }
+                    ]
+                  }
+                ],
+                "bleed": true,
+                "height": "stretch"
+              }
+            ],
+            "width": 35,
+            "height": "stretch"
+          },
+          {
+            "type": "Column",
+            "items": [
+              {
+                "type": "TextBlock",
+                "text": "Paid Time Off",
+                "fontType": "Default",
+                "size": "ExtraLarge",
+                "weight": "Lighter"
+              },
+              {
+                "type": "ColumnSet",
+                "columns": [
+                  {
+                    "type": "Column",
+                    "width": "43px",
+                    "items": [
+                      {
+                        "type": "Image",
+                        "url": "${avatar}",
+                        "style": "Person",
+                        "height": "36px"
+                      }
+                    ]
+                  },
+                  {
+                    "type": "Column",
+                    "width": "stretch",
+                    "items": [
+                      {
+                        "type": "TextBlock",
+                        "spacing": "Small",
+                        "wrap": true,
+                        "text": "${$root.displayName}"
+                      }
+                    ],
+                    "height": "stretch",
+                    "verticalContentAlignment": "Center",
+                    "spacing": "None"
+                  }
+                ]
+              },
+              {
+                "type": "Container",
+                "height": "stretch",
+                "items": [
+                  {
+                    "type": "ColumnSet",
+                    "columns": [
+                      {
+                        "type": "Column",
+                        "width": "auto",
+                        "items": [
+                          {
+                            "type": "TextBlock",
+                            "size": "Large",
+                            "weight": "Lighter",
+                            "text": "${$root.fromDate}"
+                          }
+                        ]
+                      },
+                      {
+                        "type": "Column",
+                        "spacing": "Small",
+                        "verticalContentAlignment": "Center",
+                        "items": [
+                          {
+                            "type": "Image",
+                            "url": "https://github.com/adaptive-cards/api-templates/blob/main/images/long-arrow-right--v2.png?raw=true",
+                            "height": "24px"
+                          }
+                        ],
+                        "width": "auto"
+                      },
+                      {
+                        "type": "Column",
+                        "items": [
+                          {
+                            "type": "TextBlock",
+                            "size": "Large",
+                            "weight": "Lighter",
+                            "text": "${$root.toDate}",
+                            "spacing": "Small"
+                          }
+                        ],
+                        "width": "auto",
+                        "spacing": "Small"
+                      }
+                    ],
+                    "spacing": "Small"
+                  },
+                  {
+                    "type": "FactSet",
+                    "facts": [
+                      {
+                        "title": "Allowance before",
+                        "value": "${allowance} hours"
+                      },
+                      {
+                        "title": "Staff already on leave",
+                        "value": "${staffOnLeave} "
+                      }
+                    ]
+                  },
+                  {
+                    "type": "ActionSet",
+                    "separator": true,
+                    "actions": [
+                      {
+                        "type": "Action.OpenUrl",
+                        "title": "Approve",
+                        "url": "${approve_link}",
+                        "style": "positive",
+                        "id": "approve"
+                      },
+                      {
+                        "type": "Action.OpenUrl",
+                        "title": "Decline",
+                        "url": "${decline_link}",
+                        "style": "destructive",
+                        "id": "decline"
+                      }
+                    ],
+                    "spacing": "Medium"
+                  }
+                ]
+              }
+            ],
+            "width": 65
+          }
+        ],
+        "height": "stretch"
+      }
+    ],
+    "$schema": "http://adaptivecards.io/schemas/adaptive-card.json",
+    "version": "1.2",
+    "speak": "You have a new approval from ${displayName} who requested ${approval_type} from ${fromDate} until ${toDate}"
+  },
+  "notes": ""
+}

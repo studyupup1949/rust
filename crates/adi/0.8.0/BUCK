@@ -1,0 +1,14 @@
+load("@buckal//:wrapper.bzl", "rust_library")
+
+rust_library(
+    name = "adi",
+    srcs = glob(["**/*.rs"]),
+    crate = "adi",
+    crate_root = "src/lib.rs",
+    edition = "2015",
+
+    visibility = ["PUBLIC"],
+    deps = [
+        "//third-party/rust/crates/adi_screen/0.9.0:adi_screen",
+    ],
+)

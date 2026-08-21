@@ -1,0 +1,36 @@
+{{~#if this.children~}}
+<li class="sidebar-item expanded">
+{{else}}
+<li class="sidebar-item">
+{{~/if~}}
+    <div class="sidebar-item-flex">
+        {{~#if this.url~}}
+            {{~#if this.active~}}
+        <a href="{{this.url}}" class="sidebar-item-flex-title active">
+            {{else}}
+        <a href="{{this.url}}" class="sidebar-item-flex-title inactive">
+            {{~/if~}}
+            {{~this.name~}}
+        </a>
+        {{else}}
+        <span class="sidebar-item-flex-title">
+            {{~this.name~}}
+        </span>
+        {{~/if~}}
+
+        {{~#if this.children~}}
+        <div class="sidebar-item-flex-toggle">❱</div>
+        {{else}}
+        <!-- div, takes place and aligns the title to the left -->
+        <div class="sidebar-item-flex-toggle" style="opacity: 0;">X</div>
+        {{/if}}
+    </div>
+
+    {{~#if this.children~}}
+    <ol>
+        {{~#each this.children~}}
+        {{> sidebar_item}}
+        {{~/each~}}
+    </ol>
+    {{~/if}}
+</li>

@@ -1,0 +1,70 @@
+[package]
+name = "adversaria"
+version = "0.1.0"
+edition = "2021"
+authors = ["Adversaria Contributors"]
+description = "Adversarial Testing Harness for Large Language Models"
+license = "MIT"
+repository = "https://github.com/adversaria/adversaria"
+keywords = ["llm", "security", "testing", "adversarial", "ai"]
+categories = ["command-line-utilities", "development-tools::testing"]
+readme = "README.md"
+homepage = "https://github.com/adversaria/adversaria"
+documentation = "https://github.com/adversaria/adversaria#readme"
+
+# Publish only the necessary files to crates.io
+include = [
+  "Cargo.toml",
+  "README.md",
+  "LICENSE",
+  "adversaria.config.yaml",
+  "src/**",
+  "suites/**",
+  "docs/**",
+]
+
+[badges]
+github-actions = { repository = "adversaria/adversaria", workflow = "CI" }
+
+[lib]
+name = "adversaria"
+path = "src/lib.rs"
+
+[[bin]]
+name = "adversaria"
+path = "src/main.rs"
+
+[dependencies]
+clap = { version = "4.5", features = ["derive", "cargo"] }
+tokio = { version = "1.36", features = ["full"] }
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
+serde_yaml = "0.9"
+reqwest = { version = "0.11", features = ["json"] }
+anyhow = "1.0"
+thiserror = "1.0"
+chrono = { version = "0.4", features = ["serde"] }
+uuid = { version = "1.7", features = ["v4", "serde"] }
+colored = "2.1"
+async-trait = "0.1"
+tracing = "0.1"
+tracing-subscriber = { version = "0.3", features = ["env-filter"] }
+libloading = "0.8"
+walkdir = "2.4"
+indicatif = "0.17"
+comfy-table = "7.1"
+
+[dev-dependencies]
+mockito = "1.2"
+tempfile = "3.10"
+tokio-test = "0.4"
+criterion = "0.5"
+
+[[bench]]
+name = "benchmark"
+harness = false
+
+[profile.release]
+opt-level = 3
+lto = true
+codegen-units = 1

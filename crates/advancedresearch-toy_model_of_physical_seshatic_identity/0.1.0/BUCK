@@ -1,0 +1,11 @@
+load("@buckal//:wrapper.bzl", "rust_library")
+
+rust_library(
+    name = "advancedresearch_toy_model_of_physical_seshatic_identity",
+    srcs = glob(["**/*.rs"]),
+    crate = "advancedresearch_toy_model_of_physical_seshatic_identity",
+    crate_root = "src/lib.rs",
+    edition = "2024",
+
+    visibility = ["PUBLIC"],
+)

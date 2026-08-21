@@ -1,0 +1,15 @@
+load("@buckal//:wrapper.bzl", "rust_library")
+
+rust_library(
+    name = "adv_random",
+    srcs = glob(["**/*.rs"]),
+    crate = "adv_random",
+    crate_root = "src/lib.rs",
+    edition = "2021",
+
+    visibility = ["PUBLIC"],
+    deps = [
+        "//third-party/rust/crates/getrandom/0.2.17:getrandom",
+        "//third-party/rust/crates/once_cell/1.21.4:once_cell",
+    ],
+)

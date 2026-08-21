@@ -1,0 +1,8 @@
+[package]
+name = "add_one_ali"
+description = "Ali's test for publishing crates"
+license = "MIT"
+version = "0.1.0"
+edition = "2024"
+
+[dependencies]

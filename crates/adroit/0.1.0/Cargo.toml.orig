@@ -1,0 +1,12 @@
+[package]
+name = "adroit"
+version = "0.1.0"
+edition = "2021"
+description = "AD on first-order SSA functions with arrays and algebraic types."
+license = "MIT"
+repository = "https://github.com/samestep/adroit"
+include = ["src"]
+
+[dependencies]
+indexmap = "2"
+logos = "0.14"

@@ -1,0 +1,9 @@
+dotfiles:
+  f_bad:
+    dst: /tmp/adot_tests/dst
+    src: ""
+    type: link
+profiles:
+  test-host:
+    dotfiles:
+      - f_bad

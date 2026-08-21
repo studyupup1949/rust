@@ -1,0 +1,6 @@
+# Rust build artifacts
+/target
+
+# Stray personal notes (not part of the crate)
+/tony
+*.csv

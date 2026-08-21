@@ -1,0 +1,15 @@
+[package]
+name = "adhp"
+version = "0.1.0"
+edition = "2021"
+authors = ["Nick Ewasiuk <ewasiuk.nick@gmail.com>"]
+description = "Get the 8 byte account discriminator for a Solana program using Anchor."
+license = "MIT"
+keywords = ["cli", "solana", "anchor", "account"]
+categories = ["command-line-utilities"]
+repository = "https://github.com/nicholas-ewasiuk/adhp"
+
+[dependencies]
+clap = { version = "4.0", features = ["derive"] }
+sha2 = "0.10"
+bs58 = "0.5"

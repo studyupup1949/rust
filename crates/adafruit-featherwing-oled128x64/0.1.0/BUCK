@@ -1,0 +1,14 @@
+load("@buckal//:wrapper.bzl", "rust_library")
+
+rust_library(
+    name = "adafruit_featherwing_oled128x64",
+    srcs = glob(["**/*.rs"]),
+    crate = "adafruit_featherwing_oled128x64",
+    crate_root = "src/lib.rs",
+    edition = "2021",
+
+    visibility = ["PUBLIC"],
+    deps = [
+        "//third-party/rust/crates/sh1107/0.1.0:sh1107",
+    ],
+)

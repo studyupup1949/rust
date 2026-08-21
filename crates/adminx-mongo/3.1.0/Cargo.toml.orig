@@ -1,0 +1,25 @@
+[package]
+name = "adminx-mongo"
+description = "MongoDB storage backend for the adminx admin-panel framework."
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+authors.workspace = true
+license.workspace = true
+repository.workspace = true
+documentation = "https://docs.rs/adminx-mongo"
+homepage = "https://github.com/srotas-space/adminx"
+readme = "README.md"
+keywords = ["admin", "mongodb", "mongo", "storage", "nosql"]
+categories = ["web-programming", "database"]
+
+[dependencies]
+adminx-core.workspace = true
+async-trait.workspace = true
+serde_json.workspace = true
+tracing.workspace = true
+futures-util = "0.3"
+mongodb = { version = "2.4", features = ["tokio-runtime", "bson-chrono-0_4"] }
+
+[dev-dependencies]
+tokio = { workspace = true }

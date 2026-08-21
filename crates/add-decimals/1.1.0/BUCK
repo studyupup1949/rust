@@ -1,0 +1,18 @@
+load("@buckal//:wrapper.bzl", "rust_library")
+
+rust_library(
+    name = "add_decimals",
+    srcs = glob(["**/*.rs"]),
+    crate = "add_decimals",
+    crate_root = "src/lib.rs",
+    edition = "2021",
+    features = ["default"],
+
+    visibility = ["PUBLIC"],
+    deps = [
+        "//third-party/rust/crates/anchor-lang/1.1.2:anchor_lang",
+        "//third-party/rust/crates/anchor-spl/1.1.2:anchor_spl",
+        "//third-party/rust/crates/continuation-router/1.1.2:continuation_router",
+        "//third-party/rust/crates/vipers/2.0.6:vipers",
+    ],
+)

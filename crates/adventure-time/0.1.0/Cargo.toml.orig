@@ -1,0 +1,12 @@
+[package]
+name = "adventure-time"
+version = "0.1.0"
+authors = ["Christopher Biscardi <chris@christopherbiscardi.com>"]
+edition = "2018"
+license = "MIT"
+keywords = ["adventure", "education"]
+description = "A CLI for completing various adventures: rust-adventure, shell-adventure, etc"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]

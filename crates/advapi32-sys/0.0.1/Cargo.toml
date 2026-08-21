@@ -1,0 +1,15 @@
+[package]
+
+name = "advapi32-sys"
+version = "0.0.1"
+authors = ["Peter Atashian <retep998@gmail.com>"]
+description = "FFI bindings to advapi32."
+documentation = "https://retep998.github.io/advapi32-sys/advapi32-sys/"
+repository = "https://github.com/retep998/advapi32-sys"
+readme = "README.md"
+license = "MIT"
+build = "build.rs"
+links = "advapi32"
+
+[dependencies]
+winapi = "*"

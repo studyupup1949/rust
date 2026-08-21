@@ -1,0 +1,30 @@
+import { AJTheme } from "../aj-theme.slint";
+import { AJAppState } from "../aj-state.slint";
+import { AJText, AJTextType } from "../components/aj-text.slint";
+import { AJButton } from "../components/aj-button.slint";
+
+export component WelcomePage {
+    VerticalLayout {
+        alignment: start;
+        spacing: AJTheme.spacing;
+
+        AJText {
+            text: "Добро пожаловать!";
+            type: AJTextType.Heading;
+        }
+
+        AJButton {
+            text: "войти >>";
+            clicked => {
+                AJAppState.page = 1;
+            }
+        }
+
+        AJButton {
+            text: "создать аккаунт >>";
+            clicked => {
+                AJAppState.page = 2;
+            }
+        }
+    }
+}

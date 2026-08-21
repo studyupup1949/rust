@@ -1,0 +1,10 @@
+[package]
+name = "advent-of-rust"
+version = "0.1.0"
+edition = "2021"
+repository = "https://github.com/nik-rev/advent-of-rust"
+description = "Advent of Code utility macro for Rust"
+license = "MIT"
+
+[dependencies]
+paste = "1.0"

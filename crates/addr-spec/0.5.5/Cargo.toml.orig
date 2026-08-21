@@ -1,0 +1,31 @@
+[package]
+name = "addr-spec"
+version = "0.5.5"
+edition = "2021"
+description = "A wicked fast UTF-8 email address parser and serializer."
+license = "MIT OR Apache-2.0"
+authors = ["Mathematic Inc"]
+documentation = "https://mathematic-inc.github.io/addr-spec-rs"
+repository = "https://github.com/mathematic-inc/addr-spec-rs"
+categories = ["parsing", "email"]
+keywords = ["address", "rfc5322", "rfc2822"]
+
+[features]
+comments = ["white-spaces"]
+literals = []
+white-spaces = []
+
+[dependencies]
+unicode-normalization = "0.1.22"
+serde = { version = "1.0", optional = true, features = ["derive"] }
+
+[dev-dependencies]
+regex = "1.7.1"
+
+[build-dependencies]
+cc = "1.0.78"
+bindgen = "0.63.0"
+rustc_version = "0.4.0"
+
+[profile.release]
+lto = true

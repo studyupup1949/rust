@@ -1,0 +1,16 @@
+load("@buckal//:wrapper.bzl", "rust_library")
+
+rust_library(
+    name = "additional_accounts_request",
+    srcs = glob(["**/*.rs"]),
+    crate = "additional_accounts_request",
+    crate_root = "src/lib.rs",
+    edition = "2021",
+
+    visibility = ["PUBLIC"],
+    deps = [
+        "//third-party/rust/crates/anchor-lang/0.30.1:anchor_lang",
+        "//third-party/rust/crates/anchor-spl/0.30.1:anchor_spl",
+        "//third-party/rust/crates/bytemuck/1.25.2:bytemuck",
+    ],
+)

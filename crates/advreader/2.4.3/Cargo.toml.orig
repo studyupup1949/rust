@@ -1,0 +1,32 @@
+[package]
+name = "advreader"
+version = "2.4.3"
+description = "Split text file into text sequences, strings and (line) comments."
+authors = ["Martin Bammer <mrbm74@gmail.com>"]
+edition = "2021"
+license = "MIT"
+readme = "README.md"
+homepage = "https://gitlab.com/brmmm3/advreader"
+repository = "https://gitlab.com/brmmm3/advreader"
+keywords = ["reader"]
+categories = ["parsing", "text-processing"]
+
+[lib]
+name = "advreader"
+crate-type = ["rlib", "cdylib"]
+
+[dependencies]
+flume = "0.11"
+encoding = "0.2"
+
+[dev-dependencies]
+criterion = { version = "0.5", features = ["html_reports"] }
+threadpool = "1.8"
+num_cpus = "1.16"
+
+[[bench]]
+name = "big_file"
+harness = false
+
+[badges]
+travis-ci = { repository = "brmmm3/advreader" }

@@ -1,0 +1,18 @@
+[package]
+name = "advent-of-code"
+version = "2019.12.53"
+authors = ["Fredrik Fornwall <fredrik@fornwall.net>"]
+repository = "https://github.com/fornwall/advent-of-code"
+license = "MIT"
+description = "Solutions to Advent of Code written in Rust"
+documentation = "https://github.com/fornwall/advent-of-code"
+homepage = "https://github.com/fornwall/advent-of-code"
+readme = "../../README.md"
+edition = "2018"
+
+[lib]
+name = "advent_of_code"
+
+[dependencies]
+bytecount = "0.*"
+mod_exp = "1.*"

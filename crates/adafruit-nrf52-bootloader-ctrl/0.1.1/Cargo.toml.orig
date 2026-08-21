@@ -1,0 +1,19 @@
+[package]
+name = "adafruit-nrf52-bootloader-ctrl"
+version = "0.1.1"
+authors = [ "mestrode <35630715+mestrode@users.noreply.github.com>" ]
+description = "Adafruit nrf52 bootloader control library"
+edition = "2024"
+license = "MIT OR Apache-2.0"
+repository = "https://github.com/mestrode/adafruit-nrf52-bootloader-ctrl"
+keywords = ["nrf52", "bootloader", "adafruit"]
+categories = ["embedded", "no-std"]
+readme = "README.md"
+rust-version = "1.92"
+
+[dependencies]
+nrf52840-hal = "0.19.0"
+
+[package.metadata.docs.rs]
+targets = ["thumbv7em-none-eabihf"]
+rustdoc-args = ["--no-deps"]

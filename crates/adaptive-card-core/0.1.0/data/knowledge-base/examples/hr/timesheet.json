@@ -1,0 +1,650 @@
+{
+  "id": "hr/timesheet",
+  "title": "Timesheet \u2014 Weekly Hours Entry with Project Allocation",
+  "description": "Timesheet entry card with weekly hours grid by day, project/task allocation with dropdowns, overtime tracking, and submission workflow. Uses ColumnSet for day columns, Input.Number for hours, and status indicators.",
+  "category": "hr",
+  "tags": [
+    "hr",
+    "timesheet",
+    "hours",
+    "project",
+    "time-tracking",
+    "weekly",
+    "form",
+    "allocation",
+    "payroll"
+  ],
+  "use_cases": [
+    "Employee logs weekly hours per project",
+    "Overtime tracking and approval",
+    "Project time allocation",
+    "Payroll data collection"
+  ],
+  "host_targets": [
+    "generic",
+    "teams",
+    "web_chat"
+  ],
+  "complexity": "intermediate",
+  "card": {
+    "$schema": "http://adaptivecards.io/schemas/adaptive-card.json",
+    "type": "AdaptiveCard",
+    "version": "1.5",
+    "metadata": {
+      "webUrl": "https://greentic.io/cards/timesheet",
+      "demo_mode": true
+    },
+    "body": [
+      {
+        "type": "Container",
+        "id": "tsMenu",
+        "isVisible": true,
+        "style": "emphasis",
+        "bleed": true,
+        "items": [
+          {
+            "type": "ColumnSet",
+            "columns": [
+              {
+                "type": "Column",
+                "width": "auto",
+                "items": [
+                  {
+                    "type": "Image",
+                    "url": "https://img.icons8.com/fluency/96/clock--v1.png",
+                    "size": "Medium"
+                  }
+                ],
+                "verticalContentAlignment": "Center"
+              },
+              {
+                "type": "Column",
+                "width": "stretch",
+                "items": [
+                  {
+                    "type": "TextBlock",
+                    "text": "Timesheet",
+                    "size": "ExtraLarge",
+                    "weight": "Bolder",
+                    "color": "Accent"
+                  },
+                  {
+                    "type": "TextBlock",
+                    "text": "Log hours, review weekly totals, and submit for approval.",
+                    "spacing": "None",
+                    "isSubtle": true,
+                    "wrap": true
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "type": "Container",
+            "style": "good",
+            "spacing": "Medium",
+            "items": [
+              {
+                "type": "TextBlock",
+                "text": "This Week \u2014 Apr 7\u201312, 2026",
+                "weight": "Bolder"
+              },
+              {
+                "type": "ColumnSet",
+                "columns": [
+                  {
+                    "type": "Column",
+                    "width": "1",
+                    "items": [
+                      {
+                        "type": "TextBlock",
+                        "text": "Mon",
+                        "size": "Small",
+                        "horizontalAlignment": "Center",
+                        "weight": "Bolder"
+                      },
+                      {
+                        "type": "TextBlock",
+                        "text": "8h",
+                        "horizontalAlignment": "Center",
+                        "spacing": "None",
+                        "color": "Good"
+                      }
+                    ]
+                  },
+                  {
+                    "type": "Column",
+                    "width": "1",
+                    "items": [
+                      {
+                        "type": "TextBlock",
+                        "text": "Tue",
+                        "size": "Small",
+                        "horizontalAlignment": "Center",
+                        "weight": "Bolder"
+                      },
+                      {
+                        "type": "TextBlock",
+                        "text": "7.5h",
+                        "horizontalAlignment": "Center",
+                        "spacing": "None",
+                        "color": "Good"
+                      }
+                    ]
+                  },
+                  {
+                    "type": "Column",
+                    "width": "1",
+                    "items": [
+                      {
+                        "type": "TextBlock",
+                        "text": "Wed",
+                        "size": "Small",
+                        "horizontalAlignment": "Center",
+                        "weight": "Bolder"
+                      },
+                      {
+                        "type": "TextBlock",
+                        "text": "9h",
+                        "horizontalAlignment": "Center",
+                        "spacing": "None",
+                        "color": "Accent"
+                      }
+                    ]
+                  },
+                  {
+                    "type": "Column",
+                    "width": "1",
+                    "items": [
+                      {
+                        "type": "TextBlock",
+                        "text": "Thu",
+                        "size": "Small",
+                        "horizontalAlignment": "Center",
+                        "weight": "Bolder"
+                      },
+                      {
+                        "type": "TextBlock",
+                        "text": "8h",
+                        "horizontalAlignment": "Center",
+                        "spacing": "None",
+                        "color": "Good"
+                      }
+                    ]
+                  },
+                  {
+                    "type": "Column",
+                    "width": "1",
+                    "items": [
+                      {
+                        "type": "TextBlock",
+                        "text": "Fri",
+                        "size": "Small",
+                        "horizontalAlignment": "Center",
+                        "weight": "Bolder"
+                      },
+                      {
+                        "type": "TextBlock",
+                        "text": "6h",
+                        "horizontalAlignment": "Center",
+                        "spacing": "None",
+                        "color": "Warning"
+                      }
+                    ]
+                  },
+                  {
+                    "type": "Column",
+                    "width": "1",
+                    "items": [
+                      {
+                        "type": "TextBlock",
+                        "text": "Total",
+                        "size": "Small",
+                        "horizontalAlignment": "Center",
+                        "weight": "Bolder"
+                      },
+                      {
+                        "type": "TextBlock",
+                        "text": "38.5h",
+                        "horizontalAlignment": "Center",
+                        "spacing": "None",
+                        "weight": "Bolder",
+                        "color": "Accent",
+                        "size": "Medium"
+                      }
+                    ]
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "type": "ActionSet",
+            "spacing": "Medium",
+            "actions": [
+              {
+                "type": "Action.ToggleVisibility",
+                "title": "\u23f1\ufe0f Log Hours",
+                "style": "positive",
+                "targetElements": [
+                  {
+                    "elementId": "tsMenu",
+                    "isVisible": false
+                  },
+                  {
+                    "elementId": "tsLog",
+                    "isVisible": true
+                  }
+                ]
+              },
+              {
+                "type": "Action.ToggleVisibility",
+                "title": "\ud83d\udcca Weekly Breakdown",
+                "targetElements": [
+                  {
+                    "elementId": "tsMenu",
+                    "isVisible": false
+                  },
+                  {
+                    "elementId": "tsBreakdown",
+                    "isVisible": true
+                  }
+                ]
+              },
+              {
+                "type": "Action.Submit",
+                "title": "\ud83d\udce4 Submit Week for Approval",
+                "data": {
+                  "action": "submit_timesheet",
+                  "week": "2026-W15",
+                  "demo_mode": true
+                }
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "type": "Container",
+        "id": "tsLog",
+        "isVisible": false,
+        "items": [
+          {
+            "type": "TextBlock",
+            "text": "\u23f1\ufe0f Log Time Entry",
+            "size": "Large",
+            "weight": "Bolder",
+            "color": "Accent"
+          },
+          {
+            "type": "Input.Date",
+            "id": "ts_date",
+            "label": "Date",
+            "isRequired": true
+          },
+          {
+            "type": "Input.ChoiceSet",
+            "id": "ts_project",
+            "label": "Project / Client",
+            "isRequired": true,
+            "choices": [
+              {
+                "title": "MAP FAS Migration",
+                "value": "map_fas"
+              },
+              {
+                "title": "Telkom University AI Ops",
+                "value": "telkom_aiops"
+              },
+              {
+                "title": "Bank Indonesia Sentrix",
+                "value": "bi_sentrix"
+              },
+              {
+                "title": "ANTAM AI Chatbot",
+                "value": "antam_chatbot"
+              },
+              {
+                "title": "Greentic Platform (Freelance)",
+                "value": "greentic"
+              },
+              {
+                "title": "Internal \u2014 Admin / Meetings",
+                "value": "internal_admin"
+              },
+              {
+                "title": "Internal \u2014 Training / Learning",
+                "value": "internal_training"
+              },
+              {
+                "title": "Internal \u2014 Hiring / Interviews",
+                "value": "internal_hiring"
+              }
+            ]
+          },
+          {
+            "type": "Input.ChoiceSet",
+            "id": "ts_task_type",
+            "label": "Task Type",
+            "value": "development",
+            "choices": [
+              {
+                "title": "\ud83d\udcbb Development / Coding",
+                "value": "development"
+              },
+              {
+                "title": "\ud83d\udcd0 Architecture / Design",
+                "value": "architecture"
+              },
+              {
+                "title": "\ud83e\uddea Testing / QA",
+                "value": "testing"
+              },
+              {
+                "title": "\ud83d\udcdd Documentation",
+                "value": "documentation"
+              },
+              {
+                "title": "\ud83e\udd1d Meeting / Collaboration",
+                "value": "meeting"
+              },
+              {
+                "title": "\ud83d\udcca Planning / Estimation",
+                "value": "planning"
+              },
+              {
+                "title": "\ud83d\udd0d Code Review",
+                "value": "code_review"
+              },
+              {
+                "title": "\ud83d\ude80 Deployment / DevOps",
+                "value": "deployment"
+              },
+              {
+                "title": "\ud83d\udc1b Bug Fixing",
+                "value": "bugfix"
+              },
+              {
+                "title": "\ud83d\udcda Research / Learning",
+                "value": "research"
+              }
+            ]
+          },
+          {
+            "type": "ColumnSet",
+            "columns": [
+              {
+                "type": "Column",
+                "width": "1",
+                "items": [
+                  {
+                    "type": "Input.Time",
+                    "id": "ts_start",
+                    "label": "Start Time",
+                    "value": "09:00"
+                  }
+                ]
+              },
+              {
+                "type": "Column",
+                "width": "1",
+                "items": [
+                  {
+                    "type": "Input.Time",
+                    "id": "ts_end",
+                    "label": "End Time",
+                    "value": "17:00"
+                  }
+                ]
+              },
+              {
+                "type": "Column",
+                "width": "1",
+                "items": [
+                  {
+                    "type": "Input.Number",
+                    "id": "ts_break",
+                    "label": "Break (min)",
+                    "value": 60,
+                    "min": 0,
+                    "max": 120
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "type": "Input.Text",
+            "id": "ts_description",
+            "label": "What did you work on?",
+            "placeholder": "Brief description of tasks completed...",
+            "isMultiline": true
+          },
+          {
+            "type": "Input.Toggle",
+            "id": "ts_billable",
+            "title": "This time is billable to the client",
+            "value": "true"
+          },
+          {
+            "type": "ActionSet",
+            "spacing": "Medium",
+            "actions": [
+              {
+                "type": "Action.Submit",
+                "title": "\ud83d\udcbe Save Entry",
+                "style": "positive",
+                "data": {
+                  "action": "log_time",
+                  "demo_mode": true
+                }
+              },
+              {
+                "type": "Action.ToggleVisibility",
+                "title": "\u2190 Back",
+                "targetElements": [
+                  {
+                    "elementId": "tsLog",
+                    "isVisible": false
+                  },
+                  {
+                    "elementId": "tsMenu",
+                    "isVisible": true
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "type": "Container",
+        "id": "tsBreakdown",
+        "isVisible": false,
+        "items": [
+          {
+            "type": "TextBlock",
+            "text": "\ud83d\udcca Weekly Breakdown \u2014 Apr 7\u201312",
+            "size": "Large",
+            "weight": "Bolder",
+            "color": "Accent"
+          },
+          {
+            "type": "TextBlock",
+            "text": "By Project",
+            "weight": "Bolder",
+            "spacing": "Medium"
+          },
+          {
+            "type": "FactSet",
+            "facts": [
+              {
+                "title": "MAP FAS Migration",
+                "value": "16h (41.5%) \u2014 Billable"
+              },
+              {
+                "title": "Greentic Platform",
+                "value": "10.5h (27.3%) \u2014 Billable"
+              },
+              {
+                "title": "ANTAM AI Chatbot",
+                "value": "6h (15.6%) \u2014 Billable"
+              },
+              {
+                "title": "Internal \u2014 Meetings",
+                "value": "4h (10.4%) \u2014 Non-billable"
+              },
+              {
+                "title": "Internal \u2014 Interviews",
+                "value": "2h (5.2%) \u2014 Non-billable"
+              }
+            ]
+          },
+          {
+            "type": "TextBlock",
+            "text": "By Task Type",
+            "weight": "Bolder",
+            "spacing": "Medium"
+          },
+          {
+            "type": "FactSet",
+            "facts": [
+              {
+                "title": "\ud83d\udcbb Development",
+                "value": "18h"
+              },
+              {
+                "title": "\ud83d\udcd0 Architecture",
+                "value": "6h"
+              },
+              {
+                "title": "\ud83e\udd1d Meetings",
+                "value": "6h"
+              },
+              {
+                "title": "\ud83d\udcdd Documentation",
+                "value": "4.5h"
+              },
+              {
+                "title": "\ud83d\udd0d Code Review",
+                "value": "2h"
+              },
+              {
+                "title": "\ud83d\ude80 Deployment",
+                "value": "2h"
+              }
+            ]
+          },
+          {
+            "type": "Container",
+            "style": "emphasis",
+            "spacing": "Medium",
+            "items": [
+              {
+                "type": "ColumnSet",
+                "columns": [
+                  {
+                    "type": "Column",
+                    "width": "1",
+                    "items": [
+                      {
+                        "type": "TextBlock",
+                        "text": "Billable",
+                        "size": "Small",
+                        "isSubtle": true,
+                        "horizontalAlignment": "Center"
+                      },
+                      {
+                        "type": "TextBlock",
+                        "text": "32.5h",
+                        "weight": "Bolder",
+                        "color": "Good",
+                        "horizontalAlignment": "Center",
+                        "spacing": "None",
+                        "size": "Large"
+                      }
+                    ]
+                  },
+                  {
+                    "type": "Column",
+                    "width": "1",
+                    "items": [
+                      {
+                        "type": "TextBlock",
+                        "text": "Non-Billable",
+                        "size": "Small",
+                        "isSubtle": true,
+                        "horizontalAlignment": "Center"
+                      },
+                      {
+                        "type": "TextBlock",
+                        "text": "6h",
+                        "weight": "Bolder",
+                        "color": "Warning",
+                        "horizontalAlignment": "Center",
+                        "spacing": "None",
+                        "size": "Large"
+                      }
+                    ]
+                  },
+                  {
+                    "type": "Column",
+                    "width": "1",
+                    "items": [
+                      {
+                        "type": "TextBlock",
+                        "text": "Utilization",
+                        "size": "Small",
+                        "isSubtle": true,
+                        "horizontalAlignment": "Center"
+                      },
+                      {
+                        "type": "TextBlock",
+                        "text": "84.4%",
+                        "weight": "Bolder",
+                        "color": "Accent",
+                        "horizontalAlignment": "Center",
+                        "spacing": "None",
+                        "size": "Large"
+                      }
+                    ]
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "type": "ActionSet",
+            "spacing": "Medium",
+            "actions": [
+              {
+                "type": "Action.Submit",
+                "title": "\ud83d\udce5 Export CSV",
+                "data": {
+                  "action": "export_timesheet",
+                  "format": "csv",
+                  "demo_mode": true
+                }
+              },
+              {
+                "type": "Action.ToggleVisibility",
+                "title": "\u2190 Back",
+                "targetElements": [
+                  {
+                    "elementId": "tsBreakdown",
+                    "isVisible": false
+                  },
+                  {
+                    "elementId": "tsMenu",
+                    "isVisible": true
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  "notes": "Multi-section card using Action.ToggleVisibility for in-card navigation. All non-main sections hidden by default."
+}

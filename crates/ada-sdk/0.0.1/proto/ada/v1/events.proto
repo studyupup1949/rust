@@ -1,0 +1,153 @@
+syntax = "proto3";
+
+package ada.v1;
+
+import "google/protobuf/timestamp.proto";
+
+option go_package = "github.com/eleven-am/ada-sdk/go/gen/ada/v1;adav1";
+
+enum PublicEventType {
+  PUBLIC_EVENT_TYPE_UNSPECIFIED = 0;
+  PUBLIC_EVENT_TYPE_MEMORY_INGEST_STARTED = 1;
+  PUBLIC_EVENT_TYPE_MEMORY_INGEST_FINISHED = 2;
+  PUBLIC_EVENT_TYPE_MEMORY_RECALL_STARTED = 3;
+  PUBLIC_EVENT_TYPE_MEMORY_RECALL_FINISHED = 4;
+}
+
+enum OperationStatus {
+  OPERATION_STATUS_UNSPECIFIED = 0;
+  OPERATION_STATUS_SUCCEEDED = 1;
+  OPERATION_STATUS_FAILED = 2;
+}
+
+enum RecallRequestKind {
+  RECALL_REQUEST_KIND_UNSPECIFIED = 0;
+  RECALL_REQUEST_KIND_RECALL = 1;
+  RECALL_REQUEST_KIND_ENTITY_DOSSIER = 2;
+  RECALL_REQUEST_KIND_TIMELINE = 3;
+  RECALL_REQUEST_KIND_CONTRADICTIONS = 4;
+  RECALL_REQUEST_KIND_COMMUNITY_DOSSIER = 5;
+  RECALL_REQUEST_KIND_CHANGE_RECALL = 6;
+  RECALL_REQUEST_KIND_RELATIONSHIP_DOSSIER = 7;
+}
+
+message EventCorrelation {
+  string principal_id = 1;
+  string trace_id = 2;
+  string invocation_id = 3;
+  string run_id = 4;
+  string channel = 5;
+  string target_kind = 6;
+  string target_name = 7;
+  string session_id = 8;
+}
+
+message PublicEventMetadata {
+  string source = 1;
+  EventCorrelation correlation = 2;
+}
+
+message IngestRecordCounts {
+  int64 entities = 1;
+  int64 relations = 2;
+  int64 atoms = 3;
+  int64 events = 4;
+  int64 commitments = 5;
+  int64 decisions = 6;
+  int64 action_items = 7;
+  int64 meetings = 8;
+  int64 observations = 9;
+  int64 intentions = 10;
+  int64 priorities = 11;
+  int64 contradictions = 12;
+  int64 knowledge_events = 13;
+}
+
+message MemoryIngestStarted {
+  string document_id = 1;
+  string job_id = 2;
+  string source_type = 3;
+  string content_type = 4;
+  string source_id = 5;
+  IngestRecordCounts counts = 6;
+}
+
+message MemoryIngestFinished {
+  string document_id = 1;
+  string job_id = 2;
+  OperationStatus status = 3;
+  int64 duration_ms = 4;
+  repeated string changed_families = 5;
+  IngestRecordCounts counts = 6;
+  string error_class = 7;
+  string error_message = 8;
+}
+
+message MemoryRecallStarted {
+  RecallRequestKind request_kind = 1;
+}
+
+message MemoryRecallFinished {
+  RecallRequestKind request_kind = 1;
+  OperationStatus status = 2;
+  int64 duration_ms = 3;
+  int64 results_count = 4;
+  int64 actors_count = 5;
+  int64 tensions_count = 6;
+  int64 communities_count = 7;
+  int64 summaries_count = 8;
+  int64 total_items = 9;
+  bool degraded = 10;
+  bool cache_hit = 11;
+  string error_class = 12;
+  string error_message = 13;
+}
+
+message PublicEvent {
+  string id = 1;
+  int32 spec_version = 2;
+  google.protobuf.Timestamp occurred_at = 4;
+  string principal_id = 5;
+  string summary = 6;
+  PublicEventMetadata metadata = 8;
+
+  oneof event {
+    MemoryIngestStarted memory_ingest_started = 20;
+    MemoryIngestFinished memory_ingest_finished = 21;
+    MemoryRecallStarted memory_recall_started = 22;
+    MemoryRecallFinished memory_recall_finished = 23;
+  }
+
+  reserved 3, 7;
+  reserved "type", "payload";
+}
+
+message PublicEventStreamEvent {
+  string cursor = 1;
+  PublicEvent event = 2;
+}
+
+enum StreamScopeMode {
+  STREAM_SCOPE_MODE_UNSPECIFIED = 0;
+  STREAM_SCOPE_MODE_PRINCIPAL = 1;
+  STREAM_SCOPE_MODE_VISIBLE = 2;
+}
+
+message StreamPublicEventsRequest {
+  repeated PublicEventType event_types = 1;
+  string after_event_id = 2;
+  int32 replay_limit = 3;
+  string principal_id = 100;
+  StreamScopeMode scope_mode = 101;
+}
+
+message GetPublicEventCatalogRequest {}
+
+message GetPublicEventCatalogResponse {
+  repeated PublicEventType event_types = 1;
+}
+
+service PublicEventService {
+  rpc StreamPublicEvents(StreamPublicEventsRequest) returns (stream PublicEventStreamEvent);
+  rpc GetPublicEventCatalog(GetPublicEventCatalogRequest) returns (GetPublicEventCatalogResponse);
+}

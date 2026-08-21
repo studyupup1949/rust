@@ -1,0 +1,31 @@
+[package]
+name = "adk-telemetry"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+authors.workspace = true
+description = "OpenTelemetry integration for Rust Agent Development Kit (ADK-Rust) agent observability"
+repository = "https://github.com/zavora-ai/adk-rust"
+documentation = "https://docs.rs/adk-telemetry"
+keywords = ["ai", "agent", "adk", "telemetry", "tracing"]
+categories = ["api-bindings", "development-tools::debugging"]
+readme = "README.md"
+
+[dependencies]
+thiserror = { workspace = true }
+tracing = { workspace = true }
+tracing-subscriber = { version = "0.3", features = ["env-filter", "fmt"] }
+opentelemetry = { version = "0.31", optional = true }
+opentelemetry_sdk = { version = "0.31", features = ["rt-tokio"], optional = true }
+opentelemetry-otlp = { version = "0.31", features = ["metrics", "grpc-tonic"], optional = true }
+tracing-opentelemetry = { version = "0.32", optional = true }
+
+[features]
+default = []
+otlp = ["dep:opentelemetry", "dep:opentelemetry_sdk", "dep:opentelemetry-otlp", "dep:tracing-opentelemetry"]
+metrics = ["otlp"]
+json = ["tracing-subscriber/json"]
+
+[dev-dependencies]
+tokio = { version = "1.0", features = ["rt", "macros", "time"] }

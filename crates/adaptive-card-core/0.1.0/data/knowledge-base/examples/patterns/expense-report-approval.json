@@ -1,0 +1,531 @@
+{
+  "id": "patterns/expense-report-approval",
+  "title": "Expense Report with Expand/Collapse Line Items",
+  "description": "Multi-section: status header, FactSet summary, expand/collapse chevron per line item, inline comments, financial totals (right-aligned), history toggle, ShowCard reject form. Data-bound.",
+  "category": "patterns",
+  "tags": [
+    "expense",
+    "approval",
+    "finance",
+    "expandable",
+    "table",
+    "chevron",
+    "workflow",
+    "showcard"
+  ],
+  "use_cases": [
+    "Expense report approval",
+    "Invoice review",
+    "Budget line items",
+    "Financial document review"
+  ],
+  "host_targets": [
+    "generic",
+    "teams",
+    "web_chat"
+  ],
+  "complexity": "advanced",
+  "card": {
+    "type": "AdaptiveCard",
+    "body": [
+      {
+        "type": "Container",
+        "style": "emphasis",
+        "items": [
+          {
+            "type": "ColumnSet",
+            "columns": [
+              {
+                "type": "Column",
+                "items": [
+                  {
+                    "type": "TextBlock",
+                    "size": "Large",
+                    "weight": "Bolder",
+                    "text": "${toUpper(approval)}",
+                    "isSubtle": true
+                  }
+                ],
+                "width": "stretch"
+              },
+              {
+                "type": "Column",
+                "width": "auto",
+                "items": [
+                  {
+                    "type": "TextBlock",
+                    "text": "${toUpper(status)}",
+                    "wrap": true,
+                    "color": "Attention",
+                    "size": "Large",
+                    "weight": "Bolder"
+                  }
+                ],
+                "verticalContentAlignment": "Center",
+                "spacing": "None"
+              }
+            ]
+          }
+        ],
+        "bleed": true
+      },
+      {
+        "type": "Container",
+        "items": [
+          {
+            "type": "ColumnSet",
+            "columns": [
+              {
+                "type": "Column",
+                "items": [
+                  {
+                    "type": "TextBlock",
+                    "size": "ExtraLarge",
+                    "text": "${expense_title}",
+                    "wrap": true
+                  }
+                ],
+                "width": "stretch"
+              },
+              {
+                "type": "Column",
+                "items": [
+                  {
+                    "type": "ActionSet",
+                    "actions": [
+                      {
+                        "type": "Action.OpenUrl",
+                        "title": "SEND TO MY INBOX",
+                        "url": "https://www.adenin.com/pocdef",
+                        "id": "send-to-inbox"
+                      }
+                    ]
+                  }
+                ],
+                "width": "auto"
+              }
+            ]
+          },
+          {
+            "type": "TextBlock",
+            "spacing": "Small",
+            "size": "Small",
+            "weight": "Bolder",
+            "color": "Accent",
+            "text": "${expense_id}"
+          },
+          {
+            "type": "FactSet",
+            "spacing": "Large",
+            "facts": [
+              {
+                "title": "Submitted by",
+                "value": "**${submitted.name}**, ${submitted.job_title}"
+              },
+              {
+                "title": "Duration",
+                "value": "${duration}"
+              },
+              {
+                "title": "Submitted on",
+                "value": "${submitted_on}"
+              },
+              {
+                "title": "Reimbursable amount",
+                "value": "$${amounts.total}"
+              },
+              {
+                "title": "Awaiting approval from",
+                "value": "**${assigned_to.name}**, ${assigned_to.job_title}"
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "type": "Container",
+        "spacing": "Large",
+        "style": "emphasis",
+        "items": [
+          {
+            "type": "ColumnSet",
+            "columns": [
+              {
+                "type": "Column",
+                "items": [
+                  {
+                    "type": "TextBlock",
+                    "weight": "Bolder",
+                    "text": "DATE"
+                  }
+                ],
+                "width": "auto"
+              },
+              {
+                "type": "Column",
+                "spacing": "Large",
+                "items": [
+                  {
+                    "type": "TextBlock",
+                    "weight": "Bolder",
+                    "text": "CATEGORY"
+                  }
+                ],
+                "width": "stretch"
+              },
+              {
+                "type": "Column",
+                "items": [
+                  {
+                    "type": "TextBlock",
+                    "weight": "Bolder",
+                    "text": "AMOUNT"
+                  }
+                ],
+                "width": "auto"
+              }
+            ]
+          }
+        ],
+        "bleed": true
+      },
+      {
+        "$data": "${details}",
+        "type": "Container",
+        "items": [
+          {
+            "type": "ColumnSet",
+            "columns": [
+              {
+                "type": "Column",
+                "items": [
+                  {
+                    "type": "TextBlock",
+                    "text": "${date}",
+                    "wrap": true
+                  }
+                ],
+                "width": "auto"
+              },
+              {
+                "type": "Column",
+                "spacing": "Medium",
+                "items": [
+                  {
+                    "type": "TextBlock",
+                    "text": "${title}",
+                    "wrap": true
+                  }
+                ],
+                "width": "stretch"
+              },
+              {
+                "type": "Column",
+                "items": [
+                  {
+                    "type": "TextBlock",
+                    "text": "$${amount}",
+                    "wrap": true
+                  }
+                ],
+                "width": "auto"
+              },
+              {
+                "type": "Column",
+                "spacing": "Small",
+                "selectAction": {
+                  "type": "Action.ToggleVisibility",
+                  "title": "expand",
+                  "targetElements": [
+                    "cardContent1",
+                    "chevronDown1",
+                    "chevronUp1"
+                  ]
+                },
+                "verticalContentAlignment": "Center",
+                "items": [
+                  {
+                    "type": "Image",
+                    "id": "chevronDown1",
+                    "url": "https://img.icons8.com/material/48/666666/expand-arrow--v1.png",
+                    "width": "20px",
+                    "altText": "Details collapsed"
+                  },
+                  {
+                    "type": "Image",
+                    "id": "chevronUp1",
+                    "url": "https://img.icons8.com/material/48/666666/collapse-arrow--v1.png",
+                    "width": "20px",
+                    "altText": "Details expanded",
+                    "isVisible": false
+                  }
+                ],
+                "width": "auto"
+              }
+            ]
+          },
+          {
+            "type": "Container",
+            "id": "cardContent1",
+            "isVisible": false,
+            "items": [
+              {
+                "type": "Container",
+                "items": [
+                  {
+                    "type": "Container",
+                    "items": [
+                      {
+                        "type": "TextBlock",
+                        "text": "${details}",
+                        "wrap": true,
+                        "isSubtle": true
+                      },
+                      {
+                        "type": "Input.Text",
+                        "id": "comment${$index}",
+                        "placeholder": "Add your comment here"
+                      }
+                    ]
+                  }
+                ]
+              },
+              {
+                "type": "Container",
+                "items": [
+                  {
+                    "type": "ColumnSet",
+                    "columns": [
+                      {
+                        "type": "Column",
+                        "items": [
+                          {
+                            "type": "ActionSet",
+                            "actions": [
+                              {
+                                "type": "Action.Submit",
+                                "title": "Send",
+                                "data": {
+                                  "id": "_qkQW8dJlUeLVi7ZMEzYVw",
+                                  "action": "comment",
+                                  "lineItem": 1
+                                }
+                              }
+                            ]
+                          }
+                        ],
+                        "width": "auto"
+                      }
+                    ]
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "type": "ColumnSet",
+        "spacing": "Large",
+        "separator": true,
+        "columns": [
+          {
+            "type": "Column",
+            "items": [
+              {
+                "type": "TextBlock",
+                "horizontalAlignment": "Right",
+                "text": "Total Expense Amount \t",
+                "wrap": true
+              },
+              {
+                "type": "TextBlock",
+                "horizontalAlignment": "Right",
+                "text": "Non-reimbursable Amount",
+                "wrap": true
+              },
+              {
+                "type": "TextBlock",
+                "horizontalAlignment": "Right",
+                "text": "Advance Amount",
+                "wrap": true
+              }
+            ],
+            "width": "stretch"
+          },
+          {
+            "type": "Column",
+            "items": [
+              {
+                "type": "TextBlock",
+                "text": "$${amounts.total}"
+              },
+              {
+                "type": "TextBlock",
+                "text": "($${amounts.non_reimbursable})",
+                "color": "Attention"
+              },
+              {
+                "type": "TextBlock",
+                "text": "($${amounts.advance})",
+                "color": "Attention"
+              }
+            ],
+            "width": "auto",
+            "horizontalAlignment": "Center"
+          },
+          {
+            "type": "Column",
+            "width": "auto"
+          }
+        ]
+      },
+      {
+        "type": "Container",
+        "style": "emphasis",
+        "items": [
+          {
+            "type": "ColumnSet",
+            "columns": [
+              {
+                "type": "Column",
+                "items": [
+                  {
+                    "type": "TextBlock",
+                    "horizontalAlignment": "Right",
+                    "text": "Amount to be Reimbursed",
+                    "wrap": true
+                  }
+                ],
+                "width": "stretch"
+              },
+              {
+                "type": "Column",
+                "items": [
+                  {
+                    "type": "TextBlock",
+                    "weight": "Bolder",
+                    "text": "$${amounts.reimbursable}"
+                  }
+                ],
+                "width": "auto"
+              },
+              {
+                "type": "Column",
+                "width": "auto"
+              }
+            ]
+          }
+        ],
+        "bleed": true
+      },
+      {
+        "type": "ColumnSet",
+        "columns": [
+          {
+            "type": "Column",
+            "selectAction": {
+              "type": "Action.ToggleVisibility",
+              "targetElements": [
+                "cardContent4",
+                "showHistory",
+                "hideHistory"
+              ]
+            },
+            "verticalContentAlignment": "Center",
+            "items": [
+              {
+                "type": "TextBlock",
+                "id": "showHistory",
+                "horizontalAlignment": "Right",
+                "color": "Accent",
+                "text": "Show history",
+                "wrap": true
+              },
+              {
+                "type": "TextBlock",
+                "id": "hideHistory",
+                "horizontalAlignment": "Right",
+                "color": "Accent",
+                "text": "Hide history",
+                "wrap": true,
+                "isVisible": false
+              }
+            ],
+            "width": 1
+          }
+        ]
+      },
+      {
+        "type": "Container",
+        "id": "cardContent4",
+        "isVisible": false,
+        "items": [
+          {
+            "type": "Container",
+            "items": [
+              {
+                "type": "TextBlock",
+                "text": "* (${date}) ${item}",
+                "isSubtle": true,
+                "wrap": true,
+                "$data": "${history}"
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "type": "Container",
+        "items": [
+          {
+            "type": "ActionSet",
+            "actions": [
+              {
+                "type": "Action.Submit",
+                "title": "Approve",
+                "style": "positive",
+                "data": {
+                  "id": "_qkQW8dJlUeLVi7ZMEzYVw",
+                  "action": "approve"
+                }
+              },
+              {
+                "type": "Action.ShowCard",
+                "title": "Reject",
+                "style": "destructive",
+                "card": {
+                  "type": "AdaptiveCard",
+                  "body": [
+                    {
+                      "type": "Input.Text",
+                      "id": "RejectCommentID",
+                      "placeholder": "Please specify an appropriate reason for rejection.",
+                      "isMultiline": true
+                    }
+                  ],
+                  "actions": [
+                    {
+                      "type": "Action.Submit",
+                      "title": "Send",
+                      "data": {
+                        "id": "_qkQW8dJlUeLVi7ZMEzYVw",
+                        "action": "reject"
+                      }
+                    }
+                  ],
+                  "$schema": "http://adaptivecards.io/schemas/adaptive-card.json"
+                }
+              }
+            ]
+          }
+        ]
+      }
+    ],
+    "$schema": "http://adaptivecards.io/schemas/adaptive-card.json",
+    "version": "1.2",
+    "fallbackText": "This card requires Adaptive Cards v1.2 support to be rendered properly.",
+    "speak": "${expense_title} is waiting for you approval. The total amount is $${amounts.total}."
+  },
+  "notes": ""
+}

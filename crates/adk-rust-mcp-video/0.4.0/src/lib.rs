@@ -1,0 +1,12 @@
+//! ADK Rust MCP Video Server Library
+//!
+//! This library provides video generation capabilities using Vertex AI Veo API.
+
+#![cfg_attr(docsrs, feature(doc_cfg))]
+
+pub mod handler;
+pub mod resources;
+pub mod server;
+
+pub use handler::{VideoT2vParams, VideoI2vParams, VideoExtendParams, VideoGenerateResult, VideoHandler};
+pub use server::VideoServer;

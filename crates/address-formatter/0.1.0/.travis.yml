@@ -1,0 +1,18 @@
+language: rust
+cache: cargo
+rust:
+  - stable
+before_script: rustup component add rustfmt clippy
+script:
+  - cargo test --all
+  - cargo fmt --all -- --check
+
+
+# auto deploy on crates.io on PR merge (if new version number)
+deploy:
+  provider: cargo
+  on:
+    repo: CanalTP/address-formatter-rs
+    branch: master
+  token:
+    secure: lHNNUtBZt+Jo6aAoUe5EW2vQAP/IabgZ/0vkjjn6e0wO7XY/K2kcAvhbPX6vu+2JmpRq7s4yMBzebmmRlb6uzK6JuZ2A2mJfeBy3gHRpbWCg5Sbhb3YuR0mWGPD9g/1yIvztJBci8cmiCF4+XyGNCstsnDtLkcTvv2EGIZCqL13NsefHKMGAMqpK91al+e5z7Ri9Ivpg6sI+KeDlyzkUX7bk0IV43N9Y3o/pVdnKwPf5DuO6FI5edf6RBw+sQi9u2rajKc7xu+h/xDsacBxwsoY35KCSD3zExE3KsOhaSoWXTOkTExcbOXZHBIaEUPTV0EhOCQ87UxK0QomtnD9o0LileSWskQDm9tue0VYIBPEUBnSU9dpNStYrzwmTha5OD2TcWn3QZ8RTohVQlBCrBWpIztRc5DAyZU8TqKJDF3DpIi3RhKLtZQ5e6VIME6bCApl8QUiKzOEzFNQNGVLBxDJGn6531/1sZ35VnGooYwawzcd7wgyRQV3iKHKpLpJqLANtSaLItxItxlBXZJCmmfuUcFaD/A56OybPVNt/Orma/ez0B01BUCSaDzZwcYJAL+jMKEdlMo2JzTwYpkWHTaX1MiwpLbpLvHIOuZpLEIW1Ku5eud+D8Oq9JwpOqyRTRIfjEB1flyCBxVhG+W4Tztfkuf5OBaTE9ha19kZmujU=

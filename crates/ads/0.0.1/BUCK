@@ -1,0 +1,15 @@
+load("@buckal//:wrapper.bzl", "rust_library")
+
+rust_library(
+    name = "ads",
+    srcs = glob(["**/*.rs"]),
+    crate = "ads",
+    crate_root = "src/lib.rs",
+    edition = "2015",
+
+    visibility = ["PUBLIC"],
+    deps = [
+        "//third-party/rust/crates/byteorder/1.5.0:byteorder",
+        "//third-party/rust/crates/itertools/0.7.11:itertools",
+    ],
+)

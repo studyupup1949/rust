@@ -1,0 +1,16 @@
+load("@buckal//:wrapper.bzl", "rust_library")
+
+rust_library(
+    name = "additive_fft_reed_solomon",
+    srcs = glob(["**/*.rs"]),
+    crate = "additive_fft_reed_solomon",
+    crate_root = "src/lib.rs",
+    edition = "2024",
+    features = ["default"],
+
+    visibility = ["PUBLIC"],
+    deps = [
+        "//third-party/rust/crates/additive-fft-reed-solomon-gf2p8/0.1.1:additive_fft_reed_solomon_gf2p8",
+        "//third-party/rust/crates/cfg-if/1.0.4:cfg_if",
+    ],
+)

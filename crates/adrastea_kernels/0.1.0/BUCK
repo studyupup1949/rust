@@ -1,0 +1,11 @@
+load("@buckal//:wrapper.bzl", "rust_library")
+
+rust_library(
+    name = "adrastea_kernels",
+    srcs = glob(["**/*.rs"]),
+    crate = "adrastea_kernels",
+    crate_root = "src/lib.rs",
+    edition = "2021",
+
+    visibility = ["PUBLIC"],
+)

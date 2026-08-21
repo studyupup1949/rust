@@ -1,0 +1,64 @@
+{
+  "id": "patterns/kpi-counter",
+  "title": "KPI Counter with Dynamic Color",
+  "description": "Big centered number, conditional delta arrow (\u25b2/\u25bc), dynamic color expression in color property (good/attention based on comparison), pure data-bound template \u2014 zero hardcoded values.",
+  "category": "patterns",
+  "tags": [
+    "KPI",
+    "metric",
+    "counter",
+    "dashboard",
+    "widget",
+    "conditional",
+    "data-binding"
+  ],
+  "use_cases": [
+    "Single KPI display",
+    "Metric comparison widget",
+    "Dashboard tile",
+    "Performance counter"
+  ],
+  "host_targets": [
+    "generic",
+    "teams",
+    "web_chat"
+  ],
+  "complexity": "basic",
+  "card": {
+    "type": "AdaptiveCard",
+    "body": [
+      {
+        "type": "Container",
+        "bleed": true,
+        "items": [
+          {
+            "type": "TextBlock",
+            "text": "${string(current)}",
+            "wrap": true,
+            "size": "ExtraLarge",
+            "horizontalAlignment": "Center"
+          },
+          {
+            "type": "TextBlock",
+            "text": "${if(current >= compare, '\u25b2', '\u25bc')} ${mul(div(current, compare), 100)}% (${string(sub(current, compare))})",
+            "wrap": true,
+            "horizontalAlignment": "Center",
+            "color": "${if(current >= compare, 'good', 'attention')}",
+            "spacing": "Small"
+          },
+          {
+            "type": "TextBlock",
+            "text": "${compareLabel} (${string(compare)})",
+            "wrap": true,
+            "horizontalAlignment": "Center",
+            "isSubtle": true,
+            "spacing": "None"
+          }
+        ]
+      }
+    ],
+    "$schema": "http://adaptivecards.io/schemas/adaptive-card.json",
+    "version": "1.2"
+  },
+  "notes": ""
+}

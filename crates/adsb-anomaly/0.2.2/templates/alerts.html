@@ -1,0 +1,70 @@
+{% extends "base.html" %}
+
+{% block title %}Alert Stream - ADS-B Anomaly Detection{% endblock %}
+
+{% block content %}
+<h1>Real-time Alert Stream</h1>
+
+<div class="alert alert-info">
+    Live alerts are automatically appended below via WebSocket connection.
+</div>
+
+<table>
+    <thead>
+        <tr>
+            <th>Time</th>
+            <th>HEX</th>
+            <th>Type</th>
+            <th>Subtype</th>
+            <th>Confidence</th>
+            <th>Details</th>
+            <th>Actions</th>
+        </tr>
+    </thead>
+    <tbody id="alerts-table" hx-ext="ws" hx-ws="connect:/ws/alerts">
+        {% for alert in alerts %}
+        <tr>
+            <td>{{ alert.time_ago }}</td>
+            <td>
+                <a href="/aircraft/{{ alert.hex }}">{{ alert.hex }}</a>
+            </td>
+            <td>
+                {% if alert.anomaly_type == "Temporal" %}
+                    <span class="badge badge-warning">{{ alert.anomaly_type }}</span>
+                {% else if alert.anomaly_type == "Signal" %}
+                    <span class="badge badge-danger">{{ alert.anomaly_type }}</span>
+                {% else if alert.anomaly_type == "Identity" %}
+                    <span class="badge badge-danger">{{ alert.anomaly_type }}</span>
+                {% else if alert.anomaly_type == "Behavioral" %}
+                    <span class="badge badge-danger">{{ alert.anomaly_type }}</span>
+                {% else %}
+                    <span class="badge">{{ alert.anomaly_type }}</span>
+                {% endif %}
+            </td>
+            <td>{{ alert.subtype }}</td>
+            <td>{{ (alert.confidence * 100.0) }}%</td>
+            <td>{{ alert.details_summary }}</td>
+            <td>
+                <a href="/aircraft/{{ alert.hex }}" class="btn">View Aircraft</a>
+            </td>
+        </tr>
+        {% else %}
+        <tr id="no-alerts">
+            <td colspan="7" style="text-align: center; color: #6c757d; padding: 40px;">
+                No alerts yet. New alerts will appear here in real-time.
+            </td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+
+<script>
+    // Remove "no alerts" row when first alert arrives
+    document.body.addEventListener('htmx:wsAfterMessage', function(event) {
+        const noAlertsRow = document.getElementById('no-alerts');
+        if (noAlertsRow) {
+            noAlertsRow.remove();
+        }
+    });
+</script>
+{% endblock %}

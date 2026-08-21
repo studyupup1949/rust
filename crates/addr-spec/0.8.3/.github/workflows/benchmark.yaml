@@ -1,0 +1,32 @@
+name: Benchmarking
+
+on:
+  workflow_dispatch:
+
+jobs:
+  benchmark:
+    name: Run benchmark
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        feature-sets:
+          - []
+          - [white-spaces]
+          - [literals]
+          - [literals, comments]
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@b80ff79f1755d06ba70441c368a6fe801f5f3a62
+      - name: Set up Cargo cache
+        uses: ./.github/actions/cargo-cache
+        with:
+          key: ${{ hashFiles('**/Cargo.lock') }}
+      - name: Install Rust (nightly)
+        uses: actions-rs/toolchain@88dc2356392166efad76775c878094f4e83ff746
+        with:
+          profile: minimal
+          toolchain: nightly
+          default: true
+          override: true
+      - name: Run benchmark
+        run: cargo bench --locked --no-default-features ${{ toJSON(matrix.feature-sets) != '[]' && format('--features {0}', join(matrix.feature-sets, ',')) || '' }}

@@ -1,0 +1,11 @@
+[package]
+name = "add_custom_device_to_pcsclite"
+version = "0.2.0"
+edition = "2024"
+description = "This tool adds your unofficial VID:PID entry to pcsclite's Info.plist file"
+license = "MIT"
+repository = "https://codeberg.org/foresle/add_custom_device_to_pcsclite"
+
+[dependencies]
+plist = "1.7.4"
+clap = { version = "4.5.40", features = ["derive"] }

@@ -1,0 +1,13 @@
+---
+source: src/parser/diagnostics.rs
+expression: parsed.unwrap().collect_diagnostics(contents)
+---
+- range:
+    start:
+      line: 3
+      character: 4
+    end:
+      line: 3
+      character: 22
+  severity: 1
+  message: missing semicolon

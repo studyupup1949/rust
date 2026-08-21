@@ -1,0 +1,16 @@
+[package]
+name = "addressable_queue"
+version = "0.2.1"
+authors = ["Leo Schwarz <mail@leoschwarz.com>"]
+license = "Apache-2.0"
+repository = "https://github.com/leoschwarz/addressable_queue"
+description = "Implementation of queue types which provide also direct element access."
+
+[features]
+default = ["serde"]
+
+[dependencies]
+serde = {version = "1.0", optional = true}
+
+[dev-dependencies]
+serde_json = "1.0"

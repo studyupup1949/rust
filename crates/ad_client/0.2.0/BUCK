@@ -1,0 +1,15 @@
+load("@buckal//:wrapper.bzl", "rust_library")
+
+rust_library(
+    name = "ad_client",
+    srcs = glob(["**/*.rs"]),
+    crate = "ad_client",
+    crate_root = "src/lib.rs",
+    edition = "2021",
+
+    visibility = ["PUBLIC"],
+    deps = [
+        "//third-party/rust/crates/ad_event/0.2.0:ad_event",
+        "//third-party/rust/crates/ninep/0.2.2:ninep",
+    ],
+)

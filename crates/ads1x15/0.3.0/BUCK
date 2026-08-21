@@ -1,0 +1,21 @@
+load("@buckal//:wrapper.bzl", "rust_library")
+
+rust_library(
+    name = "ads1x15",
+    srcs = glob(["**/*.rs"]),
+    crate = "ads1x15",
+    crate_root = "src/lib.rs",
+    edition = "2015",
+
+    visibility = ["PUBLIC"],
+    deps = [
+        "//third-party/rust/crates/bitfield-register-macro/0.2.1:bitfield_register_macro",
+        "//third-party/rust/crates/bitfield-register/0.2.1:bitfield_register",
+        "//third-party/rust/crates/byteorder/1.5.0:byteorder",
+        "//third-party/rust/crates/failure/0.1.8:failure",
+        "//third-party/rust/crates/futures-await/0.1.1:futures_await",
+        "//third-party/rust/crates/i2cdev/0.4.4:i2cdev",
+        "//third-party/rust/crates/qutex/0.2.6:qutex",
+        "//third-party/rust/crates/tokio-timer/0.2.13:tokio_timer",
+    ],
+)

@@ -1,0 +1,154 @@
+.ONESHELL:
+SHELL := /bin/bash
+all: help
+
+################################################################################
+# PROJECT CONFIG
+PROJECT_NAME := adot
+
+################################################################################
+# APP
+build: ## build the project
+	cargo build
+
+build-release: ## build the project in release mode
+	cargo build --release
+
+build-macos: ## cross-compile for macOS (arm64)
+	cargo build --release --target aarch64-apple-darwin
+
+build-linux: ## cross-compile for Linux (x86_64)
+	cargo zigbuild --release --target x86_64-unknown-linux-gnu
+
+run: ## run the project
+	cargo run
+
+clean: ## clean build artifacts
+	cargo clean
+
+################################################################################
+# TEST
+test: ## run all tests
+	cargo test -- --test-threads=1
+
+LLVM_TOOLCHAIN_BIN := $(shell rustup run stable rustc --print sysroot)/lib/rustlib/$(shell rustup run stable rustc -vV | grep host | cut -d' ' -f2)/bin
+test-coverage: ## run tests with coverage report
+	LLVM_COV=$(LLVM_TOOLCHAIN_BIN)/llvm-cov LLVM_PROFDATA=$(LLVM_TOOLCHAIN_BIN)/llvm-profdata cargo llvm-cov --html -- --test-threads=1
+	LLVM_COV=$(LLVM_TOOLCHAIN_BIN)/llvm-cov LLVM_PROFDATA=$(LLVM_TOOLCHAIN_BIN)/llvm-profdata cargo llvm-cov report
+	@echo ""
+	@echo "=== Uncovered lines ==="
+	LLVM_COV=$(LLVM_TOOLCHAIN_BIN)/llvm-cov LLVM_PROFDATA=$(LLVM_TOOLCHAIN_BIN)/llvm-profdata cargo llvm-cov report --show-missing-lines
+	@echo ""
+	@echo "=== Uncovered regions ==="
+	@python3 scripts/coverage_regions.py
+
+test-coverage-view: ## open coverage report in browser
+	open -a "Google Chrome" target/llvm-cov/html/index.html
+
+test-verbose: ## run all tests with verbose output
+	cargo test -- --nocapture
+
+################################################################################
+# LINT
+lint: ## run clippy linter
+	cargo clippy -- -D warnings
+
+lint-fix: ## run clippy with auto-fix
+	cargo clippy --fix --allow-dirty -- -D warnings
+
+format: ## format code
+	cargo fmt
+
+format-check: ## check code formatting
+	cargo fmt -- --check
+
+check: format-check lint test ## run all checks (format, lint, test)
+
+################################################################################
+# INSTALL
+install: ## install the binary locally
+	cargo install --locked --path .
+
+################################################################################
+# RELEASE
+release: release-github release-cargo release-brew release-aur ## full release: github + cargo + brew + aur
+
+release-github: build-macos build-linux ## create GitHub release with platform binaries
+	@VERSION=$$(grep -m1 '^version = ' Cargo.toml | sed 's/version = "\(.*\)"/\1/'); \
+	mkdir -p releases; \
+	cp target/aarch64-apple-darwin/release/$(PROJECT_NAME) "releases/macos-$(PROJECT_NAME)-v$${VERSION}-arm64"; \
+	cp target/x86_64-unknown-linux-gnu/release/$(PROJECT_NAME) "releases/linux-$(PROJECT_NAME)-v$${VERSION}-x86_64"; \
+	echo "Binaries copied to releases/"; \
+	if gh release view "v$$VERSION" >/dev/null 2>&1; then \
+		echo "Release v$$VERSION already exists"; \
+		read -p "Delete and recreate? [y/N] " -n 1 -r; \
+		echo; \
+		if [[ $$REPLY =~ ^[Yy]$$ ]]; then \
+			gh release delete "v$$VERSION" -y; \
+		else \
+			exit 1; \
+		fi; \
+	fi; \
+	gh release create "v$$VERSION" \
+		"releases/macos-$(PROJECT_NAME)-v$${VERSION}-arm64" \
+		"releases/linux-$(PROJECT_NAME)-v$${VERSION}-x86_64" \
+		--title "v$$VERSION" \
+		--notes "$(PROJECT_NAME) v$$VERSION" \
+		--latest; \
+	echo "Released v$$VERSION"
+
+release-cargo: ## publish to crates.io
+	cargo publish
+
+release-brew: ## update brew formula, commit and push to homebrew-tap
+	@VERSION=$$(grep -m1 '^version = ' Cargo.toml | sed 's/version = "\(.*\)"/\1/'); \
+	URL="https://github.com/Dimfred/$(PROJECT_NAME)/archive/refs/tags/v$${VERSION}.tar.gz"; \
+	echo "Fetching $$URL"; \
+	SHA=$$(curl -sL "$$URL" | shasum -a 256 | cut -d' ' -f1); \
+	echo "SHA256: $$SHA"; \
+	sed -i '' "s|url \".*\"|url \"$$URL\"|" package/brew/$(PROJECT_NAME).rb; \
+	sed -i '' "s|sha256 \".*\"|sha256 \"$$SHA\"|" package/brew/$(PROJECT_NAME).rb; \
+	echo "Formula updated for v$$VERSION"; \
+	cp package/brew/$(PROJECT_NAME).rb ../homebrew-tap/Formula/; \
+	cd ../homebrew-tap && git add . && git commit -m "Update $(PROJECT_NAME) to v$$VERSION" && git push; \
+	echo "Pushed to homebrew-tap"
+
+release-aur: ## update AUR PKGBUILD, commit and push to AUR
+	@VERSION=$$(grep -m1 '^version = ' Cargo.toml | sed 's/version = "\(.*\)"/\1/'); \
+	URL="https://github.com/Dimfred/$(PROJECT_NAME)/releases/download/v$${VERSION}/linux-$(PROJECT_NAME)-v$${VERSION}-x86_64"; \
+	echo "Fetching $$URL"; \
+	SHA=$$(curl -sL "$$URL" | shasum -a 256 | cut -d' ' -f1); \
+	echo "SHA256: $$SHA"; \
+	sed -i '' "s|^pkgver=.*|pkgver=$$VERSION|" package/aur/PKGBUILD; \
+	sed -i '' "s|^sha256sums=.*|sha256sums=('$$SHA')|" package/aur/PKGBUILD; \
+	echo "PKGBUILD updated for v$$VERSION"; \
+	cp package/aur/PKGBUILD ../$(PROJECT_NAME)-bin/; \
+	cd ../$(PROJECT_NAME)-bin && makepkg --printsrcinfo > .SRCINFO && git add . && git commit -m "Update to v$$VERSION" && git push; \
+	echo "Pushed to AUR"
+
+version-patch: ## bump patch version (0.1.0 -> 0.1.1)
+	@CURRENT=$$(grep -m1 '^version = ' Cargo.toml | sed 's/version = "\(.*\)"/\1/'); \
+	IFS='.' read -r MAJOR MINOR PATCH <<< "$$CURRENT"; \
+	NEW_PATCH=$$((PATCH + 1)); \
+	NEW_VERSION="$$MAJOR.$$MINOR.$$NEW_PATCH"; \
+	sed -i '' "s/^version = \".*\"/version = \"$$NEW_VERSION\"/" Cargo.toml; \
+	echo "Version bumped from $$CURRENT to $$NEW_VERSION"; \
+	git add Cargo.toml; \
+	git commit -m "chore: version bump"; \
+	echo "Committed version bump"
+
+################################################################################
+# INIT
+init: ## initialize dev environment (deps, rust targets, zigbuild)
+	cargo fetch
+	brew install zig@0.14
+	rustup target add aarch64-apple-darwin x86_64-unknown-linux-gnu
+	cargo install cargo-zigbuild
+	cargo install cargo-llvm-cov
+	rustup component add llvm-tools-preview
+
+################################################################################
+# HELP
+help: ## print this help
+	@grep -E '^[a-zA-Z0-9_-]+:.*?## .*$$' $(MAKEFILE_LIST) \
+		| awk 'BEGIN {FS = ":.*?## "}; {printf "\033[32m%-30s\033[0m %s\n", $$1, $$2}'

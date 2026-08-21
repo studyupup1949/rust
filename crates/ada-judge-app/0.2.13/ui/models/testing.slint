@@ -1,0 +1,56 @@
+export enum AJLanguage {
+    Clangpp,
+    Clang,
+    Go,
+    Rust,
+    Unknown,
+}
+
+export enum AJTotalVerdict {
+    Ok,
+    PartialSolution,
+    Pending,
+    Compiling,
+    CompilationError,
+    Testing,
+    InvalidProblem,
+    InvalidRequest,
+    Bug
+}
+
+export enum AJSubgroupVerdict {
+    Ok,
+    RuntimeError,
+    TimeLimitExceeded,
+    MemoryLimitExceeded,
+    SecurityError,
+    WrongAnswer,
+    PresentationError,
+    Skipped,
+    Testing
+}
+
+
+export struct AJSubgroupResult {
+    subgroup-verdict: AJSubgroupVerdict,
+    test: int,
+    score: int,
+}
+
+export struct AJTestResult {
+    test-verdict: AJSubgroupVerdict,
+    score: int,
+}
+
+
+export struct AJSubmission {
+    id: int,
+    user-id: int,
+    username: string,
+    problem-id: int,
+    language: AJLanguage,
+    total-verdict: AJTotalVerdict,
+    total-score: int,
+    subgroups-results: [AJSubgroupResult],
+    tests-results: [AJTestResult],
+}

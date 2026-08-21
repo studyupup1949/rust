@@ -1,0 +1,50 @@
+{% extends "layout.html.tera" %}
+
+{% block title %}Create {{ resource_name }}{% endblock title %}
+
+{% block content %}
+<h2 class="text-xl font-bold mb-4">Create {{ resource_name }}</h2>
+
+<!-- ✅ FIXED: Form action points to /create endpoint, not base_path -->
+<form method="post" action="{{ base_path }}/create" class="space-y-4">
+  {% for group in form.groups %}
+    <div class="mb-6">
+      <h3 class="text-lg font-semibold mb-2">{{ group.title }}</h3>
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        {% for field in group.fields %}
+          <div>
+            <label class="block font-medium mb-1" for="{{ field.name }}">{{ field.label }}</label>
+
+            {% if field.field_type == "select" %}
+              <select name="{{ field.name }}" id="{{ field.name }}" class="w-full px-3 py-2 border rounded">
+                {% for opt in field.options %}
+                  <option value="{{ opt }}" {% if field.value == opt %}selected{% endif %}>{{ opt }}</option>
+                {% endfor %}
+              </select>
+            
+            {% elif field.field_type == "checkbox" %}
+              <input type="checkbox" name="{{ field.name }}" id="{{ field.name }}" class="mr-2" {% if field.value == "true" %}checked{% endif %}>
+            
+            {% elif field.field_type == "date" %}
+              <input type="date" name="{{ field.name }}" id="{{ field.name }}" value="{{ field.value }}" class="w-full px-3 py-2 border rounded">
+            
+            {% elif field.field_type == "number" %}
+              <input type="number" name="{{ field.name }}" id="{{ field.name }}" value="{{ field.value }}" class="w-full px-3 py-2 border rounded">
+            
+            {% else %}
+              <input type="text" name="{{ field.name }}" id="{{ field.name }}" value="{{ field.value }}" class="w-full px-3 py-2 border rounded">
+            {% endif %}
+          </div>
+        {% endfor %}
+      </div>
+    </div>
+  {% endfor %}
+
+  <button type="submit" class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">
+    Create {{ resource_name }}
+  </button>
+  <a href="{{ base_path }}/list" class="ml-4 bg-gray-500 text-white px-4 py-2 rounded hover:bg-gray-600">
+    Cancel
+  </a>
+</form>
+{% endblock content %}

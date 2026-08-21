@@ -1,0 +1,13 @@
+[package]
+name = "addr_align"
+version = "0.1.0"
+edition = "2021"
+license = "MIT OR Apache-2.0"
+description = "A crate for aligning values (usually some kind of address) to a specified boundary"
+repository = "https://github.com/mlgiraud/addr_align"
+readme = "README.md"
+keywords = ["address", "alignment"]
+
+exclude = [".idea"]
+
+[dependencies]

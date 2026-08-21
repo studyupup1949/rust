@@ -1,0 +1,25 @@
+[package]
+name = "adsbx_screenshot"
+version = "1.1.0"
+authors = ["John Wiseman <jjwiseman@gmail.com>"]
+homepage = "https://gitlab.com/jjwiseman/adsbx_browser"
+repository = "https://gitlab.com/jjwiseman/adsbx_browser"
+license = "MIT/Apache-2.0"
+description = """
+ADS-B Exchange screenshotting library
+"""
+keywords = ["ads-b", "browser", "screenshot"]
+edition = "2021"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+chrono = "0.4"
+failure = "0.1.8"
+headless_chrome = "0.9.0"
+thiserror = "1"
+url = "2.2"
+
+[dev-dependencies]
+anyhow = "1.0.51"
+structopt = "0.3"

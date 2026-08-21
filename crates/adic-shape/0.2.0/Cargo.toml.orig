@@ -1,0 +1,76 @@
+[package]
+name = "adic-shape"
+version = "0.2.0"
+description = "Visualizing p-adic numbers"
+readme = "readme.md"
+keywords = ["mathematics", "modular", "number", "padic", "plot"]
+categories = ["mathematics", "science", "visualization"]
+default-run = "adic-shape"
+repository.workspace = true
+edition.workspace = true
+license.workspace = true
+
+[[bin]]
+name = "adic-shape-dev"
+path = "dev/main.rs"
+required-features = ["dev"]
+
+[[example]]
+name = "generate_doc_images"
+doc-scrape-examples = false
+
+[dependencies]
+adic = "0.5.2"
+# adic = { path = "../adic" }
+bon.workspace = true
+clap.workspace = true
+icondata_fi.workspace = true
+itertools.workspace = true
+num.workspace = true
+petgraph.workspace = true
+svg.workspace = true
+
+console_log = { workspace = true, optional = true }
+getrandom = { workspace = true, optional = true, features = ["js"] }
+leptos = { workspace = true, optional = true, features = ["csr"] }
+leptos_router = { workspace = true, optional = true }
+leptos-chartistry = { workspace = true, optional = true }
+log = { workspace = true, optional = true }
+palette = { workspace = true, optional = true }
+thaw = { workspace = true, optional = true, features = ["csr"] }
+thaw_utils = { workspace = true, optional = true, features = ["csr"] }
+
+[dev-dependencies]
+assertables.workspace = true
+# wasm-bindgen.workspace = true
+# wasm-bindgen-test.workspace = true
+# web-sys.workspace = true
+
+[features]
+dev = [
+    "dep:console_log",
+    "dep:getrandom",
+    "dep:log",
+    "dep:palette",
+    "real_projection",
+]
+leptos = [
+    "dep:leptos",
+    "dep:leptos_router",
+    "dep:thaw",
+    "dep:thaw_utils",
+]
+real_projection = [
+    "dep:leptos-chartistry",
+    "leptos",
+]
+
+[lints]
+workspace = true
+
+# docs.rs-specific configuration
+[package.metadata.docs.rs]
+# document all features
+features = ["leptos", "real_projection"]
+# defines the configuration attribute `docsrs`
+rustdoc-args = ["--cfg", "docsrs"]

@@ -1,0 +1,692 @@
+{
+  "id": "patterns/calendar-ooo",
+  "title": "Monthly Calendar with Team Out-of-Office",
+  "description": "Month navigation arrows, 7-column grid simulating calendar (without Table element), accent-highlighted current week, OOO list with Person avatars in emphasis container, dynamic count heading.",
+  "category": "patterns",
+  "tags": [
+    "calendar",
+    "OOO",
+    "team",
+    "schedule",
+    "grid",
+    "monthly",
+    "HR"
+  ],
+  "use_cases": [
+    "Team calendar view",
+    "Out-of-office display",
+    "Monthly schedule",
+    "Column-grid calendar"
+  ],
+  "host_targets": [
+    "generic",
+    "teams",
+    "web_chat"
+  ],
+  "complexity": "advanced",
+  "card": {
+    "type": "AdaptiveCard",
+    "$schema": "http://adaptivecards.io/schemas/adaptive-card.json",
+    "version": "1.2",
+    "body": [
+      {
+        "type": "ColumnSet",
+        "columns": [
+          {
+            "type": "Column",
+            "width": 26,
+            "items": [
+              {
+                "type": "TextBlock",
+                "text": "\u00ab Previous",
+                "wrap": true,
+                "weight": "Bolder",
+                "size": "Default",
+                "fontType": "Default",
+                "color": "Accent",
+                "isSubtle": false
+              }
+            ],
+            "verticalContentAlignment": "Center"
+          },
+          {
+            "type": "Column",
+            "width": 48,
+            "items": [
+              {
+                "type": "TextBlock",
+                "text": "${month_name}",
+                "wrap": true,
+                "size": "Large",
+                "fontType": "Default",
+                "weight": "Bolder",
+                "color": "Default",
+                "isSubtle": false,
+                "horizontalAlignment": "Center"
+              }
+            ]
+          },
+          {
+            "type": "Column",
+            "width": 26,
+            "items": [
+              {
+                "type": "TextBlock",
+                "text": "Next \u00bb",
+                "wrap": true,
+                "horizontalAlignment": "Right",
+                "weight": "Bolder",
+                "fontType": "Default",
+                "size": "Default",
+                "color": "Accent"
+              }
+            ],
+            "verticalContentAlignment": "Center"
+          }
+        ],
+        "style": "default"
+      },
+      {
+        "type": "Container",
+        "spacing": "Large"
+      },
+      {
+        "type": "ColumnSet",
+        "columns": [
+          {
+            "type": "Column",
+            "width": "stretch",
+            "items": [
+              {
+                "type": "TextBlock",
+                "text": "S",
+                "wrap": true,
+                "weight": "Bolder",
+                "isSubtle": true,
+                "horizontalAlignment": "Center"
+              }
+            ]
+          },
+          {
+            "type": "Column",
+            "items": [
+              {
+                "type": "TextBlock",
+                "text": "M",
+                "wrap": true,
+                "weight": "Bolder",
+                "isSubtle": true,
+                "horizontalAlignment": "Center"
+              }
+            ],
+            "width": "stretch"
+          },
+          {
+            "type": "Column",
+            "width": "stretch",
+            "items": [
+              {
+                "type": "TextBlock",
+                "text": "T",
+                "wrap": true,
+                "weight": "Bolder",
+                "isSubtle": true,
+                "horizontalAlignment": "Center"
+              }
+            ]
+          },
+          {
+            "type": "Column",
+            "width": "stretch",
+            "items": [
+              {
+                "type": "TextBlock",
+                "text": "W",
+                "wrap": true,
+                "weight": "Bolder",
+                "isSubtle": true,
+                "horizontalAlignment": "Center"
+              }
+            ]
+          },
+          {
+            "type": "Column",
+            "width": "stretch",
+            "items": [
+              {
+                "type": "TextBlock",
+                "text": "T",
+                "wrap": true,
+                "weight": "Bolder",
+                "isSubtle": true,
+                "horizontalAlignment": "Center"
+              }
+            ]
+          },
+          {
+            "type": "Column",
+            "width": "stretch",
+            "items": [
+              {
+                "type": "TextBlock",
+                "text": "F",
+                "wrap": true,
+                "weight": "Bolder",
+                "isSubtle": true,
+                "horizontalAlignment": "Center"
+              }
+            ]
+          },
+          {
+            "type": "Column",
+            "width": "stretch",
+            "items": [
+              {
+                "type": "TextBlock",
+                "text": "S",
+                "wrap": true,
+                "weight": "Bolder",
+                "isSubtle": true,
+                "horizontalAlignment": "Center"
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "type": "ColumnSet",
+        "columns": [
+          {
+            "type": "Column",
+            "width": "stretch"
+          },
+          {
+            "type": "Column",
+            "width": "stretch",
+            "items": [
+              {
+                "type": "TextBlock",
+                "text": "1",
+                "wrap": true
+              }
+            ],
+            "horizontalAlignment": "Center"
+          },
+          {
+            "type": "Column",
+            "width": "stretch",
+            "items": [
+              {
+                "type": "TextBlock",
+                "text": "2",
+                "wrap": true
+              }
+            ],
+            "horizontalAlignment": "Center"
+          },
+          {
+            "type": "Column",
+            "width": "stretch",
+            "items": [
+              {
+                "type": "TextBlock",
+                "text": "3",
+                "wrap": true
+              }
+            ],
+            "horizontalAlignment": "Center"
+          },
+          {
+            "type": "Column",
+            "width": "stretch",
+            "items": [
+              {
+                "type": "TextBlock",
+                "text": "4",
+                "wrap": true
+              }
+            ],
+            "horizontalAlignment": "Center"
+          },
+          {
+            "type": "Column",
+            "width": "stretch",
+            "items": [
+              {
+                "type": "TextBlock",
+                "text": "5",
+                "wrap": true,
+                "horizontalAlignment": "Center"
+              }
+            ]
+          },
+          {
+            "type": "Column",
+            "width": "stretch",
+            "items": [
+              {
+                "type": "TextBlock",
+                "text": "6",
+                "wrap": true,
+                "horizontalAlignment": "Center"
+              }
+            ]
+          }
+        ],
+        "style": "default",
+        "spacing": "Large"
+      },
+      {
+        "type": "ColumnSet",
+        "columns": [
+          {
+            "type": "Column",
+            "width": "stretch",
+            "items": [
+              {
+                "type": "TextBlock",
+                "text": "7",
+                "wrap": true,
+                "horizontalAlignment": "Center"
+              }
+            ]
+          },
+          {
+            "type": "Column",
+            "width": "stretch",
+            "items": [
+              {
+                "type": "TextBlock",
+                "text": "8",
+                "wrap": true,
+                "horizontalAlignment": "Center"
+              }
+            ]
+          },
+          {
+            "type": "Column",
+            "width": "stretch",
+            "items": [
+              {
+                "type": "TextBlock",
+                "text": "9",
+                "wrap": true,
+                "horizontalAlignment": "Center"
+              }
+            ]
+          },
+          {
+            "type": "Column",
+            "width": "stretch",
+            "items": [
+              {
+                "type": "TextBlock",
+                "text": "10",
+                "wrap": true,
+                "horizontalAlignment": "Center"
+              }
+            ]
+          },
+          {
+            "type": "Column",
+            "width": "stretch",
+            "items": [
+              {
+                "type": "TextBlock",
+                "text": "11",
+                "wrap": true,
+                "horizontalAlignment": "Center"
+              }
+            ]
+          },
+          {
+            "type": "Column",
+            "width": "stretch",
+            "items": [
+              {
+                "type": "TextBlock",
+                "text": "12",
+                "wrap": true,
+                "horizontalAlignment": "Center"
+              }
+            ]
+          },
+          {
+            "type": "Column",
+            "width": "stretch",
+            "items": [
+              {
+                "type": "TextBlock",
+                "text": "13",
+                "wrap": true,
+                "horizontalAlignment": "Center"
+              }
+            ]
+          }
+        ],
+        "style": "default",
+        "spacing": "Large"
+      },
+      {
+        "type": "ColumnSet",
+        "columns": [
+          {
+            "type": "Column",
+            "width": "stretch",
+            "items": [
+              {
+                "type": "TextBlock",
+                "text": "14",
+                "wrap": true,
+                "horizontalAlignment": "Center"
+              }
+            ]
+          },
+          {
+            "type": "Column",
+            "width": "stretch",
+            "items": [
+              {
+                "type": "TextBlock",
+                "text": "15",
+                "wrap": true,
+                "horizontalAlignment": "Center"
+              }
+            ]
+          },
+          {
+            "type": "Column",
+            "width": "stretch",
+            "items": [
+              {
+                "type": "TextBlock",
+                "text": "16",
+                "wrap": true,
+                "weight": "Bolder",
+                "horizontalAlignment": "Center"
+              }
+            ]
+          },
+          {
+            "type": "Column",
+            "width": "stretch",
+            "items": [
+              {
+                "type": "TextBlock",
+                "text": "17",
+                "wrap": true,
+                "horizontalAlignment": "Center"
+              }
+            ]
+          },
+          {
+            "type": "Column",
+            "width": "stretch",
+            "items": [
+              {
+                "type": "TextBlock",
+                "text": "18",
+                "wrap": true,
+                "horizontalAlignment": "Center"
+              }
+            ]
+          },
+          {
+            "type": "Column",
+            "width": "stretch",
+            "items": [
+              {
+                "type": "TextBlock",
+                "text": "19",
+                "wrap": true,
+                "horizontalAlignment": "Center"
+              }
+            ]
+          },
+          {
+            "type": "Column",
+            "width": "stretch",
+            "items": [
+              {
+                "type": "TextBlock",
+                "text": "20",
+                "wrap": true,
+                "horizontalAlignment": "Center"
+              }
+            ]
+          }
+        ],
+        "style": "accent",
+        "height": "stretch",
+        "bleed": true,
+        "spacing": "Medium"
+      },
+      {
+        "type": "ColumnSet",
+        "columns": [
+          {
+            "type": "Column",
+            "width": "stretch",
+            "items": [
+              {
+                "type": "TextBlock",
+                "text": "21",
+                "wrap": true,
+                "horizontalAlignment": "Center"
+              }
+            ]
+          },
+          {
+            "type": "Column",
+            "width": "stretch",
+            "items": [
+              {
+                "type": "TextBlock",
+                "text": "22",
+                "wrap": true,
+                "horizontalAlignment": "Center"
+              }
+            ]
+          },
+          {
+            "type": "Column",
+            "width": "stretch",
+            "items": [
+              {
+                "type": "TextBlock",
+                "text": "23",
+                "wrap": true,
+                "horizontalAlignment": "Center"
+              }
+            ]
+          },
+          {
+            "type": "Column",
+            "width": "stretch",
+            "items": [
+              {
+                "type": "TextBlock",
+                "text": "24",
+                "wrap": true,
+                "horizontalAlignment": "Center"
+              }
+            ]
+          },
+          {
+            "type": "Column",
+            "width": "stretch",
+            "items": [
+              {
+                "type": "TextBlock",
+                "text": "25",
+                "wrap": true,
+                "horizontalAlignment": "Center"
+              }
+            ]
+          },
+          {
+            "type": "Column",
+            "width": "stretch",
+            "items": [
+              {
+                "type": "TextBlock",
+                "text": "26",
+                "wrap": true,
+                "horizontalAlignment": "Center"
+              }
+            ]
+          },
+          {
+            "type": "Column",
+            "width": "stretch",
+            "items": [
+              {
+                "type": "TextBlock",
+                "text": "27",
+                "wrap": true,
+                "horizontalAlignment": "Center"
+              }
+            ]
+          }
+        ],
+        "style": "default",
+        "spacing": "Medium"
+      },
+      {
+        "type": "ColumnSet",
+        "columns": [
+          {
+            "type": "Column",
+            "width": "stretch",
+            "items": [
+              {
+                "type": "TextBlock",
+                "text": "28",
+                "wrap": true,
+                "horizontalAlignment": "Center"
+              }
+            ]
+          },
+          {
+            "type": "Column",
+            "width": "stretch",
+            "items": [
+              {
+                "type": "TextBlock",
+                "text": "29",
+                "wrap": true,
+                "horizontalAlignment": "Center"
+              }
+            ]
+          },
+          {
+            "type": "Column",
+            "width": "stretch",
+            "items": [
+              {
+                "type": "TextBlock",
+                "text": "30",
+                "wrap": true,
+                "horizontalAlignment": "Center"
+              }
+            ]
+          },
+          {
+            "type": "Column",
+            "width": "stretch",
+            "items": [
+              {
+                "type": "TextBlock",
+                "text": "31",
+                "wrap": true,
+                "horizontalAlignment": "Center"
+              }
+            ]
+          },
+          {
+            "type": "Column",
+            "width": "stretch"
+          },
+          {
+            "type": "Column",
+            "width": "stretch"
+          },
+          {
+            "type": "Column",
+            "width": "stretch"
+          }
+        ],
+        "spacing": "Large"
+      },
+      {
+        "type": "Container",
+        "items": [
+          {
+            "type": "TextBlock",
+            "text": "${string(count(time_off))} team members are out of office",
+            "wrap": true,
+            "size": "Medium",
+            "weight": "Bolder",
+            "spacing": "Medium"
+          },
+          {
+            "type": "ColumnSet",
+            "columns": [
+              {
+                "type": "Column",
+                "items": [
+                  {
+                    "type": "TextBlock",
+                    "text": "${date_range}",
+                    "wrap": true
+                  }
+                ],
+                "width": "80px",
+                "verticalContentAlignment": "Center"
+              },
+              {
+                "type": "Column",
+                "items": [
+                  {
+                    "type": "Image",
+                    "url": "${avatar_URL}",
+                    "size": "Small",
+                    "style": "Person"
+                  }
+                ],
+                "width": "auto",
+                "verticalContentAlignment": "Center"
+              },
+              {
+                "type": "Column",
+                "width": "stretch",
+                "items": [
+                  {
+                    "type": "TextBlock",
+                    "text": "${employee}",
+                    "wrap": true
+                  },
+                  {
+                    "type": "TextBlock",
+                    "text": "${job_title}",
+                    "wrap": true,
+                    "spacing": "None",
+                    "size": "Small",
+                    "isSubtle": true
+                  }
+                ],
+                "verticalContentAlignment": "Center"
+              }
+            ],
+            "spacing": "Medium",
+            "$data": "${time_off}"
+          }
+        ],
+        "style": "emphasis",
+        "spacing": "Large"
+      }
+    ],
+    "speak": "${time_off[0].employee} and ${sub(count(time_off), 1)} others are out of the office today"
+  },
+  "notes": ""
+}

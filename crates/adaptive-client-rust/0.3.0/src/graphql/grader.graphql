@@ -1,0 +1,33 @@
+query GetGrader($id: IdOrKey!, $useCase: IdOrKey!) {
+    grader(id: $id, useCase: $useCase) {
+        id
+        key
+        name
+        graderType
+        graderConfig {
+            __typename
+            ... on JudgeConfigOutput {
+                model { key }
+                criteria
+                userTemplate
+                systemTemplate
+                examples { input { role, content }, output, pass, reasoning }
+            }
+            ... on PrebuiltConfigOutput {
+                model { key }
+                criteria {
+                    key
+                    feedbackKey
+                }
+            }
+            ... on RemoteConfigOutput {
+                url
+                version
+                description
+            }
+            ... on CustomConfigOutput {
+                description
+            }
+        }
+    }
+}

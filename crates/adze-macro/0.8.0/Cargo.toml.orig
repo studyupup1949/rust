@@ -1,0 +1,34 @@
+[package]
+name = "adze-macro"
+description = "Procedural macros for Rust Sitter"
+readme = "README.md"
+repository = "https://github.com/effortlessmetrics/adze"
+homepage = "https://github.com/effortlessmetrics/adze"
+documentation = "https://docs.rs/adze-macro"
+version = "0.8.0"
+authors = ["Steven Zimmerman, CPA"]
+edition = "2024"
+license = "MIT"
+publish = ["crates-io"]
+keywords = ["parsing", "codegen"]
+categories = ["development-tools"]
+
+[lib]
+proc-macro = true
+path = "src/lib.rs"
+
+[features]
+pure-rust = []
+strict_docs = [] # Enable strict documentation requirements
+
+[dependencies]
+syn = { version = "2", features = [ "full", "extra-traits" ] }
+quote = "1"
+proc-macro2 = "1"
+adze-common = { version = "0.8.0", path = "../common" }
+
+[dev-dependencies]
+insta = "1.39"
+tempfile = "3"
+trybuild = "1.0"
+proptest = "1.4"

@@ -1,0 +1,45 @@
+name: Code Review
+on:
+  pull_request:
+    types: [ opened, synchronize ]
+concurrency:
+  group: review-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+jobs:
+  review:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    permissions:
+      contents: read
+      pull-requests: write
+      issues: write
+      id-token: write
+    steps:
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6.1.0
+        with:
+          fetch-depth: 1
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6.1.0
+        with:
+          repository: nikdeapen/coding
+          path: .coding
+      - name: Install coding rules
+        run: |
+          mkdir -p ~/.claude
+          cp -R .coding/rules ~/.claude/rules
+          rm -rf .coding
+          ls ~/.claude/rules/
+      - uses: anthropics/claude-code-action@c038e4dcdedfbbca18dfb17df35a17e40ded4ddc # v1.0.186
+        with:
+          # This token expires ~2027-08-05. Rerun `claude setup-token` and update the secret.
+          claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
+          plugin_marketplaces: "https://github.com/anthropics/claude-code.git"
+          plugins: "code-review@claude-code-plugins"
+          prompt: >-
+            /code-review:code-review ${{ github.repository }}/pull/${{ github.event.pull_request.number }} --comment.
+            Caller override: always run the full review and post the result, even if the change is trivial or Claude
+            has already commented on this PR. Only skip if the PR is closed.
+          claude_args: "--model claude-fable-5"
+          settings: '{"env": {"CLAUDE_CODE_DISABLE_BACKGROUND_TASKS": "1"}}'
+          use_sticky_comment: true
+          display_report: true
+          show_full_output: true

@@ -1,0 +1,15 @@
+load("@buckal//:wrapper.bzl", "rust_library")
+
+rust_library(
+    name = "ade_strongly_connected_components",
+    srcs = glob(["**/*.rs"]),
+    crate = "ade_strongly_connected_components",
+    crate_root = "src/lib.rs",
+    edition = "2021",
+
+    visibility = ["PUBLIC"],
+    deps = [
+        "//third-party/rust/crates/ade-common/0.1.0:ade_common",
+        "//third-party/rust/crates/ade-traits/0.1.0:ade_traits",
+    ],
+)

@@ -1,0 +1,11 @@
+# Mac
+.DS_Store
+
+# JetBrains
+.idea/
+*.iml
+
+# Rust
+target/
+**/*.rs.bk
+Cargo.lock

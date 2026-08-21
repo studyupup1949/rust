@@ -1,0 +1,129 @@
+{
+  "id": "patterns/events-timeline",
+  "title": "Events Timeline with SVG Connector",
+  "description": "Vertical timeline using SVG backgroundImage RepeatVertically trick. Event thumbnails as Container backgrounds. Data-bound repeating blocks with CTAs.",
+  "category": "patterns",
+  "tags": [
+    "timeline",
+    "events",
+    "schedule",
+    "calendar",
+    "data-binding",
+    "svg",
+    "background-image"
+  ],
+  "use_cases": [
+    "Chronological event list",
+    "Meeting agenda",
+    "Project milestones",
+    "Activity feed"
+  ],
+  "host_targets": [
+    "generic",
+    "teams",
+    "web_chat"
+  ],
+  "complexity": "advanced",
+  "card": {
+    "type": "AdaptiveCard",
+    "$schema": "http://adaptivecards.io/schemas/adaptive-card.json",
+    "version": "1.2",
+    "body": [
+      {
+        "type": "TextBlock",
+        "text": "Upcoming events",
+        "wrap": true,
+        "size": "ExtraLarge",
+        "weight": "Bolder",
+        "spacing": "Medium"
+      },
+      {
+        "type": "TextBlock",
+        "text": "Check out the amazing schedule of events you can join live over the next couple of days",
+        "wrap": true,
+        "size": "Small"
+      },
+      {
+        "type": "ColumnSet",
+        "columns": [
+          {
+            "type": "Column",
+            "width": "40px",
+            "backgroundImage": {
+              "url": "https://www.adenin.com/assets/images/POC/timeline.svg",
+              "horizontalAlignment": "Center",
+              "fillMode": "RepeatVertically"
+            },
+            "horizontalAlignment": "Right"
+          },
+          {
+            "type": "Column",
+            "width": "stretch",
+            "items": [
+              {
+                "type": "Container",
+                "spacing": "None",
+                "minHeight": "4px",
+                "items": [
+                  {
+                    "type": "Container",
+                    "minHeight": "6px"
+                  },
+                  {
+                    "type": "TextBlock",
+                    "text": "${title}",
+                    "wrap": true,
+                    "size": "Large",
+                    "weight": "Bolder",
+                    "spacing": "Medium"
+                  },
+                  {
+                    "type": "Container",
+                    "backgroundImage": {
+                      "url": "${thumbnail}",
+                      "horizontalAlignment": "Center"
+                    },
+                    "minHeight": "180px",
+                    "spacing": "Medium"
+                  },
+                  {
+                    "type": "TextBlock",
+                    "text": "${date}",
+                    "wrap": true,
+                    "weight": "Bolder",
+                    "color": "Accent"
+                  },
+                  {
+                    "type": "TextBlock",
+                    "text": "${description}",
+                    "wrap": true,
+                    "size": "Small",
+                    "isSubtle": true
+                  },
+                  {
+                    "type": "ActionSet",
+                    "actions": [
+                      {
+                        "type": "Action.OpenUrl",
+                        "title": "Join live event",
+                        "style": "positive",
+                        "url": "https://www.adenin.com/pocdef",
+                        "id": "event-%{title}"
+                      }
+                    ]
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "type": "Column",
+            "width": "16px"
+          }
+        ],
+        "$data": "${events}"
+      }
+    ]
+  },
+  "notes": ""
+}

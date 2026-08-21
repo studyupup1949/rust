@@ -1,0 +1,14 @@
+load("@buckal//:wrapper.bzl", "rust_binary")
+
+rust_binary(
+    name = "adblock_rust_server",
+    srcs = glob(["**/*.rs"]),
+    crate = "adblock_rust_server",
+    crate_root = "src/main.rs",
+    edition = "2018",
+
+    visibility = ["PUBLIC"],
+    deps = [
+        "//third-party/rust/crates/adblock/0.3.17:adblock",
+    ],
+)

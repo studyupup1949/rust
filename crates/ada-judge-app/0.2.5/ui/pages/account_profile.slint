@@ -1,0 +1,77 @@
+import { AJTheme } from "../aj-theme.slint";
+import { AJAppState, AJUserState } from "../aj-state.slint";
+import { AJHomeCallbacks } from "../aj-callbacks.slint";
+import { AJAccountData } from "../models/users.slint";
+import { AJText, AJTextType } from "../components/aj-text.slint";
+import { AJInput, AJInputType } from "../components/aj-input.slint";
+import { AJAdminBadge } from "../components/aj-admin-badge.slint";
+import { AJButton } from "../components/aj-button.slint";
+import { AJDateTimeText } from "../components/aj-datetime-text.slint";
+
+export component AccountProfilePage {
+    property <AJAccountData> user: AJUserState.user;
+
+    VerticalLayout {
+        alignment: start;
+        spacing: AJTheme.spacing;
+
+        AJText {
+            text: "Профиль";
+            type: AJTextType.Heading;
+        }
+
+        AJText {
+            text: "ваш id";
+            type: AJTextType.Medium;
+        }
+
+        AJText {
+            text: user.id;
+            font-italic: true;
+        }
+
+        AJText {
+            text: "вы вошли как";
+            type: AJTextType.Medium;
+        }
+
+        AJText {
+            text: user.login;
+            font-italic: true;
+        }
+
+        AJText {
+            text: "ваш уровень админа";
+            type: AJTextType.Medium;
+        }
+
+        AJAdminBadge {
+            level: user.admin-level;
+        }
+
+        AJText {
+            text: "аккаунт был создан";
+            type: AJTextType.Medium;
+        }
+
+        AJDateTimeText {
+            date-time: user.created-at;
+            font-italic: true;
+        }
+
+        AJButton {
+            text: "выйти";
+            background: AJTheme.contest-finished;
+            clicked => {
+                AJHomeCallbacks.logout()
+            }
+        }
+
+        AJButton {
+            text: "<< назад";
+            clicked => {
+                AJAppState.page = 3
+            }
+        }
+    }
+}

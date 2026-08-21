@@ -1,0 +1,9 @@
+dotfiles:
+  d_config:
+    dst: /tmp/adot_tests/link_children/dst/
+    src: config/
+    type: link_children
+profiles:
+  test-host:
+    dotfiles:
+      - d_config

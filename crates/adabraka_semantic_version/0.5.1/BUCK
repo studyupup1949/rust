@@ -1,0 +1,15 @@
+load("@buckal//:wrapper.bzl", "rust_library")
+
+rust_library(
+    name = "adabraka_semantic_version",
+    srcs = glob(["**/*.rs"]),
+    crate = "adabraka_semantic_version",
+    crate_root = "src/semantic_version.rs",
+    edition = "2024",
+
+    visibility = ["PUBLIC"],
+    deps = [
+        "//third-party/rust/crates/anyhow/1.0.104:anyhow",
+        "//third-party/rust/crates/serde/1.0.229:serde",
+    ],
+)

@@ -1,0 +1,13 @@
+[build]
+# The index HTML file to drive the bundling process.
+target = "dev/index.html"
+# The output dir for all final assets.
+dist = "dev/public"
+# Build only in dev mode.
+release = false
+# Never minify.
+minify = "never"
+
+[watch]
+# Paths to watch
+watch = ["dev", "src"]

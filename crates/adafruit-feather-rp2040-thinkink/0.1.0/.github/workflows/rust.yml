@@ -1,0 +1,31 @@
+
+name: Rust
+
+on: [push, pull_request]
+
+jobs:
+  build:
+
+    runs-on: ubuntu-latest
+    env:
+      RUSTDOCFLAGS: -Dwarnings
+    strategy:
+      matrix:
+        rust:
+          - stable
+    steps:
+    - uses: actions/checkout@v4
+    - name: Install ARM toolchain
+      run: rustup target add thumbv6m-none-eabi
+    - name: Check Fmt
+      run: cargo fmt --all -- --check
+    - name: Build lib
+      run: cargo check --lib --verbose    
+    - name: Build examples
+      continue-on-error: true
+      run: cargo build --examples --all-targets --verbose
+    - name: Build docs
+      run: cargo doc
+    - name: Clippy
+      continue-on-error: true
+      run: cargo clippy --all-targets -- -D warnings -A clippy::new_ret_no_self

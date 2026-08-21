@@ -1,0 +1,19 @@
+[package]
+name = "ads-proto"
+version = "0.1.1"
+edition = "2021"
+description = "Implementation of the Beckhoff ADS protocol (Automation Device Specification)"
+repository = "https://github.com/wyda/ads-proto"
+readme = "README.md"
+license = "MIT" 
+keywords = ["Beckhoff", "ADS", "TwinCat", "AMS", "PLC"]
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dev-dependencies]
+anyhow = "1.0.57"
+
+[dependencies]
+byteorder = "1.3"
+thiserror = "1.0.26"
+bitfield = "0.13.2"

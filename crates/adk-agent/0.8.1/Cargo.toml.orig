@@ -1,0 +1,39 @@
+[package]
+name = "adk-agent"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+authors.workspace = true
+description = "Agent implementations for Rust Agent Development Kit (ADK-Rust, LLM, Custom, Workflow agents)"
+repository = "https://github.com/zavora-ai/adk-rust"
+documentation = "https://docs.rs/adk-agent"
+keywords = ["ai", "agent", "adk", "llm", "workflow"]
+categories = ["api-bindings", "asynchronous"]
+readme = "README.md"
+
+[dependencies]
+adk-core.workspace = true
+adk-telemetry.workspace = true
+adk-skill = { workspace = true, optional = true }
+adk-guardrail = { workspace = true, optional = true }
+async-trait = { workspace = true }
+tokio = { workspace = true, features = ["time"] }
+futures = { workspace = true }
+async-stream = { workspace = true }
+serde = { workspace = true }
+serde_json = { workspace = true }
+tracing = { workspace = true }
+
+[features]
+default = ["skills"]
+guardrails = ["adk-guardrail"]
+skills = ["dep:adk-skill"]
+record-payloads = []
+
+[dev-dependencies]
+adk-model = { workspace = true, features = ["gemini"] }
+adk-tool = { workspace = true }
+dotenvy = "0.15"
+tempfile = "3"
+tokio = { workspace = true, features = ["rt", "macros"] }

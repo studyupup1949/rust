@@ -1,0 +1,31 @@
+[package]
+name = "adv_linalg_lib"
+version = "0.1.0"
+edition = "2021"
+authors = ["Eric Ovenden <eric2ovenden@gmail.com>"]
+
+categories = ["no-std", "no-std::no-alloc", "mathematics"]
+keywords = ["vector", "matrix", "linear", "algebra", "transformations"]
+repository = "https://github.com/Adv-LinAlg/adv_linalg_lib"
+
+description = "Core library for Adv_LinAlg procedral macros"
+documentation = "https://docs.rs/adv_linalg_lib"
+
+license = "MIT OR Apache-2.0"
+include = [
+    "/src",
+    "LICENSE.md",
+    "LICENSE-MIT",
+    "LICENSE-APACHE",
+    "README.md"
+]
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[features]
+default = ["full"]
+no_std = []
+full = ["no_std"]
+
+[dependencies]
+adv_linalg_proc_macro = "0.1"
+cfg-if = "1.0"

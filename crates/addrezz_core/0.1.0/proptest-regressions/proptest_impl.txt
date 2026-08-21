@@ -1,0 +1,9 @@
+# Seeds for failure cases proptest has generated in the past. It is
+# automatically read and these particular cases re-run before any
+# novel cases are generated.
+#
+# It is recommended to check this file in to source control so that
+# everyone who runs the test benefits from these saved cases.
+cc 838830ba6339e0ada9922775a457dee643c306238d90a224790ae6eda62cdb81 # shrinks to a = Addr { scheme: Ws, userinfo: None, host: Domain("a.0"), port: None, path: "/", query: None, fragment: None }
+cc 27270b2048f31e197afc5b31b841e7e81ff4e1179875a6ec5429b3f22bc0cb09 # shrinks to a = Addr { scheme: Http, userinfo: None, host: Domain("a.0"), port: None, path: "/", query: None, fragment: None }
+cc 7150a4f6c88f297a902c9efd6f5fed0133fa625f04062b87496cc89148627c0a # shrinks to a = Addr { scheme: Http, userinfo: None, host: Domain("a.0"), port: None, path: "/", query: None, fragment: None }

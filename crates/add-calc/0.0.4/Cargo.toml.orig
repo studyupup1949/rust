@@ -1,0 +1,12 @@
+[package]
+name = "add-calc"
+version = "0.0.4"
+edition = "2024"
+authors = ["hzqd <hzqelf@yeah.net>"]
+description = "A CLI sum calc"
+repository = "https://gitcode.com/hzqd/add-calc"
+license = "MIT OR Apache-2.0"
+
+[dependencies]
+ext = "0.0.3"
+regex-automata = "0.4.14"

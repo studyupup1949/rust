@@ -1,0 +1,35 @@
+[package]
+name = "advent-of-code-client"
+description = "CLI and crate library to interact with Advent of Code"
+authors = ["Oliver Fleckenstein <oliverfl@live.dk>"]
+version = "0.1.1"
+edition = "2021"
+license = "MIT"
+repository = "https://github.com/OliverFlecke/advent-of-code-rust/tree/main/advent-of-code-client"
+readme = "README.md"
+keywords = ["advent-of-code", "aoc"]
+exclude = ["data/*"]
+
+[[bin]]
+name = "aoc"
+path = "src/bin/aoc.rs"
+
+[dependencies]
+reqwest = { version = "0.11.22", default-features = false, features = [
+  "blocking",
+  "rustls-tls",
+] }
+colored = { version = "2.0.4" }
+clap = { version = "4.4.11", features = ["derive"] }
+derive-getters = "0.3.0"
+anyhow = "1.0.75"
+regex = "1.10.2"
+serde_json = "1.0.108"
+strum = { version = "0.25.0", features = ["derive"] }
+duration-string = "0.3.0"
+
+[dev-dependencies]
+wiremock = "0.5.22"
+async-std = { version = "1.12.0", features = ["attributes"] }
+fake = { version = "2.9.1", features = ["derive"] }
+rstest = "0.18.2"

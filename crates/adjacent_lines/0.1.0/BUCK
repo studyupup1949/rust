@@ -1,0 +1,15 @@
+load("@buckal//:wrapper.bzl", "rust_library")
+
+rust_library(
+    name = "adjacent_lines",
+    srcs = glob(["**/*.rs"]),
+    crate = "adjacent_lines",
+    crate_root = "src/lib.rs",
+    edition = "2015",
+
+    visibility = ["PUBLIC"],
+    deps = [
+        "//third-party/rust/crates/iterslide/1.0.1:iterslide",
+        "//third-party/rust/crates/itertools/0.6.5:itertools",
+    ],
+)

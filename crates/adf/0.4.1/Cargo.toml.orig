@@ -1,0 +1,51 @@
+[package]
+name = "adf"
+version = "0.4.1"
+edition = "2024"
+rust-version = "1.85"
+description = "Minimal-overhead Auto-lead Data Format XML parser and writer"
+license = "MIT OR Apache-2.0"
+repository = "https://github.com/idknerdyshit/adf"
+homepage = "https://github.com/idknerdyshit/adf"
+documentation = "https://docs.rs/adf"
+readme = "README.md"
+keywords = ["adf", "auto-lead", "xml", "leads", "serialization"]
+categories = ["encoding", "parser-implementations"]
+
+[dependencies]
+quick-xml = "0.38.4"
+tracing = { version = "0.1.41", default-features = false, features = ["std"] }
+
+[dev-dependencies]
+insta = "1.43"
+pretty_assertions = "1.4"
+tracing-subscriber = { version = "0.3.20", default-features = false, features = ["fmt", "std"] }
+
+[lints.rust]
+unsafe_code = "forbid"
+
+[lints.clippy]
+await_holding_lock = "deny"
+await_holding_refcell_ref = "deny"
+clone_on_ref_ptr = "warn"
+dbg_macro = "deny"
+inefficient_to_string = "warn"
+implicit_clone = "warn"
+large_enum_variant = "warn"
+large_futures = "warn"
+large_stack_frames = "warn"
+large_types_passed_by_value = "warn"
+manual_string_new = "warn"
+mutex_atomic = "warn"
+needless_collect = "warn"
+print_stderr = "warn"
+print_stdout = "warn"
+rc_buffer = "warn"
+rc_mutex = "warn"
+redundant_clone = "warn"
+str_to_string = "warn"
+todo = "deny"
+unimplemented = "deny"
+unnecessary_box_returns = "warn"
+unused_self = "warn"
+wildcard_imports = "warn"

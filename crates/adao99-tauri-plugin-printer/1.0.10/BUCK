@@ -1,0 +1,14 @@
+load("@buckal//:wrapper.bzl", "rust_library")
+
+rust_library(
+    name = "adao99_tauri_plugin_printer",
+    srcs = glob(["**/*.rs"]),
+    crate = "adao99_tauri_plugin_printer",
+    crate_root = "src/lib.rs",
+    edition = "2021",
+
+    visibility = ["PUBLIC"],
+    deps = [
+        "//third-party/rust/crates/base64/0.22.1:base64",
+    ],
+)

@@ -1,0 +1,14 @@
+dotfiles:
+  f_file:
+    dst: /tmp/adot_tests/install_copy/dst/file
+    src: file
+    type: copy
+  d_dir:
+    dst: /tmp/adot_tests/install_copy/dst/dir
+    src: dir
+    type: copy
+profiles:
+  test-host:
+    dotfiles:
+      - f_file
+      - d_dir

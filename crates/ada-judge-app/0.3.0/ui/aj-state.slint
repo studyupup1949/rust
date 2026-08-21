@@ -1,0 +1,53 @@
+import { AJContest, AJLeaderboardRow } from "models/contests.slint";
+import { AJProblem } from "models/problems.slint";
+import { AJSubmission } from "models/testing.slint";
+import { AJAccountData, AJPublicUserData } from "models/users.slint";
+
+export global AJUserState {
+    in property <AJAccountData> user;
+}
+
+export global AJContestState {
+    in-out property <int> index: -1;
+    in-out property <[AJProblem]> problems;
+    in-out property <[string]> problems-names;
+    in-out property <int> current-problem-index;
+    in-out property <[AJSubmission]> submissions;
+    in-out property <int> current-submission-index;
+    in-out property <[AJLeaderboardRow]> leaderboard-rows;
+    in-out property <bool> solution-picked;
+    in-out property <string> solution-name;
+    in-out property <bool> all-submissions;
+
+    public function reset() {
+        self.index = -1;
+        self.problems = [];
+        self.problems-names = [];
+        self.current-problem-index = 0;
+        self.submissions = [];
+        self.current-submission-index = 0;
+        self.leaderboard-rows = [];
+        self.solution-picked = false;
+        self.solution-name = "";
+        self.all-submissions = false;
+    }
+}
+
+export global AJProblemsState {
+    in property <[AJProblem]> problems;
+    in property <bool> problem-picked;
+    in property <string> problem-archive-name;
+    in property <bool> all-problems;
+}
+
+export global AJAppState {
+    in property <int> page: 0;
+    in property <[AJContest]> contests;
+    in property <[string]> contests-names;
+    in property <string> version;
+    in property <bool> can-create-contests;
+    in property <bool> all-contests: true;
+    in property <AJPublicUserData> opened-user-public-profile;
+    in property <AJAccountData> opened-user-private-profile;
+    in property <bool> in-contest;
+}

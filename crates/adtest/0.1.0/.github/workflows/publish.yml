@@ -1,0 +1,17 @@
+name: Deploy-Rust
+
+on:
+  push:
+    branches:
+      - "release"
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v2
+    - name: Login to Crates.io and deploy the package
+      run: |
+        cargo login ${{secrets.CRATES_TOKEN}}
+        cargo publish

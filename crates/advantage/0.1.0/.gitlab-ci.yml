@@ -1,0 +1,36 @@
+image: richardreloaded/rust:latest
+
+variables:
+  CARGO_HOME: "$CI_PROJECT_DIR/.cargo"
+
+cache:
+  paths:
+    - .cargo/registry/
+    - target/
+    - build/
+
+rust_test:
+  script:
+    - cargo +stable test --release
+
+format:
+  script:
+    - rustup component add rustfmt
+    - cargo fmt --all -- --check
+
+clippy:
+  script:
+    - rustup component add clippy
+    - cargo clippy --all --lib --tests -- --deny warnings
+
+rust_test:
+  script:
+    - cargo +stable test --release
+
+cxx_test:
+  script:
+    - mkdir -p build
+    - cd build
+    - cmake -DCMAKE_BUILD_TYPE=Release ..
+    - make -j$(nproc)
+    - make test

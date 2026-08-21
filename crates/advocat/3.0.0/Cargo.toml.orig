@@ -1,0 +1,25 @@
+[package]
+name = "advocat"
+description = "A complimentary CLI tool to jutge.org"
+version = "3.0.0"
+license="GPL-3.0"
+authors = ["Roger Díaz Viñolas <rdvdev2@gmail.com>"]
+readme = "README.MD"
+edition = "2021"
+repository = "https://github.com/rdvdev2/advocat"
+keywords = ["cli", "tui", "jutge", "upc", "fib"]
+categories = ["command-line-utilities", "development-tools"]
+exclude = [".*", "advocat.iml"]
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+regex = "1.5"
+directories = "4.0"
+exitcode = "1.1"
+termion = "1.5"
+curl = "0.4"
+zip = { version = "0.5", default-features = false, features = ["deflate"]}
+diff = "0.1"
+terminal_size = "0.1"
+configparser = "3.0"

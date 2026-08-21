@@ -1,0 +1,50 @@
+import { AJTheme } from "../aj-theme.slint";
+import { AJText, AJTextType } from "aj-text.slint";
+import "../../fonts/JetBrainsMono-2.304/fonts/variable/JetBrainsMono[wght].ttf";
+import "../../fonts/JetBrainsMono-2.304/fonts/variable/JetBrainsMono-Italic[wght].ttf";
+
+export enum AJInputType {
+    Text,
+    Password,
+    Int,
+}
+
+export component AJInput inherits Rectangle {
+    in property <AJInputType> type;
+    in property <string> placeholder;
+    in-out property <string> text;
+
+    width: self.min-width + AJTheme.fit-space;
+    height: 30px;
+
+    background: AJTheme.button;
+
+    border-radius: AJTheme.border-radius;
+
+    TextInput {
+        input-type: {
+            if type == AJInputType.Text {
+                InputType.text
+            } else if type == AJInputType.Password {
+                InputType.password
+            } else {
+                InputType.number
+            }
+        };
+        text <=> text;
+        font-family: "JetBrains Mono";
+        font-size: AJTheme.font-size-paragraph;
+        horizontal-alignment: center;
+        vertical-alignment: center;
+        color: AJTheme.button-text;
+    }
+
+    AJText {
+        visible: text.is-empty;
+        text: placeholder;
+        font-italic: true;
+        horizontal-alignment: center;
+        vertical-alignment: center;
+        color: AJTheme.button-text;
+    }
+}

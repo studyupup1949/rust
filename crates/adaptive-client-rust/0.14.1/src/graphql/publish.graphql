@@ -1,0 +1,14 @@
+mutation PublishCustomRecipe(
+    $file: Upload!
+    $project: IdOrKey!
+    $input: CreateRecipeInput!
+) {
+    createCustomRecipe(
+        input: $input
+        project: $project
+        file: $file
+    ) {
+        id
+        key
+    }
+}

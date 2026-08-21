@@ -1,0 +1,21 @@
+dotfiles:
+  f_template:
+    dst: /tmp/adot_tests/install_template/dst/config
+    src: template_file
+    type: template
+  d_template_dir:
+    dst: /tmp/adot_tests/install_template/dst/template_dir
+    src: template_dir
+    type: template
+profiles:
+  test-host:
+    dotfiles:
+      - f_template
+      - d_template_dir
+    variables:
+      git:
+        email: user@test.com
+      editor: nvim
+      colors:
+        background: "#000000"
+        foreground: "#AABBCC"

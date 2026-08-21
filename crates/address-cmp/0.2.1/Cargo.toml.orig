@@ -1,0 +1,17 @@
+[package]
+name = "address-cmp"
+version = "0.2.1"
+authors = ["Xavientois <joshua.rampersad@hotmail.com>"]
+description = "An attribute for address comparison"
+repository = "https://github.com/Xavientois/address-cmp"
+documentation = "https://docs.rs/address-cmp/0.2.0/address_cmp"
+edition = "2018"
+license = "MIT"
+
+[lib]
+proc-macro = true
+
+[dependencies]
+quote = "1"
+proc-macro2 = "1.0"
+syn = "1.0"

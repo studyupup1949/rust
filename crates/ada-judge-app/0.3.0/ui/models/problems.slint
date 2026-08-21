@@ -1,0 +1,34 @@
+export enum AJSubgroupType {
+    Sample,
+    Main
+}
+
+export struct AJSubgroup {
+    type: AJSubgroupType,
+    tests: string,
+    depends-on: string,
+    score: int,
+    score-per-test: int,
+}
+
+export enum AJProblemType {
+    Default,
+    Interactive,
+    RunTwice,
+    RunTwiceInteractive,
+    RunTwiceFirstInteractive,
+    RunTwiceSecondInteractive
+}
+
+export struct AJProblem {
+    id: int,
+    owner-id: int,
+    type: AJProblemType,
+    problem-index: int,
+    name: string,
+    time-limit-ms: int,
+    memory-limit-mb: int,
+    subgroups: [AJSubgroup],
+    can-manage: bool,
+    merge-subgroups: bool,
+}

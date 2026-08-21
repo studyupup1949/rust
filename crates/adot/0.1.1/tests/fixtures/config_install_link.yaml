@@ -1,0 +1,14 @@
+dotfiles:
+  f_file:
+    dst: /tmp/adot_tests/install_link/dst/file
+    src: file
+    type: link
+  d_dir:
+    dst: /tmp/adot_tests/install_link/dst/dir
+    src: dir
+    type: link
+profiles:
+  test-host:
+    dotfiles:
+      - f_file
+      - d_dir

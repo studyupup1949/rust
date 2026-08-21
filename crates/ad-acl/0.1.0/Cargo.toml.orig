@@ -1,0 +1,23 @@
+[package]
+name = "ad-acl"
+version = "0.1.0"
+edition = "2021"
+rust-version = "1.74"
+description = "Active Directory ACL semantics: turn a security descriptor into the concrete control primitives it grants (DCSync, Shadow Credentials, RBCD, WriteSPN, ReadGMSAPassword, …)."
+license = "MIT"
+repository = "https://github.com/icedracon/ad-acl"
+documentation = "https://docs.rs/ad-acl"
+readme = "README.md"
+keywords = ["active-directory", "acl", "security", "ldap", "windows"]
+categories = ["parser-implementations", "os::windows-apis"]
+
+[dependencies]
+windows-sddl = { version = "0.1.1", path = "../windows-sddl" }
+serde = { version = "1", features = ["derive"], optional = true }
+
+[features]
+default = []
+serde = ["dep:serde"]
+
+[badges]
+maintenance = { status = "actively-developed" }

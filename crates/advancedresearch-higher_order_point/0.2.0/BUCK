@@ -1,0 +1,14 @@
+load("@buckal//:wrapper.bzl", "rust_library")
+
+rust_library(
+    name = "higher_order_point",
+    srcs = glob(["**/*.rs"]),
+    crate = "higher_order_point",
+    crate_root = "src/lib.rs",
+    edition = "2018",
+
+    visibility = ["PUBLIC"],
+    deps = [
+        "//third-party/rust/crates/advancedresearch-higher_order_core/0.2.0:advancedresearch_higher_order_core",
+    ],
+)

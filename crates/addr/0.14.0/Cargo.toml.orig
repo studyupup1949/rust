@@ -1,0 +1,53 @@
+[package]
+name = "addr"
+description = "A library for parsing domain names"
+version = "0.14.0"
+license = "MIT/Apache-2.0"
+repository = "https://github.com/addr-rs/addr"
+documentation = "https://docs.rs/addr"
+readme = "README.md"
+keywords = ["tld", "gtld", "cctld", "domain", "no_std"]
+authors = ["rushmorem <rushmore@webenchanter.com>"]
+edition = "2018"
+
+[dependencies]
+psl-types = "2.0.7"
+
+[dependencies.psl]
+version = "2.0.14"
+optional = true
+
+[dependencies.publicsuffix]
+version = "2.1.0"
+optional = true
+
+# requires Rust v1.46
+[dependencies.no-std-net]
+version = "0.5.0"
+default-features = false
+features = ["serde"]
+optional = true
+
+[dependencies.serde]
+version = "1.0.125"
+default-features = false
+optional = true
+
+[dev-dependencies]
+criterion = "0.3.4"
+lazy_static = "1.4.0"
+psl = "2.0.14"
+publicsuffix = "2.1.0"
+rspec = "1.0.0"
+
+[[bench]]
+name = "list_benchmark"
+harness = false
+
+[features]
+default = ["psl", "std"]
+net = ["no-std-net"]
+std = []
+
+[package.metadata.docs.rs]
+all-features = true

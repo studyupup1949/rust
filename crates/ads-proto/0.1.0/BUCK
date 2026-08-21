@@ -1,0 +1,16 @@
+load("@buckal//:wrapper.bzl", "rust_library")
+
+rust_library(
+    name = "ads_proto",
+    srcs = glob(["**/*.rs"]),
+    crate = "ads_proto",
+    crate_root = "src/lib.rs",
+    edition = "2021",
+
+    visibility = ["PUBLIC"],
+    deps = [
+        "//third-party/rust/crates/bitfield/0.13.2:bitfield",
+        "//third-party/rust/crates/byteorder/1.5.0:byteorder",
+        "//third-party/rust/crates/thiserror/1.0.69:thiserror",
+    ],
+)

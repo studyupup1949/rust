@@ -1,0 +1,47 @@
+# ADS-B Anomaly Detection System Configuration
+# Copy this file to config.toml and customize as needed
+
+[adsb]
+# URL to PiAware/dump1090-fa aircraft.json endpoint
+piaware_url = "http://192.168.1.100/dump1090-fa/data/aircraft.json"
+# How often to poll for new aircraft data (milliseconds)
+poll_interval_ms = 1000
+
+[database]
+# SQLite database file path
+path = "adsb.db"
+# Enable WAL mode for better concurrency
+wal_mode = true
+
+[analysis]
+# Temporal anomaly detection thresholds
+max_messages_per_second = 10.0
+min_message_interval_ms = 50
+max_session_gap_seconds = 600
+
+# Signal strength anomaly thresholds (dBFS units from dump1090)
+min_rssi_units = -120.0
+max_rssi_units = -10.0
+suspicious_rssi_units = -20.0
+
+# Identity pattern detection (regex patterns)
+suspicious_callsigns = ["TEST.*", "FAKE.*", "ANOM.*", "DEBUG.*"]
+invalid_hex_patterns = ["000000", "FFFFFF", "AAAAAA", "123456"]
+
+[alerts]
+# Minimum confidence threshold for alerts (0.0 to 1.0)
+confidence_threshold = 0.7
+# Maximum alerts per hour to prevent spam
+max_alerts_per_hour = 100
+# Optional webhook URL for alert notifications (Discord/Slack)
+webhook_url = ""
+
+[web]
+# Web dashboard port
+port = 8080
+# Dashboard title
+dashboard_title = "ADS-B Anomaly Monitor"
+# ADS-B antenna location coordinates (latitude, longitude)
+# Used as map center and for distance calculations
+map_center_lat = 41.8781  # Your ADS-B antenna latitude
+map_center_lon = -87.6298  # Your ADS-B antenna longitude

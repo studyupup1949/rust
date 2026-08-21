@@ -1,0 +1,16 @@
+query GetModelConfig($idOrKey: IdOrKey!) {
+    model(idOrKey: $idOrKey) {
+        id
+        key
+        harmonyUrl
+        computeConfig {
+            tp
+            maxSeqLen
+            kvCacheLen
+        }
+        externalProviderData {
+            provider
+            extraParams
+        }
+    }
+}

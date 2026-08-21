@@ -1,0 +1,25 @@
+[package]
+name = "ada-judge-app"
+version = "0.2.14"
+edition = "2024"
+rust-version = "1.97.0"
+description = "Native desktop app for ada-judge"
+license = "MIT"
+
+[dependencies]
+ada-judge-public-models = "0.9.1"
+anyhow = "1.0.103"
+chrono = "0.4.45"
+futures = "0.3.32"
+futures-util = "0.3.32"
+keyring = "4.1.2"
+open = "5.3.6"
+reqwest = { version = "0.13.4", features = ["json", "multipart", "stream"] }
+rfd = "0.17.2"
+serde = "1.0.228"
+serde_json = "1.0.150"
+slint = "1.17.1"
+tokio = { version = "1.52.3", features = ["rt-multi-thread", "macros"] }
+
+[build-dependencies]
+slint-build = "1.17.1"

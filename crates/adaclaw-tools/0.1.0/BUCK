@@ -1,0 +1,24 @@
+load("@buckal//:wrapper.bzl", "rust_library")
+
+rust_library(
+    name = "adaclaw_tools",
+    srcs = glob(["**/*.rs"]),
+    crate = "adaclaw_tools",
+    crate_root = "src/lib.rs",
+    edition = "2024",
+
+    visibility = ["PUBLIC"],
+    deps = [
+        "//third-party/rust/crates/adaclaw-core/0.1.0:adaclaw_core",
+        "//third-party/rust/crates/adaclaw-security/0.1.0:adaclaw_security",
+        "//third-party/rust/crates/anyhow/1.0.104:anyhow",
+        "//third-party/rust/crates/async-trait/0.1.92:async_trait",
+        "//third-party/rust/crates/reqwest/0.11.27:reqwest",
+        "//third-party/rust/crates/serde/1.0.229:serde",
+        "//third-party/rust/crates/serde_json/1.0.151:serde_json",
+        "//third-party/rust/crates/thiserror/1.0.69:thiserror",
+        "//third-party/rust/crates/tokio/1.53.1:tokio",
+        "//third-party/rust/crates/toml/0.8.23:toml",
+        "//third-party/rust/crates/tracing/0.1.44:tracing",
+    ],
+)

@@ -1,0 +1,33 @@
+[package]
+name = "ade-elementary-circuits"
+version = "0.1.1"
+edition = "2021"
+description = "Implementation of Johnson's algorithm for finding elementary circuits in directed graphs."
+license = "MIT OR Apache-2.0"
+repository = "https://github.com/riccardoscalco/ade"
+homepage = "https://github.com/riccardoscalco/ade"
+keywords = ["graph", "circuits", "johnson", "algorithm", "directed"]
+categories = ["algorithms", "mathematics"]
+
+[dependencies]
+ade-traits = { path = "../ade-traits", version = "0.1.0" }
+ade-strongly-connected-components = { path = "../ade-strongly-connected-components", version = "0.1.0" }
+ade-common = { path = "../ade-common", version = "0.1.0" }
+smallvec = "1.15.1"
+
+[dev-dependencies]
+ade-graph-generators = { path = "../ade-graph-generators" }
+ade-common = { path = "../ade-common", features = ["test-helpers"] }
+ade-graph = { path = "../ade-graph" }
+criterion = { workspace = true }
+graph-cycles = "0.3.0"
+petgraph = "0.8.2"
+rand = "0.8"
+
+[features]
+test-utils = []
+
+[[bench]]
+name = "elementary_circuits_bench"
+harness = false
+required-features = ["test-utils"]

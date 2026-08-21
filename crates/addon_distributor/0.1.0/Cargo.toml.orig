@@ -1,0 +1,18 @@
+[package]
+name = "addon_distributor"
+version = "0.1.0"
+authors = ["Akshay S Dinesh <asdofindia@gmail.com>"]
+edition = "2018"
+license = "AGPL-3.0-or-later"
+description = "A command-line utility to maintain an addon (webextension) updates file in json format"
+homepage = "https://learnlearn.in/projects/addon-distributor"
+repository = "https://gitlab.com/asdofindia/addon_distributor"
+documentation = "https://learnlearn.in/projects/addon-distributor"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+clap = "2.33.0"
+dialoguer = "0.4.0"
+serde = { version = "1.0.101", features = ["derive"] }
+serde_json = "1.0.41"

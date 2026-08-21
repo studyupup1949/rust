@@ -1,0 +1,19 @@
+notifications:
+  email: false
+
+sudo: false
+
+language: rust
+
+rust:
+  - beta
+  - nightly
+
+matrix:
+  include:
+    - os: osx
+      rust: nightly
+
+script:
+  - RUST_BACKTRACE=1 cargo test --all --verbose
+

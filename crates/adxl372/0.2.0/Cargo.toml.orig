@@ -1,0 +1,23 @@
+[package]
+name = "adxl372"
+description = "`#![no_std]` driver for the Analog Devices ADXL372 high-g 3-axis MEMS accelerometer."
+authors = ["Larry Merino <merino17@icloud.com>"]
+categories = ["no-std", "embedded", "hardware-support"]
+keywords = ["embedded-hal", "analog-devices", "accelerometer"]
+version = "0.2.0"
+edition = "2024"
+repository = "https://github.com/LarryMerino/adxl372"
+license = "MIT OR Apache-2.0"
+readme = "README.md"
+
+[features]
+default = []
+defmt = ["dep:defmt"]
+
+[dependencies]
+embedded-hal = "1.0.0"
+modular-bitfield = { version = "0.13.1" }
+defmt = { version = "1.1.0", optional = true }
+
+[dev-dependencies]
+embedded-hal-mock = { version = "0.11.1", features = ["eh1"]}

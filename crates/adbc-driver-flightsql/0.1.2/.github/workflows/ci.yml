@@ -1,0 +1,37 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+env:
+  RUST_BACKTRACE: 1
+
+jobs:
+  integration-test:
+    name: Integration Test
+    runs-on: ubuntu-latest
+
+    services:
+      flightsql:
+        image: ghcr.io/swanlake-io/swanlake:latest
+        ports:
+          - 4214:4214
+
+    steps:
+      - uses: actions/checkout@v5
+
+      - name: Install Rust
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Wait for FlightSQL server
+        run: |
+          timeout 30 bash -c 'until nc -z localhost 4214; do sleep 1; done' || exit 1
+          echo "FlightSQL server is ready"
+
+      - name: Run integration tests
+        run: cargo test --test integration_test
+        env:
+          RUST_BACKTRACE: 1

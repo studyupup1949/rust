@@ -1,0 +1,24 @@
+load("@buckal//:wrapper.bzl", "rust_library")
+
+rust_library(
+    name = "adrs_core",
+    srcs = glob(["**/*.rs"]),
+    crate = "adrs_core",
+    crate_root = "src/lib.rs",
+    edition = "2024",
+
+    visibility = ["PUBLIC"],
+    deps = [
+        "//third-party/rust/crates/fuzzy-matcher/0.3.7:fuzzy_matcher",
+        "//third-party/rust/crates/minijinja/2.23.0:minijinja",
+        "//third-party/rust/crates/pulldown-cmark-to-cmark/17.0.0:pulldown_cmark_to_cmark",
+        "//third-party/rust/crates/pulldown-cmark/0.12.2:pulldown_cmark",
+        "//third-party/rust/crates/regex/1.13.1:regex",
+        "//third-party/rust/crates/serde/1.0.229:serde",
+        "//third-party/rust/crates/serde_yaml/0.9.33:serde_yaml",
+        "//third-party/rust/crates/thiserror/2.0.20:thiserror",
+        "//third-party/rust/crates/time/0.3.55:time",
+        "//third-party/rust/crates/toml/0.8.23:toml",
+        "//third-party/rust/crates/walkdir/2.5.0:walkdir",
+    ],
+)

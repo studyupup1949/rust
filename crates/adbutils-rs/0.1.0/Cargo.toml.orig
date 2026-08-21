@@ -1,0 +1,50 @@
+[package]
+name = "adbutils-rs"
+version = "0.1.0"
+edition = "2021"
+rust-version = "1.80"
+description = "Async Rust client for the Android Debug Bridge (adb) server smartsocket protocol. Port of adbutils-python."
+license = "MIT"
+repository = "https://github.com/fllaa/adbutils-rs"
+homepage = "https://github.com/fllaa/adbutils-rs"
+documentation = "https://docs.rs/adbutils-rs"
+readme = "README.md"
+authors = ["fllaa <fallahandyprakasa26@gmail.com>"]
+keywords = ["adb", "android", "automation", "uiautomator", "async"]
+categories = ["api-bindings", "development-tools", "asynchronous"]
+exclude = ["assets/binaries/*", "/.github", "/target"]
+
+# Publish package as `adbutils-rs`, but keep the import path `adbutils`
+# (`use adbutils::...`) and the CLI binary name `adbutils`.
+[lib]
+name = "adbutils"
+
+[features]
+default = ["image", "apk", "screenrecord", "cli"]
+image = ["dep:image"]
+apk = ["dep:reqwest", "dep:zip"]
+screenrecord = ["dep:libc"]
+cli = ["dep:clap"]
+# e2e tests require a connected device/emulator
+e2e = []
+
+[dependencies]
+tokio = { version = "1", features = ["net", "io-util", "time", "process", "rt", "rt-multi-thread", "macros", "sync", "fs", "signal"] }
+thiserror = "2"
+regex = "1"
+chrono = { version = "0.4", default-features = false, features = ["clock"] }
+futures-core = "0.3"
+async-stream = "0.3"
+log = "0.4"
+image = { version = "0.25", optional = true }
+reqwest = { version = "0.12", default-features = false, features = ["rustls-tls", "stream"], optional = true }
+zip = { version = "2", default-features = false, features = ["deflate"], optional = true }
+clap = { version = "4", features = ["derive"], optional = true }
+libc = { version = "0.2", optional = true }
+
+[[bin]]
+name = "adbutils"
+required-features = ["cli"]
+
+[dev-dependencies]
+tokio = { version = "1", features = ["full"] }

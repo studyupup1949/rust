@@ -1,0 +1,13 @@
+dotfiles:
+  f_gitconfig:
+    dst: /tmp/adot_tests/template/dst/.gitconfig
+    src: gitconfig
+    type: template
+profiles:
+  test-host:
+    dotfiles:
+      - f_gitconfig
+    variables:
+      git:
+        email: test@example.com
+      editor: nvim

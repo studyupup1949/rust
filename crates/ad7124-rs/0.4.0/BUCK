@@ -1,0 +1,15 @@
+load("@buckal//:wrapper.bzl", "rust_library")
+
+rust_library(
+    name = "ad7124_rs",
+    srcs = glob(["**/*.rs"]),
+    crate = "ad7124_rs",
+    crate_root = "src/lib.rs",
+    edition = "2021",
+    features = ["default"],
+
+    visibility = ["PUBLIC"],
+    deps = [
+        "//third-party/rust/crates/heapless/0.8.0:heapless",
+    ],
+)

@@ -1,0 +1,19 @@
+load("@buckal//:wrapper.bzl", "rust_library")
+
+rust_library(
+    name = "adns_proto",
+    srcs = glob(["**/*.rs"]),
+    crate = "adns_proto",
+    crate_root = "src/lib.rs",
+    edition = "2021",
+    features = ["default"],
+
+    visibility = ["PUBLIC"],
+    deps = [
+        "//third-party/rust/crates/chrono/0.4.45:chrono",
+        "//third-party/rust/crates/hex/0.4.3:hex",
+        "//third-party/rust/crates/smallvec/1.15.2:smallvec",
+        "//third-party/rust/crates/strum/0.24.1:strum",
+        "//third-party/rust/crates/thiserror/1.0.69:thiserror",
+    ],
+)

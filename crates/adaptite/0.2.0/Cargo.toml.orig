@@ -1,0 +1,49 @@
+[package]
+name = "adaptite"
+version = "0.2.0"
+edition = "2024"
+rust-version = "1.88"
+description = "Fine-grained reactivity (signals, thunks, memos, effects, events) for the runite runtime"
+license = "MIT OR Apache-2.0"
+repository = "https://github.com/willmtemple/adaptite"
+documentation = "https://docs.rs/adaptite"
+readme = "README.md"
+keywords = ["reactive", "signals", "incremental", "frp", "runite"]
+categories = ["asynchronous", "caching", "gui"]
+# Keep the crates.io package to what a *user* of the library needs: source,
+# examples, README/CHANGELOG, licenses. Repo process files (CI, toolchain
+# pins, static-analysis rules) stay out.
+exclude = [
+  "/.github",
+  "/.claude",
+  "/target",
+  "/cop-checks",
+  ".gitignore",
+  "mise.toml",
+  "rust-toolchain.toml",
+  "ROADMAP.md",
+]
+
+[dependencies]
+# Adaptite is coupled to runite's *scheduler semantics* (microtask ordering,
+# quiescence, task terminalization), not merely to its API surface — and it must
+# resolve the same runite the application does, or reactive work lands on a
+# microtask queue nobody drains. Track one runite minor at a time and cut an
+# adaptite release for each; see `mise run runite-current` for the drift check.
+runite = "0.2"
+tracing = { version = "0.1", default-features = false }
+hashbrown = "0.17"
+
+[dev-dependencies]
+criterion = { version = "0.5", default-features = false, features = [
+    "cargo_bench_support",
+] }
+tracing-subscriber = { version = "0.3", default-features = false, features = [
+    "env-filter",
+    "fmt",
+    "std",
+] }
+
+[[bench]]
+name = "graph"
+harness = false

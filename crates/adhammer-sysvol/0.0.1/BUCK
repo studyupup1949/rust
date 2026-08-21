@@ -1,0 +1,19 @@
+load("@buckal//:wrapper.bzl", "rust_library")
+
+rust_library(
+    name = "adhammer_sysvol",
+    srcs = glob(["**/*.rs"]),
+    crate = "adhammer_sysvol",
+    crate_root = "src/lib.rs",
+    edition = "2021",
+
+    visibility = ["PUBLIC"],
+    deps = [
+        "//third-party/rust/crates/adhammer-core/0.0.1:adhammer_core",
+        "//third-party/rust/crates/aes/0.8.4:aes",
+        "//third-party/rust/crates/anyhow/1.0.104:anyhow",
+        "//third-party/rust/crates/base64/0.22.1:base64",
+        "//third-party/rust/crates/cbc/0.1.2:cbc",
+        "//third-party/rust/crates/tracing/0.1.44:tracing",
+    ],
+)

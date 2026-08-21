@@ -1,0 +1,15 @@
+load("@buckal//:wrapper.bzl", "rust_binary")
+
+rust_binary(
+    name = "adder_zfk_rs",
+    srcs = glob(["**/*.rs"]),
+    crate = "adder_zfk_rs",
+    crate_root = "src/main.rs",
+    edition = "2021",
+
+    visibility = ["PUBLIC"],
+    deps = [
+        "//third-party/rust/crates/add_one-zfk-rs/0.1.0:add_one_zfk_rs",
+        "//third-party/rust/crates/rand/0.8.7:rand",
+    ],
+)

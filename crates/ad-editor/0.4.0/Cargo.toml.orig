@@ -1,0 +1,80 @@
+[package]
+name = "ad-editor"
+version = "0.4.0"
+edition = "2024"
+authors = ["sminez <innes.andersonmorrison@gmail.com>"]
+license = "MIT"
+repository = "https://github.com/sminez/ad"
+documentation = "https://docs.rs/ad-editor"
+readme = "README.md"
+description = "An adaptable text editor"
+include = [
+    "src/**/*",
+    "data/**/*",
+    "Cargo.toml",
+    "README.md"
+]
+keywords = [ "terminal", "editor", "text-editor" ]
+categories = [ "development-tools", "text-editors", "command-line-utilities" ]
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+
+[workspace]
+members = [ "crates/*", "fuzz", "xtask" ]
+
+[features]
+fuzz = ["arbitrary"]
+
+[[bin]]
+doc = false
+name = "ad"
+path = "src/main.rs"
+
+[[bench]]
+name = "bench_main"
+harness = false
+
+[profile.release]
+# strip = true
+lto = true
+codegen-units = 1
+
+# Used with https://github.com/flamegraph-rs/flamegraph
+[profile.flamegraph]
+inherits = "release"
+debug=true
+strip = false
+
+# For a release optimised build that is quicker to run while iterating locally
+[profile.release-test]
+inherits = "release"
+lto = false
+codegen-units = 16
+
+[dependencies]
+ad_event = { version = "0.4", path = "crates/ad_event" }
+aho-corasick = "1.1.4"
+arbitrary = { version = "1", features = ["derive"], optional = true }
+lexopt = "0.3.1"
+libc = "0.2.178"
+libloading = "0.9.0"
+lsp-types = "0.97.0"
+ninep = { version = "0.5", path = "crates/ninep", default-features = false }
+serde = "1.0.228"
+serde_json = "1.0.145"
+structex = { version = "0.6", default-features = false }
+toml = { version = "0.9.8", features = [ "preserve_order" ] }
+tracing = "0.1.43"
+tracing-subscriber = { version = "0.3.22", features = [ "fmt" ] }
+tree-sitter = "0.25.10"
+unicode-width = "0.2.2"
+
+[dev-dependencies]
+assert_fs = "1.1"
+criterion = { version = "0.8.0", features = ["html_reports"] }
+libflate = "2.2.1"
+simple_test_case = "1"
+simple_txtar = "1"
+tree-sitter-python = "0.25.0"
+tree-sitter-rust = "0.24.0"

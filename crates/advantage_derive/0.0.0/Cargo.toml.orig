@@ -1,0 +1,9 @@
+[package]
+name = "advantage_derive"
+description = "Placeholder for possible proc macros for the advantage crate"
+license = "MIT"
+version = "0.0.0"
+authors = ["Richard Wiedenhöft <richard@wiedenhoeft.xyz>"]
+edition = "2018"
+
+[dependencies]

@@ -1,0 +1,25 @@
+[package]
+name = "adoptium_api"
+description = "Typed wrapper for a Adoptium REST API"
+version = "0.1.0"
+repository = "https://gitlab.com/h45h/adoptium_api"
+readme = "README.md"
+license = "MIT"
+keywords = [ "java", "rest", "api", "wrapper" ]
+edition = "2024"
+
+[dependencies]
+thiserror = "2.0.12"
+url = { version = "2.5.4", features = ["serde"] }
+chrono = { version = "0.4.41", features = ["serde"] }
+strum = { version = "0.27.2", features = ["derive"] }
+serde = { version = "1.0.219", features = ["derive"] }
+reqwest = { version = "0.12.22", features = ["json"] }
+
+[dev-dependencies]
+tokio = { version = "1.47.0", features = ["full"] }
+reqwest = { version = "0.12.22", features = ["json", "stream"] }
+futures-util = "0.3.31"
+tokio-util = "0.7.16"
+async-compression = { version = "0.4.27", features = ["tokio", "gzip"] }
+astral-tokio-tar = "0.5.2"

@@ -1,0 +1,276 @@
+{
+  "id": "patterns/pto-balance-request",
+  "title": "PTO Balance with View-Swap Toggle",
+  "description": "Hero banner, balance dashboard in emphasis, VIEW SWAP TRICK: ToggleVisibility targets 3 elements to replace entire card view from dashboard to request form. Expanded ChoiceSet for PTO type.",
+  "category": "patterns",
+  "tags": [
+    "PTO",
+    "leave",
+    "HR",
+    "balance",
+    "form",
+    "toggle",
+    "view-swap",
+    "hero"
+  ],
+  "use_cases": [
+    "Leave balance + request",
+    "Dashboard-to-form swap",
+    "Multi-view single card",
+    "HR self-service"
+  ],
+  "host_targets": [
+    "generic",
+    "teams",
+    "web_chat"
+  ],
+  "complexity": "advanced",
+  "card": {
+    "type": "AdaptiveCard",
+    "body": [
+      {
+        "type": "Container",
+        "backgroundImage": {
+          "url": "https://github.com/adaptive-cards/api-templates/raw/main/images/plane-g644447f4d_1920.jpg",
+          "horizontalAlignment": "Center",
+          "verticalAlignment": "Center"
+        },
+        "minHeight": "200px",
+        "verticalContentAlignment": "Bottom",
+        "items": [
+          {
+            "type": "ColumnSet",
+            "columns": [
+              {
+                "type": "Column",
+                "width": "stretch"
+              },
+              {
+                "type": "Column",
+                "width": "225px",
+                "items": [
+                  {
+                    "type": "TextBlock",
+                    "wrap": true,
+                    "size": "ExtraLarge",
+                    "weight": "Bolder",
+                    "text": "Your next break starts here"
+                  }
+                ],
+                "style": "default"
+              }
+            ]
+          }
+        ],
+        "bleed": true,
+        "id": "hero"
+      },
+      {
+        "type": "Container",
+        "items": [
+          {
+            "type": "TextBlock",
+            "text": "\ud83d\udfe1 Upcoming: ${already_planned}",
+            "wrap": true,
+            "$when": "${already_planned != ''}"
+          },
+          {
+            "type": "TextBlock",
+            "text": "Your current balances",
+            "wrap": true,
+            "weight": "Bolder"
+          },
+          {
+            "type": "Container",
+            "items": [
+              {
+                "type": "ColumnSet",
+                "columns": [
+                  {
+                    "type": "Column",
+                    "width": "auto",
+                    "items": [
+                      {
+                        "type": "Image",
+                        "url": "${icon_url}",
+                        "width": "35px"
+                      }
+                    ]
+                  },
+                  {
+                    "type": "Column",
+                    "width": "stretch",
+                    "items": [
+                      {
+                        "type": "TextBlock",
+                        "text": "${name}",
+                        "wrap": true,
+                        "size": "Medium",
+                        "weight": "Bolder"
+                      },
+                      {
+                        "type": "TextBlock",
+                        "text": "${accrual_description}",
+                        "wrap": true,
+                        "isSubtle": true,
+                        "size": "Small",
+                        "spacing": "None"
+                      }
+                    ]
+                  },
+                  {
+                    "type": "Column",
+                    "width": "100px",
+                    "items": [
+                      {
+                        "type": "TextBlock",
+                        "text": "${balance}h",
+                        "wrap": true,
+                        "size": "Medium",
+                        "weight": "Bolder"
+                      }
+                    ],
+                    "verticalContentAlignment": "Center",
+                    "horizontalAlignment": "Right"
+                  }
+                ],
+                "$data": "${allowances}",
+                "spacing": "Medium"
+              }
+            ],
+            "style": "emphasis",
+            "spacing": "Small"
+          },
+          {
+            "type": "ActionSet",
+            "actions": [
+              {
+                "type": "Action.ToggleVisibility",
+                "title": "Request PTO now",
+                "targetElements": [
+                  "request-pto",
+                  "hero",
+                  "balances"
+                ]
+              }
+            ],
+            "horizontalAlignment": "Left",
+            "id": "toggle"
+          }
+        ],
+        "id": "balances"
+      },
+      {
+        "type": "Container",
+        "style": "default",
+        "items": [
+          {
+            "type": "ColumnSet",
+            "columns": [
+              {
+                "type": "Column",
+                "width": "stretch",
+                "items": [
+                  {
+                    "type": "TextBlock",
+                    "text": "From",
+                    "wrap": true,
+                    "size": "Small"
+                  },
+                  {
+                    "type": "Input.Date",
+                    "spacing": "None",
+                    "id": "from-date"
+                  }
+                ]
+              },
+              {
+                "type": "Column",
+                "width": "stretch",
+                "items": [
+                  {
+                    "type": "TextBlock",
+                    "text": "To",
+                    "wrap": true,
+                    "size": "Small",
+                    "spacing": "Small"
+                  },
+                  {
+                    "type": "Input.Date",
+                    "spacing": "None",
+                    "id": "to-date"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "type": "TextBlock",
+            "text": "Type of PTO",
+            "wrap": true,
+            "size": "Small",
+            "spacing": "Small"
+          },
+          {
+            "type": "Input.ChoiceSet",
+            "choices": [
+              {
+                "title": "Annual Leave",
+                "value": "Choice 1"
+              },
+              {
+                "title": "Parental Leave",
+                "value": "Choice 2"
+              },
+              {
+                "title": "Compassionate Leave",
+                "value": "Choice 3"
+              },
+              {
+                "title": "Jury Duty",
+                "value": "Choice 4"
+              },
+              {
+                "title": "Sick Leave",
+                "value": "Choice 5"
+              }
+            ],
+            "placeholder": "Placeholder text",
+            "spacing": "Small",
+            "id": "type-of-pto",
+            "style": "expanded"
+          },
+          {
+            "type": "TextBlock",
+            "text": "Comment",
+            "wrap": true,
+            "spacing": "Small",
+            "size": "Small"
+          },
+          {
+            "type": "Input.Text",
+            "placeholder": "Optional",
+            "spacing": "None",
+            "isMultiline": true,
+            "id": "comment"
+          },
+          {
+            "type": "ActionSet",
+            "actions": [
+              {
+                "type": "Action.Submit",
+                "title": "Submit PTO request",
+                "id": "_success_Your_PTO_request_was_submitted"
+              }
+            ]
+          }
+        ],
+        "id": "request-pto",
+        "isVisible": false
+      }
+    ],
+    "$schema": "http://adaptivecards.io/schemas/adaptive-card.json",
+    "version": "1.2"
+  },
+  "notes": ""
+}

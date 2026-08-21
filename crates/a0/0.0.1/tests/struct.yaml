@@ -1,0 +1,12 @@
+data: test
+optional_field: null
+number_field: 0
+yaml_list:
+  - item1
+  - item2
+  - item3
+nested:
+  key: value
+mapping:
+  key1: 1
+  key2: 2

@@ -1,0 +1,8 @@
+[package]
+name = "a0b62b8eeb5f9247747e"
+version = "0.2.0"
+edition = "2024"
+description = "New library"
+license = "Apache-2.0"
+
+[dependencies]

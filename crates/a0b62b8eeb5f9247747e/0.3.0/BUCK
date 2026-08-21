@@ -1,0 +1,12 @@
+load("@buckal//:wrapper.bzl", "rust_library")
+
+rust_library(
+    name = "a0b62b8eeb5f9247747e",
+    srcs = glob(["**/*.rs"]),
+    crate = "a0b62b8eeb5f9247747e",
+    crate_root = "src/lib.rs",
+    edition = "2024",
+    features = ["default"],
+
+    visibility = ["PUBLIC"],
+)

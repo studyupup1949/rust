@@ -1,0 +1,31 @@
+[package]
+name = "a4"
+version = "0.0.4"
+edition = "2021"
+description = "A forth-inspired, bytecode-compiled scripting language for Anachro Powerbus"
+repository = "https://github.com/anachro-rs/anachro-forth"
+authors = ["James Munns <james@onevariable.com>"]
+readme = "../README.md"
+license = "MIT OR Apache-2.0"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+rzcobs = "0.1.2"
+kolben = "0.0.3"
+structopt = "0.3.25"
+
+[dependencies.a4-core]
+path = "../core"
+features = ["std"]
+version = "0.0.4"
+
+[dependencies.postcard]
+version = "0.7.2"
+features = ["use-std"]
+
+[dependencies.serde]
+version = "1.0.130"
+features = ["derive"]
+[package.metadata.docs.rs]
+targets = ["x86_64-unknown-linux-gnu"]

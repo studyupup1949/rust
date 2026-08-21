@@ -1,0 +1,19 @@
+load("@buckal//:wrapper.bzl", "rust_library")
+
+rust_library(
+    name = "a4",
+    srcs = glob(["**/*.rs"]),
+    crate = "a4",
+    crate_root = "src/lib.rs",
+    edition = "2021",
+
+    visibility = ["PUBLIC"],
+    deps = [
+        "//third-party/rust/crates/a4-core/0.0.3:a4_core",
+        "//third-party/rust/crates/kolben/0.0.3:kolben",
+        "//third-party/rust/crates/postcard/0.7.3:postcard",
+        "//third-party/rust/crates/rzcobs/0.1.2:rzcobs",
+        "//third-party/rust/crates/serde/1.0.229:serde",
+        "//third-party/rust/crates/structopt/0.3.26:structopt",
+    ],
+)

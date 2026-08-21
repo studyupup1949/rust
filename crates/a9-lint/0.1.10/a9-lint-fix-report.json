@@ -1,0 +1,102 @@
+{
+  "succeeded": false,
+  "files": {
+    "/Users/chanwooahn/Documents/dev/rust/a9-lint/src/rules/use_group_order.rs": {
+      "initial_violations": 0,
+      "final_violations": 0,
+      "remaining_violations": []
+    },
+    "/Users/chanwooahn/Documents/dev/rust/a9-lint/src/rules/mod.rs": {
+      "initial_violations": 0,
+      "final_violations": 0,
+      "remaining_violations": []
+    },
+    "/Users/chanwooahn/Documents/dev/rust/a9-lint/src/rules/cfg_order.rs": {
+      "initial_violations": 0,
+      "final_violations": 0,
+      "remaining_violations": []
+    },
+    "/Users/chanwooahn/Documents/dev/rust/a9-lint/src/rules/theta_actors_at_bottom.rs": {
+      "initial_violations": 0,
+      "final_violations": 0,
+      "remaining_violations": []
+    },
+    "/Users/chanwooahn/Documents/dev/rust/a9-lint/src/rules/item_order.rs": {
+      "initial_violations": 0,
+      "final_violations": 0,
+      "remaining_violations": []
+    },
+    "/Users/chanwooahn/Documents/dev/rust/a9-lint/src/config.rs": {
+      "initial_violations": 1,
+      "final_violations": 0,
+      "remaining_violations": []
+    },
+    "/Users/chanwooahn/Documents/dev/rust/a9-lint/src/rules/use_toplevel.rs": {
+      "initial_violations": 1,
+      "final_violations": 1,
+      "remaining_violations": [
+        {
+          "rule": "no-vague-comment",
+          "line": 41,
+          "message": "free-floating comment block is not attached to any syntax item",
+          "has_fixer": true
+        }
+      ]
+    },
+    "/Users/chanwooahn/Documents/dev/rust/a9-lint/src/rules/theta_actor_fields_gated.rs": {
+      "initial_violations": 0,
+      "final_violations": 0,
+      "remaining_violations": []
+    },
+    "/Users/chanwooahn/Documents/dev/rust/a9-lint/src/rules/path_depth.rs": {
+      "initial_violations": 0,
+      "final_violations": 0,
+      "remaining_violations": []
+    },
+    "/Users/chanwooahn/Documents/dev/rust/a9-lint/src/rules/common.rs": {
+      "initial_violations": 2,
+      "final_violations": 0,
+      "remaining_violations": []
+    },
+    "/Users/chanwooahn/Documents/dev/rust/a9-lint/src/rules/theta_no_private_type_leak.rs": {
+      "initial_violations": 0,
+      "final_violations": 0,
+      "remaining_violations": []
+    },
+    "/Users/chanwooahn/Documents/dev/rust/a9-lint/src/rules/no_allow_unused_imports.rs": {
+      "initial_violations": 0,
+      "final_violations": 0,
+      "remaining_violations": []
+    },
+    "/Users/chanwooahn/Documents/dev/rust/a9-lint/src/rules/no_vague_comment.rs": {
+      "initial_violations": 0,
+      "final_violations": 0,
+      "remaining_violations": []
+    },
+    "/Users/chanwooahn/Documents/dev/rust/a9-lint/src/rules/pre_commit_hook.rs": {
+      "initial_violations": 0,
+      "final_violations": 0,
+      "remaining_violations": []
+    },
+    "/Users/chanwooahn/Documents/dev/rust/a9-lint/src/main.rs": {
+      "initial_violations": 0,
+      "final_violations": 0,
+      "remaining_violations": []
+    },
+    "/Users/chanwooahn/Documents/dev/rust/a9-lint/src/rules/normalized_use_stmt.rs": {
+      "initial_violations": 0,
+      "final_violations": 0,
+      "remaining_violations": []
+    },
+    "/Users/chanwooahn/Documents/dev/rust/a9-lint/src/rules/theta_actor_private_gate.rs": {
+      "initial_violations": 0,
+      "final_violations": 0,
+      "remaining_violations": []
+    }
+  },
+  "project": {
+    "initial_violations": 2,
+    "final_violations": 0,
+    "remaining_violations": []
+  }
+}

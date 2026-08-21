@@ -1,0 +1,13 @@
+[package]
+name = "a9n_abi"
+version = "0.1.0"
+edition = "2024"
+license = "MIT"
+description = "ABI definitions for the A9N Microkernel, including kernel call numbers, capability operation types, message register layouts, and low-level calling conventions."
+
+[dependencies]
+a9n-types = "0.1.0"
+
+[features]
+x86_64 = []
+default = ["x86_64"]

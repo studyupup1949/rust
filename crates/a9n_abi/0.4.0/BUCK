@@ -1,0 +1,16 @@
+load("@buckal//:wrapper.bzl", "rust_library")
+
+rust_library(
+    name = "a9n_abi",
+    srcs = glob(["**/*.rs"]),
+    crate = "a9n_abi",
+    crate_root = "src/lib.rs",
+    edition = "2024",
+    features = ["default"],
+
+    visibility = ["PUBLIC"],
+    deps = [
+        "//third-party/rust/crates/a9n-types/0.3.0:a9n_types",
+        "//third-party/rust/crates/bitflags/2.13.1:bitflags",
+    ],
+)

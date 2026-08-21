@@ -1,0 +1,24 @@
+#!/usr/bin/env bash
+# DO NOT EDIT — regenerate with: cargo a9-lint
+
+if cargo fmt -- --check && cargo clippy -- -D warnings && cargo a9-lint --check; then
+    exit 0
+fi
+
+git stash push --keep-index -m "pre-commit-auto-fix-backup"
+STASH_CREATED=$?
+
+cargo fmt
+cargo clippy --fix --allow-staged --allow-dirty -- -D warnings || true
+cargo a9-lint
+
+git add -A
+
+if cargo fmt -- --check && cargo clippy -- -D warnings && cargo a9-lint --check; then
+    [ "$STASH_CREATED" -eq 0 ] && echo "WIP saved in stash — restore with: git stash pop"
+    exit 0
+fi
+
+echo "Auto-fix incomplete. Fix remaining errors manually."
+[ "$STASH_CREATED" -eq 0 ] && echo "To undo auto-fix changes: git stash pop"
+exit 1

@@ -1,0 +1,17 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+echo '=== pre-commit: fmt check ==='
+cargo fmt -- --check
+
+echo '=== pre-commit: clippy check ==='
+cargo clippy -- -D warnings
+
+echo '=== pre-commit: test ==='
+cargo test --quiet
+
+echo '=== pre-commit: a9-lint check ==='
+cargo run --quiet -- --check || {
+    echo 'a9-lint check failed. Run: cargo run -- --check'
+    exit 1
+}

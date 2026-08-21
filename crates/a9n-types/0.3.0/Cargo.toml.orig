@@ -1,0 +1,8 @@
+[package]
+name = "a9n-types"
+version = "0.3.0"
+edition = "2021"
+license = "MIT"
+description = "Common, architecture-independent type definitions for the A9N Microkernel ecosystem, including capabilities, message formats, errors, and shared kernel/user data structures."
+
+[dependencies]

@@ -1,0 +1,87 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+env:
+  CARGO_TERM_COLOR: always
+  RUSTFLAGS: -Dwarnings
+
+jobs:
+  ci:
+    name: CI
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          components: clippy, rustfmt
+      - uses: Swatinem/rust-cache@v2
+
+      - name: fmt
+        run: cargo fmt --check
+
+      - name: clippy
+        run: cargo clippy -- -D warnings
+
+      - name: test
+        run: cargo test
+
+      - name: self-lint
+        run: |
+          git config core.hooksPath .githooks
+          cargo run --quiet
+          cargo run --quiet -- check
+
+  release:
+    name: Release binaries
+    needs: ci
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        include:
+          - os: ubuntu-latest
+            target: x86_64-unknown-linux-gnu
+            suffix: ''
+          - os: macos-latest
+            target: x86_64-apple-darwin
+            suffix: ''
+          - os: macos-latest
+            target: aarch64-apple-darwin
+            suffix: ''
+          - os: windows-latest
+            target: x86_64-pc-windows-msvc
+            suffix: .exe
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: ${{ matrix.target }}
+      - uses: Swatinem/rust-cache@v2
+
+      - name: Build
+        run: cargo build --release --target ${{ matrix.target }}
+
+      - name: Prepare binary
+        shell: bash
+        run: |
+          BINARY_NAME="a9-lint${{ matrix.suffix }}"
+          BINARY_PATH="target/${{ matrix.target }}/release/$BINARY_NAME"
+          RELEASE_NAME="a9-lint-${{ github.ref_name }}-${{ matrix.target }}${{ matrix.suffix }}"
+          
+          if [ "${{ runner.os }}" == "macOS" ] || [ "${{ runner.os }}" == "Linux" ]; then
+            strip "$BINARY_PATH"
+          fi
+          
+          mkdir -p release
+          cp "$BINARY_PATH" "release/$RELEASE_NAME"
+          ls -lah "release/$RELEASE_NAME"
+
+      - name: Upload to release
+        uses: softprops/action-gh-release@v1
+        with:
+          files: release/a9-lint-*
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

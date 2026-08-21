@@ -1,0 +1,21 @@
+[package]
+name = "a9-lint"
+version = "0.1.2"
+edition = "2024"
+authors = ["Chanwoo Ahn <cwahn0904@gmail.com>"]
+license = "MIT"
+description = "An opinionated Rust style linter configurable via Cargo.toml workspace metadata"
+repository = "https://github.com/ars-vivendi/a9-lint"
+keywords = ["lint", "style", "cargo", "subcommand"]
+categories = ["development-tools", "development-tools::cargo-plugins"]
+
+[[bin]]
+name = "cargo-a9-lint"
+path = "src/main.rs"
+
+[dependencies]
+proc-macro2 = { version = "1", features = ["span-locations"] }
+syn = { version = "2", features = ["full", "extra-traits", "visit"] }
+walkdir = "2"
+toml = "0.8"
+serde = { version = "1", features = ["derive"] }

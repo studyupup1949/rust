@@ -1,0 +1,26 @@
+load("@buckal//:wrapper.bzl", "rust_library")
+
+rust_library(
+    name = "a_block_chain",
+    srcs = glob(["**/*.rs"]),
+    crate = "a_block_chain",
+    crate_root = "src/lib.rs",
+    edition = "2018",
+    features = ["default"],
+
+    visibility = ["PUBLIC"],
+    deps = [
+        "//third-party/rust/crates/actix-rt/2.11.0:actix_rt",
+        "//third-party/rust/crates/base64/0.20.0:base64",
+        "//third-party/rust/crates/bincode/1.3.3:bincode",
+        "//third-party/rust/crates/bytes/1.12.1:bytes",
+        "//third-party/rust/crates/hex/0.4.3:hex",
+        "//third-party/rust/crates/merkle-log/0.0.4:merkle_log",
+        "//third-party/rust/crates/rand/0.8.7:rand",
+        "//third-party/rust/crates/ring/0.16.20:ring",
+        "//third-party/rust/crates/serde/1.0.229:serde",
+        "//third-party/rust/crates/sha3/0.9.1:sha3",
+        "//third-party/rust/crates/time/0.3.55:time",
+        "//third-party/rust/crates/tracing/0.1.44:tracing",
+    ],
+)

@@ -1,0 +1,8 @@
+[package]
+name = "a_art"
+version = "1.0.0"
+edition = "2024"
+description="颜色混合"
+license = "MIT OR Apache-2.0"
+
+[dependencies]

@@ -1,0 +1,64 @@
+[package]
+name = "a_r_c_h_e_r_y"
+description = "TEMPORARY CRATE"
+version = "0.4.3"
+authors = ["john@attackgoat.com"]
+
+edition = "2018"
+
+readme = "README.md"
+
+keywords = [
+    "rc",
+    "arc",
+    "reference-counting",
+    "no_std"
+]
+
+categories = [
+    "concurrency",
+    "memory-management",
+    "rust-patterns",
+]
+
+license = "MPL-2.0"
+
+# What to include when packaging.
+include = [
+    "/src/**/*.rs",
+    "/Cargo.toml",
+    "/LICENSE.md",
+    "/README.md",
+    "/release-notes.md",
+]
+
+[dependencies]
+static_assertions = "1"
+
+[dev-dependencies]
+criterion = "0.3"
+pretty_assertions = "0.6"
+compiletest_rs = { version = "0.5", features = [ "tmp" ] }
+
+[features]
+fatal-warnings = []
+
+[[bench]]
+name = "std_rc"
+path = "benches/std_rc.rs"
+harness = false
+
+[[bench]]
+name = "std_arc"
+path = "benches/std_arc.rs"
+harness = false
+
+[[bench]]
+name = "archery_shared_pointer_rc"
+path = "benches/archery_shared_pointer_rc.rs"
+harness = false
+
+[[bench]]
+name = "archery_shared_pointer_arc"
+path = "benches/archery_shared_pointer_arc.rs"
+harness = false

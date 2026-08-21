@@ -1,0 +1,8 @@
+[package]
+name = "a_add_b"
+version = "0.1.0"
+edition = "2021"
+description = "这是一个两数相加的方法"
+license = "MIT"
+
+[dependencies]

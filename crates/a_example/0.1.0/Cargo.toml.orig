@@ -1,0 +1,11 @@
+[package]
+name = "a_example"
+version = "0.1.0"
+authors = ["So im.ifq@139.com"]
+edition = "2018"
+license = "MIT"
+description = "test"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]

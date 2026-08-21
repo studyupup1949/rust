@@ -1,0 +1,9 @@
+[package]
+name = "a_project_docs"
+version = "0.1.0"
+edition = "2024"
+description = "Workspace rustdoc landing crate for Smawaco"
+license = "MIT"
+
+[lib]
+path = "src/lib.rs"

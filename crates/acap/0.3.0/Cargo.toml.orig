@@ -1,0 +1,25 @@
+[package]
+name = "acap"
+version = "0.3.0"
+authors = ["Tavian Barnes <tavianator@tavianator.com>"]
+edition = "2021"
+description = "As Close As Possible — nearest neighbor search in Rust."
+readme = "README.md"
+repository = "https://github.com/tavianator/acap"
+license = "MIT"
+keywords = ["ann", "knn", "nearest-neighbors"]
+categories = ["algorithms", "data-structures"]
+
+[dependencies]
+num-traits = "0.2.14"
+
+[dev-dependencies]
+criterion = "0.3.5"
+rand = "0.8.4"
+
+[[bench]]
+name = "benches"
+harness = false
+
+[package.metadata.docs.rs]
+rustdoc-args = ["--html-in-header", "katex-header.html"]

@@ -1,0 +1,17 @@
+[package]
+name = "acvp-parser"
+version = "0.1.0"
+edition = "2021"
+license = "BSD-3-Clause"
+description = "A Parser for Automated Cryptographic Validation Protocol (ACVP) Test Vectors"
+homepage = "https://github.com/puru1761/acvp-parser"
+repository = "https://github.com/puru1761/acvp-parser"
+readme = "README.md"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+json = "0.12.4"
+libc = "0.2"
+hex = "0.4.3"
+rand = "0.8.4"

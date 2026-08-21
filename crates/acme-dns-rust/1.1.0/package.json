@@ -1,0 +1,25 @@
+{
+  "name": "acme-dns-rust",
+  "version": "0.0.0",
+  "description": "",
+  "devDependencies": {
+    "semantic-release": "^17.3.8",
+    "@semantic-release/commit-analyzer": "^8.0.1",
+    "@semantic-release/exec": "^5.0.0",
+    "@semantic-release/github": "^7.2.0",
+    "@semantic-release/release-notes-generator": "^9.0.1"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/conblem/acme-dns-rust.git"
+  },
+  "author": "conblem",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/conblem/acme-dns-rust/issues"
+  },
+  "homepage": "https://github.com/conblem/acme-dns-rust#readme"
+}

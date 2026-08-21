@@ -1,0 +1,28 @@
+load("@buckal//:cargo_manifest.bzl", "cargo_manifest")
+load("@buckal//:wrapper.bzl", "rust_library")
+
+http_archive(
+    name = "vendor",
+    urls = [
+        "https://static.crates.io/crates/acoustix/acoustix-0.2.3.crate",
+    ],
+    sha256 = "ef6c722f457268601237fbdbaad1af4dac3e3a5422c540db5e8c3de5569bb24a",
+    type = "tar.gz",
+    strip_prefix = "acoustix-0.2.3",
+)
+
+cargo_manifest(
+    name = "manifest",
+    vendor = ":vendor",
+)
+
+rust_library(
+    name = "acoustix",
+    srcs = [":vendor"],
+    crate = "acoustix",
+    crate_root = "vendor/src/lib.rs",
+    edition = "2024",
+
+    rustc_flags = ["@$(location :manifest[env_flags])"],
+    visibility = ["PUBLIC"],
+)

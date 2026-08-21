@@ -1,0 +1,20 @@
+load("@buckal//:wrapper.bzl", "rust_library")
+
+rust_library(
+    name = "actix_modsecurity",
+    srcs = glob(["**/*.rs"]),
+    crate = "actix_modsecurity",
+    crate_root = "src/lib.rs",
+    edition = "2024",
+
+    visibility = ["PUBLIC"],
+    deps = [
+        "//third-party/rust/crates/actix-http/3.13.3:actix_http",
+        "//third-party/rust/crates/actix-service/2.0.3:actix_service",
+        "//third-party/rust/crates/actix-web/4.14.1:actix_web",
+        "//third-party/rust/crates/derive_more/2.1.1:derive_more",
+        "//third-party/rust/crates/futures-core/0.3.34:futures_core",
+        "//third-party/rust/crates/modsecurity/0.1.4:modsecurity",
+        "//third-party/rust/crates/tracing/0.1.44:tracing",
+    ],
+)

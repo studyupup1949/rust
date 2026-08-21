@@ -1,0 +1,19 @@
+load("@buckal//:wrapper.bzl", "rust_library")
+
+rust_library(
+    name = "actix_csrf",
+    srcs = glob(["**/*.rs"]),
+    crate = "actix_csrf",
+    crate_root = "src/lib.rs",
+    edition = "2021",
+
+    visibility = ["PUBLIC"],
+    deps = [
+        "//third-party/rust/crates/actix-web/4.14.1:actix_web",
+        "//third-party/rust/crates/base64/0.21.7:base64",
+        "//third-party/rust/crates/cookie/0.16.2:cookie",
+        "//third-party/rust/crates/rand/0.8.7:rand",
+        "//third-party/rust/crates/serde/1.0.229:serde",
+        "//third-party/rust/crates/tracing/0.1.44:tracing",
+    ],
+)

@@ -1,0 +1,22 @@
+load("@buckal//:wrapper.bzl", "rust_library")
+
+rust_library(
+    name = "acvm_backend_barretenberg",
+    srcs = glob(["**/*.rs"]),
+    crate = "acvm_backend_barretenberg",
+    crate_root = "src/lib.rs",
+    edition = "2021",
+
+    visibility = ["PUBLIC"],
+    deps = [
+        "//third-party/rust/crates/acvm/0.23.0:acvm",
+        "//third-party/rust/crates/base64/0.21.7:base64",
+        "//third-party/rust/crates/const_format/0.2.36:const_format",
+        "//third-party/rust/crates/dirs/5.0.1:dirs",
+        "//third-party/rust/crates/flate2/1.0.35:flate2",
+        "//third-party/rust/crates/reqwest/0.11.27:reqwest",
+        "//third-party/rust/crates/tar/0.4.46:tar",
+        "//third-party/rust/crates/tempfile/3.27.0:tempfile",
+        "//third-party/rust/crates/thiserror/1.0.69:thiserror",
+    ],
+)

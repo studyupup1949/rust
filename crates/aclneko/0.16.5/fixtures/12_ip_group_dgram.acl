@@ -1,0 +1,22 @@
+ip_group LOOPBACK 127.0.0.0-127.255.255.255
+ip_group LOOPBACK ::1
+ip_group LOCALNET 10.0.0.0-10.255.255.255
+ip_group LOCALNET 172.16.0.0-172.31.255.255
+ip_group LOCALNET 192.168.0.0-192.168.255.255
+ip_group LOCALNET fd00::-fdff:ffff:ffff:ffff:ffff:ffff:ffff:ffff
+ip_group LINKLOCAL 169.254.0.0-169.254.255.255
+ip_group LINKLOCAL fe80::-fe80::ffff:ffff:ffff:ffff
+ip_group MULTICAST 224.0.0.0-224.255.255.255
+ip_group MULTICAST ff02::1
+ip_group MULTICAST ff02::2
+ip_group MULTICAST ff02::9
+ip_group MULTICAST ff02::fb
+ip_group MULTICAST ff05::101
+
+3011 acl inet_dgram_send
+    audit 4
+    10 allow ip=@LOOPBACK
+    10 allow ip=@LOCALNET
+    10 allow ip=@LINKLOCAL
+    10 allow ip=@MULTICAST port=5353
+    20 deny

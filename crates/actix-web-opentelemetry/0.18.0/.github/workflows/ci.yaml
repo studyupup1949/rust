@@ -1,0 +1,28 @@
+name: CI
+
+on: [pull_request]
+
+jobs:
+  test:
+    strategy:
+      matrix:
+        args:
+          - --all-features
+          - --no-default-features
+          - --no-default-features --features=metrics
+          - --no-default-features --features=metrics-prometheus
+          - --no-default-features --features=sync-middleware
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions-rs/toolchain@v1
+        with:
+          profile: minimal
+          toolchain: stable
+          components: clippy
+      - uses: actions-rs/clippy-check@v1
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          args: ${{ matrix.args }}
+      - name: Run tests
+        run: cargo test ${{ matrix.args }} --verbose

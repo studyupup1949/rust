@@ -1,0 +1,6 @@
+async_worker_thread_number = 10
+[store]
+store_type = "postgres"
+
+[store.postgres]
+database_url = "postgresql://root:root@localhost:5432/actflow"

@@ -1,0 +1,22 @@
+load("@buckal//:wrapper.bzl", "rust_library")
+
+rust_library(
+    name = "acdp_producer",
+    srcs = glob(["**/*.rs"]),
+    crate = "acdp_producer",
+    crate_root = "src/lib.rs",
+    edition = "2021",
+
+    visibility = ["PUBLIC"],
+    deps = [
+        "//third-party/rust/crates/acdp-crypto/0.6.0:acdp_crypto",
+        "//third-party/rust/crates/acdp-did/0.6.0:acdp_did",
+        "//third-party/rust/crates/acdp-primitives/0.6.0:acdp_primitives",
+        "//third-party/rust/crates/acdp-types/0.6.0:acdp_types",
+        "//third-party/rust/crates/acdp-validation/0.6.0:acdp_validation",
+        "//third-party/rust/crates/chrono/0.4.45:chrono",
+        "//third-party/rust/crates/hex/0.4.3:hex",
+        "//third-party/rust/crates/serde/1.0.229:serde",
+        "//third-party/rust/crates/serde_json/1.0.151:serde_json",
+    ],
+)

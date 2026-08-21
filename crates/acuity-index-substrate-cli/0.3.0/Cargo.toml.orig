@@ -1,0 +1,22 @@
+[package]
+name = "acuity-index-substrate-cli"
+version = "0.3.0"
+edition = "2024"
+description = "A command line utility for querying index nodes built with Acuity Index Substrate."
+homepage = "https://index.acuity.network/"
+repository = "https://github.com/acuity-network/acuity-index-substrate-cli"
+license = "Apache-2.0"
+
+[[bin]]
+name = "ais"
+path = "src/main.rs"
+
+[dependencies]
+clap = { version = "4.5.1", features = ["derive"] }
+tokio = { version = "1", features = ["full"] }
+byte-unit = "5.1.4"
+subxt = "0.42"
+futures-util = "0.3.30"
+hex = "0.4.3"
+anyhow = "1.0.80"
+acuity-index-substrate-api = "0.3.0"

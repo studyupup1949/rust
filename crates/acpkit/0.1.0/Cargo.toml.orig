@@ -1,0 +1,15 @@
+[package]
+name = "acpkit"
+version = "0.1.0"
+edition = "2021"
+license = "Apache-2.0"
+description = "Rust implementation of ACP adapters and transport tooling for exposing existing agent runtimes through the Agent Client Protocol."
+homepage = "https://vcoderun.github.io/acpkit/"
+repository = "https://github.com/vcoderun/acpkit"
+documentation = "https://vcoderun.github.io/acpkit/"
+readme = "README.md"
+keywords = ["acp", "agents", "adapter", "transport", "protocol"]
+categories = ["network-programming"]
+
+[lib]
+path = "src/lib.rs"

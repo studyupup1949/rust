@@ -1,0 +1,16 @@
+load("@buckal//:wrapper.bzl", "rust_library")
+
+rust_library(
+    name = "acovo",
+    srcs = glob(["**/*.rs"]),
+    crate = "acovo",
+    crate_root = "src/lib.rs",
+    edition = "2021",
+    features = ["default"],
+
+    visibility = ["PUBLIC"],
+    deps = [
+        "//third-party/rust/crates/atomic_refcell/0.1.14:atomic_refcell",
+        "//third-party/rust/crates/dns-lookup/2.1.1:dns_lookup",
+    ],
+)

@@ -1,0 +1,15 @@
+# rust
+/target/
+**/*.rs.bk
+
+# direnv
+/.direnv/
+
+# temp dirs for examples
+/acme-accounts/
+/acme-challenges/
+/acme-certificates/
+
+# code coverage
+/codecov.json
+/lcov.info

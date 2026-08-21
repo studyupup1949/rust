@@ -1,0 +1,18 @@
+[package]
+name = "actix_error_proc"
+description = "A small crate to integrate thiserror with actix_web."
+readme = "../readme.md"
+repository = "https://github.com/stifskere/actix_error_proc"
+license = "MIT"
+keywords = ["actix_web", "actix", "thiserror", "macros", "error"]
+categories = ["web-programming"]
+version = "1.2.0"
+edition = "2021"
+
+[dependencies]
+actix-web = "4.11.0"
+actix_error_proc_macros = { version = "0.3.0", path = "../actix_error_proc_macros/" }
+thiserror = { version = "2.0.12", optional = true }
+
+[features]
+thiserror = ["dep:thiserror"]

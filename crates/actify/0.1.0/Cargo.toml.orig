@@ -1,0 +1,23 @@
+[package]
+name = "actify"
+version = "0.1.0"
+edition = "2021"
+description = "An intutive actor model with minimal boilerplate"
+license = "MIT"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+async-trait = "0.1"
+anyhow = "1.0"
+thiserror = "1.0"
+tokio = { version = "1.15", features = ["full"] }
+tonic = "0.9"
+log = "0.4"
+env_logger = "0.10"
+actify-macros = "0.1"
+futures = "0.3.26"
+
+[features]
+default = []
+test_feature = []

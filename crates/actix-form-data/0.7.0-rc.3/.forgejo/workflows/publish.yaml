@@ -1,0 +1,78 @@
+on:
+  push:
+    tags:
+      - 'v*.*.*'
+
+jobs:
+  clippy:
+    runs-on: base-image
+    steps:
+      -
+        name: Checkout actix-form-data
+        uses: https://github.com/actions/checkout@v4
+      -
+        name: Cargo Cache
+        uses: https://git.asonix.dog/asonix/actions/cache-rust-dependencies@main
+      -
+        name: Clippy
+        run: |
+          cargo clippy --no-default-features -- -D warnings
+
+  tests:
+    runs-on: base-image
+    steps:
+      -
+        name: Checkout actix-form-data
+        uses: https://github.com/actions/checkout@v4
+      -
+        name: Cargo Cache
+        uses: https://git.asonix.dog/asonix/actions/cache-rust-dependencies@main
+      -
+        name: Test
+        run: cargo test
+
+  build:
+    needs:
+      - clippy
+      - tests
+    runs-on: base-image
+    strategy:
+      fail-fast: false
+      matrix:
+        target:
+          - x86_64-unknown-linux-musl
+          - armv7-unknown-linux-musleabihf
+          - aarch64-unknown-linux-musl
+    steps:
+      -
+        name: Checkout actix-form-data
+        uses: https://github.com/actions/checkout@v4
+      -
+        name: Cargo Cache
+        uses: https://git.asonix.dog/asonix/actions/cache-rust-dependencies@main
+      -
+        name: Compile actix-form-data
+        run: cargo zigbuild --target ${{ matrix.target }}
+
+  publish-forgejo:
+    needs: [build]
+    runs-on: base-image
+    steps:
+      - uses: actions/forgejo-release@v1
+        with:
+          direction: upload
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+  publish-crate:
+    needs: [build]
+    runs-on: base-image
+    steps:
+      -
+        name: Checkout actix-form-data
+        uses: https://github.com/actions/checkout@v4
+      -
+        name: Cargo Cache
+        uses: https://git.asonix.dog/asonix/actions/cache-rust-dependencies@main
+      -
+        name: Publish Crate
+        run: cargo publish --token ${{ secrets.CRATES_IO_TOKEN }}

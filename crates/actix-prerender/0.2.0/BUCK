@@ -1,0 +1,21 @@
+load("@buckal//:wrapper.bzl", "rust_library")
+
+rust_library(
+    name = "actix_prerender",
+    srcs = glob(["**/*.rs"]),
+    crate = "actix_prerender",
+    crate_root = "src/lib.rs",
+    edition = "2021",
+
+    visibility = ["PUBLIC"],
+    deps = [
+        "//third-party/rust/crates/actix-service/2.0.3:actix_service",
+        "//third-party/rust/crates/actix-utils/3.0.1:actix_utils",
+        "//third-party/rust/crates/actix-web/4.14.1:actix_web",
+        "//third-party/rust/crates/futures-util/0.3.34:futures_util",
+        "//third-party/rust/crates/log/0.4.33:log",
+        "//third-party/rust/crates/reqwest/0.11.27:reqwest",
+        "//third-party/rust/crates/thiserror/1.0.69:thiserror",
+        "//third-party/rust/crates/url/2.5.8:url",
+    ],
+)

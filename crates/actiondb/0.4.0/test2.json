@@ -1,0 +1,30 @@
+{
+   "patterns" : [
+      {
+         "pattern" : "Unable to qstat job '%{INT:appacct.job_id}'",
+         "uuid" : "31e0a237-e49b-411e-9f22-878eece45629",
+         "name" : "set_token_cmd_269",
+         "test_messages" : [
+            {
+               "message" : "Unable to qstat job '5134136'",
+               "values" : {
+                  "appacct.job_id" : "5134136"
+               }
+            }
+         ]
+      },
+      {
+         "pattern" : "Unable to qstat job '%{INT:appacct.job_id}' ",
+         "uuid" : "31e0a237-e49b-411e-9f22-878eece45629",
+         "name" : "set_token_cmd_269",
+         "test_messages" : [
+            {
+               "message" : "Unable to qstat job '5134136' ",
+               "values" : {
+                  "appacct.job_id" : "5134136"
+               }
+            }
+         ]
+      }
+   ]
+}

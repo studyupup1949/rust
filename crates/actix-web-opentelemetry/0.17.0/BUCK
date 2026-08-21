@@ -1,0 +1,19 @@
+load("@buckal//:wrapper.bzl", "rust_library")
+
+rust_library(
+    name = "actix_web_opentelemetry",
+    srcs = glob(["**/*.rs"]),
+    crate = "actix_web_opentelemetry",
+    crate_root = "src/lib.rs",
+    edition = "2021",
+
+    visibility = ["PUBLIC"],
+    deps = [
+        "//third-party/rust/crates/actix-http/3.13.3:actix_http",
+        "//third-party/rust/crates/actix-web/4.14.1:actix_web",
+        "//third-party/rust/crates/futures-util/0.3.34:futures_util",
+        "//third-party/rust/crates/opentelemetry-semantic-conventions/0.14.0:opentelemetry_semantic_conventions",
+        "//third-party/rust/crates/opentelemetry/0.22.0:opentelemetry",
+        "//third-party/rust/crates/serde/1.0.229:serde",
+    ],
+)

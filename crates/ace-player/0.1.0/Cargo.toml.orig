@@ -1,0 +1,67 @@
+[package]
+name = "ace-player"
+version = "0.1.0"
+edition = "2021"
+description = "ACE Player — High-Performance Rust Media Engine SDK"
+license = "MIT"
+authors = ["Purple Squirrel Media <matthew@purplesquirrelmedia.io>"]
+
+[lib]
+name = "ace_player"
+crate-type = ["cdylib", "rlib"]   # cdylib for Python/Node bindings, rlib for Rust usage
+
+[[bin]]
+name = "ace-player"
+path = "src/main.rs"
+
+[features]
+default = ["native"]
+native = ["winit", "wgpu"]
+wasm = ["wasm-bindgen", "web-sys", "js-sys"]
+python-bindings = ["pyo3"]
+drm = []    # Phase 2: Widevine integration
+
+[dependencies]
+# Async runtime
+tokio = { version = "1", features = ["full"] }
+
+# Audio decode (pure Rust — symphonia)
+symphonia = { version = "0.5", features = ["all"] }
+
+# Video/media (ffmpeg bindings)
+ffmpeg-next = { version = "7", optional = true }
+
+# Serialization
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+
+# Error handling
+anyhow = "1"
+thiserror = "2"
+
+# Logging
+tracing = "0.1"
+tracing-subscriber = { version = "0.3", features = ["env-filter"] }
+
+# HTTP client (pull content from ACE engine)
+reqwest = { version = "0.12", features = ["json", "stream"] }
+
+# Native windowing + GPU (optional, native feature)
+winit = { version = "0.30", optional = true }
+wgpu = { version = "23", optional = true }
+
+# WebAssembly (optional, wasm feature)
+wasm-bindgen = { version = "0.2", optional = true }
+web-sys = { version = "0.3", features = ["Window", "Document", "HtmlVideoElement"], optional = true }
+js-sys = { version = "0.3", optional = true }
+
+# Python bindings (optional, python-bindings feature)
+pyo3 = { version = "0.23", features = ["extension-module"], optional = true }
+
+[dev-dependencies]
+criterion = { version = "0.5", features = ["html_reports"] }
+
+[[bench]]
+name = "decode_bench"
+path = "benchmarks/decode_bench.rs"
+harness = false

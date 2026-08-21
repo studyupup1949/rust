@@ -1,0 +1,54 @@
+// ACTR: mutable scaffold
+// User-owned business scaffold. Keep Generated/ immutable and customize this file.
+
+import Actr
+import Foundation
+
+{{#if HAS_SERVICES}}
+public final class {{SERVICE_NAME}}LifecycleAdapter<Handler: {{HANDLER_NAME}}>: Workload, @unchecked Sendable {
+    private let workload: {{WORKLOAD_NAME}}<Handler>
+
+    public init(workload: {{WORKLOAD_NAME}}<Handler>) {
+        self.workload = workload
+    }
+
+    public convenience init(handler: Handler) {
+        self.init(workload: {{WORKLOAD_NAME}}(handler: handler))
+    }
+
+    public convenience init(handler: Handler, remoteTargets: [String: ActrType]) {
+        self.init(workload: {{WORKLOAD_NAME}}(handler: handler, remoteTargets: remoteTargets))
+    }
+{{else}}
+public final class {{SERVICE_NAME}}LifecycleAdapter: Workload, @unchecked Sendable {
+    private let workload: {{WORKLOAD_NAME}}
+
+    public init(workload: {{WORKLOAD_NAME}}) {
+        self.workload = workload
+    }
+
+    public convenience init(remoteTargets: [String: ActrType] = [:]) {
+        self.init(workload: {{WORKLOAD_NAME}}(remoteTargets: remoteTargets))
+    }
+{{/if}}
+
+    public func onStart(ctx: Context) async throws {
+        // TODO: Optionally customize startup logic
+    }
+
+    public func onReady(ctx: Context) async throws {
+        // TODO: Optionally customize ready logic
+    }
+
+    public func onStop(ctx: Context) async throws {
+        // TODO: Optionally customize shutdown logic
+    }
+
+    public func onError(ctx: Context, event: ErrorEventBridge) async throws {
+        // TODO: Optionally customize error handling
+    }
+
+    public func dispatch(ctx: Context, envelope: RpcEnvelope) async throws -> Data {
+        return try await workload.__dispatch(ctx: ctx, envelope: envelope)
+    }
+}

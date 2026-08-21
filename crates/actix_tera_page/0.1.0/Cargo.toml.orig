@@ -1,0 +1,17 @@
+[package]
+name = "actix_tera_page"
+version = "0.1.0"
+edition = "2021"
+
+license = "MIT"
+description = "A middleware for Actix that reduces the boilerplate needed to create SSR websites with Tera."
+readme = "README.md"
+keywords = ["actix-web", "tera", "web"]
+categories = ["web-programming"]
+repository = "https://github.com/stackslam/actix_tera_page"
+
+[dependencies]
+actix-web = "4"
+futures-util = "0.3"
+log = "0.4"
+tera = "1"

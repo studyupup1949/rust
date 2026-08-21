@@ -1,0 +1,23 @@
+[package]
+name = "actix-web-rest-macros"
+authors.workspace = true
+version.workspace = true
+edition.workspace = true
+license-file.workspace = true
+description.workspace = true
+repository.workspace = true
+keywords.workspace = true
+readme.workspace = true
+documentation = "https://docs.rs/actix-web-rest-macros"
+
+[lib]
+name = "actix_web_rest_macros"
+path = "src/lib.rs"
+proc-macro = true
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+quote = "1"
+syn = "2"
+proc-macro2 = "1.0.60"

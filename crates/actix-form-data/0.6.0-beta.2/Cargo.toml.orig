@@ -1,0 +1,29 @@
+[package]
+name = "actix-form-data"
+description = "Multipart Form Data for Actix Web"
+version = "0.6.0-beta.2"
+license = "GPL-3.0"
+authors = ["asonix <asonix@asonix.dog>"]
+repository = "https://git.asonix.dog/Aardwolf/actix-form-data.git"
+readme = "README.md"
+keywords = ["actix", "form-data", "multipart", "async"]
+edition = "2018"
+
+[dependencies]
+actix-multipart = "0.4.0-beta.3"
+actix-rt = "2.1.0"
+actix-web = "4.0.0-beta.4"
+futures = "0.3.4"
+mime = "0.3.16"
+thiserror = "1.0"
+tokio = { version = "1", features = ["sync"] }
+tracing = "0.1.15"
+
+[dev-dependencies]
+async-fs = "1.2.1"
+anyhow = "1.0"
+futures-lite = "1.4.0"
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
+thiserror = "1.0"
+tracing-subscriber = { version = "0.2.5", features = ["fmt", "tracing-log"] }

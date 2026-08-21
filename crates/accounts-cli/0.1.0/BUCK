@@ -1,0 +1,22 @@
+load("@buckal//:wrapper.bzl", "rust_library")
+
+rust_library(
+    name = "accounts_cli",
+    srcs = glob(["**/*.rs"]),
+    crate = "accounts_cli",
+    crate_root = "src/lib.rs",
+    edition = "2021",
+
+    visibility = ["PUBLIC"],
+    deps = [
+        "//third-party/rust/crates/charts/0.3.0:charts",
+        "//third-party/rust/crates/clap/4.6.6:clap",
+        "//third-party/rust/crates/rhai-http/0.2.0:rhai_http",
+        "//third-party/rust/crates/rhai/1.25.1:rhai",
+        "//third-party/rust/crates/serde/1.0.229:serde",
+        "//third-party/rust/crates/serde_json/1.0.151:serde_json",
+        "//third-party/rust/crates/time-macros/0.2.32:time_macros",
+        "//third-party/rust/crates/time/0.3.55:time",
+        "//third-party/rust/crates/toml/0.8.23:toml",
+    ],
+)

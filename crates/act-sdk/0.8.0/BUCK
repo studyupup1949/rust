@@ -1,0 +1,20 @@
+load("@buckal//:wrapper.bzl", "rust_library")
+
+rust_library(
+    name = "act_sdk",
+    srcs = glob(["**/*.rs"]),
+    crate = "act_sdk",
+    crate_root = "src/lib.rs",
+    edition = "2024",
+
+    visibility = ["PUBLIC"],
+    deps = [
+        "//third-party/rust/crates/act-sdk-macros/0.8.2:act_sdk_macros",
+        "//third-party/rust/crates/act-types/0.8.2:act_types",
+        "//third-party/rust/crates/ciborium/0.2.2:ciborium",
+        "//third-party/rust/crates/schemars/1.2.2:schemars",
+        "//third-party/rust/crates/serde/1.0.229:serde",
+        "//third-party/rust/crates/serde_json/1.0.151:serde_json",
+        "//third-party/rust/crates/wit-bindgen/0.58.0:wit_bindgen",
+    ],
+)

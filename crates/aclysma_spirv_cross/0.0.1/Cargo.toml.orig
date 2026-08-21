@@ -1,0 +1,25 @@
+[package]
+name = "aclysma_spirv_cross"
+version = "0.0.1"
+authors = ["Joshua Groves <josh@joshgroves.com>"]
+description = "Safe wrapper around SPIRV-Cross"
+license = "MIT/Apache-2.0"
+homepage = "https://github.com/aclysma/spirv_cross.git"
+repository = "https://github.com/aclysma/spirv_cross.git"
+readme = "../README.md"
+keywords = ["spirv", "cross"]
+build = "build.rs"
+edition = "2018"
+
+[features]
+default = []
+glsl = []
+hlsl = []
+msl = []
+
+[target.'cfg(not(target_arch = "wasm32"))'.build-dependencies]
+cc = { version = "1", features = ["parallel"] }
+
+[target.wasm32-unknown-unknown.dependencies]
+wasm-bindgen = "0.2.33"
+js-sys = "0.3.10"

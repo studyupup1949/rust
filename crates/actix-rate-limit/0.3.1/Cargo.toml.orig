@@ -1,0 +1,24 @@
+[package]
+name = "actix-rate-limit"
+version = "0.3.1"
+description = "Rate-Limit middleware for actix-web"
+repository = "https://github.com/arniu/kepton"
+license = "MIT OR Apache-2.0"
+authors = ["Arniu Tseng"]
+edition = "2018"
+
+[features]
+default = ["redis"]
+
+redis = ["actix-redis", "actix"]
+
+[dependencies]
+actix-web = "3"
+futures-util = "0.3"
+serde = "1"
+time = "0.2"
+log = "0.4"
+
+# Required by `redis` feature
+actix-redis = { version = "0.9", optional = true, default-features = false }
+actix = { version = "0.10", optional = true }

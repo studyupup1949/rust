@@ -1,0 +1,33 @@
+[package]
+name = "acvm-backend-barretenberg"
+description = "An ACVM backend which allows proving/verifying ACIR circuits against Aztec Lab's Barretenberg library."
+version = "0.12.0"
+authors = ["The Noir Team <team@noir-lang.org>"]
+edition = "2021"
+rust-version = "1.66"
+license = "MIT OR Apache-2.0"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[lib]
+crate-type = ["cdylib", "lib"]
+
+[dependencies]
+acvm = { version = "0.23.0", features = ["bn254"] }
+thiserror = "1.0.21"
+base64 = "0.21.2"
+
+dirs = "5.0.1"
+tempfile = "3.6.0"
+
+## bb binary downloading
+const_format = "0.2.30"
+tar = "~0.4.15"
+flate2 = "~1.0.1"
+reqwest = { version = "0.11.16", default-features = false, features = [
+    "rustls-tls",
+    "blocking",
+] }
+
+[build-dependencies]
+build-target = "0.4.0"

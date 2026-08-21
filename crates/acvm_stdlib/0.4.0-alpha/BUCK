@@ -1,0 +1,14 @@
+load("@buckal//:wrapper.bzl", "rust_library")
+
+rust_library(
+    name = "acvm_stdlib",
+    srcs = glob(["**/*.rs"]),
+    crate = "acvm_stdlib",
+    crate_root = "src/lib.rs",
+    edition = "2021",
+
+    visibility = ["PUBLIC"],
+    deps = [
+        "//third-party/rust/crates/acir_field/0.3.1:acir_field",
+    ],
+)

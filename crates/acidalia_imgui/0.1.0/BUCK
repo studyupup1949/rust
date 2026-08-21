@@ -1,0 +1,17 @@
+load("@buckal//:wrapper.bzl", "rust_library")
+
+rust_library(
+    name = "acidalia_imgui",
+    srcs = glob(["**/*.rs"]),
+    crate = "acidalia_imgui",
+    crate_root = "src/lib.rs",
+    edition = "2021",
+
+    visibility = ["PUBLIC"],
+    deps = [
+        "//third-party/rust/crates/acidalia/0.2.0:acidalia",
+        "//third-party/rust/crates/imgui-wgpu/0.19.0:imgui_wgpu",
+        "//third-party/rust/crates/imgui-winit-support/0.8.2:imgui_winit_support",
+        "//third-party/rust/crates/imgui/0.8.2:imgui",
+    ],
+)

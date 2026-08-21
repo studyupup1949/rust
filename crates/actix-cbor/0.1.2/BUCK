@@ -1,0 +1,21 @@
+load("@buckal//:wrapper.bzl", "rust_library")
+
+rust_library(
+    name = "actix_cbor",
+    srcs = glob(["**/*.rs"]),
+    crate = "actix_cbor",
+    crate_root = "src/lib.rs",
+    edition = "2018",
+
+    visibility = ["PUBLIC"],
+    deps = [
+        "//third-party/rust/crates/actix-http/2.2.2:actix_http",
+        "//third-party/rust/crates/actix-rt/1.1.1:actix_rt",
+        "//third-party/rust/crates/actix-web/3.3.3:actix_web",
+        "//third-party/rust/crates/bytes/0.5.6:bytes",
+        "//third-party/rust/crates/futures-util/0.3.34:futures_util",
+        "//third-party/rust/crates/log/0.4.33:log",
+        "//third-party/rust/crates/serde/1.0.229:serde",
+        "//third-party/rust/crates/serde_cbor/0.11.2:serde_cbor",
+    ],
+)

@@ -1,0 +1,17 @@
+[package]
+name = "accelerate-general"
+version = "0.1.0"
+edition = "2021"
+authors = ["BrianWu <wupeng1221@outlook.com>"]
+description = "A general matrix and vector operations library using Apple's Accelerate framework."
+license = "MIT OR Apache-2.0"
+repository = "https://github.com/wupeng1221/accelerate-general"                                    # GitHub仓库链接
+homepage = "https://github.com/wupeng1221/accelerate-general"                                      # 同上，或者用网站链接
+keywords = ["matrix", "vector", "linear-algebra", "accelerate", "rust"]
+categories = ["science", "mathematics"]
+readme = "readme.md"
+rust-version = "1.56"
+
+
+[dependencies]
+num-complex = "0.4.6"

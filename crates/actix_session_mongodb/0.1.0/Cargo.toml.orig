@@ -1,0 +1,29 @@
+[package]
+name = "actix_session_mongodb"
+description = "A library for actix-session which implements the SessionStore trait for MongoDB."
+version = "0.1.0"
+edition = "2021"
+rust-version = "1.63"
+authors = [ "Stefan Schindler <dns2utf8@estada.ch>" ]
+license = "AGPL-3.0-or-later"
+readme = "README.md"
+documentation = "https://docs.rs/actix_session_mongodb"
+repository = "https://gitlab.com/dns2utf8/actix_session_mongodb"
+keywords = [ "framework", "async", "cookie", "backend",  "web" ]
+categories = [ "web-programming", "web-programming::http-server" ]
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+actix-session = { version = "0.9.0" }
+anyhow = "1.0.80"
+bson = { version = "2.9.0", features = ["chrono-0_4"] }
+chrono = { version = "0.4.35", features = ["serde"] }
+log = "0.4.21"
+mongodb = "2.8.1"
+rand = { version = "0.8.5", features = ["small_rng"] }
+serde = { version = "1.0.197", features = ["derive"] }
+time = { version = "0.3.34", features = ["serde"] }
+
+[lints.rust]
+unsafe_code = "forbid"

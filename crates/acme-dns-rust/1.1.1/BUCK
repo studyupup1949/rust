@@ -1,0 +1,38 @@
+load("@buckal//:wrapper.bzl", "rust_library")
+
+rust_library(
+    name = "acme_dns_rust",
+    srcs = glob(["**/*.rs"]),
+    crate = "acme_dns_rust",
+    crate_root = "src/lib.rs",
+    edition = "2018",
+    features = ["default"],
+
+    visibility = ["PUBLIC"],
+    deps = [
+        "//third-party/rust/crates/acme-lib/0.8.2:acme_lib",
+        "//third-party/rust/crates/anyhow/1.0.104:anyhow",
+        "//third-party/rust/crates/async-trait/0.1.92:async_trait",
+        "//third-party/rust/crates/bcrypt/0.10.1:bcrypt",
+        "//third-party/rust/crates/futures-util/0.3.34:futures_util",
+        "//third-party/rust/crates/hyper/0.14.32:hyper",
+        "//third-party/rust/crates/lazy_static/1.5.0:lazy_static",
+        "//third-party/rust/crates/parking_lot/0.11.2:parking_lot",
+        "//third-party/rust/crates/ppp/1.2.2:ppp",
+        "//third-party/rust/crates/prometheus/0.13.4:prometheus",
+        "//third-party/rust/crates/rustls/0.19.1:rustls",
+        "//third-party/rust/crates/serde/1.0.229:serde",
+        "//third-party/rust/crates/sqlx/0.5.13:sqlx",
+        "//third-party/rust/crates/tokio-rustls/0.22.0:tokio_rustls",
+        "//third-party/rust/crates/tokio-stream/0.1.19:tokio_stream",
+        "//third-party/rust/crates/tokio-util/0.6.10:tokio_util",
+        "//third-party/rust/crates/tokio/1.53.1:tokio",
+        "//third-party/rust/crates/toml/0.5.11:toml",
+        "//third-party/rust/crates/tracing-futures/0.2.5:tracing_futures",
+        "//third-party/rust/crates/tracing-subscriber/0.2.25:tracing_subscriber",
+        "//third-party/rust/crates/tracing/0.1.44:tracing",
+        "//third-party/rust/crates/trust-dns-server/0.20.4:trust_dns_server",
+        "//third-party/rust/crates/uuid/0.8.2:uuid",
+        "//third-party/rust/crates/warp/0.3.7:warp",
+    ],
+)

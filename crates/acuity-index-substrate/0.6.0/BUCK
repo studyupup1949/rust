@@ -1,0 +1,36 @@
+load("@buckal//:wrapper.bzl", "rust_library")
+
+rust_library(
+    name = "acuity_index_substrate",
+    srcs = glob(["**/*.rs"]),
+    crate = "acuity_index_substrate",
+    crate_root = "src/lib.rs",
+    edition = "2021",
+
+    visibility = ["PUBLIC"],
+    deps = [
+        "//third-party/rust/crates/ahash/0.8.12:ahash",
+        "//third-party/rust/crates/base58/0.2.0:base58",
+        "//third-party/rust/crates/blake2/0.10.6:blake2",
+        "//third-party/rust/crates/byte-unit/4.0.19:byte_unit",
+        "//third-party/rust/crates/byteorder/1.5.0:byteorder",
+        "//third-party/rust/crates/futures/0.3.34:futures",
+        "//third-party/rust/crates/hex-literal/0.4.1:hex_literal",
+        "//third-party/rust/crates/hex/0.4.3:hex",
+        "//third-party/rust/crates/home/0.5.12:home",
+        "//third-party/rust/crates/num-format/0.4.4:num_format",
+        "//third-party/rust/crates/serde/1.0.229:serde",
+        "//third-party/rust/crates/serde_json/1.0.151:serde_json",
+        "//third-party/rust/crates/signal-hook-tokio/0.3.1:signal_hook_tokio",
+        "//third-party/rust/crates/signal-hook/0.3.18:signal_hook",
+        "//third-party/rust/crates/sled/0.34.7:sled",
+        "//third-party/rust/crates/subxt/0.34.0:subxt",
+        "//third-party/rust/crates/thiserror/1.0.69:thiserror",
+        "//third-party/rust/crates/tokio-tungstenite/0.21.0:tokio_tungstenite",
+        "//third-party/rust/crates/tokio/1.53.1:tokio",
+        "//third-party/rust/crates/tracing-subscriber/0.3.23:tracing_subscriber",
+        "//third-party/rust/crates/tracing/0.1.44:tracing",
+        "//third-party/rust/crates/zerocopy-derive/0.7.35:zerocopy_derive",
+        "//third-party/rust/crates/zerocopy/0.7.35:zerocopy",
+    ],
+)

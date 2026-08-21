@@ -1,0 +1,1095 @@
+//! Service builder and runtime for the acube framework.
+//!
+//! Pipeline stages (6):
+//! 1. Route Resolution
+//! 2. Security (header injection + rate limiting + payload limit)
+//! 3. Auth (authentication + scope verification)
+//! 4. Input (validation + sanitization) — handled by `Valid<T>` extractor
+//! 5. Handler Execution
+//! 6. Response (error formatting + response construction)
+
+use axum::body::Body;
+use axum::extract::Request;
+use axum::http::{HeaderName, HeaderValue, StatusCode};
+use axum::middleware::{self, Next};
+use axum::response::Response;
+use axum::Router;
+use std::any::{Any, TypeId};
+use std::collections::HashMap;
+use std::convert::Infallible;
+use std::future::Future;
+use std::pin::Pin;
+use std::sync::Arc;
+use std::task::{Context, Poll};
+use std::time::Duration;
+use tower::Layer;
+use tower_http::catch_panic::CatchPanicLayer;
+use tower_http::cors::{AllowHeaders, AllowMethods, AllowOrigin, CorsLayer};
+use tower_http::limit::RequestBodyLimitLayer;
+use uuid::Uuid;
+
+use crate::error::error_response;
+use crate::extract::RequestId;
+use crate::rate_limit::{InMemoryBackend, RateLimitBackend, RateLimitOutcome};
+use crate::security::AuthProvider;
+use crate::types::{EndpointAuthorization, EndpointSecurity, HttpMethod, RateLimitConfig};
+
+// ─── SharedState ─────────────────────────────────────────────────────────────
+
+/// Type-erased container for shared application state registered via `Service::builder().state()`.
+///
+/// Stored as a request extension so that `AcubeContext` can provide `ctx.state::<T>()`.
+#[derive(Clone, Default)]
+pub(crate) struct SharedState {
+    inner: Arc<HashMap<TypeId, Box<dyn CloneableAny>>>,
+}
+
+impl SharedState {
+    /// Retrieve a clone of a stored value by type.
+    pub fn get<T: Clone + Send + Sync + 'static>(&self) -> Option<T> {
+        self.inner
+            .get(&TypeId::of::<T>())
+            .and_then(|boxed| {
+                // Use as_ref() to get &dyn CloneableAny from Box<dyn CloneableAny>,
+                // ensuring vtable dispatch goes to the concrete T's as_any() — not
+                // the blanket CloneableAny impl on Box<dyn CloneableAny> itself.
+                let inner: &dyn CloneableAny = boxed.as_ref();
+                inner.as_any().downcast_ref::<T>()
+            })
+            .cloned()
+    }
+}
+
+/// Trait object that supports cloning and downcasting.
+pub(crate) trait CloneableAny: Send + Sync {
+    fn clone_box(&self) -> Box<dyn CloneableAny>;
+    fn as_any(&self) -> &dyn Any;
+}
+
+impl<T: Clone + Send + Sync + 'static> CloneableAny for T {
+    fn clone_box(&self) -> Box<dyn CloneableAny> {
+        Box::new(self.clone())
+    }
+    fn as_any(&self) -> &dyn Any {
+        self
+    }
+}
+
+impl Clone for Box<dyn CloneableAny> {
+    fn clone(&self) -> Self {
+        self.clone_box()
+    }
+}
+
+/// Default payload size limit (1 MB).
+const DEFAULT_PAYLOAD_LIMIT: usize = 1024 * 1024;
+
+/// OpenAPI metadata for an endpoint.
+pub struct EndpointOpenApi {
+    /// JSON Schema for the request body (if any).
+    pub request_schema: Option<serde_json::Value>,
+    /// Type name of the request body schema (for `$ref`).
+    pub request_schema_name: Option<String>,
+    /// Error response variants.
+    pub error_responses: Vec<crate::error::OpenApiErrorVariant>,
+    /// HTTP status code for successful responses.
+    pub success_status: u16,
+    /// Content type for successful responses (`None` for 204 No Content).
+    pub content_type: Option<String>,
+}
+
+/// An acube endpoint registration.
+pub struct EndpointRegistration {
+    /// HTTP method.
+    pub method: HttpMethod,
+    /// URL path pattern.
+    pub path: String,
+    /// Axum method router (handler).
+    pub handler: axum::routing::MethodRouter,
+    /// Security requirement for this endpoint.
+    pub security: EndpointSecurity,
+    /// Authorization policy for this endpoint.
+    pub authorization: EndpointAuthorization,
+    /// Rate limit configuration (None = no rate limit).
+    pub rate_limit: Option<RateLimitConfig>,
+    /// OpenAPI metadata (None = no OpenAPI info).
+    pub openapi: Option<EndpointOpenApi>,
+}
+
+/// Default Content-Security-Policy value.
+const DEFAULT_CSP: &str = "default-src 'none'; frame-ancestors 'none'";
+
+/// Builder for constructing an acube [`Service`].
+///
+/// Created via [`Service::builder()`]. Validates configuration at build time
+/// and returns errors for missing required fields or inconsistent settings.
+pub struct ServiceBuilder {
+    name: Option<String>,
+    version: Option<String>,
+    description: Option<String>,
+    endpoints: Vec<EndpointRegistration>,
+    auth_provider: Option<Arc<dyn AuthProvider>>,
+    rate_limit_backend: Option<Arc<dyn RateLimitBackend>>,
+    payload_limit: usize,
+    cors_origins: Vec<String>,
+    csp: String,
+    extensions: Vec<Box<dyn FnOnce(Router) -> Router + Send>>,
+    state_values: HashMap<TypeId, Box<dyn CloneableAny>>,
+    openapi_enabled: bool,
+}
+
+impl ServiceBuilder {
+    fn new() -> Self {
+        Self {
+            name: None,
+            version: None,
+            description: None,
+            endpoints: Vec::new(),
+            auth_provider: None,
+            rate_limit_backend: None,
+            payload_limit: DEFAULT_PAYLOAD_LIMIT,
+            cors_origins: Vec::new(),
+            csp: DEFAULT_CSP.to_string(),
+            extensions: Vec::new(),
+            state_values: HashMap::new(),
+            openapi_enabled: false,
+        }
+    }
+
+    /// Set the service name.
+    pub fn name(mut self, name: &str) -> Self {
+        self.name = Some(name.to_string());
+        self
+    }
+
+    /// Set the service version.
+    pub fn version(mut self, version: &str) -> Self {
+        self.version = Some(version.to_string());
+        self
+    }
+
+    /// Set the service description (used in OpenAPI info).
+    pub fn description(mut self, desc: &str) -> Self {
+        self.description = Some(desc.to_string());
+        self
+    }
+
+    /// Enable or disable the auto-generated `GET /openapi.json` endpoint.
+    pub fn openapi(mut self, enabled: bool) -> Self {
+        self.openapi_enabled = enabled;
+        self
+    }
+
+    /// Register an endpoint.
+    pub fn endpoint(mut self, reg: EndpointRegistration) -> Self {
+        self.endpoints.push(reg);
+        self
+    }
+
+    /// Set the authentication provider.
+    pub fn auth<P: AuthProvider>(mut self, provider: P) -> Self {
+        self.auth_provider = Some(Arc::new(provider));
+        self
+    }
+
+    /// Set the rate limit backend.
+    pub fn rate_limit_backend<B: RateLimitBackend>(mut self, backend: B) -> Self {
+        self.rate_limit_backend = Some(Arc::new(backend));
+        self
+    }
+
+    /// Set the maximum request body size in bytes (default: 1 MB).
+    pub fn payload_limit(mut self, bytes: usize) -> Self {
+        self.payload_limit = bytes;
+        self
+    }
+
+    /// Set allowed CORS origins.
+    ///
+    /// By default, no origins are allowed (all cross-origin requests denied).
+    /// Call this to explicitly allow specific origins.
+    pub fn cors_allow_origins(mut self, origins: &[&str]) -> Self {
+        self.cors_origins = origins.iter().map(|s| s.to_string()).collect();
+        self
+    }
+
+    /// Set a custom Content-Security-Policy header value.
+    ///
+    /// Default: `"default-src 'none'; frame-ancestors 'none'"` (very restrictive).
+    ///
+    /// Override this for applications that serve HTML, load scripts, or use
+    /// external resources. The `frame-ancestors 'none'` directive is always
+    /// appended if not already present.
+    ///
+    /// # Example
+    ///
+    /// ```rust,ignore
+    /// Service::builder()
+    ///     .content_security_policy("default-src 'self'; script-src 'self'; frame-ancestors 'none'")
+    /// ```
+    pub fn content_security_policy(mut self, policy: &str) -> Self {
+        // Ensure frame-ancestors is always present (clickjacking protection)
+        if !policy.contains("frame-ancestors") {
+            self.csp = format!("{}; frame-ancestors 'none'", policy);
+        } else {
+            self.csp = policy.to_string();
+        }
+        self
+    }
+
+    /// Add shared application state, accessible via `axum::extract::Extension<T>`.
+    ///
+    /// Can be called multiple times with different types.
+    ///
+    /// # Example
+    ///
+    /// ```rust,ignore
+    /// let service = Service::builder()
+    ///     .name("my-app")
+    ///     .version("1.0.0")
+    ///     .state(pool)
+    ///     .endpoint(my_handler())
+    ///     .build()?;
+    ///
+    /// // In handler:
+    /// async fn my_handler(
+    ///     ctx: AcubeContext,
+    ///     axum::extract::Extension(pool): axum::extract::Extension<SqlitePool>,
+    /// ) -> ... { }
+    /// ```
+    pub fn state<T: Clone + Send + Sync + 'static>(mut self, value: T) -> Self {
+        // Store in state_values for ctx.state::<T>() access
+        self.state_values
+            .insert(TypeId::of::<T>(), Box::new(value.clone()));
+        // Also add as Extension layer for backward compatibility with Extension<T> pattern
+        self.extensions.push(Box::new(move |router: Router| {
+            router.layer(axum::extract::Extension(value))
+        }));
+        self
+    }
+
+    /// Build the service, performing startup contract validation.
+    pub fn build(self) -> Result<Service, ServiceBuildError> {
+        let name = self.name.ok_or(ServiceBuildError::MissingField("name"))?;
+        let version = self
+            .version
+            .ok_or(ServiceBuildError::MissingField("version"))?;
+
+        // Check for duplicate paths
+        let mut seen = std::collections::HashSet::new();
+        for ep in &self.endpoints {
+            let key = format!("{} {}", ep.method, ep.path);
+            if !seen.insert(key.clone()) {
+                return Err(ServiceBuildError::DuplicateEndpoint(key));
+            }
+        }
+
+        // Check that auth provider is set if any endpoint requires JWT
+        let has_jwt = self
+            .endpoints
+            .iter()
+            .any(|ep| matches!(ep.security, EndpointSecurity::Jwt));
+        if has_jwt && self.auth_provider.is_none() {
+            return Err(ServiceBuildError::MissingAuthProvider);
+        }
+
+        let rate_limiter = self
+            .rate_limit_backend
+            .unwrap_or_else(|| Arc::new(InMemoryBackend::new()));
+
+        let shared_state = SharedState {
+            inner: Arc::new(self.state_values),
+        };
+
+        Ok(Service {
+            name,
+            version,
+            description: self.description,
+            endpoints: self.endpoints,
+            auth_provider: self.auth_provider,
+            rate_limiter,
+            payload_limit: self.payload_limit,
+            cors_origins: self.cors_origins,
+            csp: self.csp,
+            extensions: self.extensions,
+            shared_state,
+            openapi_enabled: self.openapi_enabled,
+        })
+    }
+}
+
+/// Errors during service construction.
+#[derive(Debug, thiserror::Error)]
+pub enum ServiceBuildError {
+    #[error("Missing required field: {0}")]
+    MissingField(&'static str),
+    #[error("Duplicate endpoint: {0}")]
+    DuplicateEndpoint(String),
+    #[error("JWT endpoints require an auth provider (call .auth() on the builder)")]
+    MissingAuthProvider,
+}
+
+/// A fully configured acube service ready to serve.
+pub struct Service {
+    /// Service name.
+    pub name: String,
+    /// Service version.
+    pub version: String,
+    /// Service description.
+    pub description: Option<String>,
+    endpoints: Vec<EndpointRegistration>,
+    auth_provider: Option<Arc<dyn AuthProvider>>,
+    rate_limiter: Arc<dyn RateLimitBackend>,
+    payload_limit: usize,
+    cors_origins: Vec<String>,
+    csp: String,
+    extensions: Vec<Box<dyn FnOnce(Router) -> Router + Send>>,
+    shared_state: SharedState,
+    openapi_enabled: bool,
+}
+
+impl Service {
+    /// Create a new `ServiceBuilder`.
+    pub fn builder() -> ServiceBuilder {
+        ServiceBuilder::new()
+    }
+
+    /// Generate an OpenAPI 3.0.3 JSON document for this service.
+    pub fn openapi_json(&self) -> String {
+        let mut paths = serde_json::Map::new();
+        let mut schemas = serde_json::Map::new();
+        let has_jwt = self
+            .endpoints
+            .iter()
+            .any(|ep| matches!(ep.security, EndpointSecurity::Jwt));
+
+        for ep in &self.endpoints {
+            // Convert axum path params `:param` → OpenAPI `{param}`
+            let openapi_path = ep
+                .path
+                .split('/')
+                .map(|seg| {
+                    if let Some(stripped) = seg.strip_prefix(':') {
+                        format!("{{{}}}", stripped)
+                    } else {
+                        seg.to_string()
+                    }
+                })
+                .collect::<Vec<_>>()
+                .join("/");
+
+            let method_str = match ep.method {
+                HttpMethod::Get => "get",
+                HttpMethod::Post => "post",
+                HttpMethod::Put => "put",
+                HttpMethod::Patch => "patch",
+                HttpMethod::Delete => "delete",
+            };
+
+            let mut operation = serde_json::Map::new();
+            operation.insert(
+                "operationId".to_string(),
+                serde_json::Value::String(format!(
+                    "{}{}",
+                    method_str,
+                    openapi_path.replace('/', "_").replace(['{', '}'], "")
+                )),
+            );
+
+            // Path parameters
+            let mut parameters = Vec::new();
+            for seg in ep.path.split('/') {
+                if let Some(param) = seg.strip_prefix(':') {
+                    parameters.push(serde_json::json!({
+                        "name": param,
+                        "in": "path",
+                        "required": true,
+                        "schema": { "type": "string" }
+                    }));
+                }
+            }
+            if !parameters.is_empty() {
+                operation.insert(
+                    "parameters".to_string(),
+                    serde_json::Value::Array(parameters),
+                );
+            }
+
+            // Security
+            match &ep.security {
+                EndpointSecurity::Jwt => {
+                    let scopes = match &ep.authorization {
+                        EndpointAuthorization::Scopes(s) => s.clone(),
+                        _ => vec![],
+                    };
+                    operation.insert(
+                        "security".to_string(),
+                        serde_json::json!([{ "bearerAuth": scopes }]),
+                    );
+                }
+                EndpointSecurity::None => {
+                    operation.insert("security".to_string(), serde_json::json!([]));
+                }
+            }
+
+            // Rate limit extension
+            if let Some(ref rl) = ep.rate_limit {
+                operation.insert(
+                    "x-rate-limit".to_string(),
+                    serde_json::json!({
+                        "max_requests": rl.max_requests,
+                        "window_seconds": rl.window.as_secs()
+                    }),
+                );
+            }
+
+            // Request body and responses from OpenAPI metadata
+            let mut responses = serde_json::Map::new();
+
+            if let Some(ref openapi) = ep.openapi {
+                // Request body
+                if let Some(ref schema_name) = openapi.request_schema_name {
+                    operation.insert(
+                        "requestBody".to_string(),
+                        serde_json::json!({
+                            "required": true,
+                            "content": {
+                                "application/json": {
+                                    "schema": { "$ref": format!("#/components/schemas/{}", schema_name) }
+                                }
+                            }
+                        }),
+                    );
+
+                    // Add schema to components
+                    if let Some(ref schema_val) = openapi.request_schema {
+                        schemas.insert(schema_name.clone(), schema_val.clone());
+                    }
+                }
+
+                // Success response (204 has no content section)
+                let success_status = openapi.success_status.to_string();
+                let success_response = if openapi.content_type.is_some() {
+                    serde_json::json!({ "description": "Successful response" })
+                } else {
+                    serde_json::json!({ "description": "No content" })
+                };
+                responses.insert(success_status, success_response);
+
+                // Error responses from the error type
+                for variant in &openapi.error_responses {
+                    let status_str = variant.status.to_string();
+                    responses.entry(status_str).or_insert_with(|| {
+                        serde_json::json!({
+                            "description": variant.message,
+                            "content": {
+                                "application/json": {
+                                    "schema": { "$ref": "#/components/schemas/ErrorResponse" }
+                                }
+                            }
+                        })
+                    });
+                }
+            } else {
+                responses.insert(
+                    "200".to_string(),
+                    serde_json::json!({ "description": "Successful response" }),
+                );
+            }
+
+            // Add common error responses for JWT endpoints
+            if matches!(ep.security, EndpointSecurity::Jwt) {
+                responses.entry("401".to_string()).or_insert_with(|| {
+                    serde_json::json!({
+                        "description": "Unauthorized",
+                        "content": {
+                            "application/json": {
+                                "schema": { "$ref": "#/components/schemas/ErrorResponse" }
+                            }
+                        }
+                    })
+                });
+                responses.entry("403".to_string()).or_insert_with(|| {
+                    serde_json::json!({
+                        "description": "Forbidden",
+                        "content": {
+                            "application/json": {
+                                "schema": { "$ref": "#/components/schemas/ErrorResponse" }
+                            }
+                        }
+                    })
+                });
+            }
+            if ep.rate_limit.is_some() {
+                responses.entry("429".to_string()).or_insert_with(|| {
+                    serde_json::json!({
+                        "description": "Rate limit exceeded",
+                        "content": {
+                            "application/json": {
+                                "schema": { "$ref": "#/components/schemas/ErrorResponse" }
+                            }
+                        }
+                    })
+                });
+            }
+
+            operation.insert(
+                "responses".to_string(),
+                serde_json::Value::Object(responses),
+            );
+
+            let path_item = paths
+                .entry(openapi_path)
+                .or_insert_with(|| serde_json::Value::Object(serde_json::Map::new()));
+            if let serde_json::Value::Object(ref mut map) = path_item {
+                map.insert(method_str.to_string(), serde_json::Value::Object(operation));
+            }
+        }
+
+        // ErrorResponse schema
+        schemas.insert(
+            "ErrorResponse".to_string(),
+            serde_json::json!({
+                "type": "object",
+                "properties": {
+                    "error": {
+                        "type": "object",
+                        "properties": {
+                            "code": { "type": "string" },
+                            "message": { "type": "string" },
+                            "details": {},
+                            "request_id": { "type": "string" },
+                            "retryable": { "type": "boolean" }
+                        },
+                        "required": ["code", "message", "request_id", "retryable"]
+                    }
+                },
+                "required": ["error"]
+            }),
+        );
+
+        let mut components = serde_json::Map::new();
+        components.insert("schemas".to_string(), serde_json::Value::Object(schemas));
+
+        if has_jwt {
+            components.insert(
+                "securitySchemes".to_string(),
+                serde_json::json!({
+                    "bearerAuth": {
+                        "type": "http",
+                        "scheme": "bearer",
+                        "bearerFormat": "JWT"
+                    }
+                }),
+            );
+        }
+
+        let mut info = serde_json::Map::new();
+        info.insert(
+            "title".to_string(),
+            serde_json::Value::String(self.name.clone()),
+        );
+        info.insert(
+            "version".to_string(),
+            serde_json::Value::String(self.version.clone()),
+        );
+        if let Some(ref desc) = self.description {
+            info.insert(
+                "description".to_string(),
+                serde_json::Value::String(desc.clone()),
+            );
+        }
+
+        let doc = serde_json::json!({
+            "openapi": "3.0.3",
+            "info": serde_json::Value::Object(info),
+            "paths": serde_json::Value::Object(paths),
+            "components": serde_json::Value::Object(components),
+        });
+
+        serde_json::to_string_pretty(&doc).unwrap_or_else(|_| "{}".to_string())
+    }
+
+    /// Build the axum `Router` with all middleware and endpoints.
+    pub fn into_router(self) -> Router {
+        let mut router = Router::new();
+
+        // Generate OpenAPI JSON before consuming endpoints (borrow-before-move)
+        let openapi_doc = if self.openapi_enabled {
+            Some(Arc::new(self.openapi_json()))
+        } else {
+            None
+        };
+
+        // Audit log: warn about endpoints with no authentication
+        for ep in &self.endpoints {
+            if matches!(ep.security, EndpointSecurity::None) {
+                tracing::warn!(
+                    method = %ep.method,
+                    path = %ep.path,
+                    "endpoint has no authentication (explicitly declared with #[acube_security(none)])"
+                );
+            }
+        }
+
+        // Group endpoints by path to avoid axum's duplicate-route panic
+        let mut route_map: HashMap<String, Option<axum::routing::MethodRouter>> = HashMap::new();
+
+        for ep in self.endpoints {
+            // Apply per-endpoint layers
+            let mut handler = ep.handler;
+
+            // Rate limit layer
+            if let Some(ref config) = ep.rate_limit {
+                handler = handler.layer(EndpointRateLimitLayer {
+                    backend: self.rate_limiter.clone(),
+                    max_requests: config.max_requests,
+                    window: config.window,
+                });
+            }
+
+            // Auth layer for JWT endpoints (with authorization)
+            if matches!(&ep.security, EndpointSecurity::Jwt) {
+                if let Some(ref provider) = self.auth_provider {
+                    handler = handler.layer(JwtAuthLayer {
+                        provider: provider.clone(),
+                        authorization: ep.authorization.clone(),
+                    });
+                }
+            }
+
+            // Merge handlers for the same path
+            let entry = route_map.entry(ep.path).or_insert(None);
+            *entry = Some(match entry.take() {
+                Some(existing) => existing.merge(handler),
+                None => handler,
+            });
+        }
+
+        for (path, handler) in route_map {
+            if let Some(h) = handler {
+                router = router.route(&path, h);
+            }
+        }
+
+        // Auto-register GET /openapi.json if enabled
+        if let Some(openapi_doc) = openapi_doc {
+            let openapi_handler = move || {
+                let doc = openapi_doc.clone();
+                async move {
+                    (
+                        StatusCode::OK,
+                        [(
+                            axum::http::header::CONTENT_TYPE,
+                            HeaderValue::from_static("application/json"),
+                        )],
+                        doc.as_str().to_owned(),
+                    )
+                }
+            };
+            router = router.route("/openapi.json", axum::routing::get(openapi_handler));
+        }
+
+        // Add fallback for 404
+        let fallback_handler = || async {
+            let request_id = Uuid::new_v4().to_string();
+            error_response(
+                StatusCode::NOT_FOUND,
+                "not_found",
+                "Not found",
+                &request_id,
+                false,
+                None,
+            )
+        };
+        router = router.fallback(fallback_handler);
+
+        // Add SharedState as an extension (for ctx.state::<T>() access)
+        // Applied before user extensions so it's available in the request.
+        router = router.layer(axum::extract::Extension(self.shared_state));
+
+        // Apply user-provided shared state (Extension layers)
+        for ext in self.extensions {
+            router = ext(router);
+        }
+
+        // Layers are applied in reverse order: last added = outermost.
+        // Request flow: cors → request_id → body_limit → security_headers → catch_panic → [extensions] → handler
+
+        // Panic handler (innermost — catches panics, response flows through outer layers)
+        router = router.layer(CatchPanicLayer::custom(panic_handler));
+
+        // ⑥ Response: security headers middleware (with configurable CSP)
+        let csp_value = Arc::new(self.csp);
+        router = router.layer(middleware::from_fn_with_state(
+            csp_value,
+            security_headers_middleware,
+        ));
+
+        // ② Security: payload size limit
+        router = router.layer(RequestBodyLimitLayer::new(self.payload_limit));
+
+        // ① Route Resolution: request ID middleware
+        router = router.layer(middleware::from_fn(request_id_middleware));
+
+        // CORS layer (outermost — handles preflight OPTIONS before any other processing)
+        let cors = if self.cors_origins.is_empty() {
+            // Safe default: deny all cross-origin requests
+            CorsLayer::new()
+                .allow_origin(AllowOrigin::list(std::iter::empty::<HeaderValue>()))
+                .allow_methods(AllowMethods::list([
+                    axum::http::Method::GET,
+                    axum::http::Method::POST,
+                    axum::http::Method::PUT,
+                    axum::http::Method::PATCH,
+                    axum::http::Method::DELETE,
+                ]))
+                .allow_headers(AllowHeaders::list([
+                    axum::http::header::CONTENT_TYPE,
+                    axum::http::header::AUTHORIZATION,
+                ]))
+        } else {
+            // Explicit origin whitelist
+            let origins: Vec<HeaderValue> = self
+                .cors_origins
+                .iter()
+                .filter_map(|o| o.parse().ok())
+                .collect();
+            CorsLayer::new()
+                .allow_origin(AllowOrigin::list(origins))
+                .allow_methods(AllowMethods::list([
+                    axum::http::Method::GET,
+                    axum::http::Method::POST,
+                    axum::http::Method::PUT,
+                    axum::http::Method::PATCH,
+                    axum::http::Method::DELETE,
+                ]))
+                .allow_headers(AllowHeaders::list([
+                    axum::http::header::CONTENT_TYPE,
+                    axum::http::header::AUTHORIZATION,
+                ]))
+        };
+        router = router.layer(cors);
+
+        router
+    }
+}
+
+// ─── Request ID middleware ───────────────────────────────────────────────────
+
+/// Middleware that injects a unique request ID into every request and response.
+async fn request_id_middleware(mut req: Request, next: Next) -> Response {
+    let request_id = Uuid::new_v4().to_string();
+    req.extensions_mut().insert(RequestId(request_id.clone()));
+    let mut response = next.run(req).await;
+    if let Ok(val) = HeaderValue::from_str(&request_id) {
+        response
+            .headers_mut()
+            .insert(HeaderName::from_static("x-request-id"), val);
+    }
+    response
+}
+
+// ─── Security headers middleware ─────────────────────────────────────────────
+
+static HEADER_RATELIMIT_LIMIT: HeaderName = HeaderName::from_static("x-ratelimit-limit");
+static HEADER_RATELIMIT_REMAINING: HeaderName = HeaderName::from_static("x-ratelimit-remaining");
+static HEADER_RATELIMIT_RESET: HeaderName = HeaderName::from_static("x-ratelimit-reset");
+
+static HEADER_X_CONTENT_TYPE_OPTIONS: HeaderName =
+    HeaderName::from_static("x-content-type-options");
+static HEADER_X_FRAME_OPTIONS: HeaderName = HeaderName::from_static("x-frame-options");
+static HEADER_X_XSS_PROTECTION: HeaderName = HeaderName::from_static("x-xss-protection");
+static HEADER_STRICT_TRANSPORT_SECURITY: HeaderName =
+    HeaderName::from_static("strict-transport-security");
+static HEADER_CONTENT_SECURITY_POLICY: HeaderName =
+    HeaderName::from_static("content-security-policy");
+static HEADER_REFERRER_POLICY: HeaderName = HeaderName::from_static("referrer-policy");
+static HEADER_PERMISSIONS_POLICY: HeaderName = HeaderName::from_static("permissions-policy");
+
+/// Middleware that injects all 7 security headers into every response.
+///
+/// The CSP header value is configurable via `Service::builder().content_security_policy()`.
+async fn security_headers_middleware(
+    axum::extract::State(csp): axum::extract::State<Arc<String>>,
+    req: Request,
+    next: Next,
+) -> Response {
+    let mut response = next.run(req).await;
+    let headers = response.headers_mut();
+    headers.insert(
+        HEADER_X_CONTENT_TYPE_OPTIONS.clone(),
+        HeaderValue::from_static("nosniff"),
+    );
+    headers.insert(
+        HEADER_X_FRAME_OPTIONS.clone(),
+        HeaderValue::from_static("DENY"),
+    );
+    headers.insert(
+        HEADER_X_XSS_PROTECTION.clone(),
+        HeaderValue::from_static("0"),
+    );
+    headers.insert(
+        HEADER_STRICT_TRANSPORT_SECURITY.clone(),
+        HeaderValue::from_static("max-age=63072000; includeSubDomains; preload"),
+    );
+    if let Ok(val) = HeaderValue::from_str(&csp) {
+        headers.insert(HEADER_CONTENT_SECURITY_POLICY.clone(), val);
+    }
+    headers.insert(
+        HEADER_REFERRER_POLICY.clone(),
+        HeaderValue::from_static("strict-origin-when-cross-origin"),
+    );
+    headers.insert(
+        HEADER_PERMISSIONS_POLICY.clone(),
+        HeaderValue::from_static("camera=(), microphone=(), geolocation=()"),
+    );
+    response
+}
+
+// ─── JWT Auth Layer (per-endpoint) ──────────────────────────────────────────
+
+#[derive(Clone)]
+struct JwtAuthLayer {
+    provider: Arc<dyn AuthProvider>,
+    authorization: EndpointAuthorization,
+}
+
+impl<S> Layer<S> for JwtAuthLayer {
+    type Service = JwtAuthService<S>;
+    fn layer(&self, inner: S) -> Self::Service {
+        JwtAuthService {
+            inner,
+            provider: self.provider.clone(),
+            authorization: self.authorization.clone(),
+        }
+    }
+}
+
+#[derive(Clone)]
+struct JwtAuthService<S> {
+    inner: S,
+    provider: Arc<dyn AuthProvider>,
+    authorization: EndpointAuthorization,
+}
+
+impl<S> tower::Service<Request> for JwtAuthService<S>
+where
+    S: tower::Service<Request, Response = Response, Error = Infallible> + Clone + Send + 'static,
+    S::Future: Send + 'static,
+{
+    type Response = Response;
+    type Error = Infallible;
+    type Future = Pin<Box<dyn Future<Output = Result<Response, Infallible>> + Send>>;
+
+    fn poll_ready(&mut self, cx: &mut Context<'_>) -> Poll<Result<(), Self::Error>> {
+        self.inner.poll_ready(cx)
+    }
+
+    fn call(&mut self, mut req: Request) -> Self::Future {
+        let clone = self.inner.clone();
+        let mut inner = std::mem::replace(&mut self.inner, clone);
+        let provider = self.provider.clone();
+        let authorization = self.authorization.clone();
+
+        Box::pin(async move {
+            let request_id = req
+                .extensions()
+                .get::<RequestId>()
+                .map(|r| r.0.clone())
+                .unwrap_or_else(|| Uuid::new_v4().to_string());
+
+            match provider.authenticate(&req) {
+                Ok(identity) => {
+                    // ③ Authorization check
+                    match &authorization {
+                        EndpointAuthorization::Public => {
+                            // Should not reach here (public = security(none))
+                        }
+                        EndpointAuthorization::Authenticated => {
+                            // Valid JWT is sufficient, no further checks
+                        }
+                        EndpointAuthorization::Scopes(required_scopes) => {
+                            if !required_scopes.is_empty() {
+                                let has_wildcard = identity.scopes.iter().any(|s| s == "*");
+                                if !has_wildcard {
+                                    for scope in required_scopes {
+                                        if !identity.scopes.contains(scope) {
+                                            return Ok(error_response(
+                                                StatusCode::FORBIDDEN,
+                                                "forbidden",
+                                                "Insufficient permissions",
+                                                &request_id,
+                                                false,
+                                                None,
+                                            ));
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                        EndpointAuthorization::Role(required_role) => {
+                            if identity.role.as_ref() != Some(required_role) {
+                                return Ok(error_response(
+                                    StatusCode::FORBIDDEN,
+                                    "forbidden",
+                                    "Insufficient permissions",
+                                    &request_id,
+                                    false,
+                                    None,
+                                ));
+                            }
+                        }
+                    }
+                    req.extensions_mut().insert(identity);
+                    inner.call(req).await
+                }
+                Err(_) => Ok(error_response(
+                    StatusCode::UNAUTHORIZED,
+                    "unauthorized",
+                    "Unauthorized",
+                    &request_id,
+                    false,
+                    None,
+                )),
+            }
+        })
+    }
+}
+
+// ─── Rate Limit Layer (per-endpoint) ────────────────────────────────────────
+
+#[derive(Clone)]
+struct EndpointRateLimitLayer {
+    backend: Arc<dyn RateLimitBackend>,
+    max_requests: u32,
+    window: Duration,
+}
+
+impl<S> Layer<S> for EndpointRateLimitLayer {
+    type Service = EndpointRateLimitService<S>;
+    fn layer(&self, inner: S) -> Self::Service {
+        EndpointRateLimitService {
+            inner,
+            backend: self.backend.clone(),
+            max_requests: self.max_requests,
+            window: self.window,
+        }
+    }
+}
+
+#[derive(Clone)]
+struct EndpointRateLimitService<S> {
+    inner: S,
+    backend: Arc<dyn RateLimitBackend>,
+    max_requests: u32,
+    window: Duration,
+}
+
+impl<S> tower::Service<Request> for EndpointRateLimitService<S>
+where
+    S: tower::Service<Request, Response = Response, Error = Infallible> + Clone + Send + 'static,
+    S::Future: Send + 'static,
+{
+    type Response = Response;
+    type Error = Infallible;
+    type Future = Pin<Box<dyn Future<Output = Result<Response, Infallible>> + Send>>;
+
+    fn poll_ready(&mut self, cx: &mut Context<'_>) -> Poll<Result<(), Self::Error>> {
+        self.inner.poll_ready(cx)
+    }
+
+    fn call(&mut self, req: Request) -> Self::Future {
+        let clone = self.inner.clone();
+        let mut inner = std::mem::replace(&mut self.inner, clone);
+        let backend = self.backend.clone();
+        let max = self.max_requests;
+        let window = self.window;
+
+        Box::pin(async move {
+            let key = get_rate_limit_key(&req);
+            match backend.check(&key, max, window).await {
+                Ok(outcome) => {
+                    let mut resp = inner.call(req).await?;
+                    inject_rate_limit_headers(resp.headers_mut(), &outcome);
+                    Ok(resp)
+                }
+                Err(rejection) => {
+                    let request_id = req
+                        .extensions()
+                        .get::<RequestId>()
+                        .map(|r| r.0.clone())
+                        .unwrap_or_else(|| Uuid::new_v4().to_string());
+                    let mut resp = error_response(
+                        StatusCode::TOO_MANY_REQUESTS,
+                        "rate_limit_exceeded",
+                        "Rate limit exceeded",
+                        &request_id,
+                        true,
+                        None,
+                    );
+                    let headers = resp.headers_mut();
+                    if let Ok(val) = HeaderValue::from_str(&rejection.retry_after.to_string()) {
+                        headers.insert(HeaderName::from_static("retry-after"), val);
+                    }
+                    if let Ok(val) = HeaderValue::from_str(&rejection.limit.to_string()) {
+                        headers.insert(HEADER_RATELIMIT_LIMIT.clone(), val);
+                    }
+                    headers.insert(
+                        HEADER_RATELIMIT_REMAINING.clone(),
+                        HeaderValue::from_static("0"),
+                    );
+                    Ok(resp)
+                }
+            }
+        })
+    }
+}
+
+// ─── Rate Limit Headers ──────────────────────────────────────────────────────
+
+/// Inject standard rate limit headers into a successful response.
+fn inject_rate_limit_headers(headers: &mut axum::http::HeaderMap, outcome: &RateLimitOutcome) {
+    if let Ok(val) = HeaderValue::from_str(&outcome.limit.to_string()) {
+        headers.insert(HEADER_RATELIMIT_LIMIT.clone(), val);
+    }
+    if let Ok(val) = HeaderValue::from_str(&outcome.remaining.to_string()) {
+        headers.insert(HEADER_RATELIMIT_REMAINING.clone(), val);
+    }
+    if let Ok(val) = HeaderValue::from_str(&outcome.reset_after.to_string()) {
+        headers.insert(HEADER_RATELIMIT_RESET.clone(), val);
+    }
+}
+
+// ─── Panic Handler ───────────────────────────────────────────────────────────
+
+/// Handle panics from handlers by returning a structured 500 JSON response.
+fn panic_handler(_err: Box<dyn std::any::Any + Send + 'static>) -> Response<Body> {
+    let request_id = Uuid::new_v4().to_string();
+    tracing::error!(request_id = %request_id, "handler panicked");
+    error_response(
+        StatusCode::INTERNAL_SERVER_ERROR,
+        "internal_error",
+        "Internal server error",
+        &request_id,
+        false,
+        None,
+    )
+}
+
+// ─── Helpers ─────────────────────────────────────────────────────────────────
+
+/// Extract a rate limit key from the request (client IP or fallback).
+fn get_rate_limit_key(req: &Request) -> String {
+    req.headers()
+        .get("x-forwarded-for")
+        .and_then(|v| v.to_str().ok())
+        .map(|v| v.split(',').next().unwrap_or("unknown").trim().to_string())
+        .or_else(|| {
+            req.headers()
+                .get("x-real-ip")
+                .and_then(|v| v.to_str().ok())
+                .map(|s| s.to_string())
+        })
+        .unwrap_or_else(|| "unknown".to_string())
+}

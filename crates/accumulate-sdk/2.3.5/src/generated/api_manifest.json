@@ -1,0 +1,218 @@
+{
+  "generated_at": "2025-10-04 03:26:52",
+  "methods": [
+    {
+      "name": "status",
+      "params": "StatusParams",
+      "result": "StatusResponse",
+      "description": "queries the status of the node"
+    },
+    {
+      "name": "version",
+      "params": "VersionParams",
+      "result": "VersionResponse",
+      "description": "queries the software version of the node"
+    },
+    {
+      "name": "describe",
+      "params": "DescribeParams",
+      "result": "DescribeResponse",
+      "description": "queries the basic configuration of the node"
+    },
+    {
+      "name": "metrics",
+      "params": "MetricsParams",
+      "result": "MetricsResponse",
+      "description": "queries network metrics, such as transactions per second"
+    },
+    {
+      "name": "faucet",
+      "params": "FaucetParams",
+      "result": "FaucetResponse",
+      "description": "requests tokens from the ACME faucet"
+    },
+    {
+      "name": "query",
+      "params": "QueryParams",
+      "result": "QueryResponse",
+      "description": "queries an account or account chain by URL"
+    },
+    {
+      "name": "query-directory",
+      "params": "QueryDirectoryParams",
+      "result": "QueryDirectoryResponse",
+      "description": "queries the directory entries of an account"
+    },
+    {
+      "name": "query-tx",
+      "params": "QueryTxParams",
+      "result": "QueryTxResponse",
+      "description": "queries a transaction by ID"
+    },
+    {
+      "name": "query-tx-local",
+      "params": "QueryTxLocalParams",
+      "result": "QueryTxLocalResponse",
+      "description": "queries a transaction by ID"
+    },
+    {
+      "name": "query-tx-history",
+      "params": "QueryTxHistoryParams",
+      "result": "QueryTxHistoryResponse",
+      "description": "queries an account's transaction history"
+    },
+    {
+      "name": "query-data",
+      "params": "QueryDataParams",
+      "result": "QueryDataResponse",
+      "description": "queries an entry on an account's data chain"
+    },
+    {
+      "name": "query-data-set",
+      "params": "QueryDataSetParams",
+      "result": "QueryDataSetResponse",
+      "description": "queries a range of entries on an account's data chain"
+    },
+    {
+      "name": "query-key-index",
+      "params": "QueryKeyPageIndexParams",
+      "result": "QueryKeyPageIndexResponse",
+      "description": "queries the location of a key within an account's key book(s)"
+    },
+    {
+      "name": "query-minor-blocks",
+      "params": "QueryMinorBlocksParams",
+      "result": "QueryMinorBlocksResponse",
+      "description": "queries an account's minor blocks"
+    },
+    {
+      "name": "query-major-blocks",
+      "params": "QueryMajorBlocksParams",
+      "result": "QueryMajorBlocksResponse",
+      "description": "queries an account's major blocks"
+    },
+    {
+      "name": "query-synth",
+      "params": "QuerySynthParams",
+      "result": "QuerySynthResponse",
+      "description": ""
+    },
+    {
+      "name": "execute",
+      "params": "ExecuteParams",
+      "result": "ExecuteResponse",
+      "description": "submits a transaction"
+    },
+    {
+      "name": "execute-direct",
+      "params": "ExecuteDirectParams",
+      "result": "ExecuteDirectResponse",
+      "description": "submits a transaction"
+    },
+    {
+      "name": "execute-local",
+      "params": "ExecuteLocalParams",
+      "result": "ExecuteLocalResponse",
+      "description": "submits a transaction without routing it. INTENDED FOR INTERNAL USE ONLY"
+    },
+    {
+      "name": "create-adi",
+      "params": "ExecuteCreateAdiParams",
+      "result": "ExecuteCreateAdiResponse",
+      "description": "submits a CreateIdentity transaction"
+    },
+    {
+      "name": "create-identity",
+      "params": "ExecuteCreateIdentityParams",
+      "result": "ExecuteCreateIdentityResponse",
+      "description": "submits a CreateIdentity transaction"
+    },
+    {
+      "name": "create-data-account",
+      "params": "ExecuteCreateDataAccountParams",
+      "result": "ExecuteCreateDataAccountResponse",
+      "description": "submits a CreateDataAccount transaction"
+    },
+    {
+      "name": "create-key-book",
+      "params": "ExecuteCreateKeyBookParams",
+      "result": "ExecuteCreateKeyBookResponse",
+      "description": "submits a CreateKeyBook transaction"
+    },
+    {
+      "name": "create-key-page",
+      "params": "ExecuteCreateKeyPageParams",
+      "result": "ExecuteCreateKeyPageResponse",
+      "description": "submits a CreateKeyPage transaction"
+    },
+    {
+      "name": "create-token",
+      "params": "ExecuteCreateTokenParams",
+      "result": "ExecuteCreateTokenResponse",
+      "description": "submits a CreateToken transaction"
+    },
+    {
+      "name": "create-token-account",
+      "params": "ExecuteCreateTokenAccountParams",
+      "result": "ExecuteCreateTokenAccountResponse",
+      "description": "submits a CreateTokenAccount transaction"
+    },
+    {
+      "name": "send-tokens",
+      "params": "ExecuteSendTokensParams",
+      "result": "ExecuteSendTokensResponse",
+      "description": "submits a SendTokens transaction"
+    },
+    {
+      "name": "add-credits",
+      "params": "ExecuteAddCreditsParams",
+      "result": "ExecuteAddCreditsResponse",
+      "description": "submits an AddCredits transaction"
+    },
+    {
+      "name": "update-key-page",
+      "params": "ExecuteUpdateKeyPageParams",
+      "result": "ExecuteUpdateKeyPageResponse",
+      "description": "submits an UpdateKeyPage transaction"
+    },
+    {
+      "name": "update-key",
+      "params": "ExecuteUpdateKeyParams",
+      "result": "ExecuteUpdateKeyResponse",
+      "description": "submits an UpdateKey transaction"
+    },
+    {
+      "name": "write-data",
+      "params": "ExecuteWriteDataParams",
+      "result": "ExecuteWriteDataResponse",
+      "description": "submits a WriteData transaction"
+    },
+    {
+      "name": "issue-tokens",
+      "params": "ExecuteIssueTokensParams",
+      "result": "ExecuteIssueTokensResponse",
+      "description": "submits an IssueTokens transaction"
+    },
+    {
+      "name": "write-data-to",
+      "params": "ExecuteWriteDataToParams",
+      "result": "ExecuteWriteDataToResponse",
+      "description": "submits a WriteDataTo transaction"
+    },
+    {
+      "name": "burn-tokens",
+      "params": "ExecuteBurnTokensParams",
+      "result": "ExecuteBurnTokensResponse",
+      "description": "submits a BurnTokens transaction"
+    },
+    {
+      "name": "update-account-auth",
+      "params": "ExecuteUpdateAccountAuthParams",
+      "result": "ExecuteUpdateAccountAuthResponse",
+      "description": "submits an UpdateAccountAuth transaction"
+    }
+  ],
+  "counts": {
+    "api": 35
+  }
+}

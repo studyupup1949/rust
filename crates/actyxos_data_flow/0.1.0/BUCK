@@ -1,0 +1,36 @@
+load("@buckal//:wrapper.bzl", "rust_library")
+
+rust_library(
+    name = "actyxos_data_flow",
+    srcs = glob(["**/*.rs"]),
+    crate = "actyxos_data_flow",
+    crate_root = "src/lib.rs",
+    edition = "2018",
+
+    visibility = ["PUBLIC"],
+    deps = [
+        "//third-party/rust/crates/abomonation/0.7.3:abomonation",
+        "//third-party/rust/crates/abomonation_derive/0.5.0:abomonation_derive",
+        "//third-party/rust/crates/actyxos_sdk/0.3.1:actyxos_sdk",
+        "//third-party/rust/crates/anyhow/1.0.104:anyhow",
+        "//third-party/rust/crates/chrono-tz/0.5.3:chrono_tz",
+        "//third-party/rust/crates/chrono/0.4.45:chrono",
+        "//third-party/rust/crates/derive_more/0.99.20:derive_more",
+        "//third-party/rust/crates/differential-dataflow/0.11.0:differential_dataflow",
+        "//third-party/rust/crates/futures-state-stream/0.1.1:futures_state_stream",
+        "//third-party/rust/crates/futures/0.1.31:futures",
+        "//third-party/rust/crates/futures/0.3.34:futures",
+        "//third-party/rust/crates/itertools/0.9.0:itertools",
+        "//third-party/rust/crates/native-tls/0.2.18:native_tls",
+        "//third-party/rust/crates/postgres-native-tls/0.3.0:postgres_native_tls",
+        "//third-party/rust/crates/postgres/0.17.5:postgres",
+        "//third-party/rust/crates/rusqlite/0.22.0:rusqlite",
+        "//third-party/rust/crates/serde/1.0.229:serde",
+        "//third-party/rust/crates/serde_cbor/0.11.2:serde_cbor",
+        "//third-party/rust/crates/serde_json/1.0.151:serde_json",
+        "//third-party/rust/crates/tiberius/0.3.2:tiberius",
+        "//third-party/rust/crates/timely/0.11.1:timely",
+        "//third-party/rust/crates/tokio/0.2.25:tokio",
+        "//third-party/rust/crates/tracing/0.1.44:tracing",
+    ],
+)

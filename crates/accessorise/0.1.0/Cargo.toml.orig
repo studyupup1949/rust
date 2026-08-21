@@ -1,0 +1,14 @@
+[package]
+name = "accessorise"
+version = "0.1.0"
+edition = "2024"
+license = "MIT OR Apache-2.0"
+description = "Add accessors to your objects."
+repository = "https://github.com/coruscateor/accessorise"
+homepage = "https://coruscateor.com/projects/accessorise"
+keywords = ["accessor", "accessors", "getter", "setter", "macros"]
+
+[dependencies]
+
+[dev-dependencies]
+paste = "1.0.15"

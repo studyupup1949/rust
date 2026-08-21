@@ -1,0 +1,40 @@
+# "aci_png" crate - Licensed under the MIT LICENSE
+#  * Copyright (c) 2017-2018  Jeron A. Lau <jeron.lau@plopgrizzly.com>
+#                             _        _
+#                            /@\——————/@\
+# .———  .                   |   o    o   |     .————      .            .
+# |   | |  .———   .———   .——.     []     .——.  |      .——    ———: ———: | .   .
+# |   | |  |   |  |   |  \   \   <##>   /   /  |      |   |    /    /  | |   |
+# |———  |  |   |  |   |   |   ¯        ¯   |   |   -- |   |   /    /   |  \ /
+# |     |  |   |  |———    |                |   |    | |   |  /    /    |   |
+# |     |   ———   |       |                |    ————  |   | :——— :———  |   |
+#                 |        \              /                              __/
+#                           ¯————————————¯
+
+[package]
+name = "aci_png"
+version = "0.6.2"
+authors = [
+	"Jeron A. Lau <jeron.lau@plopgrizzly.com>"
+]
+
+license = "MIT"
+documentation = "https://docs.rs/aci_png"
+homepage = "http://plopgrizzly.com/aci_png"
+repository = "https://github.com/plopgrizzly/aci_png"
+
+readme = "readme.md"
+description = "Encode and decode png and apng(TODO) image files."
+keywords = ["image", "png", "codec", "parse", "decoder"]
+categories = ["encoding", "parsing", "data-structures", "multimedia"]
+
+exclude = [
+	"examples/*", "code_of_conduct.md", "contributing.md", ".gitignore",
+	"_config.yml", "ISSUE_TEMPLATE.md", "icon.ico", "icon.png"
+]
+
+[dependencies]
+afi = "^0.5"
+deflate = "^0.7"
+inflate = "^0.4"
+byteorder = "^1.2"

@@ -1,0 +1,23 @@
+[package]
+name = "acme-redirect"
+version = "0.2.0"
+description = "Minimal http daemon that answers acme challenges and redirects everything else to https"
+authors = ["kpcyrd <git@rxv.cc>"]
+license = "GPL-3.0"
+repository = "https://github.com/kpcyrd/acme-redirect"
+readme = "README.md"
+edition = "2018"
+
+[dependencies]
+acme-micro = "0.8"
+structopt = "0.3.14"
+anyhow = "1.0.28"
+env_logger = "0.7.1"
+log = "0.4.8"
+serde = "1.0.106"
+toml = "0.5.6"
+actix-web = "2.0.0"
+actix-rt = "1.1.0"
+openssl = "0.10.29"
+time = "0.1"
+colored = "1.9.3"

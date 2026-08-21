@@ -1,0 +1,28 @@
+load("@buckal//:wrapper.bzl", "rust_library")
+
+rust_library(
+    name = "acrylic",
+    srcs = glob(["**/*.rs"]),
+    crate = "acrylic",
+    crate_root = "lib.rs",
+    edition = "2021",
+    features = ["default"],
+
+    visibility = ["PUBLIC"],
+    deps = [
+        "//third-party/rust/crates/fixed/1.31.0:fixed",
+        "//third-party/rust/crates/lmfu/1.3.1:lmfu",
+        "//third-party/rust/crates/log/0.4.33:log",
+        "//third-party/rust/crates/oakwood/0.1.4:oakwood",
+        "//third-party/rust/crates/png/0.17.16:png",
+        "//third-party/rust/crates/railway/0.3.3:railway",
+        "//third-party/rust/crates/rgb/0.8.53:rgb",
+        "//third-party/rust/crates/simd-blit/1.0.1:simd_blit",
+        "//third-party/rust/crates/static_assertions/1.1.0:static_assertions",
+        "//third-party/rust/crates/tinyvec/1.12.0:tinyvec",
+        "//third-party/rust/crates/ttf-parser/0.18.1:ttf_parser",
+        "//third-party/rust/crates/vek/0.15.10:vek",
+        "//third-party/rust/crates/wizdraw/1.2.1:wizdraw",
+        "//third-party/rust/crates/xmlparser/0.13.6:xmlparser",
+    ],
+)

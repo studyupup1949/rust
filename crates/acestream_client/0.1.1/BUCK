@@ -1,0 +1,19 @@
+load("@buckal//:wrapper.bzl", "rust_library")
+
+rust_library(
+    name = "acestream_client",
+    srcs = glob(["**/*.rs"]),
+    crate = "acestream_client",
+    crate_root = "src/lib.rs",
+    edition = "2015",
+
+    visibility = ["PUBLIC"],
+    deps = [
+        "//third-party/rust/crates/clap/2.34.0:clap",
+        "//third-party/rust/crates/crossbeam/0.7.3:crossbeam",
+        "//third-party/rust/crates/reqwest/0.9.24:reqwest",
+        "//third-party/rust/crates/serde/1.0.229:serde",
+        "//third-party/rust/crates/serde_derive/1.0.229:serde_derive",
+        "//third-party/rust/crates/serde_json/1.0.151:serde_json",
+    ],
+)

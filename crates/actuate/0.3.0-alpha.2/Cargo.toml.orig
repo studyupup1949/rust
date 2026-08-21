@@ -1,0 +1,11 @@
+[package]
+name = "actuate"
+version = "0.3.0-alpha.2"
+edition = "2021"
+license = "MIT OR Apache-2.0"
+description = "A reactive user-interface framework"
+repository = "https://github.com/matthunz/actuate"
+
+[dependencies]
+slotmap = "1.0.7"
+tokio = { version = "1.37.0", features = ["full"] }

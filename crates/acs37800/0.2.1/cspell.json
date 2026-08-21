@@ -1,0 +1,20 @@
+{
+  "version": "0.2",
+  "language": "en",
+  "dictionaries": [
+    "en_US",
+    "en-gb",
+    "companies",
+    "softwareTerms",
+    "misc",
+    "bash",
+    "filetypes",
+    "acs37800"
+  ],
+  "dictionaryDefinitions": [
+    {
+      "name": "acs37800",
+      "path": "./cspell-acs37800.txt"
+    }
+  ]
+}

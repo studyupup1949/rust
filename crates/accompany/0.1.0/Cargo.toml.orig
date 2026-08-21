@@ -1,0 +1,15 @@
+[package]
+name = "accompany"
+version = "0.1.0"
+edition = "2018"
+license-file = "LICENSE"
+description = "`with`-like macro for Rust"
+homepage = "https://github.com/ifsheldon/accompany"
+documentation = "https://github.com/ifsheldon/accompany/blob/main/README.md"
+repository = "https://github.com/ifsheldon/accompany"
+readme = "README.md"
+authors = ["Feng Liang <official@fengliang.io>"]
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]

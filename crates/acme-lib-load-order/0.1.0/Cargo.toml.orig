@@ -1,0 +1,27 @@
+[package]
+name = "acme-lib-load-order"
+description = "Library for requesting certificates from an ACME provider."
+license = "MIT"
+repository = "https://github.com/muhammedbehram/acme-lib"
+readme = "README.md"
+version = "0.1.0"
+authors = ["Muhammed Behram <muhammedosman.behram@gmail.com>"]
+keywords = ["letsencrypt", "acme"]
+categories = ["web-programming", "api-bindings"]
+edition = "2018"
+
+[dependencies]
+base64 = "0.22"
+jiff = "0.1.20"
+lazy_static = "1"
+log = "0.4"
+openssl = "0.10"
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+ureq = "3.0.0-rc4"
+
+[dev-dependencies]
+env_logger = { version = "0.11", default-features = false }
+futures = "0.1.25"
+hyper = "0.12"
+regex = "1.3"

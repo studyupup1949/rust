@@ -1,0 +1,15 @@
+load("@buckal//:wrapper.bzl", "rust_library")
+
+rust_library(
+    name = "ach_mpmc",
+    srcs = glob(["**/*.rs"]),
+    crate = "ach_mpmc",
+    crate_root = "src/lib.rs",
+    edition = "2018",
+
+    visibility = ["PUBLIC"],
+    deps = [
+        "//third-party/rust/crates/ach-ring/0.1.10:ach_ring",
+        "//third-party/rust/crates/ach-util/0.1.17:ach_util",
+    ],
+)

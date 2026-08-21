@@ -1,0 +1,6 @@
+{
+  "git": {
+    "sha1": "a59701fafaa95fe75330346709689154156a6301"
+  },
+  "path_in_vcs": "crates/runtime-mailbox"
+}

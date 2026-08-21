@@ -1,0 +1,31 @@
+[package]
+name = "actori-web-httpauth"
+version = "0.4.0"
+authors = ["Christian Haynes <06chaynes@gmail.com>", "svartalf <self@svartalf.info>", "Yuki Okushi <huyuumi.dev@gmail.com>"]
+description = "HTTP authentication schemes for actori-web"
+readme = "README.md"
+keywords = ["http", "web", "framework"]
+homepage = "https://github.com/actori/actori-web-httpauth"
+repository = "https://github.com/actori/actori-web-httpauth.git"
+documentation = "https://docs.rs/actori-web-httpauth/"
+categories = ["web-programming::http-server"]
+license = "MIT OR Apache-2.0"
+exclude = [".github/*", ".gitignore"]
+edition = "2018"
+
+[dependencies]
+actori-web = { version = "^2.0", default_features = false }
+actori-service = "1.0"
+futures = "0.3"
+bytes = "0.5"
+base64 = "0.11"
+
+[dev-dependencies]
+actori-rt = "1.0"
+
+[features]
+default = []
+nightly = []
+
+[badges]
+maintenance = { status = "passively-maintained" }

@@ -1,0 +1,17 @@
+load("@buckal//:wrapper.bzl", "rust_library")
+
+rust_library(
+    name = "actor_helper",
+    srcs = glob(["**/*.rs"]),
+    crate = "actor_helper",
+    crate_root = "src/lib.rs",
+    edition = "2024",
+    features = ["default"],
+
+    visibility = ["PUBLIC"],
+    deps = [
+        "//third-party/rust/crates/flume/0.11.1:flume",
+        "//third-party/rust/crates/futures-executor/0.3.34:futures_executor",
+        "//third-party/rust/crates/futures-util/0.3.34:futures_util",
+    ],
+)

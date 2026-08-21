@@ -1,0 +1,19 @@
+load("@buckal//:wrapper.bzl", "rust_library")
+
+rust_library(
+    name = "accrete",
+    srcs = glob(["**/*.rs"]),
+    crate = "accrete",
+    crate_root = "src/lib.rs",
+    edition = "2021",
+    features = ["default"],
+
+    visibility = ["PUBLIC"],
+    deps = [
+        "//third-party/rust/crates/getrandom/0.2.17:getrandom",
+        "//third-party/rust/crates/rand/0.8.7:rand",
+        "//third-party/rust/crates/rand_chacha/0.3.1:rand_chacha",
+        "//third-party/rust/crates/serde/1.0.229:serde",
+        "//third-party/rust/crates/wasm-bindgen/0.2.127:wasm_bindgen",
+    ],
+)

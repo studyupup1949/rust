@@ -1,0 +1,8 @@
+[package]
+name = "actor"
+version = "0.1.1"
+edition = "2018"
+authors = ["00imvj00 <vijaybambhaniya007@gmail.com>"]
+description = "Actors traits"
+homepage = "https://github.com/00imvj00/actors"
+license = "Apache-2.0"

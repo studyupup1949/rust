@@ -1,0 +1,22 @@
+[package]
+name = "accounting"
+version = "0.2.0"
+authors = ["silvon <silvonli@gmail.com>"]
+edition = "2021"
+license = "MIT"
+readme = "README.md"
+repository = "https://github.com/silvonli/accounting"
+documentation = "https://docs.rs/accounting"
+keywords = ["money", "currency", "format"]
+categories = ["value-formatting"]
+description = "accounting is a library for money and currency formatting."
+autotests = true
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+regex = "1"
+rust_decimal = { version = "1.21", optional = true }
+
+[features]
+decimal = ["rust_decimal"]

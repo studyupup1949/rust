@@ -1,0 +1,98 @@
+{
+  "name": "document",
+  "type": "block",
+  "header": {
+    "title": [
+      {
+        "name": "text",
+        "type": "string",
+        "value": "Document Title",
+        "location": [
+          {
+            "line": 2,
+            "col": 3
+          },
+          {
+            "line": 2,
+            "col": 16
+          }
+        ]
+      }
+    ],
+    "authors": [
+      {
+        "firstname": "Lorn Kismet",
+        "middlename": "R.",
+        "lastname": "Lee",
+        "initials": "LRL",
+        "address": "kismet@asciidoctor.org"
+      },
+      {
+        "firstname": "Norberto",
+        "middlename": "M.",
+        "lastname": "Lopes",
+        "initials": "NML",
+        "address": "nlopesml@gmail.com"
+      }
+    ],
+    "location": [
+      {
+        "line": 2,
+        "col": 1
+      },
+      {
+        "line": 7,
+        "col": 34
+      }
+    ]
+  },
+  "attributes": {
+    "author": "Lorn Kismet R. Lee",
+    "author_2": "Norberto M. Lopes",
+    "authorcount": "2",
+    "authorinitials": "LRL",
+    "authorinitials_2": "NML",
+    "authors": "Lorn Kismet R. Lee, Norberto M. Lopes",
+    "description": "The document's description.",
+    "email": "kismet@asciidoctor.org",
+    "email_2": "nlopesml@gmail.com",
+    "firstname": "Lorn Kismet",
+    "firstname_2": "Norberto",
+    "lastname": "Lee",
+    "lastname_2": "Lopes",
+    "middlename": "R.",
+    "middlename_2": "M.",
+    "revdate": "01-09-2024",
+    "revnumber": "v2.9",
+    "revremark": "Fall incarnation",
+    "sectanchors": true,
+    "url-repo": "https://my-git-repo.com"
+  },
+  "blocks": [
+    {
+      "name": "comment",
+      "type": "block",
+      "content": " this comment line is ignored",
+      "location": [
+        {
+          "line": 1,
+          "col": 1
+        },
+        {
+          "line": 1,
+          "col": 32
+        }
+      ]
+    }
+  ],
+  "location": [
+    {
+      "line": 1,
+      "col": 1
+    },
+    {
+      "line": 7,
+      "col": 34
+    }
+  ]
+}

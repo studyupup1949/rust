@@ -1,0 +1,12 @@
+load("@buckal//:wrapper.bzl", "rust_binary")
+
+rust_binary(
+    name = "ac_qu_ai_nt",
+    srcs = glob(["**/*.rs"]),
+    crate = "ac_qu_ai_nt",
+    crate_root = "src/main.rs",
+    edition = "2021",
+    features = ["default"],
+
+    visibility = ["PUBLIC"],
+)

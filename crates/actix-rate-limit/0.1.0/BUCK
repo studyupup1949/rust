@@ -1,0 +1,21 @@
+load("@buckal//:wrapper.bzl", "rust_library")
+
+rust_library(
+    name = "actix_rate_limit",
+    srcs = glob(["**/*.rs"]),
+    crate = "actix_rate_limit",
+    crate_root = "src/lib.rs",
+    edition = "2018",
+
+    visibility = ["PUBLIC"],
+    deps = [
+        "//third-party/rust/crates/actix-redis/0.9.2:actix_redis",
+        "//third-party/rust/crates/actix-service/1.0.6:actix_service",
+        "//third-party/rust/crates/actix-web/3.3.3:actix_web",
+        "//third-party/rust/crates/actix/0.10.0:actix",
+        "//third-party/rust/crates/futures-util/0.3.34:futures_util",
+        "//third-party/rust/crates/log/0.4.33:log",
+        "//third-party/rust/crates/serde/1.0.229:serde",
+        "//third-party/rust/crates/time/0.2.27:time",
+    ],
+)

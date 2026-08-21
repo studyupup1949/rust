@@ -1,0 +1,14 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "DELETE FROM activation_tokens WHERE activation_token = $1",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Left": [
+        "Text"
+      ]
+    },
+    "nullable": []
+  },
+  "hash": "2522f7a51a1b4ccaf44bb48216549350718aa12c433a9142c0a60f3c81516a28"
+}

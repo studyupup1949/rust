@@ -1,0 +1,40 @@
+[package]
+name = "accurate"
+version = "0.4.0"
+edition = "2021"
+authors = ["Benedikt Steinbusch <ben@rockshrub.de>"]
+description = "(more or less) accurate floating point algorithms"
+homepage = "https://github.com/bsteinb/accurate"
+repository = "https://github.com/bsteinb/accurate"
+documentation = "http://docs.rs/accurate/"
+readme = "README.md"
+keywords = [ "floating-point", "accurate", "sum", "dot-product" ]
+categories = [ "algorithms", "mathematics" ]
+license = "MIT OR Apache-2.0"
+exclude = [ "/.github" ]
+
+[features]
+default = [ "parallel" ]
+fma = []
+parallel = [ "rayon" ]
+clippy = []
+lint = [ "clippy" ]
+
+[dependencies]
+cfg-if = "1"
+embed-doc-image = "0.1"
+ieee754 = "0.2"
+num-traits = "0.2"
+rayon = { version = "1", optional = true }
+
+[dev-dependencies]
+criterion = "0.5"
+criterion-plot = "0.5"
+doc-comment = "0.3"
+num = "0.4"
+rand = "0.8"
+rug = "1.0"
+
+[[bench]]
+name = "criterion"
+harness = false

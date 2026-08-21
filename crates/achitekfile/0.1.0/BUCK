@@ -1,0 +1,16 @@
+load("@buckal//:wrapper.bzl", "rust_library")
+
+rust_library(
+    name = "achitekfile",
+    srcs = glob(["**/*.rs"]),
+    crate = "achitekfile",
+    crate_root = "src/lib.rs",
+    edition = "2024",
+
+    visibility = ["PUBLIC"],
+    deps = [
+        "//third-party/rust/crates/thiserror/2.0.20:thiserror",
+        "//third-party/rust/crates/tree-sitter-achitekfile/0.1.0:tree_sitter_achitekfile",
+        "//third-party/rust/crates/tree-sitter/0.26.12:tree_sitter",
+    ],
+)

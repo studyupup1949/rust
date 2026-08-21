@@ -1,0 +1,187 @@
+================================================================================
+COMPLETE GUIDE: HOW TO PUBLISH "accountant" PACKAGE ON CRATES.IO
+================================================================================
+
+This guide will walk you through registering the accountant package step by step.
+
+================================================================================
+STEP 1: CREATE A CRATES.IO ACCOUNT
+================================================================================
+
+1. Go to: https://crates.io
+
+2. Click "Log in with GitHub" button (top right corner)
+   - You MUST have a GitHub account
+   - Crates.io only supports GitHub authentication
+
+3. Authorize crates.io to access your GitHub account
+
+4. You're now logged in!
+
+================================================================================
+STEP 2: GET YOUR API TOKEN
+================================================================================
+
+1. Once logged in, click on your profile picture (top right)
+
+2. Click "Account Settings"
+
+3. Scroll down to "API Tokens" section
+
+4. Click "New Token"
+
+5. Enter a name like "publish-accountant"
+
+6. Copy the token - YOU WILL ONLY SEE IT ONCE!
+   It looks like: cio1234abcd5678efgh...
+
+================================================================================
+STEP 3: INSTALL RUST (IF NOT INSTALLED)
+================================================================================
+
+Run this command:
+
+    curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
+
+Then restart your terminal or run:
+
+    source ~/.cargo/env
+
+Verify installation:
+
+    cargo --version
+
+================================================================================
+STEP 4: LOGIN TO CRATES.IO FROM TERMINAL
+================================================================================
+
+Run this command and paste your API token when prompted:
+
+    cargo login
+
+It will ask for your token - paste it and press Enter.
+
+You should see: "Login token for `crates.io` saved"
+
+================================================================================
+STEP 5: VERIFY THE PACKAGE BUILDS
+================================================================================
+
+Navigate to the package directory:
+
+    cd /home/edden/.gemini/antigravity/scratch/accountant_package
+
+Build the package to check for errors:
+
+    cargo build
+
+Run the tests:
+
+    cargo test
+
+Check the package is ready for publishing:
+
+    cargo package --list
+
+================================================================================
+STEP 6: PUBLISH THE PACKAGE
+================================================================================
+
+⚠️ IMPORTANT: Before publishing, verify the name is still available!
+
+Check if "accountant" exists:
+
+    curl -s https://crates.io/api/v1/crates/accountant | head -20
+
+If it shows "errors" with "Not Found", the name is available!
+
+PUBLISH THE PACKAGE:
+
+    cargo publish
+
+You should see:
+- "Uploading accountant v0.1.0"
+- "Uploaded accountant v0.1.0"
+
+================================================================================
+STEP 7: VERIFY YOUR PACKAGE IS LIVE
+================================================================================
+
+Wait about 1-2 minutes, then check:
+
+    https://crates.io/crates/accountant
+
+You should see YOUR package with YOUR README!
+
+Take a screenshot for your bug bounty report.
+
+================================================================================
+QUICK COMMANDS (COPY-PASTE)
+================================================================================
+
+# Navigate to package directory
+cd /home/edden/.gemini/antigravity/scratch/accountant_package
+
+# Verify it builds
+cargo build
+
+# Verify name is available (should show "Not Found")
+curl -s https://crates.io/api/v1/crates/accountant | head -20
+
+# Login to crates.io (paste token when prompted)
+cargo login
+
+# Publish the package
+cargo publish
+
+# Check your package is live
+curl -s https://crates.io/api/v1/crates/accountant | head -20
+
+================================================================================
+PACKAGE STRUCTURE CREATED FOR YOU
+================================================================================
+
+/home/edden/.gemini/antigravity/scratch/accountant_package/
+├── Cargo.toml      # Package manifest (name, version, description)
+├── LICENSE         # MIT License (required for publishing)
+├── README.md       # Explains this is security research
+└── src/
+    └── lib.rs      # Harmless placeholder Rust code
+
+================================================================================
+IMPORTANT NOTES
+================================================================================
+
+1. FIRST COME FIRST SERVE
+   - crates.io package names are unique
+   - Once you publish, you own the name
+   - If someone else publishes first, you're out of luck!
+
+2. CANNOT DELETE
+   - Once published, packages CANNOT be deleted
+   - You can "yank" versions to prevent downloads
+   - But the name will always be yours
+
+3. NO MALICIOUS CODE
+   - crates.io has policies against malicious packages
+   - Our placeholder is completely safe and documented
+   - It explains it's for security research
+
+4. EMAIL VERIFICATION
+   - crates.io requires verified email on GitHub
+   - Make sure your GitHub email is verified
+
+================================================================================
+AFTER PUBLISHING - REPORT THE BUG
+================================================================================
+
+Once published, you can submit your bug bounty report with:
+
+1. Screenshot of your package on crates.io
+2. Link to: https://crates.io/crates/accountant
+3. Proof that Wormhole's code references it:
+   https://github.com/wormhole-foundation/wormhole/blob/main/cosmwasm/contracts/global-accountant/Cargo.toml
+
+================================================================================
+END OF GUIDE
+================================================================================

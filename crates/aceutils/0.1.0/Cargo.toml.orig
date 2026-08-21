@@ -1,0 +1,15 @@
+[package]
+name = "aceutils"
+description = "Rust utility to convert Garmin Aviation Checklist Editor (ACE) files to and from various formats."
+authors = ["Shawn Debnath <shawn@debnath.net>"]
+version = "0.1.0"
+edition = "2021"
+license = "BSD-2-Clause"
+license-file = "COPYRIGHT"
+readme = "README.md"
+homepage = "https://github.com/sdebnath/aceutils"
+repository = "https://github.com/sdebnath/aceutils"
+keywords = ["garmin", "ace", "checklist", "aviation"]
+categories = ["aerospace", "command-line-utilities"]
+
+[dependencies]

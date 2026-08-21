@@ -1,0 +1,16 @@
+load("@buckal//:wrapper.bzl", "rust_binary")
+
+rust_binary(
+    name = "exl",
+    srcs = glob(["**/*.rs"]),
+    crate = "exl",
+    crate_root = "src/main.rs",
+    edition = "2018",
+
+    visibility = ["PUBLIC"],
+    deps = [
+        "//third-party/rust/crates/cargo_metadata/0.12.3:cargo_metadata",
+        "//third-party/rust/crates/lazy_static/1.5.0:lazy_static",
+        "//third-party/rust/crates/structopt/0.3.26:structopt",
+    ],
+)

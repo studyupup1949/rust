@@ -1,0 +1,19 @@
+[package]
+name = "actix-allow-deny-middleware"
+version = "0.2.0"
+edition = "2024"
+repository = "https://github.com/chriswk/actix-allow-deny-middleware"
+homepage = "https://github.com/chriswk/actix-allow-deny-middleware"
+authors = ["Christopher Kolstad <rust@chriswk.no>"]
+license = "MIT"
+description = "Middlewares for denying or allowing IPv4 and IPv6 ranges"
+[dependencies]
+actix-service = { version = "2.0.3" }
+actix-web = { version = "4.13.0", default-features = false }
+ipnet = { version = "2.12.0" }
+tracing = "0.1.44"
+
+[dev-dependencies]
+actix-web = { version = "4.13.0", default-features = false, features = [
+    "macros",
+] }

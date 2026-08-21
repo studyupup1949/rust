@@ -1,0 +1,19 @@
+[package]
+name = "actix-proc-macros"
+description = "Proc macros, to be re-exported by `actix-helper-macros`"
+repository = "https://github.com/mcronce/actix-helper-macros"
+license = "MIT"
+keywords = ["actix", "http", "web", "async"]
+version = "4.0.0-beta.12"
+authors = ["Mike Cronce <mike@cronce.io>"]
+edition = "2018"
+
+[lib]
+proc-macro = true
+
+[dependencies]
+proc-macro2 = "~1"
+quote = "~1"
+serde = "~1"
+syn = {version = "~1", features = ["full"]}
+

@@ -1,0 +1,16 @@
+load("@buckal//:wrapper.bzl", "rust_library")
+
+rust_library(
+    name = "actix_service",
+    srcs = glob(["**/*.rs"]),
+    crate = "actix_service",
+    crate_root = "src/lib.rs",
+    edition = "2018",
+
+    visibility = ["PUBLIC"],
+    deps = [
+        "//third-party/rust/crates/futures-core/0.3.34:futures_core",
+        "//third-party/rust/crates/paste/1.0.15:paste",
+        "//third-party/rust/crates/pin-project-lite/0.2.17:pin_project_lite",
+    ],
+)

@@ -1,0 +1,18 @@
+load("@buckal//:wrapper.bzl", "rust_library")
+
+rust_library(
+    name = "act_zero_macro",
+    srcs = glob(["**/*.rs"]),
+    crate = "act_zero_macro",
+    crate_root = "src/lib.rs",
+    edition = "2018",
+    proc_macro = True,
+
+    visibility = ["PUBLIC"],
+    deps = [
+        "//third-party/rust/crates/heck/0.3.3:heck",
+        "//third-party/rust/crates/proc-macro2/1.0.107:proc_macro2",
+        "//third-party/rust/crates/quote/1.0.47:quote",
+        "//third-party/rust/crates/syn/1.0.109:syn",
+    ],
+)

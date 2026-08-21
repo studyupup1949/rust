@@ -1,0 +1,104 @@
+use acorn::util::MimeType;
+use clap::ValueEnum;
+use derive_more::Display;
+/// Categories available when analyzing ("checking") research activity data
+#[derive(Clone, Debug, PartialEq, PartialOrd, ValueEnum)]
+pub enum CheckCategory {
+    Conventions,
+    Prose,
+    Readability,
+    Schema,
+}
+/// Categories available when performing system diagnostics before using ACORN
+#[derive(Clone, Copy, Debug, Default, PartialEq, ValueEnum)]
+pub enum Diagnostic {
+    #[default]
+    All,
+    System,
+    Memory,
+    Network,
+    Gpu,
+    Software,
+}
+/// Target export file formats available when exporting research activity data
+#[derive(Clone, Debug, Default, Display, ValueEnum)]
+pub enum FileFormat {
+    #[default]
+    #[display("PDF")]
+    Pdf,
+    #[display("BagIt")]
+    Bag,
+    #[display("JSON")]
+    Json,
+    #[display("MD")]
+    Markdown,
+    #[display("PPTX")]
+    Powerpoint,
+    #[display("YAML")]
+    Yaml,
+}
+/// Readability Type
+#[derive(Clone, Debug, Default, Display, ValueEnum)]
+pub enum ReadabilityTypeArgument {
+    /// Flesch-Kincaid Grade Level (FKGL)
+    #[default]
+    #[display("fkgl")]
+    Fkgl,
+    /// Automated Readability Index (ARI)
+    #[display("ari")]
+    Ari,
+    /// Coleman-Liau Index (CLI)
+    #[display("cli")]
+    Cli,
+    /// Flesch Reading Ease (FRES)
+    #[display("fres")]
+    Fres,
+    /// Gunning Fog Index (GFI)
+    #[display("gfi")]
+    Gfi,
+    /// Lix (abbreviation of Swedish läsbarhetsindex)
+    #[display("lix")]
+    Lix,
+    /// SMOG Index (SMOG)
+    #[display("smog")]
+    Smog,
+}
+/// Target artifact aspect ratio size available when exporting research activity data using acorn
+#[derive(Clone, Debug, Default, Display, ValueEnum)]
+pub enum Size {
+    /// Widescreen size (16:9)
+    #[default]
+    #[display("widescreen")]
+    Widescreen,
+    /// Standard size (4:3)
+    #[display("standard")]
+    Standard,
+}
+/// Target artifact types available when exporting research activity data using acorn
+///
+/// Used primarily by ACORN CLI
+#[derive(Clone, Copy, Debug, Default, Display, ValueEnum)]
+pub enum Target {
+    /// US letter sized single page PDF document presenting a certain research activity data
+    #[default]
+    #[display("fact-sheet")]
+    FactSheet,
+    /// Single slide PowerPoint presentation for a certain research activity data
+    #[display("highlight")]
+    Highlight,
+    /// Poster sized presentation format intended for large printing and presentation
+    #[display("poster")]
+    Poster,
+}
+impl From<FileFormat> for MimeType {
+    fn from(format: FileFormat) -> Self {
+        match format {
+            | FileFormat::Pdf => MimeType::Pdf,
+            | FileFormat::Bag => MimeType::Zip,
+            | FileFormat::Json => MimeType::Json,
+            | FileFormat::Markdown => MimeType::Markdown,
+            | FileFormat::Powerpoint => MimeType::Powerpoint,
+            | FileFormat::Yaml => MimeType::Yaml,
+        }
+    }
+}

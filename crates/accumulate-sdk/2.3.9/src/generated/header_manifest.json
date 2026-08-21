@@ -1,0 +1,66 @@
+{
+  "generated_at": "2025-10-03 22:05:19",
+  "struct": "TransactionHeader",
+  "fields": [
+    {
+      "name": "Principal",
+      "type": "url",
+      "required": true,
+      "repeatable": false
+    },
+    {
+      "name": "Initiator",
+      "type": "hash",
+      "required": true,
+      "repeatable": false
+    },
+    {
+      "name": "Memo",
+      "type": "string",
+      "required": false,
+      "repeatable": false
+    },
+    {
+      "name": "Metadata",
+      "type": "bytes",
+      "required": false,
+      "repeatable": false
+    },
+    {
+      "name": "Expire",
+      "type": "ExpireOptions",
+      "required": false,
+      "repeatable": false
+    },
+    {
+      "name": "HoldUntil",
+      "type": "HoldUntilOptions",
+      "required": false,
+      "repeatable": false
+    },
+    {
+      "name": "Authorities",
+      "type": "url",
+      "required": false,
+      "repeatable": true
+    }
+  ],
+  "nested_types": {
+    "ExpireOptions": [
+      {
+        "name": "AtTime",
+        "type": "time",
+        "required": false,
+        "repeatable": false
+      }
+    ],
+    "HoldUntilOptions": [
+      {
+        "name": "MinorBlock",
+        "type": "uint",
+        "required": false,
+        "repeatable": false
+      }
+    ]
+  }
+}

@@ -1,0 +1,37 @@
+load("@buckal//:wrapper.bzl", "rust_library")
+
+rust_library(
+    name = "actix_http",
+    srcs = glob(["**/*.rs"]),
+    crate = "actix_http",
+    crate_root = "src/lib.rs",
+    edition = "2021",
+    features = ["default"],
+
+    visibility = ["PUBLIC"],
+    deps = [
+        "//third-party/rust/crates/actix-codec/0.5.2:actix_codec",
+        "//third-party/rust/crates/actix-rt/2.11.0:actix_rt",
+        "//third-party/rust/crates/actix-service/2.0.3:actix_service",
+        "//third-party/rust/crates/actix-utils/3.0.1:actix_utils",
+        "//third-party/rust/crates/bitflags/2.13.1:bitflags",
+        "//third-party/rust/crates/bytes/1.12.1:bytes",
+        "//third-party/rust/crates/bytestring/1.5.1:bytestring",
+        "//third-party/rust/crates/derive_more/2.1.1:derive_more",
+        "//third-party/rust/crates/encoding_rs/0.8.35:encoding_rs",
+        "//third-party/rust/crates/foldhash/0.2.0:foldhash",
+        "//third-party/rust/crates/futures-core/0.3.34:futures_core",
+        "//third-party/rust/crates/http/0.2.12:http",
+        "//third-party/rust/crates/httparse/1.10.1:httparse",
+        "//third-party/rust/crates/httpdate/1.0.3:httpdate",
+        "//third-party/rust/crates/itoa/1.0.18:itoa",
+        "//third-party/rust/crates/language-tags/0.3.2:language_tags",
+        "//third-party/rust/crates/mime/0.3.17:mime",
+        "//third-party/rust/crates/percent-encoding/2.3.2:percent_encoding",
+        "//third-party/rust/crates/pin-project-lite/0.2.17:pin_project_lite",
+        "//third-party/rust/crates/smallvec/1.15.2:smallvec",
+        "//third-party/rust/crates/tokio-util/0.7.19:tokio_util",
+        "//third-party/rust/crates/tokio/1.53.1:tokio",
+        "//third-party/rust/crates/tracing/0.1.44:tracing",
+    ],
+)

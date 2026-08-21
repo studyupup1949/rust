@@ -1,0 +1,25 @@
+[package]
+name = "active-uuid-registry"
+version = "0.5.0"
+authors = ["jrcalgo <jacksonr121@outlook.com"]
+edition = "2024"
+description = "A library for managing in-process, context-aware UUIDs for liveness tracking. "
+repository = "https://github.com/jrcalgo/active-uuid-registry"
+documentation = "https://docs.rs/crate/active-uuid-registry"
+readme = "README.md"
+keywords = ['uuid', 'guid', 'concurrency', 'pool', 'synchronization']
+categories = ['concurrency', 'data-structures', 'rust-patterns']
+license = "MIT"
+
+[dependencies]
+uuid = { version = "1.21.0", features = ["v8"] }
+rand = "0.10.0"
+thiserror = "2.0.18"
+parking_lot = "0.12.5"
+
+[dependencies.dashmap]
+version = "6.1.0"
+optional = true
+
+[features]
+concurrent-map = ["dashmap"]

@@ -1,0 +1,51 @@
+name: actions
+id: actions
+inputs:
+  v: 0
+outputs:
+  result: ${ $("v")}
+steps:
+  - name: prepare
+    id: prepare
+    acts:
+      - act: irq
+        key: init
+  - name: condition
+    id: condition
+    branches:
+      - name: cond 1
+        id: cond1
+        if: $("v") > 0
+        steps:
+          - name: step1
+            id: step1
+            acts:
+              - act: irq
+                key: action1
+                inputs:
+                  v: ${ $("v") }
+          - name: step2
+            id: step2
+            acts:
+              - act: irq
+                key: action2
+                inputs:
+                  v: ${ $("v") }        
+      - name: cond 2
+        id: cond2
+        else: true
+        steps:
+          - id: step3
+            name: step3
+            acts:
+              - act: irq
+                key: action3
+  - name: final
+    id: final
+    acts:
+      - act: irq
+        key: action4
+        inputs:
+          v: ${ $("v") }
+  
+

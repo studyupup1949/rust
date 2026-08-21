@@ -1,0 +1,22 @@
+[package]
+name = "activitystreams-types"
+description = "Base types from the Activity Streams spec"
+version = "0.3.0"
+license = "GPL-3.0"
+authors = ["asonix <asonix@asonix.dog>"]
+repository = "https://git.asonix.dog/Aardwolf/activitystreams"
+readme = "README.md"
+keywords = ["activitystreams", "activitypub"]
+edition = "2018"
+
+[dependencies]
+activitystreams-derive = { version = "0.2", path = "../activitystreams-derive" }
+activitystreams-traits = { version = "0.2", path = "../activitystreams-traits" }
+chrono = { version = "0.4", features = ["serde"] }
+mime = "0.3"
+serde = "1.0"
+serde_derive = "1.0"
+serde_json = "1.0"
+
+[dev-dependencies]
+anyhow = "1.0"

@@ -1,0 +1,15 @@
+load("@buckal//:wrapper.bzl", "rust_library")
+
+rust_library(
+    name = "actyxos_sdk_macros",
+    srcs = glob(["**/*.rs"]),
+    crate = "actyxos_sdk_macros",
+    crate_root = "src/lib.rs",
+    edition = "2018",
+
+    visibility = ["PUBLIC"],
+    deps = [
+        "//third-party/rust/crates/proc-macro-error/1.0.4:proc_macro_error",
+        "//third-party/rust/crates/syn/1.0.109:syn",
+    ],
+)

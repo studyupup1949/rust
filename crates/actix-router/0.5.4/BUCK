@@ -1,0 +1,19 @@
+load("@buckal//:wrapper.bzl", "rust_library")
+
+rust_library(
+    name = "actix_router",
+    srcs = glob(["**/*.rs"]),
+    crate = "actix_router",
+    crate_root = "src/lib.rs",
+    edition = "2021",
+    features = ["default"],
+
+    visibility = ["PUBLIC"],
+    deps = [
+        "//third-party/rust/crates/bytestring/1.5.1:bytestring",
+        "//third-party/rust/crates/cfg-if/1.0.4:cfg_if",
+        "//third-party/rust/crates/regex-lite/0.1.9:regex_lite",
+        "//third-party/rust/crates/serde/1.0.229:serde",
+        "//third-party/rust/crates/tracing/0.1.44:tracing",
+    ],
+)

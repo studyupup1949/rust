@@ -1,0 +1,5 @@
+error: KeyPath can only be derived on structs with named fields
+ --> tests/fail/tuple_struct.rs:4:8
+  |
+4 | struct Tuple(i32, u32);
+  |        ^^^^^

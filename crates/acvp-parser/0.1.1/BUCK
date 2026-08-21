@@ -1,0 +1,17 @@
+load("@buckal//:wrapper.bzl", "rust_library")
+
+rust_library(
+    name = "acvp_parser",
+    srcs = glob(["**/*.rs"]),
+    crate = "acvp_parser",
+    crate_root = "src/lib.rs",
+    edition = "2021",
+
+    visibility = ["PUBLIC"],
+    deps = [
+        "//third-party/rust/crates/hex/0.4.3:hex",
+        "//third-party/rust/crates/json/0.12.4:json",
+        "//third-party/rust/crates/libc/0.2.189:libc",
+        "//third-party/rust/crates/rand/0.8.7:rand",
+    ],
+)

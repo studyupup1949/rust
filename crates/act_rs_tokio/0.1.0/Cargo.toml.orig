@@ -1,0 +1,28 @@
+[package]
+name = "act_rs_tokio"
+version = "0.1.0"
+edition = "2024"
+license = "MIT OR Apache-2.0"
+description = "Act.rs Tokio is a minimal Tokio oriented actor framework."
+repository = "https://github.com/coruscateor/act_rs_tokio"
+homepage = "https://coruscateor.com/projects/act-rs-tokio"
+keywords = ["actor", "tokio", "async", "message", "pipeline"]
+categories = ["asynchronous", "concurrency"]
+authors = ["Paul Saunders"]
+
+[dependencies]
+
+act_rs = "0.4.0"
+
+#act_rs = { path="../act_rs" } #, features = ["async-trait"] } #Do not remove
+
+#act_rs = "0.3.0"
+
+tokio = { version = "1.46.1", features = ["rt", "rt-multi-thread", "sync", "macros"]}
+
+#[features]
+
+
+#[package.metadata.docs.rs]
+#all-features = true
+#rustdoc-args = ["--cfg", "docsrs"]

@@ -1,0 +1,15 @@
+[package]
+name = "accio-string"
+version = "0.1.1"
+edition = "2021"
+authors = ["Achuth V P <achuthvpvp@gmail.com>"]
+license = "MIT OR Apache-2.0"
+description = "Look for strings in a file."
+homepage = "https://github.com/retrymp3/accio"
+repository = "https://github.com/retrymp3/accio"
+keywords = ["cli", "search", "grep"]
+categories = ["command-line-utilities"]
+
+
+[dependencies]
+clap = {version = "4.0", features = ["derive"]}

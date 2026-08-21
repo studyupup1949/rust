@@ -1,0 +1,23 @@
+[package]
+name = "actaeon"
+version = "0.2.1"
+edition = "2018"
+keywords = ["networking", "pubsub", "kademlia", "decentralized"]
+description = "Decentralized PubSub & messaging protocol inspired by Kademlia."
+license-file = "LICENSE"
+authors = ["Jakob Klemm <github@jeykey.net>"]
+publish = true
+homepage = "https://github.com/EngineOrion/actaeon"
+repository = "https://github.com/EngineOrion/actaeon"
+
+[dependencies]
+serde = { version = "1.0", features = ["derive"] }
+toml = "0.5"
+log = "0.4.14"
+rand = "0.8.4"
+uuid = { version = "0.8", features = ["serde", "v4"] }
+sodiumoxide = "0.2.7"
+blake3 = "1.0.0"
+
+[dev-dependencies]
+env_logger = "0.9.0"

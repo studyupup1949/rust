@@ -1,0 +1,27 @@
+load("@buckal//:wrapper.bzl", "rust_library")
+
+rust_library(
+    name = "actix_phoenix_channel",
+    srcs = glob(["**/*.rs"]),
+    crate = "actix_phoenix_channel",
+    crate_root = "src/lib.rs",
+    edition = "2024",
+
+    visibility = ["PUBLIC"],
+    deps = [
+        "//third-party/rust/crates/actix-web/4.14.1:actix_web",
+        "//third-party/rust/crates/actix-ws/0.3.1:actix_ws",
+        "//third-party/rust/crates/async-broadcast/0.7.2:async_broadcast",
+        "//third-party/rust/crates/async-channel/2.5.0:async_channel",
+        "//third-party/rust/crates/async-trait/0.1.92:async_trait",
+        "//third-party/rust/crates/dashmap/6.2.1:dashmap",
+        "//third-party/rust/crates/fastrand/2.5.0:fastrand",
+        "//third-party/rust/crates/futures-lite/2.6.1:futures_lite",
+        "//third-party/rust/crates/futures-util/0.3.34:futures_util",
+        "//third-party/rust/crates/pin-project-lite/0.2.17:pin_project_lite",
+        "//third-party/rust/crates/serde/1.0.229:serde",
+        "//third-party/rust/crates/serde_json/1.0.151:serde_json",
+        "//third-party/rust/crates/tokio/1.53.1:tokio",
+        "//third-party/rust/crates/tracing/0.1.44:tracing",
+    ],
+)

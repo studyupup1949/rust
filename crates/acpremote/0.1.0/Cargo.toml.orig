@@ -1,0 +1,15 @@
+[package]
+name = "acpremote"
+version = "0.1.0"
+edition = "2021"
+license = "Apache-2.0"
+description = "Handle-claim crate for ACP Remote. The production implementation currently ships as a Python package."
+homepage = "https://vcoderun.github.io/acpkit/acpremote/"
+repository = "https://github.com/vcoderun/acpkit"
+documentation = "https://vcoderun.github.io/acpkit/acpremote/"
+readme = "README.md"
+keywords = ["acp", "agents", "transport", "websocket"]
+categories = ["network-programming"]
+
+[lib]
+path = "src/lib.rs"

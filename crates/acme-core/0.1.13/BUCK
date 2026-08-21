@@ -1,0 +1,30 @@
+load("@buckal//:wrapper.bzl", "rust_library")
+
+rust_library(
+    name = "acme_core",
+    srcs = glob(["**/*.rs"]),
+    crate = "acme_core",
+    crate_root = "src/lib.rs",
+    edition = "2021",
+
+    visibility = ["PUBLIC"],
+    deps = [
+        "//third-party/rust/crates/blake2/0.10.6:blake2",
+        "//third-party/rust/crates/bson/2.15.0:bson",
+        "//third-party/rust/crates/chrono/0.4.45:chrono",
+        "//third-party/rust/crates/clap/3.2.25:clap",
+        "//third-party/rust/crates/config/0.13.4:config",
+        "//third-party/rust/crates/hex/0.4.3:hex",
+        "//third-party/rust/crates/hyper/0.14.32:hyper",
+        "//third-party/rust/crates/libp2p/0.45.1:libp2p",
+        "//third-party/rust/crates/log/0.4.33:log",
+        "//third-party/rust/crates/once_cell/1.21.4:once_cell",
+        "//third-party/rust/crates/serde/1.0.229:serde",
+        "//third-party/rust/crates/serde_json/1.0.151:serde_json",
+        "//third-party/rust/crates/sha2/0.10.9:sha2",
+        "//third-party/rust/crates/tokio/1.53.1:tokio",
+        "//third-party/rust/crates/tower/0.4.13:tower",
+        "//third-party/rust/crates/tracing-subscriber/0.3.23:tracing_subscriber",
+        "//third-party/rust/crates/tracing/0.1.44:tracing",
+    ],
+)

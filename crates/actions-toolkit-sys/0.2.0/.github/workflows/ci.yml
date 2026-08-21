@@ -1,0 +1,91 @@
+name: ci
+on: [push, pull_request]
+jobs:
+  # skip all jobs if commit messages contain "[skip ci]" or "[ci skip]"
+  skip-ci:
+    runs-on: ubuntu-latest
+    steps:
+      - if: |
+          contains(join(github.event.commits.*.message), '[skip ci]') ||
+          contains(join(github.event.commits.*.message), '[ci skip]')
+        run: exit 1 # FIXME: previously we could use exit code 78 for "neutral"
+
+  # verify that project builds (via "check" via "clippy") on linux
+  linux-cargo-clippy:
+    needs: [skip-ci]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v1
+      - id: component
+        uses: actions-rs/components-nightly@v1
+        with:
+          target: x86_64-unknown-linux-gnu
+          component: clippy
+      - uses: actions-rs/toolchain@v1
+        with:
+          toolchain: ${{ steps.component.outputs.toolchain }}
+          override: true
+      - run: rustup component add clippy
+      - uses: actions-rs/cargo@v1
+        with:
+          command: clippy
+          args: --all-targets --all-features -- -D warnings
+
+  # build the documentation
+  linux-cargo-docs:
+    needs: [skip-ci]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v1
+      - uses: actions-rs/cargo@v1
+        with:
+          command: doc
+          args: --all --all-features
+      # - run: cp .ci/assets/docs/index.html target/doc/index.html
+      - uses: peaceiris/actions-gh-pages@v2.3.1
+        env:
+          ACTIONS_DEPLOY_KEY: ${{ secrets.ACTIONS_DEPLOY_KEY }}
+          PUBLISH_BRANCH: gh-pages
+          PUBLISH_DIR: ./target/doc
+
+  # verify that code is formatted
+  linux-cargo-fmt:
+    needs: [skip-ci]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v1
+      - id: component
+        uses: actions-rs/components-nightly@v1
+        with:
+          target: x86_64-unknown-linux-gnu
+          component: rustfmt
+      - uses: actions-rs/toolchain@v1
+        with:
+          toolchain: ${{ steps.component.outputs.toolchain }}
+          override: true
+      - run: rustup component add rustfmt
+      - uses: actions-rs/cargo@v1
+        with:
+          command: fmt
+          args: --all -- --check
+  # FIXME: tests failing in ci (probably because of wasm-pack and test-threads)
+  # # verify that tests pass on linux
+  # linux-cargo-test:
+  #   needs: [skip-ci]
+  #   runs-on: ubuntu-latest
+  #   steps:
+  #     - uses: actions/checkout@v1
+  #     - uses: actions-rs/cargo@v1
+  #       with:
+  #         command: install
+  #         args: wasm-pack
+  #     - run: npm ci
+  #     - run: wasm-pack test --node -- --all
+  #     - uses: actions-rs/cargo@v1
+  #       with:
+  #         command: install
+  #         args: cargo-tarpaulin
+  #     - run: cargo tarpaulin --out Xml
+  #     - run: bash <(curl -s https://codecov.io/bash)
+  #       env:
+  #         CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}

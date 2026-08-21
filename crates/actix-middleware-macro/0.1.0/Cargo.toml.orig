@@ -1,0 +1,18 @@
+[package]
+name = "actix-middleware-macro"
+version = "0.1.0"
+edition = "2021"
+description = "A macro for creating actix-web middleware"
+license = "MIT"
+repository = "https://github.com/mustakimali/actix-middleware-macro"
+authors = ["Mohammad Mustakim Ali <i@mustak.im>"]
+
+[dependencies]
+paste = "1"
+actix-web = "4"
+futures-util = "0.3"
+
+[dev-dependencies]
+chrono = { version = "0.4" }
+tokio = { version = "1", features = ["full"] }
+ureq = "2.9.6"

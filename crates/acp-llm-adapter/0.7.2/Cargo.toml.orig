@@ -1,0 +1,112 @@
+[package]
+name = "acp-llm-adapter"
+version = "0.7.2"
+edition = "2024"
+rust-version = "1.95"
+description = "ACP adapter server that exposes LLM providers (DeepSeek, GLM) as agents to ACP-capable editors"
+license = "MIT OR Apache-2.0"
+repository = "https://github.com/euri10/acp-llm-adapter"
+readme = "README.md"
+
+[workspace]
+resolver = "3"
+
+[lints]
+workspace = true
+
+[workspace.dependencies]
+test-log = { version = "^0.2.21", default-features = false, features = [
+  "trace",
+] }
+
+[dependencies]
+agent-client-protocol = { version = "^1.2.0", features = ["unstable"] }
+blocking = "^1.6.2"
+clap = { version = "^4.6.2", features = ["derive"] }
+futures-util = { version = "^0.3.32", features = ["io", "sink"] }
+globset = "^0.4.19"
+grep = "^0.4.1"
+http = "^1.4.2"
+ignore = "^0.4.29"
+reqwest = { version = "0.13.4", default-features = false, features = [
+  "json",
+  "rustls",
+] }
+sse-reqwest-client = "0.3.0"
+rmcp = { version = "^2.2.0", default-features = false, features = [
+  "client",
+  "reqwest",
+  "transport-child-process",
+  "transport-streamable-http-client-reqwest",
+] }
+serde = { version = "^1.0.228", features = ["derive"] }
+serde_json = "^1.0.150"
+thiserror = "^2.0.18"
+tokio = { version = "^1.52.4", features = [
+  "io-util",
+  "macros",
+  "net",
+  "process",
+  "rt-multi-thread",
+  "signal",
+  "sync",
+  "time",
+] }
+tokio-util = "^0.7.18"
+tracing = "^0.1.44"
+tracing-subscriber = { version = "^0.3.23", features = ["env-filter"] }
+uuid = { version = "^1.24.0", features = ["v4", "v5", "serde"] }
+
+[dev-dependencies]
+axum = { version = "^0.8.9", default-features = false, features = [
+  "http1",
+  "tokio",
+] }
+rmcp = { version = "^2.2.0", default-features = false, features = [
+  "server",
+  "transport-async-rw",
+  "transport-io",
+  "transport-streamable-http-server",
+] }
+test-log = { workspace = true }
+
+[[test]]
+name = "mcp_stdio_fixture"
+path = "tests/mcp_stdio_fixture.rs"
+harness = false
+
+[workspace.lints.rust]
+missing_docs = "deny"
+unsafe_code = "forbid"
+warnings = "deny"
+# Catch items that are `pub` but unreachable from the crate root.
+unreachable_pub = "deny"
+# All public types must implement Debug.
+missing_debug_implementations = "deny"
+
+[workspace.lints.clippy]
+all = { level = "deny", priority = -1 }
+pedantic = { level = "deny", priority = -1 }
+expect_used = "deny"
+panic = "deny"
+todo = "deny"
+unimplemented = "deny"
+unwrap_used = "deny"
+# `#[must_use]` on every internal binary helper is noise at this stage.
+must_use_candidate = "allow"
+# stdout is the JSON-RPC wire; printing to it corrupts protocol frames.
+print_stdout = "deny"
+# dbg! writes to stderr in tests, which is the legitimate log channel,
+# but in production it's a debugging artefact that must not ship.
+dbg_macro = "deny"
+# Direct array/slice indexing panics on out-of-bounds; prefer .get().
+# Test modules carry a blanket allow since test assertions deliberately panic.
+indexing_slicing = "deny"
+# Calling `exit()` in library code terminates the host process.
+exit = "deny"
+# `.get().unwrap()` is a code smell; prefer indexing or safe access.
+get_unwrap = "deny"
+# `unwrap` in `Result`-returning functions should be avoided.
+unwrap_in_result = "deny"
+# Slicing on `String` is byte-index-based and easy to mis-use.
+string_slice = "deny"

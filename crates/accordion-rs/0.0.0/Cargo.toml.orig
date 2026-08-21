@@ -1,0 +1,8 @@
+[package]
+name = "accordion-rs"
+version = "0.0.0"
+description = "todo!();"
+license = "MIT"
+edition = "2021"
+
+[dependencies]

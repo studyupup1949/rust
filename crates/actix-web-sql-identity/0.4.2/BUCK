@@ -1,0 +1,24 @@
+load("@buckal//:wrapper.bzl", "rust_library")
+
+rust_library(
+    name = "actix_web_sql_identity",
+    srcs = glob(["**/*.rs"]),
+    crate = "actix_web_sql_identity",
+    crate_root = "src/lib.rs",
+    edition = "2015",
+    features = ["default"],
+
+    visibility = ["PUBLIC"],
+    deps = [
+        "//third-party/rust/crates/actix-web/0.7.19:actix_web",
+        "//third-party/rust/crates/actix/0.7.9:actix",
+        "//third-party/rust/crates/base64/0.9.3:base64",
+        "//third-party/rust/crates/chrono/0.4.45:chrono",
+        "//third-party/rust/crates/diesel/1.4.8:diesel",
+        "//third-party/rust/crates/failure/0.1.8:failure",
+        "//third-party/rust/crates/failure_derive/0.1.8:failure_derive",
+        "//third-party/rust/crates/futures/0.1.31:futures",
+        "//third-party/rust/crates/log/0.4.33:log",
+        "//third-party/rust/crates/rand/0.5.6:rand",
+    ],
+)

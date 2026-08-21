@@ -1,0 +1,117 @@
+
+# Accumulator-plus
+
+# Intro in one sentence
+
+Accumulator-plus is a biguint based simple accumulator suitable for biguint testing applications in various scenarios.
+
+## Description
+
+At its heart, Accumulator-plus is a combination of three technologies: Rsa、Accumulator、Batch calculation.
+We have provided a use case that facilitates learning.
+
+
+
+## Usage
+
+### STEP 1  Cargo.toml
+
+```cookie
+
+[dependencies]
+accumulator-plus="1.0.1"
+rand="0.8.5"
+num-bigint = { version = "0.8.2", features = ["i128", "prime", "zeroize"], default-features = false, package = "num-bigint-dig" }
+
+[dev-dependencies]
+criterion = "0.3"
+
+[[bench]]
+name = "accumulator_benches"
+path = "C:\\Users\\kylin\\.cargo\\registry\\src\\rsproxy.cn-0dccff568467c15b\\accumulator-plus-1.0.1\\benches\\accumulator_benches.rs"
+harness = false
+
+
+```
+
+
+
+### STEP 2 Run bench case
+
+```cookie
+open Terminal "cargo bench"
+```
+
+
+
+
+
+# BENCHES
+
+```
+-------------------------------------start test: -------------------------------------
+
+bench_accumulator_ini<si:256/1><ei:256/100>/Gi gen <loop>
+time: 3 ms
+bench_accumulator_ini<si:256/1><ei:256/100>/Ei list gen <loop>
+time: 329 ms
+gi list len: 1
+ei list len: 100
+Benchmarking bench_accumulator_ini<si:256/1><ei:256/100>/Si gen <batch>: Warming up for 3.0000 s
+Warning: Unable to complete 10 samples in 5.0s. You may wish to increase target time to 8.1s or enable flat sampling.
+bench_accumulator_ini<si:256/1><ei:256/100>/Si gen <batch>
+time:   [143.90 ms 144.25 ms 144.48 ms]
+Found 1 outliers among 10 measurements (10.00%)
+1 (10.00%) high severe
+si size : BigUint { data: [9] }
+x_agg size : 3198
+Benchmarking bench_accumulator_ini<si:256/1><ei:256/100>/Wi list gen <RootFactor>: Warming up for 3.0000 s
+Warning: Unable to complete 10 samples in 5.0s. You may wish to increase target time to 9.4s or enable flat sampling.
+bench_accumulator_ini<si:256/1><ei:256/100>/Wi list gen <RootFactor>
+time:   [171.78 ms 173.48 ms 175.30 ms]
+Found 1 outliers among 10 measurements (10.00%)
+1 (10.00%) high mild
+wi list len: 100
+bench_accumulator_ini<si:256/1><ei:256/100>/BATCH_50/Authentication <normal>
+time:   [12.898 ms 13.021 ms 13.165 ms]
+Found 1 outliers among 10 measurements (10.00%)
+1 (10.00%) high severe
+Benchmarking bench_accumulator_ini<si:256/1><ei:256/100>/BATCH_50/Delete <normal>: Warming up for 3.0000 s
+Warning: Unable to complete 10 samples in 5.0s. You may wish to increase target time to 6.7s or enable flat sampling.
+bench_accumulator_ini<si:256/1><ei:256/100>/BATCH_50/Delete <normal>
+time:   [119.07 ms 119.37 ms 119.84 ms]
+Found 2 outliers among 10 measurements (20.00%)
+1 (10.00%) low mild
+1 (10.00%) high mild
+bench_accumulator_ini<si:256/1><ei:256/100>/MOD_EXP ACTION BATCH 50
+time:   [42.019 ms 42.249 ms 42.652 ms]
+Found 1 outliers among 10 measurements (10.00%)
+1 (10.00%) high severe
+Benchmarking bench_accumulator_ini<si:256/1><ei:256/100>/POE ACTION BATCH 50: Warming up for 3.0000 s
+Warning: Unable to complete 10 samples in 5.0s. You may wish to increase target time to 8.3s or enable flat sampling.
+bench_accumulator_ini<si:256/1><ei:256/100>/POE ACTION BATCH 50
+time:   [150.92 ms 152.30 ms 153.05 ms]
+bench_accumulator_ini<si:256/1><ei:256/100>/BATCH_100/Authentication <normal>
+time:   [25.556 ms 25.656 ms 25.758 ms]
+Benchmarking bench_accumulator_ini<si:256/1><ei:256/100>/BATCH_100/Delete <normal>: Warming up for 3.0000 s
+Warning: Unable to complete 10 samples in 5.0s. You may wish to increase target time to 8.1s or enable flat sampling.
+bench_accumulator_ini<si:256/1><ei:256/100>/BATCH_100/Delete <normal>
+time:   [145.36 ms 147.55 ms 149.30 ms]
+Benchmarking bench_accumulator_ini<si:256/1><ei:256/100>/MOD_EXP ACTION BATCH 100: Warming up for 3.0000 s
+Warning: Unable to complete 10 samples in 5.0s. You may wish to increase target time to 8.1s or enable flat sampling.
+bench_accumulator_ini<si:256/1><ei:256/100>/MOD_EXP ACTION BATCH 100
+time:   [146.28 ms 147.98 ms 150.12 ms]
+Found 1 outliers among 10 measurements (10.00%)
+1 (10.00%) high mild
+Benchmarking bench_accumulator_ini<si:256/1><ei:256/100>/POE ACTION BATCH 100: Warming up for 3.0000 s
+Warning: Unable to complete 10 samples in 5.0s. You may wish to increase target time to 8.0s or enable flat sampling.
+bench_accumulator_ini<si:256/1><ei:256/100>/POE ACTION BATCH 100
+time:   [146.54 ms 146.96 ms 147.24 ms]
+Found 2 outliers among 10 measurements (20.00%)
+1 (10.00%) low mild
+1 (10.00%) high mild
+poe ok!
+```
+
+
+

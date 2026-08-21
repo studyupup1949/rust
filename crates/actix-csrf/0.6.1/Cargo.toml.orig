@@ -1,0 +1,30 @@
+[package]
+name = "actix-csrf"
+version = "0.6.1"
+authors = ["Edward Shen <code@eddie.sh>", "Benoit Eudier <benoit.eudier@gmail.com>"]
+edition = "2018"
+description = "CSRF middleware for Actix"
+repository = "https://github.com/edward-shen/actix-csrf"
+license = "MIT OR Apache-2.0"
+keywords = ["actix", "middleware", "csrf"]
+categories = ["web-programming::http-server"]
+include = ["src/**/*", "LICENSE-*", "README.md"]
+
+[dependencies]
+actix-web = { version = "4", default_features = false, features = [ "cookies" ] }
+base64 = { version = "0.13", default_features = false }
+cookie = "0.16"
+rand = { version = "0.8", features = [ "std_rng" ] }
+tracing = "0.1"
+serde = { version = "1", default_features = false }
+
+[dev-dependencies]
+anyhow = "1"
+actix-web = { version = "4", features = [ "cookies" ] }
+actix-http = "3"
+serde = { version = "1", features = [ "derive" ] }
+tokio = { version = "1", features = [ "macros", "rt-multi-thread" ] }
+
+[profile.release]
+lto = true
+codegen-units = 1

@@ -1,0 +1,2 @@
+1000 acl execute task.uid=@normal-uid
+    30 allow  path="/some/path/\\X"

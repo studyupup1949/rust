@@ -1,0 +1,81 @@
+div#grid_root {
+	display: grid;
+	grid-template-areas:
+		"form"
+		"msg"
+		"footer";
+}
+
+div#search_form {
+	grid-area: form;
+	width: 75%;
+	text-align: center;
+	margin-left: auto;
+	margin-right: auto;
+	margin-bottom: 2rem;
+}
+
+div#message_container {
+	grid-area: msg;
+	display: grid;
+	grid-gap: 1rem;
+	grid-template-rows: repeat(auto-fill, 1fr);
+	grid-template-columns: repeat(4, 1fr);
+}
+
+footer {
+	grid-area: footer;
+	margin-top: 2rem;
+	text-align: center;
+	padding: 1rem;
+	background-color: var(--bg-msg);
+}
+
+div.message_item {
+	display: inline;
+	padding: 0.5rem;
+	background-color: var(--bg-msg);
+}
+
+p.message_header {
+	text-align: center;
+}
+
+/* SEARCH FORM */
+form#catalog_search > input[type="text"] {
+	width: 40%;
+}
+
+form#catalog_search > input[type="submit"] {
+	width: 20%;
+}
+
+/* USER IMAGES */
+div.userimage_container {
+	background-color: var(--userimage-bg);
+	max-width: 100%;
+}
+
+div.userimage {
+	display: inline-block;
+}
+
+.userimage > * {
+	display: block;
+	margin-left: auto;
+	margin-right: auto;
+}
+
+.userimage > img, .userimage > video { 
+	max-width: 5rem;
+	height: auto;
+}
+
+.userimage > a {
+	display: none;
+}
+
+.message_item > .userimage_container > .userimage > img:active {
+	max-width: 90%;
+	width: 125%;
+}

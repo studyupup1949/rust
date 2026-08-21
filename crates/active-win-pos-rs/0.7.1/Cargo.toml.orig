@@ -1,0 +1,31 @@
+[package]
+name = "active-win-pos-rs"
+version = "0.7.1"
+authors = ["Dmitry Malkov <dmitry.malkov@live.com>"]
+edition = "2021"
+license = "MIT OR Apache-2.0"
+keywords = ["window", "active", "current", "position", "title"]
+description = "Get position, size, title and a few other properties of the active window on Windows, MacOS and Linux"
+repository = "https://github.com/dimusic/active-win-pos-rs"
+
+[workspace]
+members = [
+  "appkit-nsworkspace-bindings",
+]
+
+[target.'cfg(target_os = "macos")'.dependencies]
+core-graphics = "0.22"
+core-foundation = "0.9"
+objc = "0.2.7"
+appkit-nsworkspace-bindings = { path = "./appkit-nsworkspace-bindings", version = "0.1.0" }
+
+[target.'cfg(target_os = "windows")'.dependencies]
+windows = { version = "0.39.0", features = [
+    "Win32_Foundation",
+    "Win32_UI_WindowsAndMessaging",
+    "Win32_System_Threading",
+    "Win32_Storage_FileSystem"
+]}
+
+[target.'cfg(target_os = "linux")'.dependencies]
+xcb = { version = "1.1.1", features = [ "randr" ] }

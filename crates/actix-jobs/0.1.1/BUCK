@@ -1,0 +1,17 @@
+load("@buckal//:wrapper.bzl", "rust_library")
+
+rust_library(
+    name = "actix_jobs",
+    srcs = glob(["**/*.rs"]),
+    crate = "actix_jobs",
+    crate_root = "src/lib.rs",
+    edition = "2021",
+
+    visibility = ["PUBLIC"],
+    deps = [
+        "//third-party/rust/crates/actix-rt/2.11.0:actix_rt",
+        "//third-party/rust/crates/chrono/0.4.45:chrono",
+        "//third-party/rust/crates/cron/0.12.1:cron",
+        "//third-party/rust/crates/tokio/1.53.1:tokio",
+    ],
+)

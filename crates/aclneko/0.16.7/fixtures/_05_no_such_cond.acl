@@ -1,0 +1,3 @@
+1000 acl execute task.uid=1000
+    40 deny path=@u-mail                path.uid!=task.uid task.exe!@mailer    task.domain!"user-direct"
+    50 allow path="/usr/lib/systemd/systemd" task.uid=1000-3000       task.domain!"user-system"

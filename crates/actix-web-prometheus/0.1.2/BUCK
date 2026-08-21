@@ -1,0 +1,20 @@
+load("@buckal//:wrapper.bzl", "rust_library")
+
+rust_library(
+    name = "actix_web_prometheus",
+    srcs = glob(["**/*.rs"]),
+    crate = "actix_web_prometheus",
+    crate_root = "src/lib.rs",
+    edition = "2018",
+
+    visibility = ["PUBLIC"],
+    deps = [
+        "//third-party/rust/crates/actix-service/2.0.3:actix_service",
+        "//third-party/rust/crates/actix-web/4.14.1:actix_web",
+        "//third-party/rust/crates/futures-lite/1.13.0:futures_lite",
+        "//third-party/rust/crates/pin-project/1.1.13:pin_project",
+        "//third-party/rust/crates/prometheus/0.13.4:prometheus",
+        "//third-party/rust/crates/quanta/0.10.1:quanta",
+        "//third-party/rust/crates/thiserror/1.0.69:thiserror",
+    ],
+)

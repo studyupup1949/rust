@@ -1,0 +1,58 @@
+[package]
+name = "acme-redirect"
+version = "0.5.2"
+description = "Tiny http daemon that answers acme challenges and redirects everything else to https"
+authors = ["kpcyrd <git@rxv.cc>"]
+license = "GPL-3.0"
+repository = "https://github.com/kpcyrd/acme-redirect"
+readme = "README.md"
+edition = "2018"
+
+[package.metadata.deb]
+extended-description = """\
+acme-redirect is a tiny http server that implements the ACME (Automated
+Certificate Management Environment) protocol and redirects everything else to
+https. It can run directly on port 80 and supports automatic issuance and renew
+of certificates out of the box with minimal configuration."""
+section = "web"
+priority = "optional"
+maintainer-scripts = "debian"
+assets = [
+    ["target/release/acme-redirect", "usr/bin/", "755"],
+
+    ["contrib/confs/acme-redirect.conf", "etc/", "644"],
+    ["contrib/confs/certs.d/example.com.conf", "etc/acme-redirect.d/example.com.conf.sample", "644"],
+
+    ["contrib/systemd/acme-redirect-renew.service", "usr/lib/systemd/system/", "644"],
+    ["contrib/systemd/acme-redirect-renew.timer", "usr/lib/systemd/system/", "644"],
+    ["contrib/systemd/acme-redirect.service", "usr/lib/systemd/system/", "644"],
+
+    ["contrib/systemd/acme-redirect.sysusers", "usr/lib/sysusers.d/acme-redirect.conf", "644"],
+    ["contrib/systemd/acme-redirect.tmpfiles", "usr/lib/tmpfiles.d/acme-redirect.conf", "644"],
+]
+
+[dependencies]
+acme-micro = "0.11"
+structopt = "0.3.14"
+anyhow = "1.0.28"
+env_logger = "0.9"
+log = "0.4.8"
+serde = "1.0.106"
+toml = "0.5.6"
+actix-web = "3"
+openssl = "0.10.29"
+time = "0.1"
+colored = "2"
+nix = "0.22"
+users = "0.11"
+rand = "0.8"
+ureq = "1.1.1"
+pem = "0.8"
+config = { version = "0.11", default-features = false, features = ["toml"] }
+serde_json = "1"
+
+[target.'cfg(target_os="linux")'.dependencies]
+caps = "0.5"
+
+[dev-dependencies]
+boxxy = "0.12"

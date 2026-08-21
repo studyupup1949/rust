@@ -1,0 +1,15 @@
+/*
+    Appellation: ops <mod>
+    Contrib: FL03 <jo3mccain@icloud.com>
+*/
+pub use self::{backprop::*, kinds::*};
+
+pub(crate) mod backprop;
+pub(crate) mod kinds;
+
+pub mod op;
+
+pub trait TensorOp {}
+
+#[cfg(test)]
+mod tests {}

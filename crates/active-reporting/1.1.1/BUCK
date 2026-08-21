@@ -1,0 +1,16 @@
+load("@buckal//:wrapper.bzl", "rust_library")
+
+rust_library(
+    name = "active_reporting",
+    srcs = glob(["**/*.rs"]),
+    crate = "active_reporting",
+    crate_root = "mod.rs",
+    edition = "2024",
+
+    visibility = ["PUBLIC"],
+    deps = [
+        "//third-party/rust/crates/issuing/0.1.0:issuing",
+        "//third-party/rust/crates/systemio/1.0.0:systemio",
+        "//third-party/rust/crates/systemstd/0.3.0:systemstd",
+    ],
+)

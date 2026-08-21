@@ -1,0 +1,72 @@
+name: Action Proof
+description: Preflight verify a GitHub Action manifest before release.
+author: Wildmason
+
+branding:
+  icon: check-circle
+  color: green
+
+inputs:
+  manifest:
+    description: Path to action.yml/action.yaml.
+    required: false
+    default: action.yml
+  repo-root:
+    description: Repository root used for readiness checks.
+    required: false
+    default: "."
+  version:
+    description: action-proof crate version to install from crates.io.
+    required: false
+    default: "1.0.0"
+  format:
+    description: "Receipt format: text, json, or markdown."
+    required: false
+    default: text
+  output:
+    description: Optional path to write the receipt.
+    required: false
+    default: ""
+  strict:
+    description: Treat warnings as failures.
+    required: false
+    default: "false"
+
+runs:
+  using: composite
+  steps:
+    - name: Install Rust
+      uses: dtolnay/rust-toolchain@stable
+
+    - name: Install action-proof
+      shell: bash
+      env:
+        INPUT_VERSION: ${{ inputs.version }}
+      run: |
+        set -euo pipefail
+        cargo install action-proof --version "$INPUT_VERSION" --locked --force
+        echo "$HOME/.cargo/bin" >> "$GITHUB_PATH"
+
+    - name: Run action-proof
+      shell: bash
+      env:
+        INPUT_MANIFEST: ${{ inputs.manifest }}
+        INPUT_REPO_ROOT: ${{ inputs.repo-root }}
+        INPUT_FORMAT: ${{ inputs.format }}
+        INPUT_OUTPUT: ${{ inputs.output }}
+        INPUT_STRICT: ${{ inputs.strict }}
+      run: |
+        set -euo pipefail
+
+        args=(--manifest "$INPUT_MANIFEST" --repo-root "$INPUT_REPO_ROOT" --format "$INPUT_FORMAT")
+
+        if [ -n "$INPUT_OUTPUT" ]; then
+          args+=(--output "$INPUT_OUTPUT")
+        fi
+
+        if [ "$INPUT_STRICT" = "true" ]; then
+          args+=(--strict)
+        fi
+
+        action-proof "${args[@]}"
+

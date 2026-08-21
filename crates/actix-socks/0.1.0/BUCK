@@ -1,0 +1,17 @@
+load("@buckal//:wrapper.bzl", "rust_library")
+
+rust_library(
+    name = "actix_socks",
+    srcs = glob(["**/*.rs"]),
+    crate = "actix_socks",
+    crate_root = "src/lib.rs",
+    edition = "2018",
+
+    visibility = ["PUBLIC"],
+    deps = [
+        "//third-party/rust/crates/actix-connect/1.0.2:actix_connect",
+        "//third-party/rust/crates/actix-http/1.0.1:actix_http",
+        "//third-party/rust/crates/actix-service/1.0.6:actix_service",
+        "//third-party/rust/crates/tokio-socks/0.2.2:tokio_socks",
+    ],
+)

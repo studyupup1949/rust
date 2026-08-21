@@ -1,0 +1,19 @@
+load("@buckal//:wrapper.bzl", "rust_library")
+
+rust_library(
+    name = "actix_channels",
+    srcs = glob(["**/*.rs"]),
+    crate = "actix_channels",
+    crate_root = "src/lib.rs",
+    edition = "2021",
+
+    visibility = ["PUBLIC"],
+    deps = [
+        "//third-party/rust/crates/actix-rt/2.11.0:actix_rt",
+        "//third-party/rust/crates/actix/0.12.0:actix",
+        "//third-party/rust/crates/async-trait/0.1.92:async_trait",
+        "//third-party/rust/crates/bytes/1.12.1:bytes",
+        "//third-party/rust/crates/log/0.4.33:log",
+        "//third-party/rust/crates/rand/0.8.7:rand",
+    ],
+)

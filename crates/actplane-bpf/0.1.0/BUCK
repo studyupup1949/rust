@@ -1,0 +1,15 @@
+load("@buckal//:wrapper.bzl", "rust_library")
+
+rust_library(
+    name = "actplane_bpf",
+    srcs = glob(["**/*.rs"]),
+    crate = "actplane_bpf",
+    crate_root = "src/lib.rs",
+    edition = "2021",
+
+    visibility = ["PUBLIC"],
+    deps = [
+        "//third-party/rust/crates/aya/0.13.1:aya",
+        "//third-party/rust/crates/libc/0.2.189:libc",
+    ],
+)

@@ -1,0 +1,44 @@
+[package]
+name = "actix-server"
+version = "1.0.3"
+authors = ["Nikolay Kim <fafhrd91@gmail.com>"]
+description = "Actix server - General purpose tcp server"
+keywords = ["network", "framework", "async", "futures"]
+homepage = "https://actix.rs"
+repository = "https://github.com/actix/actix-net.git"
+documentation = "https://docs.rs/actix-server/"
+categories = ["network-programming", "asynchronous"]
+license = "MIT/Apache-2.0"
+exclude = [".gitignore", ".cargo/config"]
+edition = "2018"
+workspace = ".."
+
+[lib]
+name = "actix_server"
+path = "src/lib.rs"
+
+[features]
+default = []
+
+[dependencies]
+actix-service = "1.0.1"
+actix-rt = "1.0.0"
+actix-codec = "0.2.0"
+actix-utils = "1.0.4"
+
+log = "0.4"
+num_cpus = "1.11"
+mio = "0.6.19"
+socket2 = "0.3"
+futures-channel = { version = "0.3.4", default-features = false }
+futures-util = { version = "0.3.4", default-features = false, features = ["sink"] }
+slab = "0.4"
+
+# unix domain sockets
+# FIXME: Remove it and use mio own uds feature once mio 0.7 is released
+mio-uds = { version = "0.6.7" }
+
+[dev-dependencies]
+bytes = "0.5"
+env_logger = "0.7"
+actix-testing = "1.0.0"

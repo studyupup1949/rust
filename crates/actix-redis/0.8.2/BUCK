@@ -1,0 +1,25 @@
+load("@buckal//:wrapper.bzl", "rust_library")
+
+rust_library(
+    name = "actix_redis",
+    srcs = glob(["**/*.rs"]),
+    crate = "actix_redis",
+    crate_root = "src/lib.rs",
+    edition = "2018",
+    features = ["default"],
+
+    visibility = ["PUBLIC"],
+    deps = [
+        "//third-party/rust/crates/actix-rt/1.1.1:actix_rt",
+        "//third-party/rust/crates/actix-utils/1.0.6:actix_utils",
+        "//third-party/rust/crates/actix/0.9.0:actix",
+        "//third-party/rust/crates/backoff/0.1.6:backoff",
+        "//third-party/rust/crates/derive_more/0.99.20:derive_more",
+        "//third-party/rust/crates/futures/0.3.34:futures",
+        "//third-party/rust/crates/log/0.4.33:log",
+        "//third-party/rust/crates/redis-async/0.6.2:redis_async",
+        "//third-party/rust/crates/time/0.1.45:time",
+        "//third-party/rust/crates/tokio-util/0.2.0:tokio_util",
+        "//third-party/rust/crates/tokio/0.2.25:tokio",
+    ],
+)

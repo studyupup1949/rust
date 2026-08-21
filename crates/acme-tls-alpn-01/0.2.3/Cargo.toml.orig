@@ -1,0 +1,145 @@
+[package]
+name = "acme-tls-alpn-01"
+version = "0.2.3"
+edition = "2024"
+authors = ["Jerome David <programingjd@gmail.com>"]
+categories = ["web-programming::http-server"]
+description = "Auto TLS certificate renewal with ACME TLS-ALPN-01"
+keywords = ["TLS", "TLS-ALPN-01", "acme", "letsencrypt"]
+license = "MIT"
+repository = "https://github.com/programingjd/acme-tls-alpn-01"
+include = [
+    "Cargo.toml", "src", "examples", "LICENSE", "README.md"
+]
+
+[[bin]]
+name = "acme-cli"
+path = "src/main.rs"
+required-features = ["_bin"]
+
+[dependencies.ring]
+version = "0.17"
+default-features = false
+features = ["std", "alloc"]
+
+[dependencies.base64]
+version = "0.22"
+default-features = false
+features = ["std", "alloc"]
+
+[dependencies.serde]
+version = "1.0"
+features = ["std", "alloc", "derive"]
+
+[dependencies.serde_json]
+version = "1.0"
+default-features = false
+features = ["std", "alloc"]
+
+[dependencies.futures]
+version = "0.3"
+default-features = false
+features = ["std", "alloc"]
+
+[dependencies.futures-timer]
+version = "3.0"
+default-features = false
+features = []
+
+[dependencies.flume]
+version = "0.12"
+default-features = false
+features = ["async"]
+
+[dependencies.papaya]
+version = "0.2"
+default-features = false
+features = []
+
+[dependencies.rcgen]
+version = "0.14"
+default-features = false
+features = ["ring", "pem"]
+
+#[dependencies.pem]
+#version = "3.0"
+#default-features = false
+#features = ["std"]
+
+[dependencies.rustls]
+version = "0.23"
+default-features = false
+features = ["ring"]
+
+[dependencies.reqwest]
+optional = true
+version = "0.12"
+default-features = false
+features = ["json", "rustls-tls-webpki-roots-no-provider"]
+
+[dependencies.tracing]
+optional = true
+version = "0.1"
+default-features = false
+features = ["std", "async-await", "attributes"]
+
+[dependencies.tracing-subscriber]
+optional = true
+version = "0.3"
+default-features = true
+features = ["env-filter"]
+
+[dependencies.clap]
+optional = true
+version = "4.5"
+default-features = false
+features = ["std", "help", "usage"]
+
+[dependencies.tokio]
+optional = true
+version = "1.50"
+default-features = false
+features = ["net", "fs", "io-util", "rt-multi-thread", "macros"]
+
+[dependencies.tokio-rustls]
+optional = true
+version = "0.26"
+default-features = false
+features = ["ring"]
+
+[dev-dependencies.tokio]
+version = "1.50"
+default-features = false
+features = ["net", "io-util", "rt-multi-thread", "macros"]
+
+[dev-dependencies.tokio-rustls]
+version = "0.26"
+default-features = false
+features = ["ring"]
+
+[dev-dependencies.tracing]
+version = "0.1"
+default-features = false
+features = ["std", "async-await", "attributes"]
+
+[dev-dependencies.tracing-subscriber]
+version = "0.3"
+default-features = true
+features = ["env-filter"]
+
+[dev-dependencies.test-tracing]
+path = "test-tracing"
+
+[features]
+default = ["tracing", "reqwest"]
+#default = ["tracing"]
+reqwest = ["dep:reqwest"]
+tracing = ["dep:tracing"]
+_bin = ["tracing", "reqwest", "dep:clap", "dep:tokio", "dep:tokio-rustls", "dep:tracing-subscriber"]
+
+[workspace]
+members = ["test-tracing"]
+
+[[example]]
+name = "renew"
+required-features = ["reqwest"]

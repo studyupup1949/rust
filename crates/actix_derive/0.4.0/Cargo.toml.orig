@@ -1,0 +1,20 @@
+[package]
+name = "actix_derive"
+version = "0.4.0"
+authors = ["Callym <hi@callym.com>", "Nikolay Kim <fafhrd91@gmail.com>"]
+description = "Actor framework for Rust"
+readme = "README.md"
+keywords = ["actix"]
+homepage = "https://github.com/actix/actix-derive/"
+repository = "https://github.com/actix/actix-derive.git"
+documentation = "https://docs.rs/actix-derive/"
+license = "MIT/Apache-2.0"
+exclude = [".gitignore", ".travis.yml", ".cargo/config", "appveyor.yml"]
+
+[lib]
+proc-macro = true
+
+[dependencies]
+quote = "0.6"
+syn = { version = "0.15", features = ["full"] }
+proc-macro2 = "0.4"

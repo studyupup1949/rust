@@ -1,0 +1,32 @@
+load("@buckal//:wrapper.bzl", "rust_library")
+
+rust_library(
+    name = "achitek",
+    srcs = glob(["**/*.rs"]),
+    crate = "achitek",
+    crate_root = "src/lib.rs",
+    edition = "2024",
+    features = ["default"],
+
+    visibility = ["PUBLIC"],
+    deps = [
+        "//third-party/rust/crates/achitekfile/0.1.0:achitekfile",
+        "//third-party/rust/crates/anyhow/1.0.104:anyhow",
+        "//third-party/rust/crates/clap/4.6.6:clap",
+        "//third-party/rust/crates/colored/3.1.1:colored",
+        "//third-party/rust/crates/env_logger/0.11.11:env_logger",
+        "//third-party/rust/crates/git2/0.20.4:git2",
+        "//third-party/rust/crates/indexmap/2.14.0:indexmap",
+        "//third-party/rust/crates/inquire/0.9.4:inquire",
+        "//third-party/rust/crates/lazy_static/1.5.0:lazy_static",
+        "//third-party/rust/crates/log/0.4.33:log",
+        "//third-party/rust/crates/miette/7.6.0:miette",
+        "//third-party/rust/crates/regex/1.13.1:regex",
+        "//third-party/rust/crates/serde/1.0.229:serde",
+        "//third-party/rust/crates/tempfile/3.27.0:tempfile",
+        "//third-party/rust/crates/tera/1.20.1:tera",
+        "//third-party/rust/crates/thiserror/2.0.20:thiserror",
+        "//third-party/rust/crates/toml/0.9.8:toml",
+        "//third-party/rust/crates/walkdir/2.5.0:walkdir",
+    ],
+)

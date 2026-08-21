@@ -1,0 +1,18 @@
+load("@buckal//:wrapper.bzl", "rust_library")
+
+rust_library(
+    name = "actix_codec",
+    srcs = glob(["**/*.rs"]),
+    crate = "actix_codec",
+    crate_root = "src/lib.rs",
+    edition = "2018",
+
+    visibility = ["PUBLIC"],
+    deps = [
+        "//third-party/rust/crates/bytes/0.4.12:bytes",
+        "//third-party/rust/crates/futures/0.1.31:futures",
+        "//third-party/rust/crates/log/0.4.33:log",
+        "//third-party/rust/crates/tokio-codec/0.1.2:tokio_codec",
+        "//third-party/rust/crates/tokio-io/0.1.13:tokio_io",
+    ],
+)

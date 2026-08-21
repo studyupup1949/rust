@@ -1,0 +1,24 @@
+[package]
+name = "actix-bincode"
+version = "0.4.0"
+edition = "2021"
+authors = ["Olli Paananen <paananen.olli@tuta.io>"]
+description = "Bincode extractor for Actix Web"
+keywords = ["actix", "web", "bincode"]
+repository = "https://github.com/aalhitennf/actix-bincode"
+readme = "README.md"
+license-file = "LICENSE"
+
+[lib]
+name = "actix_bincode"
+path = "src/lib.rs"
+
+[dependencies]
+actix-web = "4.11.0"
+bincode = "2.0.1"
+derive_more = { version = "2.0.1", features = ["error", "display"] }
+futures = "0.3.31"
+serde = { version = "1.0.219", features = ["derive"], optional = true }
+
+[features]
+serde = ["dep:serde", "bincode/serde"]

@@ -1,0 +1,17 @@
+load("@buckal//:wrapper.bzl", "rust_library")
+
+rust_library(
+    name = "actix_allow_deny_middleware",
+    srcs = glob(["**/*.rs"]),
+    crate = "actix_allow_deny_middleware",
+    crate_root = "src/lib.rs",
+    edition = "2024",
+
+    visibility = ["PUBLIC"],
+    deps = [
+        "//third-party/rust/crates/actix-service/2.0.3:actix_service",
+        "//third-party/rust/crates/actix-web/4.14.1:actix_web",
+        "//third-party/rust/crates/ipnet/2.12.1:ipnet",
+        "//third-party/rust/crates/tracing/0.1.44:tracing",
+    ],
+)

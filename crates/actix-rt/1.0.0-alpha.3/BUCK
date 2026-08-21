@@ -1,0 +1,17 @@
+load("@buckal//:wrapper.bzl", "rust_library")
+
+rust_library(
+    name = "actix_rt",
+    srcs = glob(["**/*.rs"]),
+    crate = "actix_rt",
+    crate_root = "src/lib.rs",
+    edition = "2018",
+
+    visibility = ["PUBLIC"],
+    deps = [
+        "//third-party/rust/crates/actix-threadpool/0.3.3:actix_threadpool",
+        "//third-party/rust/crates/copyless/0.1.5:copyless",
+        "//third-party/rust/crates/futures/0.3.34:futures",
+        "//third-party/rust/crates/tokio/0.2.25:tokio",
+    ],
+)

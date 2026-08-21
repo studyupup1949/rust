@@ -1,0 +1,14 @@
+[package]
+name = "access_path"
+version = "0.1.0"
+edition = "2021"
+description = "Type-safe field paths for Rust structs — get, get_mut, and set"
+license = "MIT OR Apache-2.0"
+repository = "https://github.com/wupeng1221/keypath"
+keywords = ["keypath", "derive", "field", "projection", "accessor"]
+categories = ["rust-patterns", "no-std"]
+
+[dependencies]
+access_path_derive = { path = "../keypath_derive", version = "0.1" }
+[dev-dependencies]
+trybuild = "1.0"

@@ -1,0 +1,16 @@
+[package]
+name = "actfv"
+version = "0.1.2"
+edition = "2021"
+authors = ["kenneth.s.brooks@gmail.com"]
+license = "MIT OR Apache-2.0"
+description = "Take `.aws/credentials` as input and write it into a Terraform compatible `.tfvars` file."
+repository = "https://github.com/zendril/aws-creds-to-tfvars/"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+
+[dev-dependencies]
+assert_cmd = "2"
+file_diff = "1.0.0"

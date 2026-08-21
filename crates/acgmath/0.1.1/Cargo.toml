@@ -1,0 +1,44 @@
+[package]
+
+name = "acgmath"
+version = "0.1.1"
+authors = ["Brendan Zabarauskas <bjzaba@yahoo.com.au>",
+        "Brian Heylin",
+        "Colin Sherratt",
+        "Dzmitry Malyshau",
+        "Erick Tryzelaar",
+        "Luqman Aden",
+        "Maik Klein",
+        "Mikko Perttunen",
+        "Pierre Krieger",
+        "Tomasz Stachowiak",
+        "luxko"
+]
+license = "Apache-2.0"
+description = "A linear algebra and mathematics library for computer graphics. A fork of `cgmath`."
+
+homepage = "https://github.com/DaseinPhaos/acgmath/tree/luxdev"
+repository = "https://github.com/DaseinPhaos/acgmath/tree/luxdev"
+readme = "README.md"
+
+keywords = ["gamedev", "math", "matrix", "vector", "quaternion"]
+
+[lib]
+name = "acgmath"
+
+[features]
+stable = ["eders"]
+default = ["eders", "use_simd"]
+eders = ["serde", "serde_derive"]
+use_simd = ["simd"]
+[dependencies]
+approx = "0.1"
+num-traits = "0.1"
+rand = "0.3"
+serde = { version = "0.9", optional = true }
+serde_derive = { version = "0.9", optional = true }
+simd = { version = "0.2", optional = true }
+
+[dev-dependencies]
+glium = "0.15"
+serde_json = "0.9"

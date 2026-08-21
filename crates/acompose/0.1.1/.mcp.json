@@ -1,0 +1,12 @@
+{
+  "mcpServers": {
+    "process_compose": {
+      "url": "http://localhost:19093/sse",
+      "transport": "sse"
+    },
+    "acompose": {
+      "url": "http://localhost:19094/mcp",
+      "transport": "http"
+    }
+  }
+}

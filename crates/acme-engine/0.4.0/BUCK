@@ -1,0 +1,20 @@
+load("@buckal//:wrapper.bzl", "rust_library")
+
+rust_library(
+    name = "acme_engine",
+    srcs = glob(["**/*.rs"]),
+    crate = "acme_engine",
+    crate_root = "src/lib.rs",
+    edition = "2024",
+    features = ["default"],
+
+    visibility = ["PUBLIC"],
+    deps = [
+        "//third-party/rust/crates/acme-core/0.4.0:acme_core",
+        "//third-party/rust/crates/paste/1.0.15:paste",
+        "//third-party/rust/crates/scsys/0.3.2:scsys",
+        "//third-party/rust/crates/smart-default/0.7.1:smart_default",
+        "//third-party/rust/crates/strum/0.27.2:strum",
+        "//third-party/rust/crates/thiserror/2.0.20:thiserror",
+    ],
+)

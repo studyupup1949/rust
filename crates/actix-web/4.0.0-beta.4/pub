@@ -1,0 +1,56 @@
+#!/bin/bash
+
+# cd actix-http
+# cargo hack publish --no-dev-deps --allow-dirty --dry-run
+# echo "good?"
+# read
+# cargo hack publish --no-dev-deps --allow-dirty
+# cd ..
+
+# cd awc
+# cargo hack publish --no-dev-deps --allow-dirty --dry-run
+# echo "good?"
+# read
+# cargo hack publish --no-dev-deps --allow-dirty
+# cd ..
+
+cd actix-web-codegen
+cargo hack publish --no-dev-deps --allow-dirty --dry-run
+echo "good?"
+read
+cargo hack publish --no-dev-deps --allow-dirty
+cd ..
+
+cd actix-http-test
+cargo hack publish --no-dev-deps --allow-dirty --dry-run
+echo "good?"
+read
+cargo hack publish --no-dev-deps --allow-dirty
+cd ..
+
+# web
+cargo hack publish --no-dev-deps --allow-dirty --dry-run
+echo "good?"
+read
+cargo hack publish --no-dev-deps --allow-dirty
+
+cd actix-files
+cargo hack publish --no-dev-deps --allow-dirty --dry-run
+echo "good?"
+read
+cargo hack publish --no-dev-deps --allow-dirty
+cd ..
+
+cd actix-multipart
+cargo hack publish --no-dev-deps --allow-dirty --dry-run
+echo "good?"
+read
+cargo hack publish --no-dev-deps --allow-dirty
+cd ..
+
+cd actix-web-actors
+cargo hack publish --no-dev-deps --allow-dirty --dry-run
+echo "good?"
+read
+cargo hack publish --no-dev-deps --allow-dirty
+cd ..

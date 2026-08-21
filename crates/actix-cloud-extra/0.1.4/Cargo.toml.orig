@@ -1,0 +1,58 @@
+[package]
+name = "actix-cloud-extra"
+version = "0.1.4"
+edition = "2024"
+authors = ["MXWXZ <matrixwxz@gmail.com>"]
+description = "Extra tools for Actix Cloud."
+license = "MIT"
+repository = "https://github.com/MXWXZ/actix-cloud-extra"
+
+[features]
+default = ["api", "entity", "logger", "seaorm", "macros"]
+api = [
+    "hyuuid",
+    "utils",
+    "actix-cloud/utils",
+    "dep:serde-inline-default",
+    "dep:validator",
+    "dep:serde_with",
+    "dep:derivative",
+]
+entity = ["seaorm", "dep:serde", "dep:serde_json"]
+utils = ["dep:base64", "dep:infer"]
+logger = ["actix-cloud/logger"]
+hyuuid = ["dep:uuid", "dep:anyhow", "dep:serde"]
+seaorm = ["dep:sea-orm", "actix-cloud-extra-macros/seaorm"]
+macros = ["dep:actix-cloud-extra-macros"]
+
+[dependencies]
+anyhow = { version = "1.0", optional = true }
+derivative = { version = "2.2", optional = true }
+uuid = { version = "1.24", features = [
+    "v4",
+    "macro-diagnostics",
+    "fast-rng",
+], optional = true }
+serde = { version = "1.0", features = ["derive"], optional = true }
+serde-inline-default = { version = "1.0", optional = true }
+serde_with = { version = "3.21", optional = true }
+serde_json = { version = "1.0", optional = true }
+validator = { version = "0.20", features = ["derive"], optional = true }
+base64 = { version = "0.23", optional = true }
+infer = { version = "0.22", optional = true }
+
+sea-orm = { version = "2.0", features = [
+    "sqlx-sqlite",
+    "runtime-tokio-rustls",
+    "macros",
+    "debug-print",
+], optional = true }
+actix-cloud = { version = "0.6", default-features = false, optional = true }
+actix-cloud-extra-macros = { version = "0.1", default-features = false, path = "../actix-cloud-extra-macros", optional = true }
+
+[dev-dependencies]
+serde_json = "1.0"
+
+[package.metadata.docs.rs]
+all-features = true
+rustdoc-args = ["--cfg", "docsrs"]

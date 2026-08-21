@@ -1,0 +1,18 @@
+load("@buckal//:wrapper.bzl", "rust_library")
+
+rust_library(
+    name = "aconv",
+    srcs = glob(["**/*.rs"]),
+    crate = "aconv",
+    crate_root = "src/lib.rs",
+    edition = "2018",
+
+    visibility = ["PUBLIC"],
+    deps = [
+        "//third-party/rust/crates/chardetng/0.1.17:chardetng",
+        "//third-party/rust/crates/encoding_rs/0.8.35:encoding_rs",
+        "//third-party/rust/crates/exitcode/1.1.2:exitcode",
+        "//third-party/rust/crates/structopt/0.3.26:structopt",
+        "//third-party/rust/crates/transcoding_rs/0.1.1:transcoding_rs",
+    ],
+)

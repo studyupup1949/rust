@@ -1,0 +1,28 @@
+[package]
+authors.workspace = true
+categories.workspace = true
+description.workspace = true
+edition.workspace = true
+keywords.workspace = true
+license-file.workspace = true
+name = "ach"
+readme.workspace = true
+repository.workspace = true
+version.workspace = true
+
+[features]
+alloc = ["ach-mpmc/alloc", "ach-spsc/alloc"]
+default = []
+
+[dependencies]
+ach-array = {version = "0.1"}
+ach-cell = {version = "0.1"}
+ach-lazy = {version = "0.1"}
+ach-mpmc = {version = "0.2"}
+ach-once = {version = "0.1"}
+ach-option = {version = "0.1"}
+ach-pool = {version = "0.1"}
+ach-pubsub = {version = "0.2"}
+ach-ring = {version = "0.1"}
+ach-spsc = {version = "0.2"}
+ach-util = {version = "0.1"}

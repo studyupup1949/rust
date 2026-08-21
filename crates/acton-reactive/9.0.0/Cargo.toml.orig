@@ -1,0 +1,180 @@
+[package]
+name = "acton-reactive"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+homepage.workspace = true
+repository.workspace = true
+description = "Acton Reactive is the main crate of the Acton framework, designed for building reactive, event-driven, and asynchronous systems. It provides intuitive abstractions to make working with distributed actors seamless and efficient."
+
+[dependencies]
+acton-macro.workspace = true
+dashmap.workspace = true
+tokio.workspace = true
+async-trait.workspace = true
+anyhow.workspace = true
+tokio-util.workspace = true
+tracing.workspace = true
+tracing-subscriber.workspace = true
+futures.workspace = true
+static_assertions.workspace = true
+dyn-clone.workspace = true
+derive-new.workspace = true
+acton-ern.workspace = true
+tracing-appender.workspace = true
+xdg.workspace = true
+serde.workspace = true
+toml.workspace = true
+rand.workspace = true
+rmp-serde = { version = "1.3.0", optional = true }
+
+[dev-dependencies]
+acton_test.workspace = true
+crossterm.workspace = true
+zerocopy.workspace = true
+ansi_term.workspace = true
+tempfile.workspace = true
+chrono = "0.4.42"
+scopeguard = "1.2.0"
+futures.workspace = true
+mti.workspace = true
+divan = "0.1"
+
+[features]
+default = ["catch-handler-panics"]
+## Wraps every handler dispatch in `catch_unwind` so that a panicking handler
+## cannot crash the actor task. Enabled by default for safety; disable for
+## production workloads with well-tested handlers to eliminate the (small)
+## overhead. When disabled, a handler panic terminates the actor cleanly and
+## its parent is notified with `TerminationReason::Panic`.
+catch-handler-panics = []
+## IPC (Inter-Process Communication) support for external process messaging.
+##
+## Enables serialization infrastructure and type registration for sending messages
+## across process boundaries via Unix domain sockets or other transports.
+ipc = ["dep:mti", "dep:serde_json", "dep:parking_lot", "tokio/net", "tokio/fs", "tokio/io-util", "tokio/signal"]
+## MessagePack binary serialization for IPC.
+##
+## Enables compact binary serialization as an alternative to JSON, providing
+## ~30-50% smaller message sizes and faster parsing.
+ipc-messagepack = ["ipc", "dep:rmp-serde"]
+
+[dependencies.parking_lot]
+workspace = true
+optional = true
+
+[dependencies.mti]
+workspace = true
+optional = true
+
+[dependencies.serde_json]
+workspace = true
+optional = true
+
+[lints]
+workspace = true
+
+# ============================================================================
+# Examples
+# ============================================================================
+
+# IPC Bidirectional Demo (request-response pattern)
+[[example]]
+name = "ipc_bidirectional_server"
+path = "examples/ipc_bidirectional_demo/server.rs"
+required-features = ["ipc"]
+
+[[example]]
+name = "ipc_bidirectional_client"
+path = "examples/ipc_bidirectional_demo/client.rs"
+required-features = ["ipc"]
+
+# IPC Multi-Service Demo (multiple actors with dashboard)
+[[example]]
+name = "ipc_multi_service_server"
+path = "examples/ipc_multi_service/server.rs"
+required-features = ["ipc"]
+
+[[example]]
+name = "ipc_multi_service_client"
+path = "examples/ipc_multi_service/client.rs"
+required-features = ["ipc"]
+
+# IPC Basic (standalone self-contained IPC demo)
+[[example]]
+name = "ipc_basic"
+path = "examples/ipc_basic/main.rs"
+required-features = ["ipc"]
+
+# IPC Subscriptions Demo (push notifications via broker subscriptions)
+[[example]]
+name = "ipc_subscriptions_server"
+path = "examples/ipc_subscriptions/server.rs"
+required-features = ["ipc"]
+
+[[example]]
+name = "ipc_subscriptions_client"
+path = "examples/ipc_subscriptions/client.rs"
+required-features = ["ipc"]
+
+# IPC Streaming Demo (request-stream pattern with multiple responses)
+[[example]]
+name = "ipc_streaming_server"
+path = "examples/ipc_streaming/server.rs"
+required-features = ["ipc"]
+
+[[example]]
+name = "ipc_streaming_client"
+path = "examples/ipc_streaming/client.rs"
+required-features = ["ipc"]
+
+# IPC Client Libraries Demo (Python/Node.js client example server)
+[[example]]
+name = "ipc_client_libraries_server"
+path = "examples/ipc_client_libraries/server/main.rs"
+required-features = ["ipc"]
+
+# RGB Keyboard - Advanced IPC Demo (multiple patterns combined)
+[[example]]
+name = "rgb_keyboard_server"
+path = "examples/rgb_keyboard/server.rs"
+required-features = ["ipc"]
+
+[[example]]
+name = "rgb_keyboard_color_client"
+path = "examples/rgb_keyboard/color_client.rs"
+required-features = ["ipc"]
+
+[[example]]
+name = "rgb_keyboard_input_client"
+path = "examples/rgb_keyboard/input_client.rs"
+required-features = ["ipc"]
+
+[[example]]
+name = "rgb_keyboard_output_client"
+path = "examples/rgb_keyboard/output_client.rs"
+required-features = ["ipc"]
+
+# IPC Fruit Market - Advanced IPC Demo (multi-process POS system)
+[[example]]
+name = "ipc_fruit_market_server"
+path = "examples/ipc_fruit_market/server.rs"
+required-features = ["ipc"]
+
+[[example]]
+name = "ipc_fruit_market_keyboard"
+path = "examples/ipc_fruit_market/keyboard_client.rs"
+required-features = ["ipc"]
+
+[[example]]
+name = "ipc_fruit_market_display"
+path = "examples/ipc_fruit_market/display_client.rs"
+required-features = ["ipc"]
+
+# ============================================================================
+# Benchmarks
+# ============================================================================
+
+[[bench]]
+name = "actor_benchmarks"
+harness = false

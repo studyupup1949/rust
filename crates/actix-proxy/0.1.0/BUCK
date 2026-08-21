@@ -1,0 +1,17 @@
+load("@buckal//:wrapper.bzl", "rust_library")
+
+rust_library(
+    name = "actix_proxy",
+    srcs = glob(["**/*.rs"]),
+    crate = "actix_proxy",
+    crate_root = "src/lib.rs",
+    edition = "2018",
+
+    visibility = ["PUBLIC"],
+    deps = [
+        "//third-party/rust/crates/actix-rt/1.1.1:actix_rt",
+        "//third-party/rust/crates/actix-web/3.3.3:actix_web",
+        "//third-party/rust/crates/futures/0.3.34:futures",
+        "//third-party/rust/crates/openssl/0.10.81:openssl",
+    ],
+)

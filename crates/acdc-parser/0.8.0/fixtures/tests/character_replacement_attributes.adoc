@@ -1,0 +1,35 @@
+= Character Replacement Attributes
+
+Blank: before{blank}after
+
+C++ keyword: {cpp}
+
+C++ deprecated: {cxx}
+
+Plus plus: {pp}
+
+Plus: {plus}
+
+Asterisk: {asterisk}
+
+Backtick: {backtick}
+
+Caret: {caret}
+
+Tilde: {tilde}
+
+Vbar: {vbar}
+
+Start bracket: {startsb}
+
+End bracket: {endsb}
+
+Backslash: {backslash}
+
+Two colons: {two-colons}
+
+Two semicolons: {two-semicolons}
+
+Apos: {apos}
+
+Quot: {quot}

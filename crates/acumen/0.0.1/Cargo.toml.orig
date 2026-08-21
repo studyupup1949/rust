@@ -1,0 +1,13 @@
+[package]
+name = "acumen"
+version = "0.0.1"
+edition = "2021"
+license = "Apache-2.0"
+description = "Collect info about your system"
+authors = ["Federico Maria Morrone <contact@morrone.dev>"]
+readme = "README.md"
+documentation = "https://docs.rs/acumen"
+repository = "https://github.com/morr0ne/acumen"
+include = ["src/**/*.rs", "README.md", "LICENSE"]
+
+[dependencies]

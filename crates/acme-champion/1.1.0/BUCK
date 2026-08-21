@@ -1,0 +1,19 @@
+load("@buckal//:wrapper.bzl", "rust_binary")
+
+rust_binary(
+    name = "acme_champion",
+    srcs = glob(["**/*.rs"]),
+    crate = "acme_champion",
+    crate_root = "src/main.rs",
+    edition = "2024",
+
+    visibility = ["PUBLIC"],
+    deps = [
+        "//third-party/rust/crates/anstyle/1.0.14:anstyle",
+        "//third-party/rust/crates/env_logger/0.11.11:env_logger",
+        "//third-party/rust/crates/httparse/1.10.1:httparse",
+        "//third-party/rust/crates/libc/0.2.189:libc",
+        "//third-party/rust/crates/log/0.4.33:log",
+        "//third-party/rust/crates/mio/1.2.2:mio",
+    ],
+)

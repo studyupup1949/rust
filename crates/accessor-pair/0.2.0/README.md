@@ -1,0 +1,1 @@
+A trait for a pair of a getter and a setter, with a macro for easy creation.

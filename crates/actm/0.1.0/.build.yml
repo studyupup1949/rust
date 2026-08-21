@@ -1,0 +1,31 @@
+image: nixos/latest
+environment:
+  NIX_CONFIG: |
+    experimental-features = nix-command flakes
+    substituters = https://cache.nixos.org/ https://nix-cache.mccarty.io
+    trusted-public-keys = cache.nixos.org-1:6NCHdD59X431o0gWypbMrAURkbJ16ZPMQFGspcDShjY= nathan-nix-cache:R5/0GiItBM64sNgoFC/aSWuAopOAsObLcb/mwDf335A=
+  site: thatonelutenist.srht.site
+oauth: pages.sr.ht/PAGES:RW
+tasks:
+  # Force the name server to google for now, until upstream fixes the bug
+  - setup: |
+      echo "nameserver 1.1.1.1" | sudo tee /etc/resolv.conf
+  - lint-formatting: |
+      cd actm
+      nix build .#lints.format.actm -L
+  - lint-clippy: |
+       cd actm
+       nix build .#lints.clippy.actm -L
+  # The installable here gets signed and uploaded manually
+  - build: |
+      cd actm
+      nix build .#actm -L
+  - test: |
+      cd actm
+      nix develop -c cargo nextest run
+      nix develop -c cargo test --doc
+  # Audit the cargo lockfile last, as this modifies the source directory
+  - audit-lockfile: |
+      cd actm
+      nix flake lock --update-input advisory-db
+      nix build .#lints.audit.actm -L

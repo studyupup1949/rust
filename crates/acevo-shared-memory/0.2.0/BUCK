@@ -1,0 +1,16 @@
+load("@buckal//:wrapper.bzl", "rust_library")
+
+rust_library(
+    name = "acevo_shared_memory",
+    srcs = glob(["**/*.rs"]),
+    crate = "acevo_shared_memory",
+    crate_root = "src/lib.rs",
+    edition = "2024",
+    features = ["default"],
+
+    visibility = ["PUBLIC"],
+    deps = [
+        "//third-party/rust/crates/strum/0.28.0:strum",
+        "//third-party/rust/crates/win-shared-memory/0.1.0:win_shared_memory",
+    ],
+)

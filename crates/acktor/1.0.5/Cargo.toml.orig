@@ -1,0 +1,39 @@
+[package]
+name = "acktor"
+version = "1.0.5"
+description = "Pure-Rust actor framework built on top of the Tokio async runtime"
+edition.workspace = true
+rust-version.workspace = true
+authors.workspace = true
+license.workspace = true
+repository.workspace = true
+categories.workspace = true
+readme = "../README.md"
+keywords.workspace = true
+exclude = ["examples/*", "tests/*"]
+
+[package.metadata.docs.rs]
+features = ["derive", "bottleneck-warning"]
+rustdoc-args = ["--cfg", "docsrs"]
+
+[features]
+default = ["derive"]
+derive = ["dep:acktor-derive"]
+# this feature requires `tokio_unstable` flag
+tokio-tracing = ["tokio/tracing"]
+# emits debug-level tracing logs when an observer's mailbox is full during notification
+bottleneck-warning = []
+
+[dependencies]
+futures-util = "0.3"
+rustc-hash = "2.1"
+tokio = { version = "1.37", features = ["macros", "rt", "sync", "time"] }
+tracing = "0.1"
+
+acktor-derive = { workspace = true, optional = true }
+acktor-macros = { workspace = true }
+
+[dev-dependencies]
+anyhow = "1.0"
+clap = { version = "4.5", features = ["derive"] }
+pretty_assertions = "1.4"

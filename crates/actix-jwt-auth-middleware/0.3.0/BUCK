@@ -1,0 +1,20 @@
+load("@buckal//:wrapper.bzl", "rust_library")
+
+rust_library(
+    name = "actix_jwt_auth_middleware",
+    srcs = glob(["**/*.rs"]),
+    crate = "actix_jwt_auth_middleware",
+    crate_root = "src/lib.rs",
+    edition = "2021",
+
+    visibility = ["PUBLIC"],
+    deps = [
+        "//third-party/rust/crates/actix-jwt-auth-middleware-derive/0.1.1:actix_jwt_auth_middleware_derive",
+        "//third-party/rust/crates/actix-web/4.14.1:actix_web",
+        "//third-party/rust/crates/chrono/0.4.45:chrono",
+        "//third-party/rust/crates/derive_builder/0.11.2:derive_builder",
+        "//third-party/rust/crates/form_urlencoded/1.2.2:form_urlencoded",
+        "//third-party/rust/crates/jwt-compact/0.7.0:jwt_compact",
+        "//third-party/rust/crates/serde/1.0.229:serde",
+    ],
+)

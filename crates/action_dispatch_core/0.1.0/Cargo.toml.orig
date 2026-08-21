@@ -1,0 +1,22 @@
+[package]
+name = "action_dispatch_core"
+version.workspace = true
+edition.workspace = true
+authors.workspace = true
+license.workspace = true
+description.workspace = true
+keywords.workspace = true
+repository.workspace = true
+homepage.workspace = true
+categories.workspace = true
+
+[dependencies]
+regex = { workspace = true }
+once_cell = { workspace = true }
+inventory = { workspace = true }
+aho-corasick = { workspace = true }
+
+[lib]
+name = "action_dispatch_core"
+path = "src/lib.rs"
+

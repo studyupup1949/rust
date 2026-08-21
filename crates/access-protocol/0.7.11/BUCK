@@ -1,0 +1,26 @@
+load("@buckal//:wrapper.bzl", "rust_library")
+
+rust_library(
+    name = "access_protocol",
+    srcs = glob(["**/*.rs"]),
+    crate = "access_protocol",
+    crate_root = "src/lib.rs",
+    edition = "2018",
+
+    visibility = ["PUBLIC"],
+    deps = [
+        "//third-party/rust/crates/bonfida-utils/0.4.4:bonfida_utils",
+        "//third-party/rust/crates/borsh/0.10.4:borsh",
+        "//third-party/rust/crates/bytemuck/1.25.2:bytemuck",
+        "//third-party/rust/crates/enumflags2/0.7.12:enumflags2",
+        "//third-party/rust/crates/mpl-token-metadata/1.13.2:mpl_token_metadata",
+        "//third-party/rust/crates/num-derive/0.3.3:num_derive",
+        "//third-party/rust/crates/num-traits/0.2.19:num_traits",
+        "//third-party/rust/crates/num_enum/0.5.11:num_enum",
+        "//third-party/rust/crates/solana-program/1.18.26:solana_program",
+        "//third-party/rust/crates/spl-associated-token-account/1.1.3:spl_associated_token_account",
+        "//third-party/rust/crates/spl-math/0.1.0:spl_math",
+        "//third-party/rust/crates/spl-token/3.5.0:spl_token",
+        "//third-party/rust/crates/thiserror/1.0.69:thiserror",
+    ],
+)

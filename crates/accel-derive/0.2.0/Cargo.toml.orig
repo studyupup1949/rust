@@ -1,0 +1,25 @@
+[package]
+name = "accel-derive"
+version = "0.2.0"
+authors = ["Toshiki Teramura <toshiki.teramura@gmail.com>"]
+
+description   = "Procedual macro for writing GPGPU kernel"
+documentation = "https://docs.rs/accel-derive/"
+repository    = "https://github.com/termoshtt/accel"
+keywords      = ["GPGPU", "CUDA", "proc-macro"]
+license       = "MIT"
+readme        = "README.md"
+categories    = []
+
+[lib]
+proc-macro = true
+
+[dependencies]
+quote = "0.5"
+
+[dependencies.nvptx]
+version = "0.1"
+
+[dependencies.syn]
+version = "0.13"
+features = ["full", "extra-traits"]

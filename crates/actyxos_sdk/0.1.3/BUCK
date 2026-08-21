@@ -1,0 +1,21 @@
+load("@buckal//:wrapper.bzl", "rust_library")
+
+rust_library(
+    name = "actyxos_sdk",
+    srcs = glob(["**/*.rs"]),
+    crate = "actyxos_sdk",
+    crate_root = "src/lib.rs",
+    edition = "2018",
+
+    visibility = ["PUBLIC"],
+    deps = [
+        "//third-party/rust/crates/chrono/0.4.45:chrono",
+        "//third-party/rust/crates/derive_more/0.99.20:derive_more",
+        "//third-party/rust/crates/fixed/0.5.7:fixed",
+        "//third-party/rust/crates/serde-transcode/1.1.1:serde_transcode",
+        "//third-party/rust/crates/serde/1.0.229:serde",
+        "//third-party/rust/crates/serde_cbor/0.11.2:serde_cbor",
+        "//third-party/rust/crates/serde_json/1.0.151:serde_json",
+        "//third-party/rust/crates/typenum/1.12.0:typenum",
+    ],
+)

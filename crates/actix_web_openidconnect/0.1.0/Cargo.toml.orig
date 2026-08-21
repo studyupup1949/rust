@@ -1,0 +1,26 @@
+[package]
+name = "actix_web_openidconnect"
+description = "Lightweight async OpenID Connect (OIDC) client and middleware for Actix-Web."
+homepage = "https://github.com/RomainMichau/ActixWeb_openIDConnect/"
+documentation = "https://github.com/RomainMichau/ActixWeb_openIDConnect/"
+repository = "https://github.com/RomainMichau/ActixWeb_openIDConnect/"
+readme = "readMe.md"
+version = "0.1.0"
+authors = ["Romain Michau"]
+edition = "2021"
+license = "MIT OR Apache-2.0"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+openidconnect = "3.4.0"
+actix-web = "4"
+serde_json = "1.0.112"
+serde = "1.0.196"
+futures-util = "0.3.17"
+derive_more = "0.99.11"
+anyhow = "1.0.79"
+url = "2.5.0"
+env_logger = "0.9.0"
+log = "0.4.20"
+serde_derive = "1.0.126"

@@ -1,0 +1,22 @@
+[package]
+name = "achitekfile"
+authors = ["Samuel Joli <samuel.joli.ftn@gmail.com>"]
+description = "A tree-sitter backed semantic parser for the Achitekfile DSL"
+repository = "https://github.com/achitek-org/achitekfile"
+keywords = ["achitek", "parser", "tree-sitter", "dsl", "diagnostics"]
+categories = ["parser-implementations", "development-tools"]
+license = "MIT OR Apache-2.0"
+version = "0.2.0"
+edition = "2024"
+
+[dependencies]
+regex = "1.12.2"
+serde = { version = "1.0", features = ["derive"], optional = true }
+tree-sitter = "0.26.8"
+tree-sitter-achitekfile = "0.1.0"
+
+[features]
+serde = ["dep:serde"]
+
+[dev-dependencies]
+indoc = "2.0.7"

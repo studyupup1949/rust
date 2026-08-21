@@ -1,0 +1,23 @@
+load("@buckal//:wrapper.bzl", "rust_library")
+
+rust_library(
+    name = "actix_web_actors",
+    srcs = glob(["**/*.rs"]),
+    crate = "actix_web_actors",
+    crate_root = "src/lib.rs",
+    edition = "2021",
+
+    visibility = ["PUBLIC"],
+    deps = [
+        "//third-party/rust/crates/actix-codec/0.5.2:actix_codec",
+        "//third-party/rust/crates/actix-http/3.13.3:actix_http",
+        "//third-party/rust/crates/actix-web/4.14.1:actix_web",
+        "//third-party/rust/crates/actix/0.13.5:actix",
+        "//third-party/rust/crates/bytes/1.12.1:bytes",
+        "//third-party/rust/crates/bytestring/1.5.1:bytestring",
+        "//third-party/rust/crates/futures-core/0.3.34:futures_core",
+        "//third-party/rust/crates/pin-project-lite/0.2.17:pin_project_lite",
+        "//third-party/rust/crates/tokio-util/0.7.19:tokio_util",
+        "//third-party/rust/crates/tokio/1.53.1:tokio",
+    ],
+)

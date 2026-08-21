@@ -1,0 +1,21 @@
+[package]
+name = "acon"
+version = "0.5.1"
+authors = ["Bourgond Aries <macocio@gmail.com>"]
+license = "GPL-3.0"
+readme = "README.md"
+keywords = ["encoding", "decoding", "acon"]
+repository = "https://github.com/BourgondAries/acon-rs"
+homepage = "https://github.com/BourgondAries/acon-rs"
+documentation = "http://acon.stravers.net/acon"
+description = """
+A native Rust ACON encoder and decoder. Provides FromStr and Display for deserialization
+and serialization respectively. Comes with some utilities to make working with the
+data structure easier.
+"""
+
+[dependencies]
+# clippy = { version = "0.0.67", optional = true }
+
+[features]
+default=[]

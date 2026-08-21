@@ -1,0 +1,5 @@
+error: KeyPath can only be derived on structs with named fields
+ --> tests/fail/not_a_struct.rs:4:6
+  |
+4 | enum Wrong {
+  |      ^^^^^

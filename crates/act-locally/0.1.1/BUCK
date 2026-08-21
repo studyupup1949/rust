@@ -1,0 +1,16 @@
+load("@buckal//:wrapper.bzl", "rust_library")
+
+rust_library(
+    name = "act_locally",
+    srcs = glob(["**/*.rs"]),
+    crate = "act_locally",
+    crate_root = "src/lib.rs",
+    edition = "2021",
+
+    visibility = ["PUBLIC"],
+    deps = [
+        "//third-party/rust/crates/futures/0.3.34:futures",
+        "//third-party/rust/crates/smol/2.0.2:smol",
+        "//third-party/rust/crates/tracing/0.1.44:tracing",
+    ],
+)

@@ -1,0 +1,38 @@
+[options]
+library = "AccountsService"
+version = "1.0"
+min_cfg_version = "1.0"
+target_path = "."
+girs_directories = ["../../gir-files/", "/usr/share/gir-1.0/"]
+work_mode = "normal"
+single_version_file = true
+generate_safety_asserts = true
+deprecate_by_min_version = true
+
+generate = [
+"AccountsService.User",
+"AccountsService.UserAccountType",
+"AccountsService.UserPasswordMode",
+# "AccountsService.UserManager",
+"AccountsService.UserManagerError"
+]
+
+manual = []
+
+[[object]]
+name = "AccountsService.UserManager"
+status = "generate"
+    [[object.function]]
+    name = "list_users"
+    ignore = true
+
+# ignore = [
+#     "ActUserManager::list_users",
+#     "act_user_get_locked",
+#     "act_user_set_icon_file",
+#     "AccountsService.UserManager::list_users"
+# ]
+
+# [[object.function]]
+# name = "ActUserManager::list_users"
+# ignore = true

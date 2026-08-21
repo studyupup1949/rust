@@ -1,0 +1,16 @@
+load("@buckal//:wrapper.bzl", "rust_library")
+
+rust_library(
+    name = "actix_web_condition_middleware",
+    srcs = glob(["**/*.rs"]),
+    crate = "actix_web_condition_middleware",
+    crate_root = "src/lib.rs",
+    edition = "2018",
+
+    visibility = ["PUBLIC"],
+    deps = [
+        "//third-party/rust/crates/actix-service/0.4.2:actix_service",
+        "//third-party/rust/crates/actix-web/1.0.9:actix_web",
+        "//third-party/rust/crates/futures/0.1.31:futures",
+    ],
+)

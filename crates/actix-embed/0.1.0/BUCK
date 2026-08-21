@@ -1,0 +1,18 @@
+load("@buckal//:wrapper.bzl", "rust_library")
+
+rust_library(
+    name = "actix_embed",
+    srcs = glob(["**/*.rs"]),
+    crate = "actix_embed",
+    crate_root = "src/lib.rs",
+    edition = "2021",
+
+    visibility = ["PUBLIC"],
+    deps = [
+        "//third-party/rust/crates/actix-web/4.14.1:actix_web",
+        "//third-party/rust/crates/futures-core/0.3.34:futures_core",
+        "//third-party/rust/crates/hex/0.4.3:hex",
+        "//third-party/rust/crates/mime_guess/2.0.5:mime_guess",
+        "//third-party/rust/crates/rust-embed/6.8.1:rust_embed",
+    ],
+)

@@ -1,0 +1,115 @@
+[package]
+name = "actix-toolbox"
+version = "0.13.1"
+edition = "2021"
+repository = "https://github.com/myOmikron/actix-toolbox"
+license = "MIT"
+authors = ["myOmikron <git@omikron.dev>"]
+description = "Toolbox for enhancing actix-web functionalities"
+
+[[example]]
+name = "websockets"
+required-features = [
+    "ws",
+    "tokio/macros",
+    "tokio/rt",
+    "tokio/rt-multi-thread",
+]
+
+[dependencies]
+# webframework
+actix = { version = "~0.13", optional = true }
+actix-web = { version = "~4", optional = true }
+actix-session = { version = "~0.7", optional = true }
+actix-web-actors = { version = "~4", optional = true }
+
+# Open ID Connect
+openidconnect = { version = "~3", optional = true, features = ["accept-rfc3339-timestamps"] }
+
+# time library
+chrono = { version = ">=0.4.20", default-features = false, optional = true }
+
+# serialization
+serde = { version = "~1", features = ["derive"], optional = true }
+serde_json = { version = "~1", optional = true }
+byte-unit = { version = "~4", features = ["serde"], optional = true }
+
+# logging
+log = { version = "~0.4" }
+log4rs = { version = "~1", features = ["gzip"], optional = true }
+
+# error handling. Required by actix-session
+anyhow = { version = "~1", optional = true }
+# async traits. Required by actix-session
+async-trait = { version = "~0.1", optional = true }
+
+# rng
+rand = { version = "~0.8", optional = true }
+
+# orm
+rorm = { version = "~0.6", default-features = false, optional = true }
+
+# uuid
+uuid = { version = "~1", features = ["v4"], optional = true }
+
+# channels
+tokio = { version = ">=1.23.1", optional = true }
+
+# async util
+futures = { version = "~0.3", optional = true }
+
+# wrap futures without boxing them
+pin-project = { version = "~1", optional = true }
+
+[package.metadata.docs.rs]
+features = ["ws", "logging", "session", "oidc"]
+
+[features]
+ws = [
+    "actix",
+    "actix-web",
+    "actix-web-actors",
+    "futures",
+    "tokio",
+    "pin-project",
+]
+
+logging = [
+    "actix-web",
+    "byte-unit",
+    "chrono",
+    "log4rs",
+    "serde",
+    "serde_json",
+    "uuid",
+]
+
+session-all-drivers = [
+    "rorm/all-drivers",
+    "__session",
+]
+
+session-postgres-only = [
+    "rorm/postgres-only",
+    "__session",
+]
+
+__session = [
+    "rorm",
+    "rorm/chrono",
+    "actix-session",
+    "actix-web",
+    "anyhow",
+    "async-trait",
+    "chrono",
+    "rand",
+    "serde",
+    "serde_json",
+]
+
+oidc = [
+    "openidconnect",
+    "serde",
+    "actix-web",
+    "actix-session",
+]

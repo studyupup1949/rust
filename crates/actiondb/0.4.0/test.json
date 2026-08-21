@@ -1,0 +1,108 @@
+{
+   "patterns" : [
+      {
+         "test_messages" : [
+            {
+               "values" : {
+                  "appacct.zone_name" : "stare.impulsions.tld",
+                  "appacct.zone_serial" : "2013021501"
+               },
+               "message" : "zone stare.impulsions.tld/IN: sending notifies (serial 2013021501)"
+            },
+            {
+               "values" : {
+                  "appacct.zone_view" : "internal",
+                  "appacct.zone_serial" : "2011103170",
+                  "appacct.zone_name" : "stare.impulsions.tld"
+               },
+               "message" : "notify: zone stare.impulsions.tld/IN/internal: sending notifies (serial 2011103170)"
+            }
+         ],
+         "name" : "named-bind9_501",
+         "uuid" : "e309f1b1-65de-46f5-b9a5-8c3ca50e5933",
+         "tags" : [
+            "named",
+            "notify"
+         ],
+         "pattern" : "zone %{GREEDY:appacct.zone_name}/IN: sending notifies (serial %{GREEDY:appacct.zone_serial})"
+      },
+      {
+         "test_messages" : [
+            {
+               "values" : {
+                  "appacct.zone_name" : "stare.impulsions.tld",
+                  "appacct.zone_serial" : "2013021501"
+               },
+               "message" : "zone stare.impulsions.tld/IN: sending notifies (serial 2013021501)"
+            },
+            {
+               "values" : {
+                  "appacct.zone_view" : "internal",
+                  "appacct.zone_serial" : "2011103170",
+                  "appacct.zone_name" : "stare.impulsions.tld"
+               },
+               "message" : "notify: zone stare.impulsions.tld/IN/internal: sending notifies (serial 2011103170)"
+            }
+         ],
+         "name" : "named-bind9_502",
+         "pattern" : "zone %{GREEDY:appacct.zone_name}/IN/%{GREEDY:appacct.zone_view}: sending notifies (serial %{GREEDY:appacct.zone_serial})",
+         "uuid" : "C283BFBA-6DA4-11E5-8E80-904D8CBB4A16",
+         "tags" : [
+            "named",
+            "notify"
+         ]
+      },
+      {
+         "pattern" : "notify: zone %{GREEDY:appacct.zone_name}/IN: sending notifies (serial %{GREEDY:appacct.zone_serial})",
+         "tags" : [
+            "named",
+            "notify"
+         ],
+         "uuid" : "C283C1F4-6DA4-11E5-8E80-904D8CBB4A16",
+         "name" : "named-bind9_503",
+         "test_messages" : [
+            {
+               "values" : {
+                  "appacct.zone_name" : "stare.impulsions.tld",
+                  "appacct.zone_serial" : "2013021501"
+               },
+               "message" : "zone stare.impulsions.tld/IN: sending notifies (serial 2013021501)"
+            },
+            {
+               "values" : {
+                  "appacct.zone_view" : "internal",
+                  "appacct.zone_serial" : "2011103170",
+                  "appacct.zone_name" : "stare.impulsions.tld"
+               },
+               "message" : "notify: zone stare.impulsions.tld/IN/internal: sending notifies (serial 2011103170)"
+            }
+         ]
+      },
+      {
+         "tags" : [
+            "named",
+            "notify"
+         ],
+         "uuid" : "C283C370-6DA4-11E5-8E80-904D8CBB4A16",
+         "pattern" : "notify: zone %{GREEDY:appacct.zone_name}/IN/%{GREEDY:appacct.zone_view}: sending notifies (serial %{GREEDY:appacct.zone_serial})",
+         "name" : "named-bind9_504",
+         "test_messages" : [
+            {
+               "values" : {
+                  "appacct.zone_name" : "stare.impulsions.tld",
+                  "appacct.zone_serial" : "2013021501"
+               },
+               "message" : "zone stare.impulsions.tld/IN: sending notifies (serial 2013021501)"
+            },
+            {
+               "values" : {
+                  "appacct.zone_view" : "internal",
+                  "appacct.zone_serial" : "2011103170",
+                  "appacct.zone_name" : "stare.impulsions.tld"
+               },
+               "message" : "notify: zone stare.impulsions.tld/IN/internal: sending notifies (serial 2011103170)"
+            }
+         ]
+      }
+   ]
+}

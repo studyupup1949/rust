@@ -1,0 +1,33 @@
+[package]
+name = "actix-service"
+version = "1.0.6"
+authors = ["Nikolay Kim <fafhrd91@gmail.com>"]
+description = "Service trait and combinators for representing asynchronous request/response operations."
+keywords = ["network", "framework", "async", "futures", "service"]
+homepage = "https://actix.rs"
+repository = "https://github.com/actix/actix-net.git"
+documentation = "https://docs.rs/actix-service"
+readme = "README.md"
+categories = ["network-programming", "asynchronous"]
+license = "MIT OR Apache-2.0"
+edition = "2018"
+
+[lib]
+name = "actix_service"
+path = "src/lib.rs"
+
+[dependencies]
+futures-util = "0.3.1"
+pin-project = "0.4.17"
+
+[dev-dependencies]
+actix-rt = "1.0.0"
+criterion = "0.3"
+
+[[bench]]
+name = "unsafecell_vs_refcell"
+harness = false
+
+[[bench]]
+name = "and_then"
+harness = false

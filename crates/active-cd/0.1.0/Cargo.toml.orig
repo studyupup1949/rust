@@ -1,0 +1,14 @@
+[package]
+name = "active-cd"
+version = "0.1.0"
+edition = "2021"
+authors = [ "Oliver <oliver.d.333@proton.me" ]
+description = "A tui for the cd command"
+license = "MIT"
+readme = "README.md"
+repository = "https://github.com/oli-ver-d/active-cd"
+
+[dependencies]
+anyhow = "1.0.93"
+crossterm = "0.28.1"
+dirs = "5.0.1"

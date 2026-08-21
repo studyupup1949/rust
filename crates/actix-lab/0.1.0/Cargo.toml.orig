@@ -1,0 +1,8 @@
+[package]
+name = "actix-lab"
+version = "0.1.0"
+edition = "2021"
+description = "Upcoming project from @robjtede"
+license = "MIT"
+
+[dependencies]

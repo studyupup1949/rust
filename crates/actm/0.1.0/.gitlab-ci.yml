@@ -1,0 +1,33 @@
+default:
+  image: nixos/nix
+  retry: 2
+
+before_script:
+  - mkdir -p ~/.aws
+  - cp $AWS_CREDS ~/.aws/credentials
+
+build-x86_64:
+  tags:
+    - x86_64
+  script:
+    # Cache the application itself
+    - nix build
+    - nix store sign -r -v --key-file $CACHE_SIGN_KEY $(readlink ./result)
+    - nix copy --to "$UPLOAD_URL" $(readlink ./result) -v
+    # Cache the devShell
+    - nix build .#devShell.x86_64-linux.inputDerivation
+    - nix store sign -r -v --key-file $CACHE_SIGN_KEY $(readlink ./result)
+    - nix copy --to "$UPLOAD_URL" $(readlink ./result) -v
+
+build-stable-aarch64:
+  tags:
+    - aarch64
+  script:
+    # Cache the application itself
+    - nix build
+    - nix store sign -r -v --key-file $CACHE_SIGN_KEY $(readlink ./result)
+    - nix copy --to "$UPLOAD_URL" $(readlink ./result) -v
+    # Cache the devShell
+    - nix build .#devShell.aarch64-linux.inputDerivation
+    - nix store sign -r -v --key-file $CACHE_SIGN_KEY $(readlink ./result)
+    - nix copy --to "$UPLOAD_URL" $(readlink ./result) -v

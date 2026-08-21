@@ -1,0 +1,17 @@
+load("@buckal//:wrapper.bzl", "rust_library")
+
+rust_library(
+    name = "access_json",
+    srcs = glob(["**/*.rs"]),
+    crate = "access_json",
+    crate_root = "src/lib.rs",
+    edition = "2018",
+
+    visibility = ["PUBLIC"],
+    deps = [
+        "//third-party/rust/crates/erased-serde/0.3.31:erased_serde",
+        "//third-party/rust/crates/serde/1.0.229:serde",
+        "//third-party/rust/crates/serde_derive/1.0.229:serde_derive",
+        "//third-party/rust/crates/serde_json/1.0.151:serde_json",
+    ],
+)

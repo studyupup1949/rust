@@ -1,0 +1,101 @@
+[package]
+name = "acai"
+version = "0.2.0"
+edition = "2024"
+description = "Implementation of the Agent2Agent (A2A) protocol"
+license = "Apache-2.0"
+authors = ["Robert Escriva <robert@rescrv.net>"]
+repository = "https://github.com/rescrv/acai"
+keywords = ["a2a", "agent", "protocol", "http2", "json-rpc"]
+categories = ["network-programming", "web-programming"]
+
+[dependencies]
+async-trait = "0.1.77"
+base64 = "0.21.7"
+buffertk = "0.12.0"
+bytes = "1.10.1"
+chrono = { version = "0.4", features = ["serde"] }
+ed25519 = { version = "2.2.3", features = ["pkcs8", "alloc"] }
+ed25519-dalek = { version = "2.1.1", features = ["pem", "pkcs8", "rand_core"] }
+futures = "0.3.31"
+hex = "0.4.3"
+hmac = "0.12.1"
+http = "1.0.0"
+http-body-util = "0.1.3"
+hyper = { version = "1.6.0", features = ["http2", "server"] }
+hyper-util = { version = "0.1.11", features = ["tokio", "server"] }
+indicio = "0.11.0"
+jsonwebtoken = { version = "9.3.1", features = ["use_pem"] }
+jwt = "0.16.0"
+pin-project = "1.1.5"
+prototk = "0.12.0"
+rand_core = "0.6.4"
+reqwest = { version = "0.12.15", features = ["json", "stream"] }
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
+sha2 = "0.10.8"
+signature = "2.2.0"
+tokio = { version = "1.44.2", features = ["full", "sync"] }
+tower = "0.5.2"
+uuid = { version = "1.6", features = ["v4", "serde"] }
+
+[dev-dependencies]
+rustyline = "15.0.0"
+tokio-test = "0.4"
+yammer = "0.15"
+
+[[example]]
+name = "simple_server"
+path = "examples/simple_server.rs"
+
+[[example]]
+name = "simple_client"
+path = "examples/simple_client.rs"
+
+[[example]]
+name = "complete"
+path = "examples/complete.rs"
+
+[[example]]
+name = "agent_card"
+path = "examples/agent_card.rs"
+
+[[example]]
+name = "streaming"
+path = "examples/streaming.rs"
+
+[[example]]
+name = "push_notification"
+path = "examples/push_notification.rs"
+
+[[example]]
+name = "ollama_agent"
+path = "examples/ollama_agent.rs"
+
+[[example]]
+name = "a2a_chat"
+path = "examples/a2a_chat.rs"
+
+[[example]]
+name = "a2a_oneshot"
+path = "examples/a2a_oneshot.rs"
+
+[[example]]
+name = "file_handling"
+path = "examples/file_handling.rs"
+
+[[example]]
+name = "jwks"
+path = "examples/jwks.rs"
+
+[[example]]
+name = "comprehensive_client"
+path = "examples/comprehensive_client.rs"
+
+[[example]]
+name = "file_upload_client"
+path = "examples/file_upload_client.rs"
+
+[[example]]
+name = "push_notification_webhook"
+path = "examples/push_notification_webhook.rs"

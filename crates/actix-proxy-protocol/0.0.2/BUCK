@@ -1,0 +1,25 @@
+load("@buckal//:wrapper.bzl", "rust_library")
+
+rust_library(
+    name = "actix_proxy_protocol",
+    srcs = glob(["**/*.rs"]),
+    crate = "actix_proxy_protocol",
+    crate_root = "src/lib.rs",
+    edition = "2024",
+
+    visibility = ["PUBLIC"],
+    deps = [
+        "//third-party/rust/crates/actix-service/2.0.3:actix_service",
+        "//third-party/rust/crates/actix-utils/3.0.1:actix_utils",
+        "//third-party/rust/crates/arrayvec/0.7.8:arrayvec",
+        "//third-party/rust/crates/bitflags/2.13.1:bitflags",
+        "//third-party/rust/crates/crc32fast/1.5.0:crc32fast",
+        "//third-party/rust/crates/futures-core/0.3.34:futures_core",
+        "//third-party/rust/crates/futures-util/0.3.34:futures_util",
+        "//third-party/rust/crates/itoa/1.0.18:itoa",
+        "//third-party/rust/crates/nom/8.0.0:nom",
+        "//third-party/rust/crates/smallvec/1.15.2:smallvec",
+        "//third-party/rust/crates/tokio/1.53.1:tokio",
+        "//third-party/rust/crates/tracing/0.1.44:tracing",
+    ],
+)

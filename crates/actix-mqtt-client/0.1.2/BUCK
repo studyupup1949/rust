@@ -1,0 +1,20 @@
+load("@buckal//:wrapper.bzl", "rust_library")
+
+rust_library(
+    name = "actix_mqtt_client",
+    srcs = glob(["**/*.rs"]),
+    crate = "actix_mqtt_client",
+    crate_root = "src/lib.rs",
+    edition = "2018",
+
+    visibility = ["PUBLIC"],
+    deps = [
+        "//third-party/rust/crates/actix/0.8.3:actix",
+        "//third-party/rust/crates/futures/0.1.31:futures",
+        "//third-party/rust/crates/lazy_static/1.5.0:lazy_static",
+        "//third-party/rust/crates/log/0.4.33:log",
+        "//third-party/rust/crates/mqtt-protocol/0.7.0:mqtt_protocol",
+        "//third-party/rust/crates/rand/0.7.3:rand",
+        "//third-party/rust/crates/tokio/0.1.22:tokio",
+    ],
+)

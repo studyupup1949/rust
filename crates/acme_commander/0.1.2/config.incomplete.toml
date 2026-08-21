@@ -1,0 +1,27 @@
+# ACME Commander 测试配置文件（残缺版）
+# 用于验证必要配置字段检测
+
+[account]
+# email 字段缺失，应该报错
+# email = "test@example.com"
+key_file = "./account.key"
+terms_of_service_agreed = true
+
+[certificate]
+key_file = "./certificate.key"
+cert_file = "./certificate.pem"
+chain_file = "./chain.pem"
+fullchain_file = "./fullchain.pem"
+# domains 字段缺失，应该报错
+# domains = ["example.com"]
+
+[acme]
+provider = "letsencrypt"
+environment = "sandbox"
+terms_of_service_agreed = true
+
+[dns]
+provider = "cloudflare"
+# Cloudflare API token 缺失，应该报错
+# [dns.cloudflare]
+# api_token = "your_token_here"

@@ -1,0 +1,23 @@
+[package]
+name = "acpica"
+version = "0.1.0"
+edition = "2024"
+license = "BSD-3-Clause"
+repository = "https://github.com/linuiz-project/acpica"
+keywords = ["acpi", "acpica", "x86_64"]
+categories = ["no-std"]
+description = "Advanced wrapping of a statically-linked ACPICA library, exporting all functionality via a Rust-friendly interface."
+
+
+[dependencies]
+spin = { version = "0.10", default-features = false, features = ["once"] }
+
+
+[build-dependencies]
+tempdir = "0.3"
+regex = "1.0"
+cc = "1.2"
+
+[features]
+alloc = []
+default = ["alloc"]

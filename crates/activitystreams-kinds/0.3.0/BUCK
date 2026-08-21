@@ -1,0 +1,15 @@
+load("@buckal//:wrapper.bzl", "rust_library")
+
+rust_library(
+    name = "activitystreams_kinds",
+    srcs = glob(["**/*.rs"]),
+    crate = "activitystreams_kinds",
+    crate_root = "src/lib.rs",
+    edition = "2021",
+    features = ["default"],
+
+    visibility = ["PUBLIC"],
+    deps = [
+        "//third-party/rust/crates/serde/1.0.229:serde",
+    ],
+)

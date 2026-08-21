@@ -1,0 +1,58 @@
+/target
+/docs/error.txt
+/certs
+/test_certs
+/Cargo.lock
+**/*.rs.bak
+*.log
+*.tmp
+.DS_Store
+*.pyc
+__pycache__/
+node_modules/
+dist/
+build/
+.claude
+
+# 配置文件 (可能包含敏感信息)
+config.toml
+config.yaml
+config.json
+*.conf
+*.cfg
+
+# 证书和密钥文件
+*.key
+*.pem
+*.crt
+*.cer
+*.p12
+*.pfx
+*.csr
+
+# 日志和审计文件
+logs/
+audit/
+*.audit
+
+# 临时和缓存文件
+*.cache
+*.temp
+*.swp
+*.swo
+
+# 环境变量文件
+.env
+.env.local
+.env.*.local
+
+# IDE 和编辑器文件
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# 操作系统文件
+Thumbs.db
+desktop.ini

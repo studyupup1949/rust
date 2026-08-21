@@ -1,0 +1,75 @@
+name: CI
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+
+env:
+  CARGO_TERM_COLOR: always
+
+jobs:
+  test-matrix:
+    name: Test (${{ matrix.toolchain }})
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        toolchain: [stable, beta, nightly, "1.80.0"]
+
+    steps:
+    - uses: actions/checkout@v4
+    - name: Install Rust
+      run: |
+        rustup update ${{ matrix.toolchain }}
+        rustup default ${{ matrix.toolchain }}
+    - name: Build
+      run: cargo build --all-features --verbose
+    - name: Run tests
+      run: cargo test --all-features --verbose
+
+  edition-2024:
+    name: Edition 2024 Compatibility
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+    - name: Install Nightly
+      run: |
+        rustup update nightly
+        rustup default nightly
+    - name: Modify Edition
+      run: |
+        sed -i 's/edition = "2021"/edition = "2024"/g' Cargo.toml
+    - name: Check Edition 2024
+      run: cargo +nightly check -Z edition-2024-tools --all-features
+
+  api-stability:
+    name: Public API & SemVer Checks
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+      with:
+        fetch-depth: 0 # Required for semver checks to find git baselines
+    
+    - name: Install Rust Nightly (for cargo-public-api)
+      run: |
+        rustup update nightly
+        rustup default nightly
+
+    - name: Install cargo-semver-checks
+      uses: obi1kenobi/cargo-semver-checks-action@v2
+    
+    - name: Check SemVer
+      # Use the default crates.io baseline if published, otherwise it fails gracefully 
+      # or you can use `--baseline-rev main` if strictly comparing PRs against main.
+      continue-on-error: true # Continue on error for the first run if not published yet
+      run: cargo semver-checks check-release
+      
+    - name: Install cargo-public-api
+      run: cargo install cargo-public-api
+      
+    - name: Generate Public API Diff
+      # Informational diff for PR reviews
+      continue-on-error: true
+      run: cargo +nightly public-api

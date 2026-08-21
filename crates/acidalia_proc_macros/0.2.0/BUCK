@@ -1,0 +1,17 @@
+load("@buckal//:wrapper.bzl", "rust_library")
+
+rust_library(
+    name = "acidalia_proc_macros",
+    srcs = glob(["**/*.rs"]),
+    crate = "acidalia_proc_macros",
+    crate_root = "src/lib.rs",
+    edition = "2018",
+
+    visibility = ["PUBLIC"],
+    deps = [
+        "//third-party/rust/crates/acidalia_core/0.2.0:acidalia_core",
+        "//third-party/rust/crates/quote/1.0.47:quote",
+        "//third-party/rust/crates/syn/1.0.109:syn",
+        "//third-party/rust/crates/uuid/0.8.2:uuid",
+    ],
+)

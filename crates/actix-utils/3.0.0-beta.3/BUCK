@@ -1,0 +1,14 @@
+load("@buckal//:wrapper.bzl", "rust_library")
+
+rust_library(
+    name = "actix_utils",
+    srcs = glob(["**/*.rs"]),
+    crate = "actix_utils",
+    crate_root = "src/lib.rs",
+    edition = "2018",
+
+    visibility = ["PUBLIC"],
+    deps = [
+        "//third-party/rust/crates/local-waker/0.1.4:local_waker",
+    ],
+)

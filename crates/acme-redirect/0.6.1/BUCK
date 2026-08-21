@@ -1,0 +1,32 @@
+load("@buckal//:wrapper.bzl", "rust_library")
+
+rust_library(
+    name = "acme_redirect",
+    srcs = glob(["**/*.rs"]),
+    crate = "acme_redirect",
+    crate_root = "src/lib.rs",
+    edition = "2018",
+
+    visibility = ["PUBLIC"],
+    deps = [
+        "//third-party/rust/crates/acme-micro/0.12.0:acme_micro",
+        "//third-party/rust/crates/actix-web/4.14.1:actix_web",
+        "//third-party/rust/crates/anyhow/1.0.104:anyhow",
+        "//third-party/rust/crates/clap/4.6.6:clap",
+        "//third-party/rust/crates/clap_complete/4.6.9:clap_complete",
+        "//third-party/rust/crates/colored/2.2.0:colored",
+        "//third-party/rust/crates/config/0.13.4:config",
+        "//third-party/rust/crates/env_logger/0.10.2:env_logger",
+        "//third-party/rust/crates/log/0.4.33:log",
+        "//third-party/rust/crates/nix/0.26.4:nix",
+        "//third-party/rust/crates/openssl/0.10.81:openssl",
+        "//third-party/rust/crates/pem/1.1.1:pem",
+        "//third-party/rust/crates/rand/0.8.7:rand",
+        "//third-party/rust/crates/serde/1.0.229:serde",
+        "//third-party/rust/crates/serde_json/1.0.151:serde_json",
+        "//third-party/rust/crates/time/0.1.45:time",
+        "//third-party/rust/crates/toml/0.5.11:toml",
+        "//third-party/rust/crates/ureq/1.5.5:ureq",
+        "//third-party/rust/crates/users/0.11.0:users",
+    ],
+)

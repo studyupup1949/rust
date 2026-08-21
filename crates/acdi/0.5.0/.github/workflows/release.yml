@@ -1,0 +1,215 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - 'v*'
+  pull_request:
+    branches: [main]
+
+env:
+  CARGO_TERM_COLOR: always
+
+jobs:
+  # ── Tests (native) ────────────────────────────────────────────────────────────
+  test:
+    name: Test (${{ matrix.os }})
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, macos-latest, windows-latest]
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install Rust stable
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Cache cargo registry
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.cargo/registry/index
+            ~/.cargo/registry/cache
+            ~/.cargo/git/db
+            target
+          key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
+          restore-keys: ${{ runner.os }}-cargo-
+
+      - name: Run tests
+        run: cargo test --locked
+
+      - name: Clippy
+        run: cargo clippy --locked -- -D warnings
+
+  # ── Cross-compile release binaries ───────────────────────────────────────────
+  build:
+    name: Build (${{ matrix.target }})
+    needs: test
+    if: startsWith(github.ref, 'refs/tags/')
+    runs-on: ${{ matrix.runner }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          # Linux musl (fully static)
+          - target: x86_64-unknown-linux-musl
+            runner: ubuntu-latest
+            use_cross: true
+          - target: aarch64-unknown-linux-musl
+            runner: ubuntu-latest
+            use_cross: true
+          # macOS (universal via lipo)
+          - target: x86_64-apple-darwin
+            runner: macos-latest
+            use_cross: false
+          - target: aarch64-apple-darwin
+            runner: macos-latest
+            use_cross: false
+          # Windows
+          - target: x86_64-pc-windows-msvc
+            runner: windows-latest
+            use_cross: false
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install Rust stable
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: ${{ matrix.target }}
+
+      - name: Cache cargo registry
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.cargo/registry/index
+            ~/.cargo/registry/cache
+            ~/.cargo/git/db
+            target
+          key: ${{ runner.os }}-${{ matrix.target }}-cargo-${{ hashFiles('**/Cargo.lock') }}
+          restore-keys: ${{ runner.os }}-${{ matrix.target }}-cargo-
+
+      - name: Install cross
+        if: matrix.use_cross
+        run: cargo install cross --git https://github.com/cross-rs/cross --locked
+
+      - name: Build (cross)
+        if: matrix.use_cross
+        run: cross build --release --locked --target ${{ matrix.target }}
+
+      - name: Build (native)
+        if: "!matrix.use_cross"
+        run: cargo build --release --locked --target ${{ matrix.target }}
+
+      - name: Rename binary (Unix)
+        if: runner.os != 'Windows'
+        run: |
+          BIN=target/${{ matrix.target }}/release/acdi
+          cp "$BIN" "acdi-${{ matrix.target }}"
+
+      - name: Rename binary (Windows)
+        if: runner.os == 'Windows'
+        run: |
+          Copy-Item "target/${{ matrix.target }}/release/acdi.exe" "acdi-${{ matrix.target }}.exe"
+
+      - name: Upload artifact (Unix)
+        if: runner.os != 'Windows'
+        uses: actions/upload-artifact@v4
+        with:
+          name: acdi-${{ matrix.target }}
+          path: acdi-${{ matrix.target }}
+          retention-days: 7
+
+      - name: Upload artifact (Windows)
+        if: runner.os == 'Windows'
+        uses: actions/upload-artifact@v4
+        with:
+          name: acdi-${{ matrix.target }}
+          path: acdi-${{ matrix.target }}.exe
+          retention-days: 7
+
+  # ── GitHub Release ────────────────────────────────────────────────────────────
+  release:
+    name: GitHub Release
+    needs: build
+    if: startsWith(github.ref, 'refs/tags/')
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Download all artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: dist/
+
+      - name: Flatten artifacts and create checksums
+        run: |
+          mkdir release
+          find dist -type f -name 'acdi*' -exec cp {} release/ \;
+          cd release
+          sha256sum acdi-* > SHA256SUMS.txt
+          cat SHA256SUMS.txt
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          generate_release_notes: true
+          files: |
+            release/acdi*
+            release/SHA256SUMS.txt
+
+  # ── Update Homebrew tap ───────────────────────────────────────────────────────
+  homebrew:
+    name: Update Homebrew tap
+    needs: release
+    if: startsWith(github.ref, 'refs/tags/')
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Download release artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: dist/
+
+      - name: Compute SHA256 for each platform binary
+        id: shas
+        run: |
+          flatten() { find dist -name "$1" | head -1; }
+          sha() { sha256sum "$(flatten "$1")" | awk '{print $1}'; }
+          echo "macos_arm64=$(sha  acdi-aarch64-apple-darwin)"         >> "$GITHUB_OUTPUT"
+          echo "macos_x86_64=$(sha acdi-x86_64-apple-darwin)"          >> "$GITHUB_OUTPUT"
+          echo "linux_arm64=$(sha  acdi-aarch64-unknown-linux-musl)"   >> "$GITHUB_OUTPUT"
+          echo "linux_x86_64=$(sha acdi-x86_64-unknown-linux-musl)"    >> "$GITHUB_OUTPUT"
+
+      - name: Update formula in homebrew-tap
+        env:
+          TAP_TOKEN: ${{ secrets.HOMEBREW_TAP_TOKEN }}
+          VERSION: ${{ github.ref_name }}
+        run: |
+          if [ -z "$TAP_TOKEN" ]; then
+            echo "HOMEBREW_TAP_TOKEN not set — skipping tap update"
+            exit 0
+          fi
+
+          git clone "https://x-access-token:${TAP_TOKEN}@github.com/vral-parmar/homebrew-tap.git" tap
+          mkdir -p tap/Formula
+
+          VERSION="${VERSION#v}"   # strip leading 'v'
+          sed \
+            -e "s/version \"[^\"]*\"/version \"${VERSION}\"/" \
+            -e "s/PLACEHOLDER_MACOS_ARM64/${{ steps.shas.outputs.macos_arm64 }}/" \
+            -e "s/PLACEHOLDER_MACOS_X86_64/${{ steps.shas.outputs.macos_x86_64 }}/" \
+            -e "s/PLACEHOLDER_LINUX_ARM64/${{ steps.shas.outputs.linux_arm64 }}/" \
+            -e "s/PLACEHOLDER_LINUX_X86_64/${{ steps.shas.outputs.linux_x86_64 }}/" \
+            Formula/acdi.rb > tap/Formula/acdi.rb
+
+          cd tap
+          git config user.name  "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add Formula/acdi.rb
+          git diff --cached --quiet || git commit -m "acdi ${VERSION}"
+          git push

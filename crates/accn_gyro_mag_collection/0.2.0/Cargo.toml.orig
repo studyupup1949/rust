@@ -1,0 +1,25 @@
+[package]
+name = "accn_gyro_mag_collection"
+description = "A Collection of Accelerometer, Gyroscope, and Magnetometer"
+version = "0.2.0"
+edition = "2024"
+license = "MIT"
+repository = "https://git.fynjirby.dev/angsudo/accn_gyro_mag_collection"
+keywords = [
+  "Collection",
+  "Gyroscope",
+  "Accelerometer",
+  "Magnetometer",
+  "embedded-hal",
+]
+
+[dependencies]
+embedded-hal = { version = "1.0.0", default-features = false }
+nalgebra = { version = "0.33.2", default-features = false }
+ufmt = "0.2.0"
+
+[features]
+adxl345 = []
+mpu60x0 = []
+all = ["adxl345", "mpu60x0"]
+default = ["all"]

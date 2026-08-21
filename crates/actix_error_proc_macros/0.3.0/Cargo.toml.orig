@@ -1,0 +1,24 @@
+[package]
+name = "actix_error_proc_macros"
+description = "Procedural macros for the actix_error_proc package."
+repository = "https://github.com/stifskere/actix_error_proc"
+license = "MIT"
+version = "0.3.0"
+edition = "2021"
+
+[dependencies]
+quote = "1.0.40"
+actix-web = "4.11.0"
+syn = { version = "2.0.104", features = ["full", "fold", "parsing"] }
+thiserror = "2.0.12"
+
+[dev-dependencies]
+tokio = { version = "1.46.1", features = ["macros"] }
+actix_error_proc_macros = { path = "." }
+reqwest = "0.12.22"
+thiserror = "2.0.12"
+serde = { version = "1.0.219", features = ["derive"] }
+serde_json = "1.0.140"
+
+[lib]
+proc-macro = true

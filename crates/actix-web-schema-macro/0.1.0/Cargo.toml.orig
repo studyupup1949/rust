@@ -1,0 +1,17 @@
+[package]
+name = "actix-web-schema-macro"
+version = "0.1.0"
+edition = "2024"
+description = "Procedural macros for actix-web-schema"
+license = "MIT OR Apache-2.0"
+repository = "https://github.com/your-username/actix-web-schema"
+keywords = ["actix", "actix-web", "macro", "proc-macro"]
+categories = ["web-programming", "development-tools::procedural-macro-helpers"]
+authors = ["Your Name <your.email@example.com>"]
+
+[lib]
+proc-macro = true
+
+[dependencies]
+quote = { workspace = true }
+syn = { workspace = true }

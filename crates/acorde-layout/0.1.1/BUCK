@@ -1,0 +1,15 @@
+load("@buckal//:wrapper.bzl", "rust_library")
+
+rust_library(
+    name = "acorde_layout",
+    srcs = glob(["**/*.rs"]),
+    crate = "acorde_layout",
+    crate_root = "src/lib.rs",
+    edition = "2024",
+
+    visibility = ["PUBLIC"],
+    deps = [
+        "//third-party/rust/crates/acorde-core/0.1.1:acorde_core",
+        "//third-party/rust/crates/serde/1.0.229:serde",
+    ],
+)

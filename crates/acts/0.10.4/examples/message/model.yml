@@ -1,0 +1,37 @@
+name: event_test
+id: m1
+inputs:
+  value: 0
+outputs:
+  value:
+setup:
+  - !on_created
+      - !msg
+        id: fn1
+  - !on_step
+      - !msg
+        id: fn_on_step
+  - !on_completed
+      - !msg
+        id: fn1
+steps:
+  - name: step 1
+    id: step1
+  - name: step 2
+    id: step2
+    setup:
+      - !set
+        value: 100
+      - !on_completed
+          - !msg
+            id: fn2
+  - name: step 3
+    id: step3
+    setup:
+      - !on_completed
+          - !msg
+            id: fn3
+            inputs:
+              a: ${ $("value") }
+  - name: step 4
+    

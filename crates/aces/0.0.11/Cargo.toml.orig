@@ -1,0 +1,24 @@
+[workspace]
+
+[package]
+
+name = "aces"
+version = "0.0.11"
+description = "Algebra of Cause-Effect Structures"
+authors = ["k7f"]
+edition = "2018"
+license = "MIT"
+repository = "https://github.com/k7f/aces"
+readme = "README.md"
+
+[dependencies]
+
+log = "0.4"
+fern = { version = "0.5", features = ["colored"] }
+yaml-rust = "0.4"
+regex = "1.3"
+lazy_static = "1.4"
+rand = "0.7"
+string_cache = "0.8"
+bit-vec = "0.6"
+varisat = "0.2"

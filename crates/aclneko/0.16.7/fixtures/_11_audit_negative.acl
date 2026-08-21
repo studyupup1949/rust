@@ -1,0 +1,6 @@
+10 acl append
+    audit -1
+    0 deny path=@u-bin
+    0 allow path=@u-emacs task.exe=@b-emacs
+    0 allow path=@u-vi task.exe=@b-vi
+    1 deny path=@sekai

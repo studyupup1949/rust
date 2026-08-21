@@ -1,0 +1,22 @@
+load("@buckal//:wrapper.bzl", "rust_library")
+
+rust_library(
+    name = "actors_rs",
+    srcs = glob(["**/*.rs"]),
+    crate = "actors_rs",
+    crate_root = "src/lib.rs",
+    edition = "2018",
+
+    visibility = ["PUBLIC"],
+    deps = [
+        "//third-party/rust/crates/actors-macros/0.1.1:actors_macros",
+        "//third-party/rust/crates/chrono/0.4.45:chrono",
+        "//third-party/rust/crates/config/0.10.1:config",
+        "//third-party/rust/crates/rand/0.7.3:rand",
+        "//third-party/rust/crates/regex/1.13.1:regex",
+        "//third-party/rust/crates/slog-scope/4.4.1:slog_scope",
+        "//third-party/rust/crates/slog-stdlog/4.1.1:slog_stdlog",
+        "//third-party/rust/crates/slog/2.8.2:slog",
+        "//third-party/rust/crates/uuid/0.7.4:uuid",
+    ],
+)

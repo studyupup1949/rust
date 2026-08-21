@@ -1,0 +1,15 @@
+load("@buckal//:wrapper.bzl", "rust_library")
+
+rust_library(
+    name = "acrylic_web",
+    srcs = glob(["**/*.rs"]),
+    crate = "acrylic_web",
+    crate_root = "src/lib.rs",
+    edition = "2021",
+
+    visibility = ["PUBLIC"],
+    deps = [
+        "//third-party/rust/crates/acrylic/0.2.4:acrylic",
+        "//third-party/rust/crates/log/0.4.33:log",
+    ],
+)

@@ -1,0 +1,3143 @@
+{
+  "edges": {
+    "ADI": [
+      "AccountAuth"
+    ],
+    "AccountAuth": [
+      "AuthorityEntry"
+    ],
+    "ActivateProtocolVersion": [
+      "ExecutorVersion"
+    ],
+    "AddKeyOperation": [
+      "KeySpecParams"
+    ],
+    "AnchorLedger": [
+      "PartitionSyntheticLedger"
+    ],
+    "AnnotatedReceipt": [
+      "AnchorMetadata"
+    ],
+    "AuthoritySignature": [
+      "VoteType"
+    ],
+    "BTCLegacySignature": [
+      "VoteType"
+    ],
+    "BTCSignature": [
+      "VoteType"
+    ],
+    "BlockLedger": [
+      "BlockEntry"
+    ],
+    "CreateKeyPage": [
+      "KeySpecParams"
+    ],
+    "CreateTokenAccount": [
+      "TokenIssuerProof"
+    ],
+    "DataAccount": [
+      "AccountAuth"
+    ],
+    "DirectoryAnchor": [
+      "PartitionAnchorReceipt",
+      "NetworkAccountUpdate"
+    ],
+    "ED25519Signature": [
+      "VoteType"
+    ],
+    "ETHSignature": [
+      "VoteType"
+    ],
+    "EcdsaSha256Signature": [
+      "VoteType"
+    ],
+    "FactomDataEntryWrapper": [
+      "FactomDataEntry"
+    ],
+    "IssueTokens": [
+      "TokenRecipient"
+    ],
+    "KeyBook": [
+      "AccountAuth",
+      "BookType"
+    ],
+    "KeyPage": [
+      "KeySpec"
+    ],
+    "LegacyED25519Signature": [
+      "VoteType"
+    ],
+    "NetworkDefinition": [
+      "ValidatorInfo",
+      "PartitionInfo"
+    ],
+    "NetworkGlobals": [
+      "FeeSchedule",
+      "NetworkLimits",
+      "Rational"
+    ],
+    "Object": [
+      "ChainMetadata",
+      "ObjectType",
+      "TxIdSet"
+    ],
+    "PartitionAnchorReceipt": [
+      "PartitionAnchor"
+    ],
+    "PartitionExecutorVersion": [
+      "ExecutorVersion"
+    ],
+    "PartitionInfo": [
+      "PartitionType"
+    ],
+    "RCD1Signature": [
+      "VoteType"
+    ],
+    "RemoveKeyOperation": [
+      "KeySpecParams"
+    ],
+    "RoutingTable": [
+      "Route",
+      "RouteOverride"
+    ],
+    "RsaSha256Signature": [
+      "VoteType"
+    ],
+    "SendTokens": [
+      "TokenRecipient"
+    ],
+    "SignatureSet": [
+      "VoteType"
+    ],
+    "SyntheticForwardTransaction": [
+      "Transaction",
+      "RemoteSignature"
+    ],
+    "SyntheticLedger": [
+      "PartitionSyntheticLedger"
+    ],
+    "SystemLedger": [
+      "ExecutorVersion",
+      "PartitionExecutorVersion",
+      "NetworkAccountUpdate"
+    ],
+    "TokenAccount": [
+      "AccountAuth"
+    ],
+    "TokenIssuer": [
+      "AccountAuth"
+    ],
+    "TokenIssuerProof": [
+      "CreateToken"
+    ],
+    "Transaction": [
+      "TransactionHeader"
+    ],
+    "TransactionHeader": [
+      "ExpireOptions",
+      "HoldUntilOptions"
+    ],
+    "TransactionResultSet": [
+      "TransactionStatus"
+    ],
+    "TransferCredits": [
+      "CreditRecipient"
+    ],
+    "TypedDataSignature": [
+      "VoteType"
+    ],
+    "UpdateAllowedKeyPageOperation": [
+      "TransactionType"
+    ],
+    "UpdateKeyOperation": [
+      "KeySpecParams"
+    ],
+    "ValidatorInfo": [
+      "ValidatorPartitionInfo"
+    ]
+  },
+  "generated_at": "2025-10-04T06:10:50.570789",
+  "nodes": {
+    "ADI": {
+      "fields": [
+        {
+          "name": "Url",
+          "type": "url"
+        },
+        {
+          "name": "",
+          "type": "AccountAuth"
+        }
+      ],
+      "kind": "struct",
+      "name": "ADI",
+      "referenced_types": [
+        "AccountAuth"
+      ],
+      "source": "accounts"
+    },
+    "AccountAuth": {
+      "fields": [
+        {
+          "name": "Authorities",
+          "type": "AuthorityEntry"
+        }
+      ],
+      "kind": "struct",
+      "name": "AccountAuth",
+      "referenced_types": [
+        "AuthorityEntry"
+      ],
+      "source": "general"
+    },
+    "AccountAuthOperationType": {
+      "fields": [],
+      "kind": "struct",
+      "name": "AccountAuthOperationType",
+      "referenced_types": [],
+      "source": "enums"
+    },
+    "AccountType": {
+      "fields": [],
+      "kind": "struct",
+      "name": "AccountType",
+      "referenced_types": [],
+      "source": "enums"
+    },
+    "AccumulateDataEntry": {
+      "fields": [
+        {
+          "name": "Data",
+          "type": "bytes"
+        }
+      ],
+      "kind": "struct",
+      "name": "AccumulateDataEntry",
+      "referenced_types": [
+        "dataEntry"
+      ],
+      "source": "general"
+    },
+    "AcmeFaucet": {
+      "fields": [
+        {
+          "name": "Url",
+          "type": "url"
+        }
+      ],
+      "kind": "struct",
+      "name": "AcmeFaucet",
+      "referenced_types": [],
+      "source": "user_transactions"
+    },
+    "AcmeOracle": {
+      "fields": [
+        {
+          "name": "Price",
+          "type": "uvarint"
+        }
+      ],
+      "kind": "struct",
+      "name": "AcmeOracle",
+      "referenced_types": [],
+      "source": "general"
+    },
+    "ActivateProtocolVersion": {
+      "fields": [
+        {
+          "name": "Version",
+          "type": "ExecutorVersion"
+        }
+      ],
+      "kind": "struct",
+      "name": "ActivateProtocolVersion",
+      "referenced_types": [
+        "ExecutorVersion"
+      ],
+      "source": "user_transactions"
+    },
+    "AddAccountAuthorityOperation": {
+      "fields": [
+        {
+          "name": "Authority",
+          "type": "url"
+        }
+      ],
+      "kind": "struct",
+      "name": "AddAccountAuthorityOperation",
+      "referenced_types": [
+        "accountAuthOperation"
+      ],
+      "source": "operations"
+    },
+    "AddCredits": {
+      "fields": [
+        {
+          "name": "Recipient",
+          "type": "url"
+        },
+        {
+          "name": "Amount",
+          "type": "bigint"
+        },
+        {
+          "name": "Oracle",
+          "type": "uvarint"
+        }
+      ],
+      "kind": "struct",
+      "name": "AddCredits",
+      "referenced_types": [],
+      "source": "user_transactions"
+    },
+    "AddCreditsResult": {
+      "fields": [
+        {
+          "name": "Amount",
+          "type": "bigint"
+        },
+        {
+          "name": "Credits",
+          "type": "uvarint"
+        },
+        {
+          "name": "Oracle",
+          "type": "uvarint"
+        }
+      ],
+      "kind": "struct",
+      "name": "AddCreditsResult",
+      "referenced_types": [
+        "result"
+      ],
+      "source": "transaction_results"
+    },
+    "AddKeyOperation": {
+      "fields": [
+        {
+          "name": "Entry",
+          "type": "KeySpecParams"
+        }
+      ],
+      "kind": "struct",
+      "name": "AddKeyOperation",
+      "referenced_types": [
+        "keyPageOperation",
+        "KeySpecParams"
+      ],
+      "source": "key_page_operations"
+    },
+    "AllowedTransactionBit": {
+      "fields": [],
+      "kind": "struct",
+      "name": "AllowedTransactionBit",
+      "referenced_types": [],
+      "source": "enums"
+    },
+    "AnchorLedger": {
+      "fields": [
+        {
+          "name": "Url",
+          "type": "url"
+        },
+        {
+          "name": "MinorBlockSequenceNumber",
+          "type": "uint"
+        },
+        {
+          "name": "MajorBlockIndex",
+          "type": "uint"
+        },
+        {
+          "name": "MajorBlockTime",
+          "type": "time"
+        },
+        {
+          "name": "PendingMajorBlockAnchors",
+          "type": "url"
+        },
+        {
+          "name": "Sequence",
+          "type": "PartitionSyntheticLedger"
+        }
+      ],
+      "kind": "struct",
+      "name": "AnchorLedger",
+      "referenced_types": [
+        "PartitionSyntheticLedger"
+      ],
+      "source": "system"
+    },
+    "AnchorMetadata": {
+      "fields": [
+        {
+          "name": "Account",
+          "type": "url"
+        },
+        {
+          "name": "Index",
+          "type": "uvarint"
+        },
+        {
+          "name": "SourceIndex",
+          "type": "uvarint"
+        },
+        {
+          "name": "SourceBlock",
+          "type": "uvarint"
+        },
+        {
+          "name": "Entry",
+          "type": "bytes"
+        }
+      ],
+      "kind": "struct",
+      "name": "AnchorMetadata",
+      "referenced_types": [],
+      "source": "general"
+    },
+    "AnnotatedReceipt": {
+      "fields": [
+        {
+          "name": "Receipt",
+          "type": "merkle.Receipt"
+        },
+        {
+          "name": "Anchor",
+          "type": "AnchorMetadata"
+        }
+      ],
+      "kind": "struct",
+      "name": "AnnotatedReceipt",
+      "referenced_types": [
+        "merkle.Receipt",
+        "AnchorMetadata"
+      ],
+      "source": "general"
+    },
+    "AuthorityEntry": {
+      "fields": [
+        {
+          "name": "Url",
+          "type": "url"
+        },
+        {
+          "name": "Disabled",
+          "type": "bool"
+        }
+      ],
+      "kind": "struct",
+      "name": "AuthorityEntry",
+      "referenced_types": [],
+      "source": "general"
+    },
+    "AuthoritySignature": {
+      "fields": [
+        {
+          "name": "Origin",
+          "type": "url"
+        },
+        {
+          "name": "Authority",
+          "type": "url"
+        },
+        {
+          "name": "Vote",
+          "type": "VoteType"
+        },
+        {
+          "name": "TxID",
+          "type": "txid"
+        },
+        {
+          "name": "Cause",
+          "type": "txid"
+        },
+        {
+          "name": "Delegator",
+          "type": "url"
+        },
+        {
+          "name": "Memo",
+          "type": "string"
+        }
+      ],
+      "kind": "struct",
+      "name": "AuthoritySignature",
+      "referenced_types": [
+        "VoteType",
+        "txid"
+      ],
+      "source": "signatures"
+    },
+    "BTCLegacySignature": {
+      "fields": [
+        {
+          "name": "PublicKey",
+          "type": "bytes"
+        },
+        {
+          "name": "Signature",
+          "type": "bytes"
+        },
+        {
+          "name": "Signer",
+          "type": "url"
+        },
+        {
+          "name": "SignerVersion",
+          "type": "uint"
+        },
+        {
+          "name": "Timestamp",
+          "type": "uint"
+        },
+        {
+          "name": "Vote",
+          "type": "VoteType"
+        },
+        {
+          "name": "TransactionHash",
+          "type": "hash"
+        },
+        {
+          "name": "Memo",
+          "type": "string"
+        },
+        {
+          "name": "Data",
+          "type": "bytes"
+        }
+      ],
+      "kind": "struct",
+      "name": "BTCLegacySignature",
+      "referenced_types": [
+        "VoteType"
+      ],
+      "source": "signatures"
+    },
+    "BTCSignature": {
+      "fields": [
+        {
+          "name": "PublicKey",
+          "type": "bytes"
+        },
+        {
+          "name": "Signature",
+          "type": "bytes"
+        },
+        {
+          "name": "Signer",
+          "type": "url"
+        },
+        {
+          "name": "SignerVersion",
+          "type": "uint"
+        },
+        {
+          "name": "Timestamp",
+          "type": "uint"
+        },
+        {
+          "name": "Vote",
+          "type": "VoteType"
+        },
+        {
+          "name": "TransactionHash",
+          "type": "hash"
+        },
+        {
+          "name": "Memo",
+          "type": "string"
+        },
+        {
+          "name": "Data",
+          "type": "bytes"
+        }
+      ],
+      "kind": "struct",
+      "name": "BTCSignature",
+      "referenced_types": [
+        "VoteType"
+      ],
+      "source": "signatures"
+    },
+    "BlockEntry": {
+      "fields": [
+        {
+          "name": "Account",
+          "type": "url"
+        },
+        {
+          "name": "Chain",
+          "type": "string"
+        },
+        {
+          "name": "Index",
+          "type": "uint"
+        }
+      ],
+      "kind": "struct",
+      "name": "BlockEntry",
+      "referenced_types": [],
+      "source": "general"
+    },
+    "BlockLedger": {
+      "fields": [
+        {
+          "name": "Url",
+          "type": "url"
+        },
+        {
+          "name": "Index",
+          "type": "uint"
+        },
+        {
+          "name": "Time",
+          "type": "time"
+        },
+        {
+          "name": "Entries",
+          "type": "BlockEntry"
+        }
+      ],
+      "kind": "struct",
+      "name": "BlockLedger",
+      "referenced_types": [
+        "BlockEntry"
+      ],
+      "source": "system"
+    },
+    "BlockValidatorAnchor": {
+      "fields": [
+        {
+          "name": "AcmeBurnt",
+          "type": "bigint"
+        }
+      ],
+      "kind": "struct",
+      "name": "BlockValidatorAnchor",
+      "referenced_types": [],
+      "source": "system"
+    },
+    "BookType": {
+      "fields": [],
+      "kind": "struct",
+      "name": "BookType",
+      "referenced_types": [],
+      "source": "enums"
+    },
+    "BurnCredits": {
+      "fields": [
+        {
+          "name": "Amount",
+          "type": "uint"
+        }
+      ],
+      "kind": "struct",
+      "name": "BurnCredits",
+      "referenced_types": [],
+      "source": "user_transactions"
+    },
+    "BurnTokens": {
+      "fields": [
+        {
+          "name": "Amount",
+          "type": "bigint"
+        }
+      ],
+      "kind": "struct",
+      "name": "BurnTokens",
+      "referenced_types": [],
+      "source": "user_transactions"
+    },
+    "ChainMetadata": {
+      "fields": [
+        {
+          "name": "Name",
+          "type": "string"
+        },
+        {
+          "name": "Type",
+          "type": "ChainType"
+        }
+      ],
+      "kind": "struct",
+      "name": "ChainMetadata",
+      "referenced_types": [
+        "ChainType"
+      ],
+      "source": "general"
+    },
+    "ChainParams": {
+      "fields": [
+        {
+          "name": "Data",
+          "type": "bytes"
+        },
+        {
+          "name": "IsUpdate",
+          "type": "bool"
+        }
+      ],
+      "kind": "struct",
+      "name": "ChainParams",
+      "referenced_types": [],
+      "source": "general"
+    },
+    "CreateDataAccount": {
+      "fields": [
+        {
+          "name": "Url",
+          "type": "url"
+        },
+        {
+          "name": "Authorities",
+          "type": "url"
+        }
+      ],
+      "kind": "struct",
+      "name": "CreateDataAccount",
+      "referenced_types": [],
+      "source": "user_transactions"
+    },
+    "CreateIdentity": {
+      "fields": [
+        {
+          "name": "Url",
+          "type": "url"
+        },
+        {
+          "name": "KeyHash",
+          "type": "bytes"
+        },
+        {
+          "name": "KeyBookUrl",
+          "type": "url"
+        },
+        {
+          "name": "Authorities",
+          "type": "url"
+        }
+      ],
+      "kind": "struct",
+      "name": "CreateIdentity",
+      "referenced_types": [],
+      "source": "user_transactions"
+    },
+    "CreateKeyBook": {
+      "fields": [
+        {
+          "name": "Url",
+          "type": "url"
+        },
+        {
+          "name": "PublicKeyHash",
+          "type": "bytes"
+        },
+        {
+          "name": "Authorities",
+          "type": "url"
+        }
+      ],
+      "kind": "struct",
+      "name": "CreateKeyBook",
+      "referenced_types": [],
+      "source": "user_transactions"
+    },
+    "CreateKeyPage": {
+      "fields": [
+        {
+          "name": "Keys",
+          "type": "KeySpecParams"
+        }
+      ],
+      "kind": "struct",
+      "name": "CreateKeyPage",
+      "referenced_types": [
+        "KeySpecParams"
+      ],
+      "source": "user_transactions"
+    },
+    "CreateLiteTokenAccount": {
+      "fields": [],
+      "kind": "struct",
+      "name": "CreateLiteTokenAccount",
+      "referenced_types": [],
+      "source": "user_transactions"
+    },
+    "CreateToken": {
+      "fields": [
+        {
+          "name": "Url",
+          "type": "url"
+        },
+        {
+          "name": "Symbol",
+          "type": "string"
+        },
+        {
+          "name": "Precision",
+          "type": "uvarint"
+        },
+        {
+          "name": "Properties",
+          "type": "url"
+        },
+        {
+          "name": "SupplyLimit",
+          "type": "bigint"
+        },
+        {
+          "name": "Authorities",
+          "type": "url"
+        }
+      ],
+      "kind": "struct",
+      "name": "CreateToken",
+      "referenced_types": [],
+      "source": "user_transactions"
+    },
+    "CreateTokenAccount": {
+      "fields": [
+        {
+          "name": "Url",
+          "type": "url"
+        },
+        {
+          "name": "TokenUrl",
+          "type": "url"
+        },
+        {
+          "name": "Authorities",
+          "type": "url"
+        },
+        {
+          "name": "Proof",
+          "type": "TokenIssuerProof"
+        }
+      ],
+      "kind": "struct",
+      "name": "CreateTokenAccount",
+      "referenced_types": [
+        "TokenIssuerProof"
+      ],
+      "source": "user_transactions"
+    },
+    "CreditRecipient": {
+      "fields": [
+        {
+          "name": "Url",
+          "type": "url"
+        },
+        {
+          "name": "Amount",
+          "type": "uint"
+        }
+      ],
+      "kind": "struct",
+      "name": "CreditRecipient",
+      "referenced_types": [],
+      "source": "general"
+    },
+    "DataAccount": {
+      "fields": [
+        {
+          "name": "Url",
+          "type": "url"
+        },
+        {
+          "name": "",
+          "type": "AccountAuth"
+        },
+        {
+          "name": "Entry",
+          "type": "DataEntry"
+        }
+      ],
+      "kind": "struct",
+      "name": "DataAccount",
+      "referenced_types": [
+        "AccountAuth",
+        "DataEntry"
+      ],
+      "source": "accounts"
+    },
+    "DataEntryType": {
+      "fields": [],
+      "kind": "struct",
+      "name": "DataEntryType",
+      "referenced_types": [],
+      "source": "enums"
+    },
+    "DelegatedSignature": {
+      "fields": [
+        {
+          "name": "Signature",
+          "type": "Signature"
+        },
+        {
+          "name": "Delegator",
+          "type": "url"
+        }
+      ],
+      "kind": "struct",
+      "name": "DelegatedSignature",
+      "referenced_types": [
+        "Signature"
+      ],
+      "source": "signatures"
+    },
+    "DirectoryAnchor": {
+      "fields": [
+        {
+          "name": "Updates",
+          "type": "NetworkAccountUpdate"
+        },
+        {
+          "name": "Receipts",
+          "type": "PartitionAnchorReceipt"
+        },
+        {
+          "name": "MakeMajorBlock",
+          "type": "uint"
+        },
+        {
+          "name": "MakeMajorBlockTime",
+          "type": "time"
+        }
+      ],
+      "kind": "struct",
+      "name": "DirectoryAnchor",
+      "referenced_types": [
+        "PartitionAnchorReceipt",
+        "NetworkAccountUpdate"
+      ],
+      "source": "system"
+    },
+    "DisableAccountAuthOperation": {
+      "fields": [
+        {
+          "name": "Authority",
+          "type": "url"
+        }
+      ],
+      "kind": "struct",
+      "name": "DisableAccountAuthOperation",
+      "referenced_types": [
+        "accountAuthOperation"
+      ],
+      "source": "operations"
+    },
+    "DoubleHashDataEntry": {
+      "fields": [
+        {
+          "name": "Data",
+          "type": "bytes"
+        }
+      ],
+      "kind": "struct",
+      "name": "DoubleHashDataEntry",
+      "referenced_types": [
+        "dataEntry"
+      ],
+      "source": "general"
+    },
+    "ED25519Signature": {
+      "fields": [
+        {
+          "name": "PublicKey",
+          "type": "bytes"
+        },
+        {
+          "name": "Signature",
+          "type": "bytes"
+        },
+        {
+          "name": "Signer",
+          "type": "url"
+        },
+        {
+          "name": "SignerVersion",
+          "type": "uint"
+        },
+        {
+          "name": "Timestamp",
+          "type": "uint"
+        },
+        {
+          "name": "Vote",
+          "type": "VoteType"
+        },
+        {
+          "name": "TransactionHash",
+          "type": "hash"
+        },
+        {
+          "name": "Memo",
+          "type": "string"
+        },
+        {
+          "name": "Data",
+          "type": "bytes"
+        }
+      ],
+      "kind": "struct",
+      "name": "ED25519Signature",
+      "referenced_types": [
+        "VoteType"
+      ],
+      "source": "signatures"
+    },
+    "ETHSignature": {
+      "fields": [
+        {
+          "name": "PublicKey",
+          "type": "bytes"
+        },
+        {
+          "name": "Signature",
+          "type": "bytes"
+        },
+        {
+          "name": "Signer",
+          "type": "url"
+        },
+        {
+          "name": "SignerVersion",
+          "type": "uint"
+        },
+        {
+          "name": "Timestamp",
+          "type": "uint"
+        },
+        {
+          "name": "Vote",
+          "type": "VoteType"
+        },
+        {
+          "name": "TransactionHash",
+          "type": "hash"
+        },
+        {
+          "name": "Memo",
+          "type": "string"
+        },
+        {
+          "name": "Data",
+          "type": "bytes"
+        }
+      ],
+      "kind": "struct",
+      "name": "ETHSignature",
+      "referenced_types": [
+        "VoteType"
+      ],
+      "source": "signatures"
+    },
+    "EcdsaSha256Signature": {
+      "fields": [
+        {
+          "name": "PublicKey",
+          "type": "bytes"
+        },
+        {
+          "name": "Signature",
+          "type": "bytes"
+        },
+        {
+          "name": "Signer",
+          "type": "url"
+        },
+        {
+          "name": "SignerVersion",
+          "type": "uint"
+        },
+        {
+          "name": "Timestamp",
+          "type": "uint"
+        },
+        {
+          "name": "Vote",
+          "type": "VoteType"
+        },
+        {
+          "name": "TransactionHash",
+          "type": "hash"
+        },
+        {
+          "name": "Memo",
+          "type": "string"
+        },
+        {
+          "name": "Data",
+          "type": "bytes"
+        }
+      ],
+      "kind": "struct",
+      "name": "EcdsaSha256Signature",
+      "referenced_types": [
+        "VoteType"
+      ],
+      "source": "signatures"
+    },
+    "EmptyResult": {
+      "fields": [],
+      "kind": "struct",
+      "name": "EmptyResult",
+      "referenced_types": [
+        "result"
+      ],
+      "source": "transaction_results"
+    },
+    "EnableAccountAuthOperation": {
+      "fields": [
+        {
+          "name": "Authority",
+          "type": "url"
+        }
+      ],
+      "kind": "struct",
+      "name": "EnableAccountAuthOperation",
+      "referenced_types": [
+        "accountAuthOperation"
+      ],
+      "source": "operations"
+    },
+    "ErrorCode": {
+      "fields": [],
+      "kind": "struct",
+      "name": "ErrorCode",
+      "referenced_types": [],
+      "source": "errors"
+    },
+    "ExecutorVersion": {
+      "fields": [],
+      "kind": "struct",
+      "name": "ExecutorVersion",
+      "referenced_types": [],
+      "source": "enums"
+    },
+    "ExpireOptions": {
+      "fields": [
+        {
+          "name": "AtTime",
+          "type": "time"
+        }
+      ],
+      "kind": "struct",
+      "name": "ExpireOptions",
+      "referenced_types": [],
+      "source": "transaction"
+    },
+    "FactomDataEntry": {
+      "fields": [
+        {
+          "name": "AccountId",
+          "type": "hash"
+        },
+        {
+          "name": "Data",
+          "type": "bytes"
+        },
+        {
+          "name": "ExtIds",
+          "type": "bytes"
+        }
+      ],
+      "kind": "struct",
+      "name": "FactomDataEntry",
+      "referenced_types": [],
+      "source": "general"
+    },
+    "FactomDataEntryWrapper": {
+      "fields": [
+        {
+          "name": "",
+          "type": "FactomDataEntry"
+        }
+      ],
+      "kind": "struct",
+      "name": "FactomDataEntryWrapper",
+      "referenced_types": [
+        "dataEntry",
+        "FactomDataEntry"
+      ],
+      "source": "general"
+    },
+    "FeeSchedule": {
+      "fields": [
+        {
+          "name": "CreateIdentitySliding",
+          "type": "Fee"
+        },
+        {
+          "name": "CreateSubIdentity",
+          "type": "Fee"
+        },
+        {
+          "name": "BareIdentityDiscount",
+          "type": "Fee"
+        }
+      ],
+      "kind": "struct",
+      "name": "FeeSchedule",
+      "referenced_types": [
+        "Fee"
+      ],
+      "source": "general"
+    },
+    "HoldUntilOptions": {
+      "fields": [
+        {
+          "name": "MinorBlock",
+          "type": "uint"
+        }
+      ],
+      "kind": "struct",
+      "name": "HoldUntilOptions",
+      "referenced_types": [],
+      "source": "transaction"
+    },
+    "IndexEntry": {
+      "fields": [
+        {
+          "name": "Source",
+          "type": "uint"
+        },
+        {
+          "name": "Anchor",
+          "type": "uint"
+        },
+        {
+          "name": "BlockIndex",
+          "type": "uint"
+        },
+        {
+          "name": "BlockTime",
+          "type": "time"
+        },
+        {
+          "name": "RootIndexIndex",
+          "type": "uint"
+        }
+      ],
+      "kind": "struct",
+      "name": "IndexEntry",
+      "referenced_types": [],
+      "source": "general"
+    },
+    "InternalSignature": {
+      "fields": [
+        {
+          "name": "Cause",
+          "type": "hash"
+        },
+        {
+          "name": "TransactionHash",
+          "type": "hash"
+        }
+      ],
+      "kind": "struct",
+      "name": "InternalSignature",
+      "referenced_types": [],
+      "source": "signatures"
+    },
+    "IssueTokens": {
+      "fields": [
+        {
+          "name": "Recipient",
+          "type": "url"
+        },
+        {
+          "name": "Amount",
+          "type": "bigint"
+        },
+        {
+          "name": "To",
+          "type": "TokenRecipient"
+        }
+      ],
+      "kind": "struct",
+      "name": "IssueTokens",
+      "referenced_types": [
+        "TokenRecipient"
+      ],
+      "source": "user_transactions"
+    },
+    "KeyBook": {
+      "fields": [
+        {
+          "name": "Url",
+          "type": "url"
+        },
+        {
+          "name": "BookType",
+          "type": "BookType"
+        },
+        {
+          "name": "",
+          "type": "AccountAuth"
+        },
+        {
+          "name": "PageCount",
+          "type": "uvarint"
+        }
+      ],
+      "kind": "struct",
+      "name": "KeyBook",
+      "referenced_types": [
+        "AccountAuth",
+        "BookType"
+      ],
+      "source": "accounts"
+    },
+    "KeyPage": {
+      "fields": [
+        {
+          "name": "KeyBook",
+          "type": "url"
+        },
+        {
+          "name": "Url",
+          "type": "url"
+        },
+        {
+          "name": "CreditBalance",
+          "type": "uvarint"
+        },
+        {
+          "name": "AcceptThreshold",
+          "type": "uvarint"
+        },
+        {
+          "name": "RejectThreshold",
+          "type": "uvarint"
+        },
+        {
+          "name": "ResponseThreshold",
+          "type": "uvarint"
+        },
+        {
+          "name": "BlockThreshold",
+          "type": "uvarint"
+        },
+        {
+          "name": "Version",
+          "type": "uvarint"
+        },
+        {
+          "name": "Keys",
+          "type": "KeySpec"
+        },
+        {
+          "name": "TransactionBlacklist",
+          "type": "AllowedTransactions"
+        }
+      ],
+      "kind": "struct",
+      "name": "KeyPage",
+      "referenced_types": [
+        "AllowedTransactions",
+        "KeySpec"
+      ],
+      "source": "accounts"
+    },
+    "KeyPageOperationType": {
+      "fields": [],
+      "kind": "struct",
+      "name": "KeyPageOperationType",
+      "referenced_types": [],
+      "source": "enums"
+    },
+    "KeySpec": {
+      "fields": [
+        {
+          "name": "PublicKeyHash",
+          "type": "bytes"
+        },
+        {
+          "name": "LastUsedOn",
+          "type": "uvarint"
+        },
+        {
+          "name": "Delegate",
+          "type": "url"
+        }
+      ],
+      "kind": "struct",
+      "name": "KeySpec",
+      "referenced_types": [],
+      "source": "general"
+    },
+    "KeySpecParams": {
+      "fields": [
+        {
+          "name": "KeyHash",
+          "type": "bytes"
+        },
+        {
+          "name": "Delegate",
+          "type": "url"
+        }
+      ],
+      "kind": "struct",
+      "name": "KeySpecParams",
+      "referenced_types": [],
+      "source": "general"
+    },
+    "LegacyED25519Signature": {
+      "fields": [
+        {
+          "name": "Timestamp",
+          "type": "uint"
+        },
+        {
+          "name": "PublicKey",
+          "type": "bytes"
+        },
+        {
+          "name": "Signature",
+          "type": "bytes"
+        },
+        {
+          "name": "Signer",
+          "type": "url"
+        },
+        {
+          "name": "SignerVersion",
+          "type": "uint"
+        },
+        {
+          "name": "Vote",
+          "type": "VoteType"
+        },
+        {
+          "name": "TransactionHash",
+          "type": "hash"
+        }
+      ],
+      "kind": "struct",
+      "name": "LegacyED25519Signature",
+      "referenced_types": [
+        "VoteType"
+      ],
+      "source": "signatures"
+    },
+    "LiteDataAccount": {
+      "fields": [
+        {
+          "name": "Url",
+          "type": "url"
+        }
+      ],
+      "kind": "struct",
+      "name": "LiteDataAccount",
+      "referenced_types": [],
+      "source": "accounts"
+    },
+    "LiteIdentity": {
+      "fields": [
+        {
+          "name": "Url",
+          "type": "url"
+        },
+        {
+          "name": "CreditBalance",
+          "type": "uvarint"
+        },
+        {
+          "name": "LastUsedOn",
+          "type": "uvarint"
+        }
+      ],
+      "kind": "struct",
+      "name": "LiteIdentity",
+      "referenced_types": [],
+      "source": "accounts"
+    },
+    "LiteTokenAccount": {
+      "fields": [
+        {
+          "name": "Url",
+          "type": "url"
+        },
+        {
+          "name": "TokenUrl",
+          "type": "url"
+        },
+        {
+          "name": "Balance",
+          "type": "bigint"
+        },
+        {
+          "name": "LockHeight",
+          "type": "uint"
+        }
+      ],
+      "kind": "struct",
+      "name": "LiteTokenAccount",
+      "referenced_types": [],
+      "source": "accounts"
+    },
+    "LockAccount": {
+      "fields": [
+        {
+          "name": "Height",
+          "type": "uint"
+        }
+      ],
+      "kind": "struct",
+      "name": "LockAccount",
+      "referenced_types": [],
+      "source": "user_transactions"
+    },
+    "MetricsRequest": {
+      "fields": [
+        {
+          "name": "Metric",
+          "type": "string"
+        },
+        {
+          "name": "Duration",
+          "type": "duration"
+        }
+      ],
+      "kind": "struct",
+      "name": "MetricsRequest",
+      "referenced_types": [],
+      "source": "query"
+    },
+    "MetricsResponse": {
+      "fields": [
+        {
+          "name": "Value",
+          "type": "any"
+        }
+      ],
+      "kind": "struct",
+      "name": "MetricsResponse",
+      "referenced_types": [],
+      "source": "query"
+    },
+    "NetworkAccountUpdate": {
+      "fields": [
+        {
+          "name": "Name",
+          "type": "string"
+        },
+        {
+          "name": "Body",
+          "type": "TransactionBody"
+        }
+      ],
+      "kind": "struct",
+      "name": "NetworkAccountUpdate",
+      "referenced_types": [
+        "TransactionBody"
+      ],
+      "source": "system"
+    },
+    "NetworkDefinition": {
+      "fields": [
+        {
+          "name": "NetworkName",
+          "type": "string"
+        },
+        {
+          "name": "Version",
+          "type": "uint"
+        },
+        {
+          "name": "Partitions",
+          "type": "PartitionInfo"
+        },
+        {
+          "name": "Validators",
+          "type": "ValidatorInfo"
+        }
+      ],
+      "kind": "struct",
+      "name": "NetworkDefinition",
+      "referenced_types": [
+        "ValidatorInfo",
+        "PartitionInfo"
+      ],
+      "source": "general"
+    },
+    "NetworkGlobals": {
+      "fields": [
+        {
+          "name": "OperatorAcceptThreshold",
+          "type": "Rational"
+        },
+        {
+          "name": "ValidatorAcceptThreshold",
+          "type": "Rational"
+        },
+        {
+          "name": "MajorBlockSchedule",
+          "type": "string"
+        },
+        {
+          "name": "AnchorEmptyBlocks",
+          "type": "bool"
+        },
+        {
+          "name": "FeeSchedule",
+          "type": "FeeSchedule"
+        },
+        {
+          "name": "Limits",
+          "type": "NetworkLimits"
+        }
+      ],
+      "kind": "struct",
+      "name": "NetworkGlobals",
+      "referenced_types": [
+        "FeeSchedule",
+        "NetworkLimits",
+        "Rational"
+      ],
+      "source": "general"
+    },
+    "NetworkLimits": {
+      "fields": [
+        {
+          "name": "DataEntryParts",
+          "type": "uint"
+        },
+        {
+          "name": "AccountAuthorities",
+          "type": "uint"
+        },
+        {
+          "name": "BookPages",
+          "type": "uint"
+        },
+        {
+          "name": "PageEntries",
+          "type": "uint"
+        },
+        {
+          "name": "IdentityAccounts",
+          "type": "uint"
+        },
+        {
+          "name": "PendingMajorBlocks",
+          "type": "uint"
+        },
+        {
+          "name": "EventsPerBlock",
+          "type": "uint"
+        }
+      ],
+      "kind": "struct",
+      "name": "NetworkLimits",
+      "referenced_types": [],
+      "source": "general"
+    },
+    "NetworkMaintenance": {
+      "fields": [
+        {
+          "name": "Operations",
+          "type": "NetworkMaintenanceOperation"
+        }
+      ],
+      "kind": "struct",
+      "name": "NetworkMaintenance",
+      "referenced_types": [
+        "NetworkMaintenanceOperation"
+      ],
+      "source": "user_transactions"
+    },
+    "NetworkMaintenanceOperationType": {
+      "fields": [],
+      "kind": "struct",
+      "name": "NetworkMaintenanceOperationType",
+      "referenced_types": [],
+      "source": "enums"
+    },
+    "Object": {
+      "fields": [
+        {
+          "name": "Type",
+          "type": "ObjectType"
+        },
+        {
+          "name": "Chains",
+          "type": "ChainMetadata"
+        },
+        {
+          "name": "Pending",
+          "type": "TxIdSet"
+        }
+      ],
+      "kind": "struct",
+      "name": "Object",
+      "referenced_types": [
+        "TxIdSet",
+        "ObjectType",
+        "ChainMetadata"
+      ],
+      "source": "general"
+    },
+    "ObjectType": {
+      "fields": [],
+      "kind": "struct",
+      "name": "ObjectType",
+      "referenced_types": [],
+      "source": "enums"
+    },
+    "PartitionAnchor": {
+      "fields": [
+        {
+          "name": "Source",
+          "type": "url"
+        },
+        {
+          "name": "MajorBlockIndex",
+          "type": "uint"
+        },
+        {
+          "name": "MinorBlockIndex",
+          "type": "uvarint"
+        },
+        {
+          "name": "RootChainIndex",
+          "type": "uvarint"
+        },
+        {
+          "name": "RootChainAnchor",
+          "type": "hash"
+        },
+        {
+          "name": "StateTreeAnchor",
+          "type": "hash"
+        }
+      ],
+      "kind": "struct",
+      "name": "PartitionAnchor",
+      "referenced_types": [],
+      "source": "system"
+    },
+    "PartitionAnchorReceipt": {
+      "fields": [
+        {
+          "name": "Anchor",
+          "type": "PartitionAnchor"
+        },
+        {
+          "name": "RootChainReceipt",
+          "type": "merkle.Receipt"
+        }
+      ],
+      "kind": "struct",
+      "name": "PartitionAnchorReceipt",
+      "referenced_types": [
+        "merkle.Receipt",
+        "PartitionAnchor"
+      ],
+      "source": "system"
+    },
+    "PartitionExecutorVersion": {
+      "fields": [
+        {
+          "name": "Partition",
+          "type": "string"
+        },
+        {
+          "name": "Version",
+          "type": "ExecutorVersion"
+        }
+      ],
+      "kind": "struct",
+      "name": "PartitionExecutorVersion",
+      "referenced_types": [
+        "ExecutorVersion"
+      ],
+      "source": "system"
+    },
+    "PartitionInfo": {
+      "fields": [
+        {
+          "name": "ID",
+          "type": "string"
+        },
+        {
+          "name": "Type",
+          "type": "PartitionType"
+        }
+      ],
+      "kind": "struct",
+      "name": "PartitionInfo",
+      "referenced_types": [
+        "PartitionType"
+      ],
+      "source": "general"
+    },
+    "PartitionSignature": {
+      "fields": [
+        {
+          "name": "SourceNetwork",
+          "type": "url"
+        },
+        {
+          "name": "DestinationNetwork",
+          "type": "url"
+        },
+        {
+          "name": "SequenceNumber",
+          "type": "uint"
+        },
+        {
+          "name": "TransactionHash",
+          "type": "hash"
+        }
+      ],
+      "kind": "struct",
+      "name": "PartitionSignature",
+      "referenced_types": [],
+      "source": "signatures"
+    },
+    "PartitionSyntheticLedger": {
+      "fields": [
+        {
+          "name": "Url",
+          "type": "url"
+        },
+        {
+          "name": "Produced",
+          "type": "uint"
+        },
+        {
+          "name": "Received",
+          "type": "uint"
+        },
+        {
+          "name": "Delivered",
+          "type": "uint"
+        },
+        {
+          "name": "Pending",
+          "type": "txid"
+        }
+      ],
+      "kind": "struct",
+      "name": "PartitionSyntheticLedger",
+      "referenced_types": [
+        "txid"
+      ],
+      "source": "system"
+    },
+    "PartitionType": {
+      "fields": [],
+      "kind": "struct",
+      "name": "PartitionType",
+      "referenced_types": [],
+      "source": "enums"
+    },
+    "PendingTransactionGCOperation": {
+      "fields": [
+        {
+          "name": "Account",
+          "type": "url"
+        }
+      ],
+      "kind": "struct",
+      "name": "PendingTransactionGCOperation",
+      "referenced_types": [
+        "networkMaintenanceOperation"
+      ],
+      "source": "operations"
+    },
+    "RCD1Signature": {
+      "fields": [
+        {
+          "name": "PublicKey",
+          "type": "bytes"
+        },
+        {
+          "name": "Signature",
+          "type": "bytes"
+        },
+        {
+          "name": "Signer",
+          "type": "url"
+        },
+        {
+          "name": "SignerVersion",
+          "type": "uint"
+        },
+        {
+          "name": "Timestamp",
+          "type": "uint"
+        },
+        {
+          "name": "Vote",
+          "type": "VoteType"
+        },
+        {
+          "name": "TransactionHash",
+          "type": "hash"
+        },
+        {
+          "name": "Memo",
+          "type": "string"
+        },
+        {
+          "name": "Data",
+          "type": "bytes"
+        }
+      ],
+      "kind": "struct",
+      "name": "RCD1Signature",
+      "referenced_types": [
+        "VoteType"
+      ],
+      "source": "signatures"
+    },
+    "Rational": {
+      "fields": [
+        {
+          "name": "Numerator",
+          "type": "uint"
+        },
+        {
+          "name": "Denominator",
+          "type": "uint"
+        }
+      ],
+      "kind": "struct",
+      "name": "Rational",
+      "referenced_types": [],
+      "source": "general"
+    },
+    "ReceiptSignature": {
+      "fields": [
+        {
+          "name": "SourceNetwork",
+          "type": "url"
+        },
+        {
+          "name": "Proof",
+          "type": "merkle.Receipt"
+        },
+        {
+          "name": "TransactionHash",
+          "type": "hash"
+        }
+      ],
+      "kind": "struct",
+      "name": "ReceiptSignature",
+      "referenced_types": [
+        "merkle.Receipt"
+      ],
+      "source": "signatures"
+    },
+    "RemoteSignature": {
+      "fields": [
+        {
+          "name": "Destination",
+          "type": "url"
+        },
+        {
+          "name": "Signature",
+          "type": "Signature"
+        },
+        {
+          "name": "Cause",
+          "type": "hash"
+        }
+      ],
+      "kind": "struct",
+      "name": "RemoteSignature",
+      "referenced_types": [
+        "Signature"
+      ],
+      "source": "signatures"
+    },
+    "RemoteTransaction": {
+      "fields": [
+        {
+          "name": "Hash",
+          "type": "hash"
+        }
+      ],
+      "kind": "struct",
+      "name": "RemoteTransaction",
+      "referenced_types": [],
+      "source": "user_transactions"
+    },
+    "RemoveAccountAuthorityOperation": {
+      "fields": [
+        {
+          "name": "Authority",
+          "type": "url"
+        }
+      ],
+      "kind": "struct",
+      "name": "RemoveAccountAuthorityOperation",
+      "referenced_types": [
+        "accountAuthOperation"
+      ],
+      "source": "operations"
+    },
+    "RemoveKeyOperation": {
+      "fields": [
+        {
+          "name": "Entry",
+          "type": "KeySpecParams"
+        }
+      ],
+      "kind": "struct",
+      "name": "RemoveKeyOperation",
+      "referenced_types": [
+        "keyPageOperation",
+        "KeySpecParams"
+      ],
+      "source": "key_page_operations"
+    },
+    "Route": {
+      "fields": [
+        {
+          "name": "Length",
+          "type": "uint"
+        },
+        {
+          "name": "Value",
+          "type": "uint"
+        },
+        {
+          "name": "Partition",
+          "type": "string"
+        }
+      ],
+      "kind": "struct",
+      "name": "Route",
+      "referenced_types": [],
+      "source": "general"
+    },
+    "RouteOverride": {
+      "fields": [
+        {
+          "name": "Account",
+          "type": "url"
+        },
+        {
+          "name": "Partition",
+          "type": "string"
+        }
+      ],
+      "kind": "struct",
+      "name": "RouteOverride",
+      "referenced_types": [],
+      "source": "general"
+    },
+    "RoutingTable": {
+      "fields": [
+        {
+          "name": "Overrides",
+          "type": "RouteOverride"
+        },
+        {
+          "name": "Routes",
+          "type": "Route"
+        }
+      ],
+      "kind": "struct",
+      "name": "RoutingTable",
+      "referenced_types": [
+        "Route",
+        "RouteOverride"
+      ],
+      "source": "general"
+    },
+    "RsaSha256Signature": {
+      "fields": [
+        {
+          "name": "PublicKey",
+          "type": "bytes"
+        },
+        {
+          "name": "Signature",
+          "type": "bytes"
+        },
+        {
+          "name": "Signer",
+          "type": "url"
+        },
+        {
+          "name": "SignerVersion",
+          "type": "uint"
+        },
+        {
+          "name": "Timestamp",
+          "type": "uint"
+        },
+        {
+          "name": "Vote",
+          "type": "VoteType"
+        },
+        {
+          "name": "TransactionHash",
+          "type": "hash"
+        },
+        {
+          "name": "Memo",
+          "type": "string"
+        },
+        {
+          "name": "Data",
+          "type": "bytes"
+        }
+      ],
+      "kind": "struct",
+      "name": "RsaSha256Signature",
+      "referenced_types": [
+        "VoteType"
+      ],
+      "source": "signatures"
+    },
+    "SendTokens": {
+      "fields": [
+        {
+          "name": "Hash",
+          "type": "hash"
+        },
+        {
+          "name": "Meta",
+          "type": "rawJson"
+        },
+        {
+          "name": "To",
+          "type": "TokenRecipient"
+        }
+      ],
+      "kind": "struct",
+      "name": "SendTokens",
+      "referenced_types": [
+        "rawJson",
+        "TokenRecipient"
+      ],
+      "source": "user_transactions"
+    },
+    "SetRejectThresholdKeyPageOperation": {
+      "fields": [
+        {
+          "name": "Threshold",
+          "type": "uvarint"
+        }
+      ],
+      "kind": "struct",
+      "name": "SetRejectThresholdKeyPageOperation",
+      "referenced_types": [
+        "keyPageOperation"
+      ],
+      "source": "key_page_operations"
+    },
+    "SetResponseThresholdKeyPageOperation": {
+      "fields": [
+        {
+          "name": "Threshold",
+          "type": "uvarint"
+        }
+      ],
+      "kind": "struct",
+      "name": "SetResponseThresholdKeyPageOperation",
+      "referenced_types": [
+        "keyPageOperation"
+      ],
+      "source": "key_page_operations"
+    },
+    "SetThresholdKeyPageOperation": {
+      "fields": [
+        {
+          "name": "Threshold",
+          "type": "uvarint"
+        }
+      ],
+      "kind": "struct",
+      "name": "SetThresholdKeyPageOperation",
+      "referenced_types": [
+        "keyPageOperation"
+      ],
+      "source": "key_page_operations"
+    },
+    "SignatureSet": {
+      "fields": [
+        {
+          "name": "Vote",
+          "type": "VoteType"
+        },
+        {
+          "name": "Signer",
+          "type": "url"
+        },
+        {
+          "name": "TransactionHash",
+          "type": "hash"
+        },
+        {
+          "name": "Signatures",
+          "type": "Signature"
+        },
+        {
+          "name": "Authority",
+          "type": "url"
+        }
+      ],
+      "kind": "struct",
+      "name": "SignatureSet",
+      "referenced_types": [
+        "VoteType",
+        "Signature"
+      ],
+      "source": "signatures"
+    },
+    "SignatureType": {
+      "fields": [],
+      "kind": "struct",
+      "name": "SignatureType",
+      "referenced_types": [],
+      "source": "enums"
+    },
+    "SyntheticBurnTokens": {
+      "fields": [
+        {
+          "name": "Amount",
+          "type": "bigint"
+        },
+        {
+          "name": "IsRefund",
+          "type": "bool"
+        }
+      ],
+      "kind": "struct",
+      "name": "SyntheticBurnTokens",
+      "referenced_types": [],
+      "source": "synthetic_transactions"
+    },
+    "SyntheticCreateIdentity": {
+      "fields": [
+        {
+          "name": "Accounts",
+          "type": "Account"
+        }
+      ],
+      "kind": "struct",
+      "name": "SyntheticCreateIdentity",
+      "referenced_types": [
+        "Account"
+      ],
+      "source": "synthetic_transactions"
+    },
+    "SyntheticDepositCredits": {
+      "fields": [
+        {
+          "name": "Amount",
+          "type": "uvarint"
+        },
+        {
+          "name": "AcmeRefundAmount",
+          "type": "bigint"
+        },
+        {
+          "name": "IsRefund",
+          "type": "bool"
+        }
+      ],
+      "kind": "struct",
+      "name": "SyntheticDepositCredits",
+      "referenced_types": [],
+      "source": "synthetic_transactions"
+    },
+    "SyntheticDepositTokens": {
+      "fields": [
+        {
+          "name": "Token",
+          "type": "url"
+        },
+        {
+          "name": "Amount",
+          "type": "bigint"
+        },
+        {
+          "name": "IsIssuer",
+          "type": "boolean"
+        },
+        {
+          "name": "IsRefund",
+          "type": "bool"
+        }
+      ],
+      "kind": "struct",
+      "name": "SyntheticDepositTokens",
+      "referenced_types": [
+        "boolean"
+      ],
+      "source": "synthetic_transactions"
+    },
+    "SyntheticForwardTransaction": {
+      "fields": [
+        {
+          "name": "Signatures",
+          "type": "RemoteSignature"
+        },
+        {
+          "name": "Transaction",
+          "type": "Transaction"
+        }
+      ],
+      "kind": "struct",
+      "name": "SyntheticForwardTransaction",
+      "referenced_types": [
+        "Transaction",
+        "RemoteSignature"
+      ],
+      "source": "synthetic_transactions"
+    },
+    "SyntheticLedger": {
+      "fields": [
+        {
+          "name": "Url",
+          "type": "url"
+        },
+        {
+          "name": "Sequence",
+          "type": "PartitionSyntheticLedger"
+        }
+      ],
+      "kind": "struct",
+      "name": "SyntheticLedger",
+      "referenced_types": [
+        "PartitionSyntheticLedger"
+      ],
+      "source": "system"
+    },
+    "SyntheticOrigin": {
+      "fields": [
+        {
+          "name": "Cause",
+          "type": "txid"
+        },
+        {
+          "name": "Source",
+          "type": "url"
+        },
+        {
+          "name": "Initiator",
+          "type": "url"
+        },
+        {
+          "name": "FeeRefund",
+          "type": "uint"
+        },
+        {
+          "name": "Index",
+          "type": "uint"
+        }
+      ],
+      "kind": "struct",
+      "name": "SyntheticOrigin",
+      "referenced_types": [
+        "txid"
+      ],
+      "source": "synthetic_transactions"
+    },
+    "SyntheticWriteData": {
+      "fields": [
+        {
+          "name": "Entry",
+          "type": "DataEntry"
+        }
+      ],
+      "kind": "struct",
+      "name": "SyntheticWriteData",
+      "referenced_types": [
+        "DataEntry"
+      ],
+      "source": "synthetic_transactions"
+    },
+    "SystemGenesis": {
+      "fields": [],
+      "kind": "union",
+      "name": "SystemGenesis",
+      "referenced_types": [],
+      "source": "system"
+    },
+    "SystemLedger": {
+      "fields": [
+        {
+          "name": "Url",
+          "type": "url"
+        },
+        {
+          "name": "Index",
+          "type": "uint"
+        },
+        {
+          "name": "Timestamp",
+          "type": "time"
+        },
+        {
+          "name": "AcmeBurnt",
+          "type": "bigint"
+        },
+        {
+          "name": "PendingUpdates",
+          "type": "NetworkAccountUpdate"
+        },
+        {
+          "name": "Anchor",
+          "type": "AnchorBody"
+        },
+        {
+          "name": "ExecutorVersion",
+          "type": "ExecutorVersion"
+        },
+        {
+          "name": "BvnExecutorVersions",
+          "type": "PartitionExecutorVersion"
+        }
+      ],
+      "kind": "struct",
+      "name": "SystemLedger",
+      "referenced_types": [
+        "ExecutorVersion",
+        "PartitionExecutorVersion",
+        "AnchorBody",
+        "NetworkAccountUpdate"
+      ],
+      "source": "system"
+    },
+    "SystemWriteData": {
+      "fields": [
+        {
+          "name": "Entry",
+          "type": "DataEntry"
+        },
+        {
+          "name": "WriteToState",
+          "type": "bool"
+        }
+      ],
+      "kind": "struct",
+      "name": "SystemWriteData",
+      "referenced_types": [
+        "DataEntry"
+      ],
+      "source": "system"
+    },
+    "TokenAccount": {
+      "fields": [
+        {
+          "name": "Url",
+          "type": "url"
+        },
+        {
+          "name": "",
+          "type": "AccountAuth"
+        },
+        {
+          "name": "TokenUrl",
+          "type": "url"
+        },
+        {
+          "name": "Balance",
+          "type": "bigint"
+        }
+      ],
+      "kind": "struct",
+      "name": "TokenAccount",
+      "referenced_types": [
+        "AccountAuth"
+      ],
+      "source": "accounts"
+    },
+    "TokenIssuer": {
+      "fields": [
+        {
+          "name": "Url",
+          "type": "url"
+        },
+        {
+          "name": "",
+          "type": "AccountAuth"
+        },
+        {
+          "name": "Symbol",
+          "type": "string"
+        },
+        {
+          "name": "Precision",
+          "type": "uvarint"
+        },
+        {
+          "name": "Properties",
+          "type": "url"
+        },
+        {
+          "name": "Issued",
+          "type": "bigint"
+        },
+        {
+          "name": "SupplyLimit",
+          "type": "bigint"
+        }
+      ],
+      "kind": "struct",
+      "name": "TokenIssuer",
+      "referenced_types": [
+        "AccountAuth"
+      ],
+      "source": "accounts"
+    },
+    "TokenIssuerProof": {
+      "fields": [
+        {
+          "name": "Transaction",
+          "type": "CreateToken"
+        },
+        {
+          "name": "Receipt",
+          "type": "merkle.Receipt"
+        }
+      ],
+      "kind": "struct",
+      "name": "TokenIssuerProof",
+      "referenced_types": [
+        "merkle.Receipt",
+        "CreateToken"
+      ],
+      "source": "general"
+    },
+    "TokenRecipient": {
+      "fields": [
+        {
+          "name": "Url",
+          "type": "url"
+        },
+        {
+          "name": "Amount",
+          "type": "bigint"
+        }
+      ],
+      "kind": "struct",
+      "name": "TokenRecipient",
+      "referenced_types": [],
+      "source": "general"
+    },
+    "Transaction": {
+      "fields": [
+        {
+          "name": "Header",
+          "type": "TransactionHeader"
+        },
+        {
+          "name": "Body",
+          "type": "TransactionBody"
+        },
+        {
+          "name": "hash",
+          "type": "bytes"
+        },
+        {
+          "name": "header64bytes",
+          "type": "bool"
+        },
+        {
+          "name": "body64bytes",
+          "type": "bool"
+        }
+      ],
+      "kind": "struct",
+      "name": "Transaction",
+      "referenced_types": [
+        "TransactionHeader",
+        "TransactionBody"
+      ],
+      "source": "transaction"
+    },
+    "TransactionHeader": {
+      "fields": [
+        {
+          "name": "Principal",
+          "type": "url"
+        },
+        {
+          "name": "Initiator",
+          "type": "hash"
+        },
+        {
+          "name": "Memo",
+          "type": "string"
+        },
+        {
+          "name": "Metadata",
+          "type": "bytes"
+        },
+        {
+          "name": "Expire",
+          "type": "ExpireOptions"
+        },
+        {
+          "name": "HoldUntil",
+          "type": "HoldUntilOptions"
+        },
+        {
+          "name": "Authorities",
+          "type": "url"
+        }
+      ],
+      "kind": "struct",
+      "name": "TransactionHeader",
+      "referenced_types": [
+        "ExpireOptions",
+        "HoldUntilOptions"
+      ],
+      "source": "transaction"
+    },
+    "TransactionMax": {
+      "fields": [],
+      "kind": "struct",
+      "name": "TransactionMax",
+      "referenced_types": [],
+      "source": "enums"
+    },
+    "TransactionResultSet": {
+      "fields": [
+        {
+          "name": "Results",
+          "type": "TransactionStatus"
+        }
+      ],
+      "kind": "struct",
+      "name": "TransactionResultSet",
+      "referenced_types": [
+        "TransactionStatus"
+      ],
+      "source": "query"
+    },
+    "TransactionStatus": {
+      "fields": [
+        {
+          "name": "TxID",
+          "type": "txid"
+        },
+        {
+          "name": "Code",
+          "type": "errors2.Status"
+        },
+        {
+          "name": "Remote",
+          "type": "bool"
+        },
+        {
+          "name": "Delivered",
+          "type": "bool"
+        },
+        {
+          "name": "Pending",
+          "type": "bool"
+        },
+        {
+          "name": "Failed",
+          "type": "bool"
+        },
+        {
+          "name": "CodeNum",
+          "type": "uint"
+        },
+        {
+          "name": "Error",
+          "type": "errors2.Error"
+        },
+        {
+          "name": "Result",
+          "type": "TransactionResult"
+        },
+        {
+          "name": "Received",
+          "type": "uint"
+        },
+        {
+          "name": "Initiator",
+          "type": "url"
+        },
+        {
+          "name": "Signers",
+          "type": "Signer"
+        },
+        {
+          "name": "SourceNetwork",
+          "type": "url"
+        },
+        {
+          "name": "DestinationNetwork",
+          "type": "url"
+        },
+        {
+          "name": "SequenceNumber",
+          "type": "uint"
+        },
+        {
+          "name": "GotDirectoryReceipt",
+          "type": "bool"
+        },
+        {
+          "name": "Proof",
+          "type": "merkle.Receipt"
+        },
+        {
+          "name": "AnchorSigners",
+          "type": "bytes"
+        }
+      ],
+      "kind": "struct",
+      "name": "TransactionStatus",
+      "referenced_types": [
+        "errors2.Error",
+        "merkle.Receipt",
+        "Signer",
+        "txid",
+        "errors2.Status",
+        "TransactionResult"
+      ],
+      "source": "transaction"
+    },
+    "TransactionType": {
+      "fields": [],
+      "kind": "struct",
+      "name": "TransactionType",
+      "referenced_types": [],
+      "source": "enums"
+    },
+    "TransferCredits": {
+      "fields": [
+        {
+          "name": "To",
+          "type": "CreditRecipient"
+        }
+      ],
+      "kind": "struct",
+      "name": "TransferCredits",
+      "referenced_types": [
+        "CreditRecipient"
+      ],
+      "source": "user_transactions"
+    },
+    "TxIdSet": {
+      "fields": [
+        {
+          "name": "Entries",
+          "type": "txid"
+        }
+      ],
+      "kind": "struct",
+      "name": "TxIdSet",
+      "referenced_types": [
+        "txid"
+      ],
+      "source": "general"
+    },
+    "TypedDataSignature": {
+      "fields": [
+        {
+          "name": "PublicKey",
+          "type": "bytes"
+        },
+        {
+          "name": "Signature",
+          "type": "bytes"
+        },
+        {
+          "name": "Signer",
+          "type": "url"
+        },
+        {
+          "name": "SignerVersion",
+          "type": "uint"
+        },
+        {
+          "name": "Timestamp",
+          "type": "uint"
+        },
+        {
+          "name": "Vote",
+          "type": "VoteType"
+        },
+        {
+          "name": "TransactionHash",
+          "type": "hash"
+        },
+        {
+          "name": "Memo",
+          "type": "string"
+        },
+        {
+          "name": "Data",
+          "type": "bytes"
+        },
+        {
+          "name": "ChainID",
+          "type": "bigint"
+        }
+      ],
+      "kind": "struct",
+      "name": "TypedDataSignature",
+      "referenced_types": [
+        "VoteType"
+      ],
+      "source": "signatures"
+    },
+    "UnknownAccount": {
+      "fields": [
+        {
+          "name": "Url",
+          "type": "url"
+        }
+      ],
+      "kind": "struct",
+      "name": "UnknownAccount",
+      "referenced_types": [],
+      "source": "accounts"
+    },
+    "UnknownSigner": {
+      "fields": [
+        {
+          "name": "Url",
+          "type": "url"
+        },
+        {
+          "name": "Version",
+          "type": "uvarint"
+        }
+      ],
+      "kind": "struct",
+      "name": "UnknownSigner",
+      "referenced_types": [],
+      "source": "accounts"
+    },
+    "UpdateAccountAuth": {
+      "fields": [
+        {
+          "name": "Operations",
+          "type": "AccountAuthOperation"
+        }
+      ],
+      "kind": "struct",
+      "name": "UpdateAccountAuth",
+      "referenced_types": [
+        "AccountAuthOperation"
+      ],
+      "source": "user_transactions"
+    },
+    "UpdateAllowedKeyPageOperation": {
+      "fields": [
+        {
+          "name": "Allow",
+          "type": "TransactionType"
+        },
+        {
+          "name": "Deny",
+          "type": "TransactionType"
+        }
+      ],
+      "kind": "struct",
+      "name": "UpdateAllowedKeyPageOperation",
+      "referenced_types": [
+        "keyPageOperation",
+        "TransactionType"
+      ],
+      "source": "key_page_operations"
+    },
+    "UpdateKey": {
+      "fields": [
+        {
+          "name": "NewKeyHash",
+          "type": "bytes"
+        }
+      ],
+      "kind": "struct",
+      "name": "UpdateKey",
+      "referenced_types": [],
+      "source": "user_transactions"
+    },
+    "UpdateKeyOperation": {
+      "fields": [
+        {
+          "name": "OldEntry",
+          "type": "KeySpecParams"
+        },
+        {
+          "name": "NewEntry",
+          "type": "KeySpecParams"
+        }
+      ],
+      "kind": "struct",
+      "name": "UpdateKeyOperation",
+      "referenced_types": [
+        "keyPageOperation",
+        "KeySpecParams"
+      ],
+      "source": "key_page_operations"
+    },
+    "UpdateKeyPage": {
+      "fields": [
+        {
+          "name": "Operation",
+          "type": "KeyPageOperation"
+        }
+      ],
+      "kind": "struct",
+      "name": "UpdateKeyPage",
+      "referenced_types": [
+        "KeyPageOperation"
+      ],
+      "source": "user_transactions"
+    },
+    "ValidatorInfo": {
+      "fields": [
+        {
+          "name": "PublicKey",
+          "type": "bytes"
+        },
+        {
+          "name": "PublicKeyHash",
+          "type": "hash"
+        },
+        {
+          "name": "Operator",
+          "type": "url"
+        },
+        {
+          "name": "Partitions",
+          "type": "ValidatorPartitionInfo"
+        }
+      ],
+      "kind": "struct",
+      "name": "ValidatorInfo",
+      "referenced_types": [
+        "ValidatorPartitionInfo"
+      ],
+      "source": "general"
+    },
+    "ValidatorPartitionInfo": {
+      "fields": [
+        {
+          "name": "ID",
+          "type": "string"
+        },
+        {
+          "name": "Active",
+          "type": "bool"
+        }
+      ],
+      "kind": "struct",
+      "name": "ValidatorPartitionInfo",
+      "referenced_types": [],
+      "source": "general"
+    },
+    "VoteType": {
+      "fields": [],
+      "kind": "struct",
+      "name": "VoteType",
+      "referenced_types": [],
+      "source": "enums"
+    },
+    "WriteData": {
+      "fields": [
+        {
+          "name": "Entry",
+          "type": "DataEntry"
+        },
+        {
+          "name": "Scratch",
+          "type": "bool"
+        },
+        {
+          "name": "WriteToState",
+          "type": "bool"
+        }
+      ],
+      "kind": "struct",
+      "name": "WriteData",
+      "referenced_types": [
+        "DataEntry"
+      ],
+      "source": "user_transactions"
+    },
+    "WriteDataResult": {
+      "fields": [
+        {
+          "name": "EntryHash",
+          "type": "hash"
+        },
+        {
+          "name": "AccountUrl",
+          "type": "url"
+        },
+        {
+          "name": "AccountID",
+          "type": "bytes"
+        }
+      ],
+      "kind": "struct",
+      "name": "WriteDataResult",
+      "referenced_types": [
+        "result"
+      ],
+      "source": "transaction_results"
+    },
+    "WriteDataTo": {
+      "fields": [
+        {
+          "name": "Recipient",
+          "type": "url"
+        },
+        {
+          "name": "Entry",
+          "type": "DataEntry"
+        }
+      ],
+      "kind": "struct",
+      "name": "WriteDataTo",
+      "referenced_types": [
+        "DataEntry"
+      ],
+      "source": "user_transactions"
+    }
+  },
+  "reachable_count": 141,
+  "roots": [
+    "DelegatedSignature",
+    "UpdateAccountAuth",
+    "RemoteTransaction",
+    "TxIdSet",
+    "KeyPageOperationType",
+    "SyntheticDepositTokens",
+    "NetworkLimits",
+    "LockAccount",
+    "AccountAuthOperationType",
+    "TransactionMax",
+    "SignatureSet",
+    "KeyPage",
+    "UpdateKeyPage",
+    "LiteTokenAccount",
+    "AnnotatedReceipt",
+    "PartitionExecutorVersion",
+    "Route",
+    "KeyBook",
+    "SyntheticForwardTransaction",
+    "DataAccount",
+    "EmptyResult",
+    "LiteIdentity",
+    "CreateKeyBook",
+    "ActivateProtocolVersion",
+    "CreateToken",
+    "NetworkMaintenanceOperationType",
+    "MetricsRequest",
+    "ADI",
+    "SystemWriteData",
+    "LegacyED25519Signature",
+    "WriteData",
+    "CreateLiteTokenAccount",
+    "SystemGenesis",
+    "UnknownAccount",
+    "DataEntryType",
+    "AddAccountAuthorityOperation",
+    "EcdsaSha256Signature",
+    "SyntheticCreateIdentity",
+    "TokenAccount",
+    "UnknownSigner",
+    "AllowedTransactionBit",
+    "AddCredits",
+    "TransferCredits",
+    "RemoteTransactionReason",
+    "AnchorLedger",
+    "KeySpecParams",
+    "SyntheticBurnTokens",
+    "ObjectType",
+    "BurnTokens",
+    "CreateKeyPage",
+    "BurnCredits",
+    "WriteDataTo",
+    "PendingTransactionGCOperation",
+    "ExecutorVersion",
+    "ETHSignature",
+    "SyntheticOrigin",
+    "BlockValidatorAnchor",
+    "SetResponseThresholdKeyPageOperation",
+    "ED25519Signature",
+    "ChainMetadata",
+    "NetworkGlobals",
+    "SignatureType",
+    "AccountAuth",
+    "AcmeFaucet",
+    "KeySpec",
+    "EnableAccountAuthOperation",
+    "DirectoryAnchor",
+    "BookType",
+    "TransactionHeader",
+    "RemoveKeyOperation",
+    "BlockLedger",
+    "BTCSignature",
+    "PartitionSignature",
+    "NetworkDefinition",
+    "RoutingTable",
+    "SendTokens",
+    "UpdateKeyOperation",
+    "CreateIdentity",
+    "SystemLedger",
+    "NetworkMaintenance",
+    "TokenIssuer",
+    "Rational",
+    "ValidatorPartitionInfo",
+    "IndexEntry",
+    "LiteDataAccount",
+    "RsaSha256Signature",
+    "RouteOverride",
+    "TypedDataSignature",
+    "TransactionResultSet",
+    "AddCreditsResult",
+    "SyntheticLedger",
+    "DoubleHashDataEntry",
+    "ReceiptSignature",
+    "BlockEntry",
+    "Object",
+    "AccountType",
+    "SetRejectThresholdKeyPageOperation",
+    "ChainParams",
+    "SyntheticDepositCredits",
+    "RCD1Signature",
+    "AddKeyOperation",
+    "BTCLegacySignature",
+    "AcmeOracle",
+    "WriteDataResult",
+    "ErrorCode",
+    "TransactionType",
+    "ChainType",
+    "AuthoritySignature",
+    "CreateTokenAccount",
+    "RemoteSignature",
+    "ValidatorInfo",
+    "RemoveAccountAuthorityOperation",
+    "IssueTokens",
+    "PartitionInfo",
+    "CreateDataAccount",
+    "UpdateKey",
+    "MetricsResponse",
+    "SyntheticWriteData",
+    "FactomDataEntryWrapper",
+    "FeeSchedule",
+    "UpdateAllowedKeyPageOperation",
+    "AccumulateDataEntry",
+    "FactomDataEntry",
+    "SetThresholdKeyPageOperation",
+    "InternalSignature",
+    "AuthorityEntry",
+    "DisableAccountAuthOperation"
+  ]
+}

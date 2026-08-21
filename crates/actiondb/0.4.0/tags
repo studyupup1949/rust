@@ -1,0 +1,1201 @@
+!_TAG_FILE_FORMAT	2	/extended format; --format=1 will not append ;" to lines/
+!_TAG_FILE_SORTED	1	/0=unsorted, 1=sorted, 2=foldcase/
+!_TAG_PROGRAM_AUTHOR	Darren Hiebert	/dhiebert@users.sourceforge.net/
+!_TAG_PROGRAM_NAME	Exuberant Ctags	//
+!_TAG_PROGRAM_URL	http://ctags.sourceforge.net	/official site/
+!_TAG_PROGRAM_VERSION	5.9~svn20110310	//
+MatchResult	src/matcher/result.rs	/^pub struct MatchResult<'a, 'b> {$/;"	s
+MatchResult	src/matcher/result.rs	/^impl <'a, 'b> MatchResult<'a, 'b> {$/;"	i
+new	src/matcher/result.rs	/^    pub fn new(pattern: &'a Pattern) -> MatchResult<'a, 'b> {$/;"	f
+insert	src/matcher/result.rs	/^    pub fn insert(&mut self, result: ParseResult<'a, 'b>) {$/;"	f
+pattern	src/matcher/result.rs	/^    pub fn pattern(&self) -> &Pattern {$/;"	f
+values	src/matcher/result.rs	/^    pub fn values(&self) -> &BTreeMap<&'a str, &'b str> {$/;"	f
+test	src/matcher/result.rs	/^mod test {$/;"	m
+test_given_match_result_when_a_parse_result_is_inserted_then_we_use_only_the_ones_where_the_parser_has_a_name	src/matcher/result.rs	/^    fn test_given_match_result_when_a_parse_result_is_inserted_then_we_use_only_the_ones_where_the_parser_has_a_name() {$/;"	f
+builder	src/matcher/matcher/mod.rs	/^pub mod builder;$/;"	m
+Matcher	src/matcher/matcher/mod.rs	/^pub trait Matcher: fmt::Debug {$/;"	t
+parse	src/matcher/matcher/mod.rs	/^    fn parse<'a, 'b>(&'a self, text: &'b str) -> Option<MatchResult<'a, 'b>>;$/;"	f
+add_pattern	src/matcher/matcher/mod.rs	/^    fn add_pattern(&mut self, pattern: Pattern);$/;"	f
+boxed_clone	src/matcher/matcher/mod.rs	/^    fn boxed_clone(&self) -> Box<Matcher>;$/;"	f
+Builder	src/matcher/matcher/builder/builder.rs	/^pub struct Builder;$/;"	s
+Builder	src/matcher/matcher/builder/builder.rs	/^impl Builder {$/;"	i
+drain_into	src/matcher/matcher/builder/builder.rs	/^    pub fn drain_into(from: &mut PatternSource, matcher: &mut Matcher) -> Result<(), BuildError>{$/;"	f
+check_pattern	src/matcher/matcher/builder/builder.rs	/^    pub fn check_pattern(mut pattern: Pattern, matcher: &mut Matcher) -> Result<(), BuildError> {$/;"	f
+extract_test_messages	src/matcher/matcher/builder/builder.rs	/^    fn extract_test_messages(pattern: &mut Pattern) -> Vec<TestMessage> {$/;"	f
+check_test_messages	src/matcher/matcher/builder/builder.rs	/^    fn check_test_messages(matcher: &Matcher, messages: &[TestMessage], uuid: &Uuid) -> Result<(), BuildError> {$/;"	f
+check_test_message	src/matcher/matcher/builder/builder.rs	/^    fn check_test_message(message: &TestMessage, result: &MatchResult, expected_uuid: &Uuid) -> Result<(), testmessage::Error> {$/;"	f
+error	src/matcher/matcher/builder/mod.rs	/^mod error;$/;"	m
+builder	src/matcher/matcher/builder/mod.rs	/^mod builder;$/;"	m
+BuildError	src/matcher/matcher/builder/error.rs	/^pub enum BuildError {$/;"	g
+From for BuildError	src/matcher/matcher/builder/error.rs	/^impl From<serialized::Error> for BuildError {$/;"	i
+from	src/matcher/matcher/builder/error.rs	/^    fn from(error: serialized::Error) -> BuildError {$/;"	f
+From for BuildError	src/matcher/matcher/builder/error.rs	/^impl From<testmessage::Error> for BuildError {$/;"	i
+from	src/matcher/matcher/builder/error.rs	/^    fn from(error: testmessage::Error) -> BuildError {$/;"	f
+fmt::Display for BuildError	src/matcher/matcher/builder/error.rs	/^impl fmt::Display for BuildError {$/;"	i
+fmt	src/matcher/matcher/builder/error.rs	/^    fn fmt(&self, formatter: &mut fmt::Formatter) -> Result<(), fmt::Error> {$/;"	f
+error::Error for BuildError	src/matcher/matcher/builder/error.rs	/^impl error::Error for BuildError {$/;"	i
+description	src/matcher/matcher/builder/error.rs	/^    fn description(&self) -> &str {$/;"	f
+cause	src/matcher/matcher/builder/error.rs	/^    fn cause(&self) -> Option<&error::Error> {$/;"	f
+CompiledPattern	src/matcher/compiled_pattern.rs	/^pub type CompiledPattern = Vec<TokenType>;$/;"	T
+TokenType	src/matcher/compiled_pattern.rs	/^pub enum TokenType {$/;"	g
+Clone for TokenType	src/matcher/compiled_pattern.rs	/^impl Clone for TokenType {$/;"	i
+clone	src/matcher/compiled_pattern.rs	/^    fn clone(&self) -> TokenType {$/;"	f
+CompiledPatternBuilder	src/matcher/compiled_pattern.rs	/^pub struct CompiledPatternBuilder {$/;"	s
+CompiledPatternBuilder	src/matcher/compiled_pattern.rs	/^impl CompiledPatternBuilder {$/;"	i
+new	src/matcher/compiled_pattern.rs	/^    pub fn new() -> CompiledPatternBuilder {$/;"	f
+literal	src/matcher/compiled_pattern.rs	/^    pub fn literal<S>(&mut self, literal: S) -> &mut CompiledPatternBuilder$/;"	f
+parser	src/matcher/compiled_pattern.rs	/^    pub fn parser(&mut self, parser: Box<Parser>) -> &mut CompiledPatternBuilder {$/;"	f
+build	src/matcher/compiled_pattern.rs	/^    pub fn build(&self) -> CompiledPattern {$/;"	f
+trie	src/matcher/mod.rs	/^pub mod trie;$/;"	m
+pattern	src/matcher/mod.rs	/^pub mod pattern;$/;"	m
+result	src/matcher/mod.rs	/^pub mod result;$/;"	m
+matcher	src/matcher/mod.rs	/^pub mod matcher;$/;"	m
+factory	src/matcher/mod.rs	/^pub mod factory;$/;"	m
+suite	src/matcher/mod.rs	/^pub mod suite;$/;"	m
+compiled_pattern	src/matcher/mod.rs	/^pub mod compiled_pattern;$/;"	m
+MatcherSuite	src/matcher/suite.rs	/^pub trait MatcherSuite {$/;"	t
+Matcher	src/matcher/suite.rs	/^    type Matcher: Matcher;$/;"	T
+ParserFactory	src/matcher/suite.rs	/^    type ParserFactory: ParserFactory;$/;"	T
+MatcherFactory	src/matcher/suite.rs	/^    type MatcherFactory: MatcherFactory<Matcher=Self::Matcher>;$/;"	T
+Factory	src/matcher/factory.rs	/^pub struct Factory;$/;"	s
+Factory	src/matcher/factory.rs	/^impl Factory {$/;"	i
+from_json_file	src/matcher/factory.rs	/^    pub fn from_json_file(pattern_file_path: &str) -> Result<ParserTrie, builder::BuildError> {$/;"	f
+from_file	src/matcher/factory.rs	/^    pub fn from_file(pattern_file_path: &str) -> Result<ParserTrie, builder::BuildError> {$/;"	f
+GenericFactory	src/matcher/factory.rs	/^pub struct GenericFactory;$/;"	s
+GenericFactory	src/matcher/factory.rs	/^impl GenericFactory {$/;"	i
+from_json_file	src/matcher/factory.rs	/^    pub fn from_json_file<F>(pattern_file_path: &str) -> Result<F::Matcher, builder::BuildError>$/;"	f
+from_file	src/matcher/factory.rs	/^    pub fn from_file<F>(pattern_file_path: &str) -> Result<F::Matcher, builder::BuildError>$/;"	f
+from_file_based_on_extension	src/matcher/factory.rs	/^    fn from_file_based_on_extension<F>(extension: &ffi::OsStr, pattern_file_path: &str) -> Result<F::Matcher, builder::BuildError>$/;"	f
+MatcherFactory	src/matcher/factory.rs	/^pub trait MatcherFactory {$/;"	t
+Matcher	src/matcher/factory.rs	/^    type Matcher: Matcher;$/;"	T
+new_matcher	src/matcher/factory.rs	/^    fn new_matcher() -> Self::Matcher;$/;"	f
+test	src/matcher/pattern/mod.rs	/^mod test;$/;"	m
+pattern	src/matcher/pattern/mod.rs	/^mod pattern;$/;"	m
+deser	src/matcher/pattern/mod.rs	/^mod deser;$/;"	m
+source	src/matcher/pattern/mod.rs	/^pub mod source;$/;"	m
+file	src/matcher/pattern/mod.rs	/^pub mod file;$/;"	m
+testmessage	src/matcher/pattern/mod.rs	/^pub mod testmessage;$/;"	m
+serialized	src/matcher/pattern/file/mod.rs	/^pub mod serialized;$/;"	m
+deser	src/matcher/pattern/file/serialized/mod.rs	/^mod deser;$/;"	m
+error	src/matcher/pattern/file/serialized/mod.rs	/^mod error;$/;"	m
+file	src/matcher/pattern/file/serialized/mod.rs	/^mod file;$/;"	m
+iter	src/matcher/pattern/file/serialized/mod.rs	/^mod iter;$/;"	m
+Error	src/matcher/pattern/file/serialized/error.rs	/^pub enum Error {$/;"	g
+From for Error	src/matcher/pattern/file/serialized/error.rs	/^impl From<io::Error> for Error {$/;"	i
+from	src/matcher/pattern/file/serialized/error.rs	/^    fn from(error: io::Error) -> Error {$/;"	f
+From for Error	src/matcher/pattern/file/serialized/error.rs	/^impl From<DeserError> for Error {$/;"	i
+from	src/matcher/pattern/file/serialized/error.rs	/^    fn from(error: DeserError) -> Error {$/;"	f
+fmt::Display for Error	src/matcher/pattern/file/serialized/error.rs	/^impl fmt::Display for Error {$/;"	i
+fmt	src/matcher/pattern/file/serialized/error.rs	/^    fn fmt(&self, formatter: &mut fmt::Formatter) -> Result<(), fmt::Error> {$/;"	f
+error::Error for Error	src/matcher/pattern/file/serialized/error.rs	/^impl error::Error for Error {$/;"	i
+description	src/matcher/pattern/file/serialized/error.rs	/^    fn description(&self) -> &str {$/;"	f
+cause	src/matcher/pattern/file/serialized/error.rs	/^    fn cause(&self) -> Option<&error::Error> {$/;"	f
+deser	src/matcher/pattern/file/serialized/error.rs	/^mod deser {$/;"	m
+DeserError	src/matcher/pattern/file/serialized/error.rs	/^    pub enum DeserError {$/;"	g
+From for DeserError	src/matcher/pattern/file/serialized/error.rs	/^    impl From<serde_json::Error> for DeserError {$/;"	i
+from	src/matcher/pattern/file/serialized/error.rs	/^        fn from(error: serde_json::Error) -> DeserError {$/;"	f
+fmt::Display for DeserError	src/matcher/pattern/file/serialized/error.rs	/^    impl fmt::Display for DeserError {$/;"	i
+fmt	src/matcher/pattern/file/serialized/error.rs	/^        fn fmt(&self, formatter: &mut fmt::Formatter) -> Result<(), fmt::Error> {$/;"	f
+error::Error for DeserError	src/matcher/pattern/file/serialized/error.rs	/^    impl error::Error for DeserError {$/;"	i
+description	src/matcher/pattern/file/serialized/error.rs	/^        fn description(&self) -> &str {$/;"	f
+cause	src/matcher/pattern/file/serialized/error.rs	/^        fn cause(&self) -> Option<&error::Error> {$/;"	f
+SerializedPatternFile	src/matcher/pattern/file/serialized/file.rs	/^pub struct SerializedPatternFile {$/;"	s
+SerializedPatternFile	src/matcher/pattern/file/serialized/file.rs	/^impl SerializedPatternFile {$/;"	i
+open	src/matcher/pattern/file/serialized/file.rs	/^    pub fn open(path: &str) -> Result<SerializedPatternFile, Error> {$/;"	f
+patterns	src/matcher/pattern/file/serialized/file.rs	/^    pub fn patterns(&self) -> &Vec<Pattern> {$/;"	f
+iter::IntoIterator for SerializedPatternFile	src/matcher/pattern/file/serialized/iter.rs	/^impl iter::IntoIterator for SerializedPatternFile {$/;"	i
+Item	src/matcher/pattern/file/serialized/iter.rs	/^    type Item = BuildResult;$/;"	T
+IntoIter	src/matcher/pattern/file/serialized/iter.rs	/^    type IntoIter = IntoIter;$/;"	T
+into_iter	src/matcher/pattern/file/serialized/iter.rs	/^    fn into_iter(self) -> Self::IntoIter {$/;"	f
+IntoIter	src/matcher/pattern/file/serialized/iter.rs	/^pub struct IntoIter {$/;"	s
+Iterator for IntoIter	src/matcher/pattern/file/serialized/iter.rs	/^impl Iterator for IntoIter {$/;"	i
+Item	src/matcher/pattern/file/serialized/iter.rs	/^    type Item = BuildResult;$/;"	T
+next	src/matcher/pattern/file/serialized/iter.rs	/^    fn next(&mut self) -> Option<Self::Item> {$/;"	f
+serde::Deserialize for SerializedPatternFile	src/matcher/pattern/file/serialized/deser.rs	/^impl serde::Deserialize for SerializedPatternFile {$/;"	i
+deserialize	src/matcher/pattern/file/serialized/deser.rs	/^    fn deserialize<D>(deserializer: &mut D) -> Result<SerializedPatternFile, D::Error>$/;"	f
+Field	src/matcher/pattern/file/serialized/deser.rs	/^enum Field {$/;"	g
+serde::Deserialize for Field	src/matcher/pattern/file/serialized/deser.rs	/^impl serde::Deserialize for Field {$/;"	i
+deserialize	src/matcher/pattern/file/serialized/deser.rs	/^    fn deserialize<D>(deserializer: &mut D) -> Result<Field, D::Error>$/;"	f
+FieldVisitor	src/matcher/pattern/file/serialized/deser.rs	/^        struct FieldVisitor;$/;"	s
+serde::de::Visitor for FieldVisitor	src/matcher/pattern/file/serialized/deser.rs	/^        impl serde::de::Visitor for FieldVisitor {$/;"	i
+Value	src/matcher/pattern/file/serialized/deser.rs	/^            type Value = Field;$/;"	T
+visit_str	src/matcher/pattern/file/serialized/deser.rs	/^            fn visit_str<E>(&mut self, value: &str) -> Result<Field, E>$/;"	f
+FileVisitor	src/matcher/pattern/file/serialized/deser.rs	/^struct FileVisitor;$/;"	s
+serde::de::Visitor for FileVisitor	src/matcher/pattern/file/serialized/deser.rs	/^impl serde::de::Visitor for FileVisitor {$/;"	i
+Value	src/matcher/pattern/file/serialized/deser.rs	/^    type Value = SerializedPatternFile;$/;"	T
+visit_map	src/matcher/pattern/file/serialized/deser.rs	/^    fn visit_map<V>(&mut self, mut visitor: V) -> Result<SerializedPatternFile, V::Error>$/;"	f
+test_given_json_document_when_it_does_not_contain_errors_then_pattern_can_be_created_from_it	src/matcher/pattern/test.rs	/^fn test_given_json_document_when_it_does_not_contain_errors_then_pattern_can_be_created_from_it() {$/;"	f
+test_given_json_pattern_when_it_does_not_have_the_optional_paramaters_then_pattern_can_be_built_from_it	src/matcher/pattern/test.rs	/^fn test_given_json_pattern_when_it_does_not_have_the_optional_paramaters_then_pattern_can_be_built_from_it() {$/;"	f
+test_given_json_pattern_when_its_uuid_is_invalid_then_pattern_cannot_be_built_from_it	src/matcher/pattern/test.rs	/^fn test_given_json_pattern_when_its_uuid_is_invalid_then_pattern_cannot_be_built_from_it() {$/;"	f
+test_given_json_pattern_when_its_pattern_is_invalid_then_pattern_cannot_be_built_from_it	src/matcher/pattern/test.rs	/^fn test_given_json_pattern_when_its_pattern_is_invalid_then_pattern_cannot_be_built_from_it() {$/;"	f
+test_given_json_pattern_when_test_messages_are_specified_then_they_are_parsed	src/matcher/pattern/test.rs	/^fn test_given_json_pattern_when_test_messages_are_specified_then_they_are_parsed() {$/;"	f
+test_given_json_pattern_with_invalid_uuid_when_we_try_to_create_pattern_then_it_fails	src/matcher/pattern/test.rs	/^fn test_given_json_pattern_with_invalid_uuid_when_we_try_to_create_pattern_then_it_fails() {$/;"	f
+test_given_json_pattern_when_it_does_not_have_the_pattern_field_then_it_cannot_be_created	src/matcher/pattern/test.rs	/^fn test_given_json_pattern_when_it_does_not_have_the_pattern_field_then_it_cannot_be_created() {$/;"	f
+BuildResult	src/matcher/pattern/source.rs	/^pub type BuildResult = Result<Pattern, BuildError>;$/;"	T
+Source	src/matcher/pattern/source.rs	/^pub trait Source: Iterator<Item=BuildResult> {}$/;"	t
+PatternSource	src/matcher/pattern/source.rs	/^pub type PatternSource = Source<Item=BuildResult>;$/;"	T
+Pattern	src/matcher/pattern/pattern.rs	/^pub struct Pattern {$/;"	s
+Pattern	src/matcher/pattern/pattern.rs	/^impl Pattern {$/;"	i
+with_uuid	src/matcher/pattern/pattern.rs	/^    pub fn with_uuid(uuid: Uuid) -> Pattern {$/;"	f
+new	src/matcher/pattern/pattern.rs	/^    pub fn new(name: Option<String>, uuid: Uuid, pattern: CompiledPattern, test_messages: Option<Vec<TestMessage>>, values: Option<BTreeMap<String, String>>, tags: Option<Vec<String>>) -> Pattern {$/;"	f
+with_random_uuid	src/matcher/pattern/pattern.rs	/^    pub fn with_random_uuid() -> Pattern {$/;"	f
+name	src/matcher/pattern/pattern.rs	/^    pub fn name(&self) -> Option<&str> {$/;"	f
+uuid	src/matcher/pattern/pattern.rs	/^    pub fn uuid(&self) -> &Uuid {$/;"	f
+pattern	src/matcher/pattern/pattern.rs	/^    pub fn pattern(&self) -> &CompiledPattern {$/;"	f
+values	src/matcher/pattern/pattern.rs	/^    pub fn values(&self) -> Option<&BTreeMap<String, String>> {$/;"	f
+tags	src/matcher/pattern/pattern.rs	/^    pub fn tags(&self) -> Option<&[String]> {$/;"	f
+from_json	src/matcher/pattern/pattern.rs	/^    pub fn from_json(doc: &str) -> Result<Pattern, serde_json::error::Error> {$/;"	f
+set_pattern	src/matcher/pattern/pattern.rs	/^    pub fn set_pattern(&mut self, pattern: CompiledPattern) {$/;"	f
+pop_first_token	src/matcher/pattern/pattern.rs	/^    pub fn pop_first_token(&mut self) -> Option<TokenType> {$/;"	f
+pop_test_message	src/matcher/pattern/pattern.rs	/^    pub fn pop_test_message(&mut self) -> Option<TestMessage> {$/;"	f
+Template	src/matcher/pattern/template.rs	/^pub trait Template: Debug {$/;"	t
+render	src/matcher/pattern/template.rs	/^    fn render(&mut self) -> String;$/;"	f
+test	src/matcher/pattern/testmessage/mod.rs	/^mod test;$/;"	m
+deser	src/matcher/pattern/testmessage/mod.rs	/^mod deser;$/;"	m
+error	src/matcher/pattern/testmessage/mod.rs	/^mod error;$/;"	m
+message	src/matcher/pattern/testmessage/mod.rs	/^mod message;$/;"	m
+Error	src/matcher/pattern/testmessage/error.rs	/^pub enum Error {$/;"	g
+Error	src/matcher/pattern/testmessage/error.rs	/^impl Error {$/;"	i
+value_not_match	src/matcher/pattern/testmessage/error.rs	/^    pub fn value_not_match(pattern_uuid: &Uuid, key: &str, expected_value: &str, got_value: &str) -> Error {$/;"	f
+key_not_found	src/matcher/pattern/testmessage/error.rs	/^    pub fn key_not_found(pattern_uuid: &Uuid, key: &str) -> Error {$/;"	f
+test_message_does_not_match	src/matcher/pattern/testmessage/error.rs	/^    pub fn test_message_does_not_match(pattern_uuid: &Uuid, test_msg: &TestMessage) -> Error {$/;"	f
+matched_to_other_pattern	src/matcher/pattern/testmessage/error.rs	/^    pub fn matched_to_other_pattern(expected_uuid: &Uuid, got_uuid: &Uuid, test_message: &str) -> Error {$/;"	f
+unexpected_tags	src/matcher/pattern/testmessage/error.rs	/^    pub fn unexpected_tags(pattern_uuid: &Uuid, expected: Option<Vec<String>>, got: Option<Vec<String>>) -> Error {$/;"	f
+fmt::Display for Error	src/matcher/pattern/testmessage/error.rs	/^impl fmt::Display for Error {$/;"	i
+fmt	src/matcher/pattern/testmessage/error.rs	/^    fn fmt(&self, fmt: &mut fmt::Formatter) -> Result<(), fmt::Error> {$/;"	f
+error::Error for Error	src/matcher/pattern/testmessage/error.rs	/^impl error::Error for Error {$/;"	i
+description	src/matcher/pattern/testmessage/error.rs	/^    fn description(&self) -> &str {$/;"	f
+test_given_json_test_message_when_it_is_deserialized_then_we_get_the_right_instance	src/matcher/pattern/testmessage/test.rs	/^fn test_given_json_test_message_when_it_is_deserialized_then_we_get_the_right_instance() {$/;"	f
+test_given_json_test_message_when_it_does_not_have_a_message_field_then_error_is_returned	src/matcher/pattern/testmessage/test.rs	/^fn test_given_json_test_message_when_it_does_not_have_a_message_field_then_error_is_returned() {$/;"	f
+test_given_json_test_message_when_it_does_not_have_the_optional_fields_then_it_can_be_loaded_successfully	src/matcher/pattern/testmessage/test.rs	/^fn test_given_json_test_message_when_it_does_not_have_the_optional_fields_then_it_can_be_loaded_successfully() {$/;"	f
+test_given_json_test_message_when_it_contains_not_just_the_valid_fields_then_we_return_an_error	src/matcher/pattern/testmessage/test.rs	/^fn test_given_json_test_message_when_it_contains_not_just_the_valid_fields_then_we_return_an_error() {$/;"	f
+TestMessage	src/matcher/pattern/testmessage/message.rs	/^pub struct TestMessage {$/;"	s
+TestMessage	src/matcher/pattern/testmessage/message.rs	/^impl TestMessage {$/;"	i
+new	src/matcher/pattern/testmessage/message.rs	/^    pub fn new(message: String, values: BTreeMap<String, String>, tags: Option<Vec<String>>) -> TestMessage {$/;"	f
+message	src/matcher/pattern/testmessage/message.rs	/^    pub fn message(&self) -> &str {$/;"	f
+values	src/matcher/pattern/testmessage/message.rs	/^    pub fn values(&self) -> &BTreeMap<String, String> {$/;"	f
+tags	src/matcher/pattern/testmessage/message.rs	/^    pub fn tags(&self) -> Option<&[String]> {$/;"	f
+test_result	src/matcher/pattern/testmessage/message.rs	/^    pub fn test_result(&self, result: &MatchResult) -> Result<(), Error> {$/;"	f
+test_values	src/matcher/pattern/testmessage/message.rs	/^    fn test_values(&self, result: &MatchResult) -> Result<(), Error> {$/;"	f
+test_value	src/matcher/pattern/testmessage/message.rs	/^    fn test_value(key: &str, value: &str, values: &BTreeMap<&str, &str>, result: &MatchResult) -> Result<(), Error> {$/;"	f
+merge_values	src/matcher/pattern/testmessage/message.rs	/^    fn merge_values<'a>(result: &'a MatchResult) -> BTreeMap<&'a str, &'a str> {$/;"	f
+test_tags	src/matcher/pattern/testmessage/message.rs	/^    fn test_tags(&self, result: &MatchResult) -> Result<(), Error> {$/;"	f
+test_expected_tags_can_be_found_in_got_tags	src/matcher/pattern/testmessage/message.rs	/^    fn test_expected_tags_can_be_found_in_got_tags(&self, expected_tags: &[String], got_tags: &[String], result: &MatchResult) -> Result<(), Error> {$/;"	f
+report_unexpected_tags_error	src/matcher/pattern/testmessage/message.rs	/^    fn report_unexpected_tags_error(&self, result: &MatchResult) -> Error {$/;"	f
+serde::Deserialize for TestMessage	src/matcher/pattern/testmessage/deser.rs	/^impl serde::Deserialize for TestMessage {$/;"	i
+deserialize	src/matcher/pattern/testmessage/deser.rs	/^    fn deserialize<D>(deserializer: &mut D) -> Result<TestMessage, D::Error>$/;"	f
+Field	src/matcher/pattern/testmessage/deser.rs	/^enum Field {$/;"	g
+serde::Deserialize for Field	src/matcher/pattern/testmessage/deser.rs	/^impl serde::Deserialize for Field {$/;"	i
+deserialize	src/matcher/pattern/testmessage/deser.rs	/^    fn deserialize<D>(deserializer: &mut D) -> Result<Field, D::Error>$/;"	f
+FieldVisitor	src/matcher/pattern/testmessage/deser.rs	/^        struct FieldVisitor;$/;"	s
+serde::de::Visitor for FieldVisitor	src/matcher/pattern/testmessage/deser.rs	/^        impl serde::de::Visitor for FieldVisitor {$/;"	i
+Value	src/matcher/pattern/testmessage/deser.rs	/^            type Value = Field;$/;"	T
+visit_str	src/matcher/pattern/testmessage/deser.rs	/^            fn visit_str<E>(&mut self, value: &str) -> Result<Field, E>$/;"	f
+TestMessageVisitor	src/matcher/pattern/testmessage/deser.rs	/^struct TestMessageVisitor;$/;"	s
+serde::de::Visitor for TestMessageVisitor	src/matcher/pattern/testmessage/deser.rs	/^impl serde::de::Visitor for TestMessageVisitor {$/;"	i
+Value	src/matcher/pattern/testmessage/deser.rs	/^    type Value = TestMessage;$/;"	T
+visit_map	src/matcher/pattern/testmessage/deser.rs	/^    fn visit_map<V>(&mut self, mut visitor: V) -> Result<TestMessage, V::Error>$/;"	f
+serde::Deserialize for Pattern	src/matcher/pattern/deser.rs	/^impl serde::Deserialize for Pattern {$/;"	i
+deserialize	src/matcher/pattern/deser.rs	/^    fn deserialize<D>(deserializer: &mut D) -> Result<Pattern, D::Error>$/;"	f
+Field	src/matcher/pattern/deser.rs	/^enum Field {$/;"	g
+serde::Deserialize for Field	src/matcher/pattern/deser.rs	/^impl serde::Deserialize for Field {$/;"	i
+deserialize	src/matcher/pattern/deser.rs	/^    fn deserialize<D>(deserializer: &mut D) -> Result<Field, D::Error>$/;"	f
+FieldVisitor	src/matcher/pattern/deser.rs	/^        struct FieldVisitor;$/;"	s
+serde::de::Visitor for FieldVisitor	src/matcher/pattern/deser.rs	/^        impl serde::de::Visitor for FieldVisitor {$/;"	i
+Value	src/matcher/pattern/deser.rs	/^            type Value = Field;$/;"	T
+visit_str	src/matcher/pattern/deser.rs	/^            fn visit_str<E>(&mut self, value: &str) -> Result<Field, E>$/;"	f
+PatternVisitor	src/matcher/pattern/deser.rs	/^struct PatternVisitor;$/;"	s
+PatternVisitor	src/matcher/pattern/deser.rs	/^impl PatternVisitor {$/;"	i
+parse_uuid	src/matcher/pattern/deser.rs	/^    pub fn parse_uuid<V: serde::de::MapVisitor>(uuid: Option<String>) -> Result<Uuid, V::Error> {$/;"	f
+serde::de::Visitor for PatternVisitor	src/matcher/pattern/deser.rs	/^impl serde::de::Visitor for PatternVisitor {$/;"	i
+Value	src/matcher/pattern/deser.rs	/^    type Value = Pattern;$/;"	T
+visit_map	src/matcher/pattern/deser.rs	/^    fn visit_map<V>(&mut self, mut visitor: V) -> Result<Pattern, V::Error>$/;"	f
+Node	src/matcher/trie/node/node.rs	/^pub struct Node {$/;"	s
+LiteralLookupResult	src/matcher/trie/node/node.rs	/^enum LiteralLookupResult<'a> {$/;"	g
+Node	src/matcher/trie/node/node.rs	/^impl Node {$/;"	i
+new	src/matcher/trie/node/node.rs	/^    pub fn new() -> Node {$/;"	f
+add_literal_node	src/matcher/trie/node/node.rs	/^    pub fn add_literal_node(&mut self, lnode: LiteralNode) {$/;"	f
+is_leaf	src/matcher/trie/node/node.rs	/^    pub fn is_leaf(&self) -> bool {$/;"	f
+lookup_literal_mut	src/matcher/trie/node/node.rs	/^    pub fn lookup_literal_mut(&mut self, literal: &str) -> Result<(&mut Node, usize), (&mut Node, usize)> {$/;"	f
+lookup_literal	src/matcher/trie/node/node.rs	/^    pub fn lookup_literal(&self, literal: &str) -> Result<(&Node, usize), (&Node, usize)> {$/;"	f
+search	src/matcher/trie/node/node.rs	/^    fn search<'a, 'b>(&'a self, literal: &'b str) -> LiteralLookupResult<'b> {$/;"	f
+search_prefix_is_found	src/matcher/trie/node/node.rs	/^    fn search_prefix_is_found<'a, 'b>(&'a self, literal: &'b str, pos: usize) -> LiteralLookupResult<'b> {$/;"	f
+search_prefix_is_found_and_node_is_leaf	src/matcher/trie/node/node.rs	/^    fn search_prefix_is_found_and_node_is_leaf<'a, 'b>(&'a self, literal: &'b str, pos: usize) -> LiteralLookupResult<'b> {$/;"	f
+search_prefix_is_found_and_node_is_not_leaf	src/matcher/trie/node/node.rs	/^    fn search_prefix_is_found_and_node_is_not_leaf<'a, 'b>(&'a self, literal: &'b str, pos: usize) -> LiteralLookupResult<'b> {$/;"	f
+parse	src/matcher/trie/node/node.rs	/^    pub fn parse<'a, 'b>(&'a self, text: &'b str) -> Option<MatchResult<'a, 'b>> {$/;"	f
+create_match_result_if_child_is_leaf	src/matcher/trie/node/node.rs	/^    fn create_match_result_if_child_is_leaf<'a, 'b>(child: &'a LiteralNode) -> Option<MatchResult<'a, 'b>> {$/;"	f
+parse_with_parsers	src/matcher/trie/node/node.rs	/^    fn parse_with_parsers<'a, 'b>(&'a self, text: &'b str) -> Option<MatchResult<'a, 'b>> {$/;"	f
+parse_then_push_kvpair	src/matcher/trie/node/node.rs	/^    pub fn parse_then_push_kvpair<'a, 'b>(&'a self, text: &'b str, kvpair: ParseResult<'a, 'b>) -> Option<MatchResult<'a, 'b>> {$/;"	f
+lookup_parser	src/matcher/trie/node/node.rs	/^    fn lookup_parser(&mut self, parser: &Parser<>) -> Option<usize> {$/;"	f
+insert_literal_tail	src/matcher/trie/node/node.rs	/^    fn insert_literal_tail(&mut self, tail: &str) -> &mut LiteralNode {$/;"	f
+lookup_freshly_inserted_literal	src/matcher/trie/node/node.rs	/^    fn lookup_freshly_inserted_literal(&mut self, pos: usize, literal: &str) -> &mut LiteralNode {$/;"	f
+HasPattern for Node	src/matcher/trie/node/node.rs	/^impl HasPattern for Node {$/;"	i
+set_pattern	src/matcher/trie/node/node.rs	/^    fn set_pattern(&mut self, _: Pattern) {}$/;"	f
+pattern	src/matcher/trie/node/node.rs	/^    fn pattern(&self) -> Option<&Pattern> {None}$/;"	f
+TrieOperations for Node	src/matcher/trie/node/node.rs	/^impl TrieOperations for Node {$/;"	i
+insert_literal	src/matcher/trie/node/node.rs	/^    fn insert_literal(&mut self, literal: &str) -> &mut LiteralNode {$/;"	f
+insert_parser	src/matcher/trie/node/node.rs	/^    fn insert_parser(&mut self, parser: Box<Parser>) -> &mut ParserNode {$/;"	f
+test	src/matcher/trie/node/node.rs	/^mod test {$/;"	m
+given_empty_trie_when_literals_are_inserted_then_they_can_be_looked_up	src/matcher/trie/node/node.rs	/^    fn given_empty_trie_when_literals_are_inserted_then_they_can_be_looked_up() {$/;"	f
+test_given_empty_trie_when_literals_are_inserted_the_child_counts_are_right	src/matcher/trie/node/node.rs	/^    fn test_given_empty_trie_when_literals_are_inserted_the_child_counts_are_right() {$/;"	f
+test_given_empty_trie_when_literals_are_inserted_the_nodes_are_split_on_the_right_place	src/matcher/trie/node/node.rs	/^    fn test_given_empty_trie_when_literals_are_inserted_the_nodes_are_split_on_the_right_place() {$/;"	f
+test_given_trie_when_literals_are_looked_up_then_the_edges_in_the_trie_are_not_counted_as_literals	src/matcher/trie/node/node.rs	/^    fn test_given_trie_when_literals_are_looked_up_then_the_edges_in_the_trie_are_not_counted_as_literals() {$/;"	f
+test_given_node_when_the_same_parsers_are_inserted_then_they_are_merged_into_one_parsernode	src/matcher/trie/node/node.rs	/^    fn test_given_node_when_the_same_parsers_are_inserted_then_they_are_merged_into_one_parsernode() {$/;"	f
+test_given_node_when_different_parsers_are_inserted_then_they_are_not_merged	src/matcher/trie/node/node.rs	/^    fn test_given_node_when_different_parsers_are_inserted_then_they_are_not_merged() {$/;"	f
+create_parser_trie	src/matcher/trie/node/node.rs	/^    fn create_parser_trie() -> ParserTrie {$/;"	f
+test_given_parser_trie_when_some_patterns_are_inserted_then_texts_can_be_parsed	src/matcher/trie/node/node.rs	/^    fn test_given_parser_trie_when_some_patterns_are_inserted_then_texts_can_be_parsed() {$/;"	f
+test_given_parser_trie_when_some_patterns_are_inserted_then_fully_matching_literals_are_returned_as_empty_vectors	src/matcher/trie/node/node.rs	/^    fn test_given_parser_trie_when_some_patterns_are_inserted_then_fully_matching_literals_are_returned_as_empty_vectors() {$/;"	f
+test_given_parser_trie_when_some_patterns_are_inserted_then_literal_matches_have_precedence_over_parser_matches	src/matcher/trie/node/node.rs	/^    fn test_given_parser_trie_when_some_patterns_are_inserted_then_literal_matches_have_precedence_over_parser_matches() {$/;"	f
+create_complex_parser_trie	src/matcher/trie/node/node.rs	/^    fn create_complex_parser_trie() -> ParserTrie {$/;"	f
+test_given_parser_trie_when_a_parser_is_not_matched_then_the_parser_stack_is_unwind_so_an_untried_parser_is_tried	src/matcher/trie/node/node.rs	/^    fn test_given_parser_trie_when_a_parser_is_not_matched_then_the_parser_stack_is_unwind_so_an_untried_parser_is_tried() {$/;"	f
+test_given_parser_trie_when_the_to_be_parsed_literal_is_not_matched_then_the_parse_result_is_none	src/matcher/trie/node/node.rs	/^    fn test_given_parser_trie_when_the_to_be_parsed_literal_is_not_matched_then_the_parse_result_is_none() {$/;"	f
+test_given_parser_trie_when_the_to_be_parsed_literal_is_a_prefix_in_the_tree_then_the_parse_result_is_none	src/matcher/trie/node/node.rs	/^    fn test_given_parser_trie_when_the_to_be_parsed_literal_is_a_prefix_in_the_tree_then_the_parse_result_is_none() {$/;"	f
+test_given_empty_parser_node_when_it_is_used_for_parsing_then_it_returns_none	src/matcher/trie/node/node.rs	/^    fn test_given_empty_parser_node_when_it_is_used_for_parsing_then_it_returns_none() {$/;"	f
+test_given_node_when_the_message_is_too_short_we_do_not_try_to_unwrap_a_childs_pattern	src/matcher/trie/node/node.rs	/^    fn test_given_node_when_the_message_is_too_short_we_do_not_try_to_unwrap_a_childs_pattern() {$/;"	f
+literal	src/matcher/trie/node/mod.rs	/^mod literal;$/;"	m
+parser	src/matcher/trie/node/mod.rs	/^mod parser;$/;"	m
+node	src/matcher/trie/node/mod.rs	/^mod node;$/;"	m
+test	src/matcher/trie/node/mod.rs	/^mod test {$/;"	m
+test_given_node_when_literals_are_inserted_in_chains_then_they_can_be_looked_up	src/matcher/trie/node/mod.rs	/^    fn test_given_node_when_literals_are_inserted_in_chains_then_they_can_be_looked_up() {$/;"	f
+ParserNode	src/matcher/trie/node/parser.rs	/^pub struct ParserNode {$/;"	s
+ParserNode	src/matcher/trie/node/parser.rs	/^impl ParserNode {$/;"	i
+new	src/matcher/trie/node/parser.rs	/^    pub fn new(parser: Box<Parser>) -> ParserNode {$/;"	f
+parser	src/matcher/trie/node/parser.rs	/^    pub fn parser(&self) -> &Parser {$/;"	f
+is_leaf	src/matcher/trie/node/parser.rs	/^    pub fn is_leaf(&self) -> bool {$/;"	f
+node	src/matcher/trie/node/parser.rs	/^    pub fn node(&self) -> Option<&Node> {$/;"	f
+parse	src/matcher/trie/node/parser.rs	/^    pub fn parse<'a, 'b>(&'a self, text: &'b str) -> Option<MatchResult<'a, 'b>> {$/;"	f
+push_last_kvpair	src/matcher/trie/node/parser.rs	/^    fn push_last_kvpair<'a, 'b>(&'a self, text: &'b str, kvpair: ParseResult<'a, 'b>) -> Option<MatchResult<'a, 'b>> {$/;"	f
+TrieOperations for ParserNode	src/matcher/trie/node/parser.rs	/^impl TrieOperations for ParserNode {$/;"	i
+insert_literal	src/matcher/trie/node/parser.rs	/^    fn insert_literal(&mut self, literal: &str) -> &mut LiteralNode {$/;"	f
+insert_parser	src/matcher/trie/node/parser.rs	/^    fn insert_parser(&mut self, parser: Box<Parser>) -> &mut ParserNode {$/;"	f
+HasPattern for ParserNode	src/matcher/trie/node/parser.rs	/^impl HasPattern for ParserNode {$/;"	i
+set_pattern	src/matcher/trie/node/parser.rs	/^    fn set_pattern(&mut self, pattern: Pattern) {$/;"	f
+pattern	src/matcher/trie/node/parser.rs	/^    fn pattern(&self) -> Option<&Pattern> {$/;"	f
+Clone for ParserNode	src/matcher/trie/node/parser.rs	/^impl Clone for ParserNode {$/;"	i
+clone	src/matcher/trie/node/parser.rs	/^    fn clone(&self) -> ParserNode {$/;"	f
+LiteralNode	src/matcher/trie/node/literal.rs	/^pub struct LiteralNode {$/;"	s
+LiteralNode	src/matcher/trie/node/literal.rs	/^impl LiteralNode {$/;"	i
+new	src/matcher/trie/node/literal.rs	/^    pub fn new(literal: String) -> LiteralNode {$/;"	f
+from_str	src/matcher/trie/node/literal.rs	/^    pub fn from_str(literal: &str) -> LiteralNode {$/;"	f
+literal	src/matcher/trie/node/literal.rs	/^    pub fn literal(&self) -> &str {$/;"	f
+has_value	src/matcher/trie/node/literal.rs	/^    pub fn has_value(&self) -> bool {$/;"	f
+set_has_value	src/matcher/trie/node/literal.rs	/^    pub fn set_has_value(&mut self, has_value: bool) {$/;"	f
+set_node	src/matcher/trie/node/literal.rs	/^    pub fn set_node(&mut self, node: Option<Node>) {$/;"	f
+node_mut	src/matcher/trie/node/literal.rs	/^    pub fn node_mut(&mut self) -> Option<&mut Node> {$/;"	f
+node	src/matcher/trie/node/literal.rs	/^    pub fn node(&self) -> Option<&Node> {$/;"	f
+cmp_str	src/matcher/trie/node/literal.rs	/^    pub fn cmp_str(&self, other: &str) -> Ordering {$/;"	f
+split	src/matcher/trie/node/literal.rs	/^    pub fn split(self,$/;"	f
+is_leaf	src/matcher/trie/node/literal.rs	/^    pub fn is_leaf(&self) -> bool {$/;"	f
+compare_first_chars	src/matcher/trie/node/literal.rs	/^    fn compare_first_chars(&self, other : &LiteralNode) -> Ordering {$/;"	f
+TrieOperations for LiteralNode	src/matcher/trie/node/literal.rs	/^impl TrieOperations for LiteralNode {$/;"	i
+insert_literal	src/matcher/trie/node/literal.rs	/^    fn insert_literal(&mut self, literal: &str) -> &mut LiteralNode {$/;"	f
+insert_parser	src/matcher/trie/node/literal.rs	/^    fn insert_parser(&mut self, parser: Box<Parser>) -> &mut ParserNode {$/;"	f
+HasPattern for LiteralNode	src/matcher/trie/node/literal.rs	/^impl HasPattern for LiteralNode {$/;"	i
+set_pattern	src/matcher/trie/node/literal.rs	/^    fn set_pattern(&mut self, pattern: Pattern) {$/;"	f
+pattern	src/matcher/trie/node/literal.rs	/^    fn pattern(&self) -> Option<&Pattern> {$/;"	f
+Eq for LiteralNode	src/matcher/trie/node/literal.rs	/^impl Eq for LiteralNode {}$/;"	i
+PartialEq for LiteralNode	src/matcher/trie/node/literal.rs	/^impl PartialEq for LiteralNode {$/;"	i
+eq	src/matcher/trie/node/literal.rs	/^    fn eq(&self, other: &Self) -> bool {$/;"	f
+ne	src/matcher/trie/node/literal.rs	/^    fn ne(&self, other: &Self) -> bool {$/;"	f
+Ord for LiteralNode	src/matcher/trie/node/literal.rs	/^impl Ord for LiteralNode {$/;"	i
+cmp	src/matcher/trie/node/literal.rs	/^    fn cmp(&self, other: &Self) -> Ordering {$/;"	f
+PartialOrd for LiteralNode	src/matcher/trie/node/literal.rs	/^impl PartialOrd for LiteralNode {$/;"	i
+partial_cmp	src/matcher/trie/node/literal.rs	/^    fn partial_cmp(&self, other: &Self) -> Option<Ordering> {$/;"	f
+test	src/matcher/trie/node/literal.rs	/^mod test {$/;"	m
+given_literal_node_when_its_leafness_is_checked_the_right_result_is_returned	src/matcher/trie/node/literal.rs	/^    fn given_literal_node_when_its_leafness_is_checked_the_right_result_is_returned() {$/;"	f
+given_literal_node_when_it_is_compared_to_an_other_literal_node_then_only_their_first_chars_are_checked	src/matcher/trie/node/literal.rs	/^    fn given_literal_node_when_it_is_compared_to_an_other_literal_node_then_only_their_first_chars_are_checked() {$/;"	f
+node	src/matcher/trie/mod.rs	/^pub mod node;$/;"	m
+parser_factory	src/matcher/trie/mod.rs	/^pub mod parser_factory;$/;"	m
+factory	src/matcher/trie/mod.rs	/^pub mod factory;$/;"	m
+suite	src/matcher/trie/mod.rs	/^pub mod suite;$/;"	m
+trie	src/matcher/trie/mod.rs	/^mod trie;$/;"	m
+matcher	src/matcher/trie/mod.rs	/^mod matcher;$/;"	m
+TrieOperations	src/matcher/trie/mod.rs	/^pub trait TrieOperations {$/;"	t
+insert_literal	src/matcher/trie/mod.rs	/^    fn insert_literal(&mut self, literal: &str) -> &mut LiteralNode;$/;"	f
+insert_parser	src/matcher/trie/mod.rs	/^    fn insert_parser(&mut self, parser: Box<Parser>) -> &mut ParserNode;$/;"	f
+HasPattern	src/matcher/trie/mod.rs	/^pub trait HasPattern {$/;"	t
+set_pattern	src/matcher/trie/mod.rs	/^    fn set_pattern(&mut self, pattern: Pattern);$/;"	f
+pattern	src/matcher/trie/mod.rs	/^    fn pattern(&self) -> Option<&Pattern>;$/;"	f
+TrieMatcherSuite	src/matcher/trie/suite.rs	/^pub struct TrieMatcherSuite;$/;"	s
+MatcherSuite for TrieMatcherSuite	src/matcher/trie/suite.rs	/^impl MatcherSuite for TrieMatcherSuite {$/;"	i
+Matcher	src/matcher/trie/suite.rs	/^    type Matcher = ParserTrie;$/;"	T
+ParserFactory	src/matcher/trie/suite.rs	/^    type ParserFactory = TrieParserFactory;$/;"	T
+MatcherFactory	src/matcher/trie/suite.rs	/^    type MatcherFactory = TrieMatcherFactory;$/;"	T
+ParserTrie	src/matcher/trie/trie.rs	/^pub struct ParserTrie {$/;"	s
+ParserTrie	src/matcher/trie/trie.rs	/^impl ParserTrie {$/;"	i
+new	src/matcher/trie/trie.rs	/^    pub fn new() -> ParserTrie {$/;"	f
+insert	src/matcher/trie/trie.rs	/^    pub fn insert(&mut self, pattern: Pattern) {$/;"	f
+parse	src/matcher/trie/trie.rs	/^    pub fn parse<'a, 'b>(&'a self, text: &'b str) -> Option<MatchResult<'a, 'b>> {$/;"	f
+insert_pattern	src/matcher/trie/trie.rs	/^    fn insert_pattern<T>(node: &mut T, mut pattern: Pattern)$/;"	f
+test	src/matcher/trie/trie.rs	/^mod test {$/;"	m
+test_given_patterns_when_inserted_into_the_prefix_tree_then_the_proper_tree_is_built	src/matcher/trie/trie.rs	/^    fn test_given_patterns_when_inserted_into_the_prefix_tree_then_the_proper_tree_is_built() {$/;"	f
+test_given_pattern_when_inserted_into_the_parser_tree_then_the_pattern_is_stored_in_the_leaf	src/matcher/trie/trie.rs	/^    fn test_given_pattern_when_inserted_into_the_parser_tree_then_the_pattern_is_stored_in_the_leaf() {$/;"	f
+test_given_pattern_with_two_neighbouring_parser_when_the_pattern_is_inserted_into_the_trie_then_everything_is_ok	src/matcher/trie/trie.rs	/^    fn test_given_pattern_with_two_neighbouring_parser_when_the_pattern_is_inserted_into_the_trie_then_everything_is_ok() {$/;"	f
+TrieMatcherFactory	src/matcher/trie/factory.rs	/^pub struct TrieMatcherFactory;$/;"	s
+MatcherFactory for TrieMatcherFactory	src/matcher/trie/factory.rs	/^impl MatcherFactory for TrieMatcherFactory {$/;"	i
+Matcher	src/matcher/trie/factory.rs	/^    type Matcher = ParserTrie;$/;"	T
+new_matcher	src/matcher/trie/factory.rs	/^    fn new_matcher() -> Self::Matcher {$/;"	f
+Matcher for ParserTrie	src/matcher/trie/matcher.rs	/^impl Matcher for ParserTrie {$/;"	i
+parse	src/matcher/trie/matcher.rs	/^    fn parse<'a, 'b>(&'a self, text: &'b str) -> Option<MatchResult<'a, 'b>> {$/;"	f
+add_pattern	src/matcher/trie/matcher.rs	/^    fn add_pattern(&mut self, pattern: Pattern) {$/;"	f
+boxed_clone	src/matcher/trie/matcher.rs	/^    fn boxed_clone(&self) -> Box<Matcher> {$/;"	f
+TrieParserFactory	src/matcher/trie/parser_factory.rs	/^pub struct TrieParserFactory;$/;"	s
+ParserFactory for TrieParserFactory	src/matcher/trie/parser_factory.rs	/^impl ParserFactory for TrieParserFactory {$/;"	i
+new_set	src/matcher/trie/parser_factory.rs	/^    fn new_set<'a>(set: &str, name: Option<&str>, opt_params: Option<Vec<OptionalParameter<'a>>>) -> Box<Parser> {$/;"	f
+new_int	src/matcher/trie/parser_factory.rs	/^    fn new_int<'a>(name: Option<&str>, opt_params: Option<Vec<OptionalParameter<'a>>>) -> Box<Parser> {$/;"	f
+new_greedy	src/matcher/trie/parser_factory.rs	/^    fn new_greedy<'a>(name: Option<&str>, end_string: Option<&str>) -> Box<Parser> {$/;"	f
+parsers	src/lib.rs	/^pub mod parsers;$/;"	m
+utils	src/lib.rs	/^pub mod utils;$/;"	m
+matcher	src/lib.rs	/^pub mod matcher;$/;"	m
+grammar	src/lib.rs	/^pub mod grammar;$/;"	m
+SetParser	src/parsers/set.rs	/^pub struct SetParser {$/;"	s
+SetParser	src/parsers/set.rs	/^impl SetParser {$/;"	i
+with_name	src/parsers/set.rs	/^    pub fn with_name(name: String, set: &str) -> SetParser {$/;"	f
+new	src/parsers/set.rs	/^    pub fn new(set: &str) -> SetParser {$/;"	f
+from_str	src/parsers/set.rs	/^    pub fn from_str(name: &str, set: &str) -> SetParser {$/;"	f
+set_character_set	src/parsers/set.rs	/^    pub fn set_character_set(&mut self, set: &str) {$/;"	f
+set_min_length	src/parsers/set.rs	/^    pub fn set_min_length(&mut self, length: usize) {$/;"	f
+set_max_length	src/parsers/set.rs	/^    pub fn set_max_length(&mut self, length: usize) {$/;"	f
+create_set_from_str	src/parsers/set.rs	/^    fn create_set_from_str(set: &str) -> BTreeSet<u8> {$/;"	f
+calculate_match_length	src/parsers/set.rs	/^    fn calculate_match_length(&self, value: &str) -> usize {$/;"	f
+Parser for SetParser	src/parsers/set.rs	/^impl Parser for SetParser {$/;"	i
+parse	src/parsers/set.rs	/^    fn parse<'a, 'b>(&'a self, value: &'b str) -> Option<ParseResult<'a, 'b>> {$/;"	f
+name	src/parsers/set.rs	/^    fn name(&self) -> Option<&str> {$/;"	f
+set_name	src/parsers/set.rs	/^    fn set_name(&mut self, name: Option<String>) {$/;"	f
+boxed_clone	src/parsers/set.rs	/^    fn boxed_clone(&self) -> Box<Parser> {$/;"	f
+ObjectSafeHash for SetParser	src/parsers/set.rs	/^impl ObjectSafeHash for SetParser {$/;"	i
+hash_os	src/parsers/set.rs	/^    fn hash_os(&self) -> u64 {$/;"	f
+HasOptionalParameter for SetParser	src/parsers/set.rs	/^impl HasOptionalParameter for SetParser {$/;"	i
+set_optional_param	src/parsers/set.rs	/^    fn set_optional_param<'a>(&mut self, param: OptionalParameter<'a>) -> bool {$/;"	f
+test	src/parsers/set.rs	/^mod test {$/;"	m
+test_given_empty_string_when_parsed_it_wont_match	src/parsers/set.rs	/^    fn test_given_empty_string_when_parsed_it_wont_match() {$/;"	f
+test_given_not_matching_string_when_parsed_it_wont_match	src/parsers/set.rs	/^    fn test_given_not_matching_string_when_parsed_it_wont_match() {$/;"	f
+test_given_matching_string_when_parsed_it_matches	src/parsers/set.rs	/^    fn test_given_matching_string_when_parsed_it_matches() {$/;"	f
+test_given_minimum_match_length_when_a_match_is_shorter_it_doesnt_count_as_a_match	src/parsers/set.rs	/^    fn test_given_minimum_match_length_when_a_match_is_shorter_it_doesnt_count_as_a_match() {$/;"	f
+test_given_maximum_match_length_when_a_match_is_longer_it_doesnt_count_as_a_match	src/parsers/set.rs	/^    fn test_given_maximum_match_length_when_a_match_is_longer_it_doesnt_count_as_a_match() {$/;"	f
+test_given_minimum_and_maximum_match_length_when_a_proper_length_match_occures_it_counts_as_a_match	src/parsers/set.rs	/^    fn test_given_minimum_and_maximum_match_length_when_a_proper_length_match_occures_it_counts_as_a_match() {$/;"	f
+test_given_set_parser_and_when_differently_parametrized_instances_are_hashed_then_the_hashes_are_different	src/parsers/set.rs	/^    fn test_given_set_parser_and_when_differently_parametrized_instances_are_hashed_then_the_hashes_are_different() {$/;"	f
+set	src/parsers/mod.rs	/^mod set;$/;"	m
+base	src/parsers/mod.rs	/^mod base;$/;"	m
+int	src/parsers/mod.rs	/^mod int;$/;"	m
+length_checked	src/parsers/mod.rs	/^mod length_checked;$/;"	m
+greedy	src/parsers/mod.rs	/^mod greedy;$/;"	m
+ObjectSafeHash	src/parsers/mod.rs	/^pub trait ObjectSafeHash {$/;"	t
+hash_os	src/parsers/mod.rs	/^    fn hash_os(&self) -> u64;$/;"	f
+Parser	src/parsers/mod.rs	/^pub trait Parser: Debug + ObjectSafeHash {$/;"	t
+parse	src/parsers/mod.rs	/^    fn parse<'a, 'b>(&'a self, value: &'b str) -> Option<ParseResult<'a, 'b>>;$/;"	f
+name	src/parsers/mod.rs	/^    fn name(&self) -> Option<&str>;$/;"	f
+set_name	src/parsers/mod.rs	/^    fn set_name(&mut self, Option<String>);$/;"	f
+boxed_clone	src/parsers/mod.rs	/^    fn boxed_clone(&self) -> Box<Parser>;$/;"	f
+HasOptionalParameter	src/parsers/mod.rs	/^pub trait HasOptionalParameter {$/;"	t
+set_optional_params	src/parsers/mod.rs	/^    fn set_optional_params<'a>(&mut self, params: Option<Vec<OptionalParameter<'a>>>) -> bool {$/;"	f
+set_optional_param	src/parsers/mod.rs	/^    fn set_optional_param<'a>(&mut self, param: OptionalParameter<'a>) -> bool;$/;"	f
+OptionalParameter	src/parsers/mod.rs	/^pub enum OptionalParameter<'a> {$/;"	g
+ParseResult	src/parsers/mod.rs	/^pub struct ParseResult<'a, 'b> {$/;"	s
+ParseResult	src/parsers/mod.rs	/^impl<'a, 'b> ParseResult<'a, 'b> {$/;"	i
+new	src/parsers/mod.rs	/^    pub fn new(parser: &'a Parser, value: &'b str) -> ParseResult<'a, 'b> {$/;"	f
+parser	src/parsers/mod.rs	/^    pub fn parser(&self) -> &'a Parser {$/;"	f
+value	src/parsers/mod.rs	/^    pub fn value(&self) -> &'b str {$/;"	f
+ParserFactory	src/parsers/mod.rs	/^pub trait ParserFactory: {$/;"	t
+new_set	src/parsers/mod.rs	/^    fn new_set<'a>(set: &str, name: Option<&str>, opt_params: Option<Vec<OptionalParameter<'a>>>) -> Box<Parser>;$/;"	f
+new_int	src/parsers/mod.rs	/^    fn new_int<'a>(name: Option<&str>, opt_params: Option<Vec<OptionalParameter<'a>>>) -> Box<Parser>;$/;"	f
+new_greedy	src/parsers/mod.rs	/^    fn new_greedy<'a>(name: Option<&str>, end_string: Option<&str>) -> Box<Parser>;$/;"	f
+ParserBase	src/parsers/base.rs	/^pub struct ParserBase {$/;"	s
+ParserBase	src/parsers/base.rs	/^impl ParserBase {$/;"	i
+with_name	src/parsers/base.rs	/^    pub fn with_name(name: String) -> ParserBase {$/;"	f
+new	src/parsers/base.rs	/^    pub fn new() -> ParserBase {$/;"	f
+name	src/parsers/base.rs	/^    pub fn name(&self) -> Option<&str> {$/;"	f
+set_name	src/parsers/base.rs	/^    pub fn set_name(&mut self, name: Option<String>) {$/;"	f
+IntParser	src/parsers/int.rs	/^pub struct IntParser {$/;"	s
+IntParser	src/parsers/int.rs	/^impl IntParser {$/;"	i
+from_str	src/parsers/int.rs	/^    pub fn from_str(name: &str) -> IntParser {$/;"	f
+with_name	src/parsers/int.rs	/^    pub fn with_name(name: String) -> IntParser {$/;"	f
+new	src/parsers/int.rs	/^    pub fn new() -> IntParser {$/;"	f
+set_min_length	src/parsers/int.rs	/^    pub fn set_min_length(&mut self, length: usize) {$/;"	f
+set_max_length	src/parsers/int.rs	/^    pub fn set_max_length(&mut self, length: usize) {$/;"	f
+Parser for IntParser	src/parsers/int.rs	/^impl Parser for IntParser {$/;"	i
+parse	src/parsers/int.rs	/^    fn parse<'a, 'b>(&'a self, value: &'b str) -> Option<ParseResult<'a, 'b>> {$/;"	f
+name	src/parsers/int.rs	/^    fn name(&self) -> Option<&str> {$/;"	f
+set_name	src/parsers/int.rs	/^    fn set_name(&mut self, name: Option<String>) {$/;"	f
+boxed_clone	src/parsers/int.rs	/^    fn boxed_clone(&self) -> Box<Parser> {$/;"	f
+ObjectSafeHash for IntParser	src/parsers/int.rs	/^impl ObjectSafeHash for IntParser {$/;"	i
+hash_os	src/parsers/int.rs	/^    fn hash_os(&self) -> u64 {$/;"	f
+HasOptionalParameter for IntParser	src/parsers/int.rs	/^impl HasOptionalParameter for IntParser {$/;"	i
+set_optional_param	src/parsers/int.rs	/^    fn set_optional_param<'a>(&mut self, param: OptionalParameter<'a>) -> bool {$/;"	f
+test	src/parsers/int.rs	/^mod test {$/;"	m
+test_given_int_parser_when_the_match_is_empty_then_the_result_isnt_successful	src/parsers/int.rs	/^    fn test_given_int_parser_when_the_match_is_empty_then_the_result_isnt_successful() {$/;"	f
+test_given_matching_string_when_it_is_parsed_then_it_matches	src/parsers/int.rs	/^    fn test_given_matching_string_when_it_is_parsed_then_it_matches() {$/;"	f
+test_given_matching_string_which_is_longer_than_the_max_match_length_when_it_is_parsed_then_it_does_not_match	src/parsers/int.rs	/^    fn test_given_matching_string_which_is_longer_than_the_max_match_length_when_it_is_parsed_then_it_does_not_match() {$/;"	f
+LengthCheckedParserBase	src/parsers/length_checked.rs	/^pub struct LengthCheckedParserBase {$/;"	s
+LengthCheckedParserBase	src/parsers/length_checked.rs	/^impl LengthCheckedParserBase {$/;"	i
+with_name	src/parsers/length_checked.rs	/^    pub fn with_name(name: String) -> LengthCheckedParserBase {$/;"	f
+new	src/parsers/length_checked.rs	/^    pub fn new() -> LengthCheckedParserBase {$/;"	f
+set_min_length	src/parsers/length_checked.rs	/^    pub fn set_min_length(&mut self, length: usize) {$/;"	f
+set_max_length	src/parsers/length_checked.rs	/^    pub fn set_max_length(&mut self, length: usize) {$/;"	f
+is_match_length_ok	src/parsers/length_checked.rs	/^    pub fn is_match_length_ok(&self, match_length: usize) -> bool {$/;"	f
+set_name	src/parsers/length_checked.rs	/^    pub fn set_name(&mut self, name: Option<String>) {$/;"	f
+name	src/parsers/length_checked.rs	/^    pub fn name(&self) -> Option<&str> {$/;"	f
+is_min_length_ok	src/parsers/length_checked.rs	/^    fn is_min_length_ok(&self, match_length: usize) -> bool {$/;"	f
+is_max_length_ok	src/parsers/length_checked.rs	/^    fn is_max_length_ok(&self, match_length: usize) -> bool {$/;"	f
+HasOptionalParameter for LengthCheckedParserBase	src/parsers/length_checked.rs	/^impl HasOptionalParameter for LengthCheckedParserBase {$/;"	i
+set_optional_param	src/parsers/length_checked.rs	/^    fn set_optional_param<'a>(&mut self, param: OptionalParameter<'a>) -> bool {$/;"	f
+test	src/parsers/length_checked.rs	/^mod test {$/;"	m
+test_given_parser_when_the_match_length_is_not_constrained_then_the_match_length_is_ok_in_every_case	src/parsers/length_checked.rs	/^    fn test_given_parser_when_the_match_length_is_not_constrained_then_the_match_length_is_ok_in_every_case() {$/;"	f
+test_given_parser_when_the_minimum_match_length_is_set_then_the_shorter_matches_are_discarded	src/parsers/length_checked.rs	/^    fn test_given_parser_when_the_minimum_match_length_is_set_then_the_shorter_matches_are_discarded() {$/;"	f
+test_given_parser_when_the_maximum_match_length_is_set_then_the_longer_matches_are_discarded	src/parsers/length_checked.rs	/^    fn test_given_parser_when_the_maximum_match_length_is_set_then_the_longer_matches_are_discarded() {$/;"	f
+GreedyParser	src/parsers/greedy.rs	/^pub struct GreedyParser {$/;"	s
+GreedyParser	src/parsers/greedy.rs	/^impl GreedyParser {$/;"	i
+with_name	src/parsers/greedy.rs	/^    pub fn with_name(name: String) -> GreedyParser {$/;"	f
+from_str	src/parsers/greedy.rs	/^    pub fn from_str(name: &str, end_string: &str) -> GreedyParser {$/;"	f
+new	src/parsers/greedy.rs	/^    pub fn new() -> GreedyParser {$/;"	f
+set_end_string	src/parsers/greedy.rs	/^    pub fn set_end_string(&mut self, end_string: Option<String>) {$/;"	f
+ObjectSafeHash for GreedyParser	src/parsers/greedy.rs	/^impl ObjectSafeHash for GreedyParser {$/;"	i
+hash_os	src/parsers/greedy.rs	/^    fn hash_os(&self) -> u64 {$/;"	f
+Parser for GreedyParser	src/parsers/greedy.rs	/^impl Parser for GreedyParser {$/;"	i
+parse	src/parsers/greedy.rs	/^    fn parse<'a, 'b>(&'a self, value: &'b str) -> Option<ParseResult<'a, 'b>> {$/;"	f
+name	src/parsers/greedy.rs	/^    fn name(&self) -> Option<&str> {$/;"	f
+set_name	src/parsers/greedy.rs	/^    fn set_name(&mut self, name: Option<String>) {$/;"	f
+boxed_clone	src/parsers/greedy.rs	/^    fn boxed_clone(&self) -> Box<Parser> {$/;"	f
+test	src/parsers/greedy.rs	/^mod test {$/;"	m
+test_given_greedy_parser_when_the_end_string_is_not_found_in_the_value_then_the_parser_doesnt_match	src/parsers/greedy.rs	/^    fn test_given_greedy_parser_when_the_end_string_is_not_found_in_the_value_then_the_parser_doesnt_match() {$/;"	f
+test_given_greedy_parser_when_the_end_string_is_found_in_the_value_then_the_parser_matches	src/parsers/greedy.rs	/^    fn test_given_greedy_parser_when_the_end_string_is_found_in_the_value_then_the_parser_matches() {$/;"	f
+SortedVec	src/utils/sortedvec.rs	/^pub struct SortedVec<T> {$/;"	s
+SortedVec	src/utils/sortedvec.rs	/^impl <T: Ord> SortedVec<T> {$/;"	i
+new	src/utils/sortedvec.rs	/^    pub fn new() -> SortedVec<T> {$/;"	f
+push	src/utils/sortedvec.rs	/^    pub fn push(&mut self, value: T) {$/;"	f
+find_pos	src/utils/sortedvec.rs	/^    pub fn find_pos(&self, value: &T) -> Option<usize> {$/;"	f
+find	src/utils/sortedvec.rs	/^    pub fn find(&self, value: &T) -> Option<&T> {$/;"	f
+remove	src/utils/sortedvec.rs	/^    pub fn remove(&mut self, index: usize) -> T {$/;"	f
+get	src/utils/sortedvec.rs	/^    pub fn get(&self, index: usize) -> Option<&T> {$/;"	f
+get_mut	src/utils/sortedvec.rs	/^    pub fn get_mut(&mut self, index: usize) -> Option<&mut T> {$/;"	f
+len	src/utils/sortedvec.rs	/^    pub fn len(&self) -> usize {$/;"	f
+is_empty	src/utils/sortedvec.rs	/^    pub fn is_empty(&self) -> bool {$/;"	f
+binary_search_by	src/utils/sortedvec.rs	/^    pub fn binary_search_by<F>(&self, f: F) -> Result<usize, usize> where F: FnMut(&T) -> Ordering {$/;"	f
+binary_search	src/utils/sortedvec.rs	/^    fn binary_search<'a>(&self, needle: &T) -> Option<usize> {$/;"	f
+test	src/utils/sortedvec.rs	/^mod test {$/;"	m
+test_given_sorted_vector_when_values_are_pushed_they_be_get	src/utils/sortedvec.rs	/^    fn test_given_sorted_vector_when_values_are_pushed_they_be_get() {$/;"	f
+test_given_sorted_vector_when_values_are_pushed_they_get_sorted	src/utils/sortedvec.rs	/^    fn test_given_sorted_vector_when_values_are_pushed_they_get_sorted() {$/;"	f
+test_given_sorted_vector_when_values_are_searched_they_can_be_found	src/utils/sortedvec.rs	/^    fn test_given_sorted_vector_when_values_are_searched_they_can_be_found() {$/;"	f
+test_given_sorted_vector_when_length_is_queried_it_is_ok	src/utils/sortedvec.rs	/^    fn test_given_sorted_vector_when_length_is_queried_it_is_ok() {$/;"	f
+test_given_sorted_vector_when_values_are_found_then_their_references_are_returned	src/utils/sortedvec.rs	/^    fn test_given_sorted_vector_when_values_are_found_then_their_references_are_returned() {$/;"	f
+test_given_sorted_vector_when_values_are_searched_by_custom_cmp_func_they_can_be_found	src/utils/sortedvec.rs	/^    fn test_given_sorted_vector_when_values_are_searched_by_custom_cmp_func_they_can_be_found() {$/;"	f
+test_given_sorted_vector_of_literal_nodes_when_binary_search_by_are_used_the_right_node_is_found	src/utils/sortedvec.rs	/^    fn test_given_sorted_vector_of_literal_nodes_when_binary_search_by_are_used_the_right_node_is_found() {$/;"	f
+sortedvec	src/utils/mod.rs	/^mod sortedvec;$/;"	m
+common_prefix	src/utils/mod.rs	/^pub mod common_prefix;$/;"	m
+flatten_vec	src/utils/mod.rs	/^pub fn flatten_vec<T>(vectors: Vec<Vec<T>>) -> Vec<T> {$/;"	f
+CommonPrefix	src/utils/common_prefix.rs	/^pub trait CommonPrefix {$/;"	t
+has_common_prefix	src/utils/common_prefix.rs	/^    fn has_common_prefix(&self, other: &Self) -> Option<usize> {$/;"	f
+common_prefix_len	src/utils/common_prefix.rs	/^    fn common_prefix_len(&self, other: &Self) -> usize;$/;"	f
+ltrunc	src/utils/common_prefix.rs	/^    fn ltrunc(&self, len: usize) -> &Self;$/;"	f
+rtrunc	src/utils/common_prefix.rs	/^    fn rtrunc(&self, len: usize) -> &Self;$/;"	f
+CommonPrefix for str	src/utils/common_prefix.rs	/^impl CommonPrefix for str {$/;"	i
+common_prefix_len	src/utils/common_prefix.rs	/^    fn common_prefix_len(&self, other: &Self) -> usize {$/;"	f
+ltrunc	src/utils/common_prefix.rs	/^    fn ltrunc(&self, len: usize) -> &Self {$/;"	f
+rtrunc	src/utils/common_prefix.rs	/^    fn rtrunc(&self, len: usize) -> &Self {$/;"	f
+test	src/utils/common_prefix.rs	/^mod test {$/;"	m
+given_a_string_when_longest_common_prefix_is_calulated_then_the_result_is_right	src/utils/common_prefix.rs	/^    fn given_a_string_when_longest_common_prefix_is_calulated_then_the_result_is_right() {$/;"	f
+test_given_a_string_when_truncated_by_left_then_the_result_is_the_expected	src/utils/common_prefix.rs	/^    fn test_given_a_string_when_truncated_by_left_then_the_result_is_the_expected() {$/;"	f
+test_given_a_string_when_truncated_by_right_then_the_result_is_the_expected	src/utils/common_prefix.rs	/^    fn test_given_a_string_when_truncated_by_right_then_the_result_is_the_expected() {$/;"	f
+logger	src/bin/adbtool.rs	/^mod logger;$/;"	m
+parse	src/bin/adbtool.rs	/^mod parse;$/;"	m
+build_command_line_argument_parser	src/bin/adbtool.rs	/^fn build_command_line_argument_parser<'a, 'b, 'c, 'd, 'e, 'f>() -> App<'a, 'b, 'c, 'd, 'e, 'f> {$/;"	f
+handle_validate	src/bin/adbtool.rs	/^fn handle_validate(matches: &ArgMatches) {$/;"	f
+validate_patterns_independently	src/bin/adbtool.rs	/^fn validate_patterns_independently(pattern_file: &str) {$/;"	f
+handle_parse	src/bin/adbtool.rs	/^fn handle_parse(matches: &ArgMatches) {$/;"	f
+setup_stdout_logger	src/bin/adbtool.rs	/^fn setup_stdout_logger(log_level: LogLevelFilter) {$/;"	f
+choose_log_level	src/bin/adbtool.rs	/^fn choose_log_level<'n, 'a>(matches: &ArgMatches<'n ,'a>) -> LogLevelFilter {$/;"	f
+main	src/bin/adbtool.rs	/^fn main() {$/;"	f
+StdoutLogger	src/bin/logger.rs	/^pub struct StdoutLogger;$/;"	s
+log::Log for StdoutLogger	src/bin/logger.rs	/^impl log::Log for StdoutLogger {$/;"	i
+enabled	src/bin/logger.rs	/^    fn enabled(&self, metadata: &LogMetadata) -> bool {$/;"	f
+log	src/bin/logger.rs	/^    fn log(&self, record: &LogRecord) {$/;"	f
+parse	src/bin/parse.rs	/^pub fn parse(pattern_file_path: &str, input_file_path: &str, output_file_path: &str) -> Result<(), Error> {$/;"	f
+parse_file	src/bin/parse.rs	/^fn parse_file(input_file: &File, output_file: &mut File, matcher: &Matcher) {$/;"	f
+test	src/grammar/mod.rs	/^mod test;$/;"	m
+parser	src/grammar/mod.rs	/^pub mod parser;$/;"	m
+unescape_literal	src/grammar/mod.rs	/^pub fn unescape_literal(literal: &str) -> String {$/;"	f
+assert_parser_name_equals	src/grammar/test.rs	/^fn assert_parser_name_equals(item: Option<&TokenType>, expected_name: Option<&str>) {$/;"	f
+assert_parser_equals	src/grammar/test.rs	/^fn assert_parser_equals(got: Option<&TokenType>, expected: &Parser) {$/;"	f
+assert_literal_equals	src/grammar/test.rs	/^fn assert_literal_equals(item: Option<&TokenType>, expected: &str) {$/;"	f
+test_given_parser_as_a_string_when_it_is_parsed_then_we_get_the_instantiated_parser	src/grammar/test.rs	/^fn test_given_parser_as_a_string_when_it_is_parsed_then_we_get_the_instantiated_parser() {$/;"	f
+test_given_parser_as_a_string_when_its_name_is_invalid_then_we_dont_get_the_instantiated_parser	src/grammar/test.rs	/^fn test_given_parser_as_a_string_when_its_name_is_invalid_then_we_dont_get_the_instantiated_parser() {$/;"	f
+test_given_parser_as_a_string_when_its_name_is_valid_then_we_get_the_instantiated_parser	src/grammar/test.rs	/^fn test_given_parser_as_a_string_when_its_name_is_valid_then_we_get_the_instantiated_parser() {$/;"	f
+test_given_parser_as_a_string_when_its_type_isnt_exist_then_we_get_an_error	src/grammar/test.rs	/^fn test_given_parser_as_a_string_when_its_type_isnt_exist_then_we_get_an_error() {$/;"	f
+test_given_literal_as_a_string_when_it_is_parsed_then_we_stop_at_the_parsers_begin	src/grammar/test.rs	/^fn test_given_literal_as_a_string_when_it_is_parsed_then_we_stop_at_the_parsers_begin() {$/;"	f
+test_given_pattern_as_a_string_when_it_is_parsed_with_the_grammar_we_got_the_right_compiled_pattern	src/grammar/test.rs	/^fn test_given_pattern_as_a_string_when_it_is_parsed_with_the_grammar_we_got_the_right_compiled_pattern() {$/;"	f
+test_given_invalid_string_when_we_parse_it_then_the_parser_returns_with_error	src/grammar/test.rs	/^fn test_given_invalid_string_when_we_parse_it_then_the_parser_returns_with_error() {$/;"	f
+test_given_string_which_contains_escaped_chars_when_we_parse_it_then_we_get_the_right_string	src/grammar/test.rs	/^fn test_given_string_which_contains_escaped_chars_when_we_parse_it_then_we_get_the_right_string() {$/;"	f
+test_given_set_parser_with_character_set_parameter_when_we_parse_it_then_we_get_the_right_parser	src/grammar/test.rs	/^fn test_given_set_parser_with_character_set_parameter_when_we_parse_it_then_we_get_the_right_parser() {$/;"	f
+test_given_set_parser_with_optional_parameters_when_we_parse_it_then_we_get_the_right_parser	src/grammar/test.rs	/^fn test_given_set_parser_with_optional_parameters_when_we_parse_it_then_we_get_the_right_parser() {$/;"	f
+test_given_int_parser_with_optional_parameters_when_we_parse_it_then_we_get_the_right_parser	src/grammar/test.rs	/^fn test_given_int_parser_with_optional_parameters_when_we_parse_it_then_we_get_the_right_parser() {$/;"	f
+test_given_greedy_parser_when_we_parse_it_then_we_get_the_right_result	src/grammar/test.rs	/^fn test_given_greedy_parser_when_we_parse_it_then_we_get_the_right_result() {$/;"	f
+test_given_greedy_parser_when_there_is_no_literal_after_it_then_we_take_all_the_remaining_intput_as_matching	src/grammar/test.rs	/^fn test_given_greedy_parser_when_there_is_no_literal_after_it_then_we_take_all_the_remaining_intput_as_matching() {$/;"	f
+test_given_parser_when_there_is_a_dot_in_its_name_then_it_is_ok	src/grammar/test.rs	/^fn test_given_parser_when_there_is_a_dot_in_its_name_then_it_is_ok() {$/;"	f
+test_given_invalid_pattern_as_a_string_when_we_parse_them_then_we_get_error	src/grammar/test.rs	/^fn test_given_invalid_pattern_as_a_string_when_we_parse_them_then_we_get_error() {$/;"	f
+test_given_valid_pattern_when_it_contains_cr_character_then_we_can_parse_it	src/grammar/test.rs	/^fn test_given_valid_pattern_when_it_contains_cr_character_then_we_can_parse_it() {$/;"	f
+test_given_valid_pattern_when_it_does_not_have_a_name_then_we_can_parse_the_pattern	src/grammar/test.rs	/^fn test_given_valid_pattern_when_it_does_not_have_a_name_then_we_can_parse_the_pattern() {$/;"	f
+pattern_parser	src/grammar/parser/mod.rs	/^mod pattern_parser;$/;"	m
+pattern	src/grammar/parser/mod.rs	/^mod pattern;$/;"	m
+pattern_with_factory	src/grammar/parser/mod.rs	/^pub fn pattern_with_factory<F: ParserFactory>(input: &str) -> ParseResult<CompiledPattern> {$/;"	f
+pattern	src/grammar/parser/mod.rs	/^pub fn pattern(input: &str) -> ParseResult<CompiledPattern> {$/;"	f
+escape_default	src/grammar/parser/pattern_parser.rs	/^fn escape_default(s: &str) -> String {$/;"	f
+char_range_at	src/grammar/parser/pattern_parser.rs	/^fn char_range_at(s: &str, pos: usize) -> (char, usize) {$/;"	f
+RuleResult	src/grammar/parser/pattern_parser.rs	/^enum RuleResult<T> { Matched(usize, T), Failed, }$/;"	g
+ParseError	src/grammar/parser/pattern_parser.rs	/^pub struct ParseError {$/;"	s
+ParseResult	src/grammar/parser/pattern_parser.rs	/^pub type ParseResult<T> = Result<T, ParseError>;$/;"	T
+::std::fmt::Display for ParseError	src/grammar/parser/pattern_parser.rs	/^impl ::std::fmt::Display for ParseError {$/;"	i
+fmt	src/grammar/parser/pattern_parser.rs	/^    fn fmt(&self, fmt: &mut ::std::fmt::Formatter)$/;"	f
+::std::error::Error for ParseError	src/grammar/parser/pattern_parser.rs	/^impl ::std::error::Error for ParseError {$/;"	i
+description	src/grammar/parser/pattern_parser.rs	/^    fn description(&self) -> &str { "parse error" }$/;"	f
+slice_eq	src/grammar/parser/pattern_parser.rs	/^fn slice_eq(input: &str, state: &mut ParseState, pos: usize, m: &'static str)$/;"	f
+slice_eq_case_insensitive	src/grammar/parser/pattern_parser.rs	/^fn slice_eq_case_insensitive(input: &str, state: &mut ParseState, pos: usize,$/;"	f
+any_char	src/grammar/parser/pattern_parser.rs	/^fn any_char(input: &str, state: &mut ParseState, pos: usize)$/;"	f
+pos_to_line	src/grammar/parser/pattern_parser.rs	/^fn pos_to_line(input: &str, pos: usize) -> (usize, usize) {$/;"	f
+ParseState	src/grammar/parser/pattern_parser.rs	/^struct ParseState<'input> {$/;"	s
+ParseState	src/grammar/parser/pattern_parser.rs	/^impl <'input> ParseState<'input> {$/;"	i
+new	src/grammar/parser/pattern_parser.rs	/^    fn new() -> ParseState<'input> {$/;"	f
+mark_failure	src/grammar/parser/pattern_parser.rs	/^    fn mark_failure(&mut self, pos: usize, expected: &'static str)$/;"	f
+parse_pattern	src/grammar/parser/pattern_parser.rs	/^fn parse_pattern<'input, F: ParserFactory>(input: &'input str, state: &mut ParseState<'input>,$/;"	f
+parse_pattern_piece	src/grammar/parser/pattern_parser.rs	/^fn parse_pattern_piece<'input, F: ParserFactory>(input: &'input str,$/;"	f
+parse_piece_literal	src/grammar/parser/pattern_parser.rs	/^fn parse_piece_literal<'input, F: ParserFactory>(input: &'input str,$/;"	f
+parse_piece_parser	src/grammar/parser/pattern_parser.rs	/^fn parse_piece_parser<'input, F: ParserFactory>(input: &'input str,$/;"	f
+parse_parser	src/grammar/parser/pattern_parser.rs	/^fn parse_parser<'input, F: ParserFactory>(input: &'input str, state: &mut ParseState<'input>,$/;"	f
+parse_parser_SET	src/grammar/parser/pattern_parser.rs	/^fn parse_parser_SET<'input, F: ParserFactory>(input: &'input str,$/;"	f
+parse_parser_SET_optional_params	src/grammar/parser/pattern_parser.rs	/^fn parse_parser_SET_optional_params<'input, F: ParserFactory>(input: &'input str,$/;"	f
+parse_parser_INT	src/grammar/parser/pattern_parser.rs	/^fn parse_parser_INT<'input, F: ParserFactory>(input: &'input str,$/;"	f
+parse_parser_INT_optional_params	src/grammar/parser/pattern_parser.rs	/^fn parse_parser_INT_optional_params<'input, F: ParserFactory>(input: &'input str,$/;"	f
+parse_parser_GREEDY	src/grammar/parser/pattern_parser.rs	/^fn parse_parser_GREEDY<'input, F: ParserFactory>(input: &'input str,$/;"	f
+parse_parser_BASE_optional_param	src/grammar/parser/pattern_parser.rs	/^fn parse_parser_BASE_optional_param<'input, F: ParserFactory>(input: &'input str,$/;"	f
+parse_MIN_LEN	src/grammar/parser/pattern_parser.rs	/^fn parse_MIN_LEN<'input, F: ParserFactory>(input: &'input str, state: &mut ParseState<'input>,$/;"	f
+parse_MAX_LEN	src/grammar/parser/pattern_parser.rs	/^fn parse_MAX_LEN<'input, F: ParserFactory>(input: &'input str, state: &mut ParseState<'input>,$/;"	f
+parse_INT	src/grammar/parser/pattern_parser.rs	/^fn parse_INT<'input, F: ParserFactory>(input: &'input str, state: &mut ParseState<'input>,$/;"	f
+parse_SET	src/grammar/parser/pattern_parser.rs	/^fn parse_SET<'input, F: ParserFactory>(input: &'input str, state: &mut ParseState<'input>,$/;"	f
+parse_GREEDY	src/grammar/parser/pattern_parser.rs	/^fn parse_GREEDY<'input, F: ParserFactory>(input: &'input str, state: &mut ParseState<'input>,$/;"	f
+parse_PARSER_BEGIN	src/grammar/parser/pattern_parser.rs	/^fn parse_PARSER_BEGIN<'input, F: ParserFactory>(input: &'input str,$/;"	f
+parse_PARSER_END	src/grammar/parser/pattern_parser.rs	/^fn parse_PARSER_END<'input, F: ParserFactory>(input: &'input str,$/;"	f
+parse_PARSER_PARAMS_BEGIN	src/grammar/parser/pattern_parser.rs	/^fn parse_PARSER_PARAMS_BEGIN<'input, F: ParserFactory>(input: &'input str,$/;"	f
+parse_PARSER_PARAMS_END	src/grammar/parser/pattern_parser.rs	/^fn parse_PARSER_PARAMS_END<'input, F: ParserFactory>(input: &'input str,$/;"	f
+parse_parser_name	src/grammar/parser/pattern_parser.rs	/^fn parse_parser_name<'input, F: ParserFactory>(input: &'input str,$/;"	f
+parse_identifier	src/grammar/parser/pattern_parser.rs	/^fn parse_identifier<'input, F: ParserFactory>(input: &'input str,$/;"	f
+parse_string	src/grammar/parser/pattern_parser.rs	/^fn parse_string<'input, F: ParserFactory>(input: &'input str, state: &mut ParseState<'input>,$/;"	f
+parse_literal	src/grammar/parser/pattern_parser.rs	/^fn parse_literal<'input, F: ParserFactory>(input: &'input str, state: &mut ParseState<'input>,$/;"	f
+parse_all_chars_until_quotation_mark	src/grammar/parser/pattern_parser.rs	/^fn parse_all_chars_until_quotation_mark<'input, F: ParserFactory>(input: &'input str,$/;"	f
+parse_comma	src/grammar/parser/pattern_parser.rs	/^fn parse_comma<'input, F: ParserFactory>(input: &'input str, state: &mut ParseState<'input>,$/;"	f
+parse_int	src/grammar/parser/pattern_parser.rs	/^fn parse_int<'input, F: ParserFactory>(input: &'input str, state: &mut ParseState<'input>,$/;"	f
+pattern	src/grammar/parser/pattern_parser.rs	/^pub fn pattern<'input, F: ParserFactory>(input: &'input str) -> ParseResult<CompiledPattern> {$/;"	f
+main	build.rs	/^fn main() {$/;"	f
+init	utils/pdb2adb	/^sub init {$/;"	s
+ruleset	utils/pdb2adb	/^sub ruleset {$/;"	s
+ruleset_description	utils/pdb2adb	/^sub ruleset_description {$/;"	s
+ruleset_pattern	utils/pdb2adb	/^sub ruleset_pattern {$/;"	s
+rule	utils/pdb2adb	/^sub rule {$/;"	s
+rule_pattern	utils/pdb2adb	/^sub rule_pattern {$/;"	s
+example	utils/pdb2adb	/^sub example {$/;"	s
+rule_tag	utils/pdb2adb	/^sub rule_tag {$/;"	s
+rule_value	utils/pdb2adb	/^sub rule_value {$/;"	s
+action	utils/pdb2adb	/^sub action {$/;"	s
+_test_messages	utils/pdb2adb	/^sub _test_messages {$/;"	s
+_p2p	utils/pdb2adb	/^sub _p2p {$/;"	s
+_unescape_pattern	utils/pdb2adb	/^sub _unescape_pattern {$/;"	s
+_validate_pattern	utils/pdb2adb	/^sub _validate_pattern {$/;"	s
+test_given_json_file_when_its_syntax_is_ok_then_matcher_can_be_built_from_it	tests/matcher/mod.rs	/^fn test_given_json_file_when_its_syntax_is_ok_then_matcher_can_be_built_from_it() {$/;"	f
+test_given_json_file_when_its_syntax_is_not_ok_then_matcher_cannot_be_built_from_it	tests/matcher/mod.rs	/^fn test_given_json_file_when_its_syntax_is_not_ok_then_matcher_cannot_be_built_from_it() {$/;"	f
+test_given_non_existing_json_file_when_it_is_loaded_then_matcher_cannot_be_created_from_it	tests/matcher/mod.rs	/^fn test_given_non_existing_json_file_when_it_is_loaded_then_matcher_cannot_be_created_from_it() {$/;"	f
+test_given_json_file_when_matcher_is_created_by_factory_then_the_right_file_type_is_used_based_on_the_extension	tests/matcher/mod.rs	/^fn test_given_json_file_when_matcher_is_created_by_factory_then_the_right_file_type_is_used_based_on_the_extension() {$/;"	f
+test_given_json_file_when_the_tests_contain_tags_but_the_pattern_does_not_have_them_then_we_fail	tests/matcher/mod.rs	/^fn test_given_json_file_when_the_tests_contain_tags_but_the_pattern_does_not_have_them_then_we_fail() {$/;"	f
+test_given_json_file_when_a_pattern_contains_test_tags_then_we_only_check_the_expected_ones	tests/matcher/mod.rs	/^fn test_given_json_file_when_a_pattern_contains_test_tags_then_we_only_check_the_expected_ones() {$/;"	f
+test_given_json_file_when_a_pattern_contains_test_values_then_we_only_check_the_expected_ones	tests/matcher/mod.rs	/^fn test_given_json_file_when_a_pattern_contains_test_values_then_we_only_check_the_expected_ones() {$/;"	f
+test_given_json_file_when_an_expected_value_is_not_found_then_we_fail	tests/matcher/mod.rs	/^fn test_given_json_file_when_an_expected_value_is_not_found_then_we_fail() {$/;"	f
+test_given_json_file_when_a_pattern_contains_cr_characters_then_we_handle_it_properly	tests/matcher/mod.rs	/^fn test_given_json_file_when_a_pattern_contains_cr_characters_then_we_handle_it_properly() {$/;"	f
+test_given_json_file_when_we_check_the_test_messages_then_the_resulting_pattern_should_be_the_tested_one	tests/matcher/mod.rs	/^fn test_given_json_file_when_we_check_the_test_messages_then_the_resulting_pattern_should_be_the_tested_one() {$/;"	f
+file	tests/lib.rs	/^mod file;$/;"	m
+matcher	tests/lib.rs	/^mod matcher;$/;"	m
+test_given_a_valid_json_pattern_file_when_it_is_deserialized_then_we_can_extract_the_patterns_from_it	tests/file/mod.rs	/^fn test_given_a_valid_json_pattern_file_when_it_is_deserialized_then_we_can_extract_the_patterns_from_it() {$/;"	f
+test_given_an_invalid_json_pattern_file_when_it_is_deserialized_then_we_get_deserialization_error	tests/file/mod.rs	/^fn test_given_an_invalid_json_pattern_file_when_it_is_deserialized_then_we_get_deserialization_error() {$/;"	f
+test_given_a_non_existing_pattern_file_when_it_is_deserialized_then_we_get_io_error	tests/file/mod.rs	/^fn test_given_a_non_existing_pattern_file_when_it_is_deserialized_then_we_get_io_error() {$/;"	f
+MatchResult	target/package/actiondb-0.3.1/src/matcher/result.rs	/^pub struct MatchResult<'a, 'b> {$/;"	s
+MatchResult	target/package/actiondb-0.3.1/src/matcher/result.rs	/^impl <'a, 'b> MatchResult<'a, 'b> {$/;"	i
+new	target/package/actiondb-0.3.1/src/matcher/result.rs	/^    pub fn new(pattern: &'a Pattern) -> MatchResult<'a, 'b> {$/;"	f
+insert	target/package/actiondb-0.3.1/src/matcher/result.rs	/^    pub fn insert(&mut self, result: ParseResult<'a, 'b>) {$/;"	f
+pattern	target/package/actiondb-0.3.1/src/matcher/result.rs	/^    pub fn pattern(&self) -> &Pattern {$/;"	f
+values	target/package/actiondb-0.3.1/src/matcher/result.rs	/^    pub fn values(&self) -> &BTreeMap<&'a str, &'b str> {$/;"	f
+test	target/package/actiondb-0.3.1/src/matcher/result.rs	/^mod test {$/;"	m
+test_given_match_result_when_a_parse_result_is_inserted_then_we_use_only_the_ones_where_the_parser_has_a_name	target/package/actiondb-0.3.1/src/matcher/result.rs	/^    fn test_given_match_result_when_a_parse_result_is_inserted_then_we_use_only_the_ones_where_the_parser_has_a_name() {$/;"	f
+builder	target/package/actiondb-0.3.1/src/matcher/matcher/mod.rs	/^pub mod builder;$/;"	m
+Matcher	target/package/actiondb-0.3.1/src/matcher/matcher/mod.rs	/^pub trait Matcher: fmt::Debug {$/;"	t
+parse	target/package/actiondb-0.3.1/src/matcher/matcher/mod.rs	/^    fn parse<'a, 'b>(&'a self, text: &'b str) -> Option<MatchResult<'a, 'b>>;$/;"	f
+add_pattern	target/package/actiondb-0.3.1/src/matcher/matcher/mod.rs	/^    fn add_pattern(&mut self, pattern: Pattern);$/;"	f
+boxed_clone	target/package/actiondb-0.3.1/src/matcher/matcher/mod.rs	/^    fn boxed_clone(&self) -> Box<Matcher>;$/;"	f
+Builder	target/package/actiondb-0.3.1/src/matcher/matcher/builder/builder.rs	/^pub struct Builder;$/;"	s
+Builder	target/package/actiondb-0.3.1/src/matcher/matcher/builder/builder.rs	/^impl Builder {$/;"	i
+drain_into	target/package/actiondb-0.3.1/src/matcher/matcher/builder/builder.rs	/^    pub fn drain_into(from: &mut PatternSource, matcher: &mut Matcher) -> Result<(), BuildError>{$/;"	f
+extract_test_messages	target/package/actiondb-0.3.1/src/matcher/matcher/builder/builder.rs	/^    fn extract_test_messages(pattern: &mut Pattern) -> Vec<TestMessage> {$/;"	f
+check_test_messages	target/package/actiondb-0.3.1/src/matcher/matcher/builder/builder.rs	/^    fn check_test_messages(matcher: &Matcher, messages: &[TestMessage], uuid: &Uuid) -> Result<(), BuildError> {$/;"	f
+check_test_message	target/package/actiondb-0.3.1/src/matcher/matcher/builder/builder.rs	/^    fn check_test_message(message: &TestMessage, result: &MatchResult, expected_uuid: &Uuid) -> Result<(), testmessage::Error> {$/;"	f
+error	target/package/actiondb-0.3.1/src/matcher/matcher/builder/mod.rs	/^mod error;$/;"	m
+builder	target/package/actiondb-0.3.1/src/matcher/matcher/builder/mod.rs	/^mod builder;$/;"	m
+BuildError	target/package/actiondb-0.3.1/src/matcher/matcher/builder/error.rs	/^pub enum BuildError {$/;"	g
+From for BuildError	target/package/actiondb-0.3.1/src/matcher/matcher/builder/error.rs	/^impl From<serialized::Error> for BuildError {$/;"	i
+from	target/package/actiondb-0.3.1/src/matcher/matcher/builder/error.rs	/^    fn from(error: serialized::Error) -> BuildError {$/;"	f
+From for BuildError	target/package/actiondb-0.3.1/src/matcher/matcher/builder/error.rs	/^impl From<testmessage::Error> for BuildError {$/;"	i
+from	target/package/actiondb-0.3.1/src/matcher/matcher/builder/error.rs	/^    fn from(error: testmessage::Error) -> BuildError {$/;"	f
+fmt::Display for BuildError	target/package/actiondb-0.3.1/src/matcher/matcher/builder/error.rs	/^impl fmt::Display for BuildError {$/;"	i
+fmt	target/package/actiondb-0.3.1/src/matcher/matcher/builder/error.rs	/^    fn fmt(&self, formatter: &mut fmt::Formatter) -> Result<(), fmt::Error> {$/;"	f
+error::Error for BuildError	target/package/actiondb-0.3.1/src/matcher/matcher/builder/error.rs	/^impl error::Error for BuildError {$/;"	i
+description	target/package/actiondb-0.3.1/src/matcher/matcher/builder/error.rs	/^    fn description(&self) -> &str {$/;"	f
+cause	target/package/actiondb-0.3.1/src/matcher/matcher/builder/error.rs	/^    fn cause(&self) -> Option<&error::Error> {$/;"	f
+trie	target/package/actiondb-0.3.1/src/matcher/mod.rs	/^pub mod trie;$/;"	m
+pattern	target/package/actiondb-0.3.1/src/matcher/mod.rs	/^pub mod pattern;$/;"	m
+result	target/package/actiondb-0.3.1/src/matcher/mod.rs	/^pub mod result;$/;"	m
+matcher	target/package/actiondb-0.3.1/src/matcher/mod.rs	/^pub mod matcher;$/;"	m
+factory	target/package/actiondb-0.3.1/src/matcher/mod.rs	/^pub mod factory;$/;"	m
+Factory	target/package/actiondb-0.3.1/src/matcher/factory.rs	/^pub struct Factory;$/;"	s
+Factory	target/package/actiondb-0.3.1/src/matcher/factory.rs	/^impl Factory {$/;"	i
+from_json_file	target/package/actiondb-0.3.1/src/matcher/factory.rs	/^    pub fn from_json_file(pattern_file_path: &str) -> Result<Box<Matcher>, builder::BuildError> {$/;"	f
+from_file	target/package/actiondb-0.3.1/src/matcher/factory.rs	/^    pub fn from_file(pattern_file_path: &str) -> Result<Box<Matcher>, builder::BuildError> {$/;"	f
+from_file_based_on_extension	target/package/actiondb-0.3.1/src/matcher/factory.rs	/^    fn from_file_based_on_extension(extension: &ffi::OsStr, pattern_file_path: &str) -> Result<Box<Matcher>, builder::BuildError> {$/;"	f
+drain_into	target/package/actiondb-0.3.1/src/matcher/factory.rs	/^    pub fn drain_into(source: &mut PatternSource) -> Result<Box<Matcher>, builder::BuildError> {$/;"	f
+test	target/package/actiondb-0.3.1/src/matcher/pattern/mod.rs	/^mod test;$/;"	m
+pattern	target/package/actiondb-0.3.1/src/matcher/pattern/mod.rs	/^mod pattern;$/;"	m
+deser	target/package/actiondb-0.3.1/src/matcher/pattern/mod.rs	/^mod deser;$/;"	m
+source	target/package/actiondb-0.3.1/src/matcher/pattern/mod.rs	/^pub mod source;$/;"	m
+file	target/package/actiondb-0.3.1/src/matcher/pattern/mod.rs	/^pub mod file;$/;"	m
+testmessage	target/package/actiondb-0.3.1/src/matcher/pattern/mod.rs	/^pub mod testmessage;$/;"	m
+serialized	target/package/actiondb-0.3.1/src/matcher/pattern/file/mod.rs	/^pub mod serialized;$/;"	m
+deser	target/package/actiondb-0.3.1/src/matcher/pattern/file/serialized/mod.rs	/^mod deser;$/;"	m
+error	target/package/actiondb-0.3.1/src/matcher/pattern/file/serialized/mod.rs	/^mod error;$/;"	m
+file	target/package/actiondb-0.3.1/src/matcher/pattern/file/serialized/mod.rs	/^mod file;$/;"	m
+iter	target/package/actiondb-0.3.1/src/matcher/pattern/file/serialized/mod.rs	/^mod iter;$/;"	m
+Error	target/package/actiondb-0.3.1/src/matcher/pattern/file/serialized/error.rs	/^pub enum Error {$/;"	g
+From for Error	target/package/actiondb-0.3.1/src/matcher/pattern/file/serialized/error.rs	/^impl From<io::Error> for Error {$/;"	i
+from	target/package/actiondb-0.3.1/src/matcher/pattern/file/serialized/error.rs	/^    fn from(error: io::Error) -> Error {$/;"	f
+From for Error	target/package/actiondb-0.3.1/src/matcher/pattern/file/serialized/error.rs	/^impl From<DeserError> for Error {$/;"	i
+from	target/package/actiondb-0.3.1/src/matcher/pattern/file/serialized/error.rs	/^    fn from(error: DeserError) -> Error {$/;"	f
+fmt::Display for Error	target/package/actiondb-0.3.1/src/matcher/pattern/file/serialized/error.rs	/^impl fmt::Display for Error {$/;"	i
+fmt	target/package/actiondb-0.3.1/src/matcher/pattern/file/serialized/error.rs	/^    fn fmt(&self, formatter: &mut fmt::Formatter) -> Result<(), fmt::Error> {$/;"	f
+error::Error for Error	target/package/actiondb-0.3.1/src/matcher/pattern/file/serialized/error.rs	/^impl error::Error for Error {$/;"	i
+description	target/package/actiondb-0.3.1/src/matcher/pattern/file/serialized/error.rs	/^    fn description(&self) -> &str {$/;"	f
+cause	target/package/actiondb-0.3.1/src/matcher/pattern/file/serialized/error.rs	/^    fn cause(&self) -> Option<&error::Error> {$/;"	f
+deser	target/package/actiondb-0.3.1/src/matcher/pattern/file/serialized/error.rs	/^mod deser {$/;"	m
+DeserError	target/package/actiondb-0.3.1/src/matcher/pattern/file/serialized/error.rs	/^    pub enum DeserError {$/;"	g
+From for DeserError	target/package/actiondb-0.3.1/src/matcher/pattern/file/serialized/error.rs	/^    impl From<serde_json::Error> for DeserError {$/;"	i
+from	target/package/actiondb-0.3.1/src/matcher/pattern/file/serialized/error.rs	/^        fn from(error: serde_json::Error) -> DeserError {$/;"	f
+fmt::Display for DeserError	target/package/actiondb-0.3.1/src/matcher/pattern/file/serialized/error.rs	/^    impl fmt::Display for DeserError {$/;"	i
+fmt	target/package/actiondb-0.3.1/src/matcher/pattern/file/serialized/error.rs	/^        fn fmt(&self, formatter: &mut fmt::Formatter) -> Result<(), fmt::Error> {$/;"	f
+error::Error for DeserError	target/package/actiondb-0.3.1/src/matcher/pattern/file/serialized/error.rs	/^    impl error::Error for DeserError {$/;"	i
+description	target/package/actiondb-0.3.1/src/matcher/pattern/file/serialized/error.rs	/^        fn description(&self) -> &str {$/;"	f
+cause	target/package/actiondb-0.3.1/src/matcher/pattern/file/serialized/error.rs	/^        fn cause(&self) -> Option<&error::Error> {$/;"	f
+SerializedPatternFile	target/package/actiondb-0.3.1/src/matcher/pattern/file/serialized/file.rs	/^pub struct SerializedPatternFile {$/;"	s
+SerializedPatternFile	target/package/actiondb-0.3.1/src/matcher/pattern/file/serialized/file.rs	/^impl SerializedPatternFile {$/;"	i
+open	target/package/actiondb-0.3.1/src/matcher/pattern/file/serialized/file.rs	/^    pub fn open(path: &str) -> Result<SerializedPatternFile, Error> {$/;"	f
+patterns	target/package/actiondb-0.3.1/src/matcher/pattern/file/serialized/file.rs	/^    pub fn patterns(&self) -> &Vec<Pattern> {$/;"	f
+iter::IntoIterator for SerializedPatternFile	target/package/actiondb-0.3.1/src/matcher/pattern/file/serialized/iter.rs	/^impl iter::IntoIterator for SerializedPatternFile {$/;"	i
+Item	target/package/actiondb-0.3.1/src/matcher/pattern/file/serialized/iter.rs	/^    type Item = BuildResult;$/;"	T
+IntoIter	target/package/actiondb-0.3.1/src/matcher/pattern/file/serialized/iter.rs	/^    type IntoIter = IntoIter;$/;"	T
+into_iter	target/package/actiondb-0.3.1/src/matcher/pattern/file/serialized/iter.rs	/^    fn into_iter(self) -> Self::IntoIter {$/;"	f
+IntoIter	target/package/actiondb-0.3.1/src/matcher/pattern/file/serialized/iter.rs	/^pub struct IntoIter {$/;"	s
+Iterator for IntoIter	target/package/actiondb-0.3.1/src/matcher/pattern/file/serialized/iter.rs	/^impl Iterator for IntoIter {$/;"	i
+Item	target/package/actiondb-0.3.1/src/matcher/pattern/file/serialized/iter.rs	/^    type Item = BuildResult;$/;"	T
+next	target/package/actiondb-0.3.1/src/matcher/pattern/file/serialized/iter.rs	/^    fn next(&mut self) -> Option<Self::Item> {$/;"	f
+serde::Deserialize for SerializedPatternFile	target/package/actiondb-0.3.1/src/matcher/pattern/file/serialized/deser.rs	/^impl serde::Deserialize for SerializedPatternFile {$/;"	i
+deserialize	target/package/actiondb-0.3.1/src/matcher/pattern/file/serialized/deser.rs	/^    fn deserialize<D>(deserializer: &mut D) -> Result<SerializedPatternFile, D::Error>$/;"	f
+Field	target/package/actiondb-0.3.1/src/matcher/pattern/file/serialized/deser.rs	/^enum Field {$/;"	g
+serde::Deserialize for Field	target/package/actiondb-0.3.1/src/matcher/pattern/file/serialized/deser.rs	/^impl serde::Deserialize for Field {$/;"	i
+deserialize	target/package/actiondb-0.3.1/src/matcher/pattern/file/serialized/deser.rs	/^    fn deserialize<D>(deserializer: &mut D) -> Result<Field, D::Error>$/;"	f
+FieldVisitor	target/package/actiondb-0.3.1/src/matcher/pattern/file/serialized/deser.rs	/^        struct FieldVisitor;$/;"	s
+serde::de::Visitor for FieldVisitor	target/package/actiondb-0.3.1/src/matcher/pattern/file/serialized/deser.rs	/^        impl serde::de::Visitor for FieldVisitor {$/;"	i
+Value	target/package/actiondb-0.3.1/src/matcher/pattern/file/serialized/deser.rs	/^            type Value = Field;$/;"	T
+visit_str	target/package/actiondb-0.3.1/src/matcher/pattern/file/serialized/deser.rs	/^            fn visit_str<E>(&mut self, value: &str) -> Result<Field, E>$/;"	f
+FileVisitor	target/package/actiondb-0.3.1/src/matcher/pattern/file/serialized/deser.rs	/^struct FileVisitor;$/;"	s
+serde::de::Visitor for FileVisitor	target/package/actiondb-0.3.1/src/matcher/pattern/file/serialized/deser.rs	/^impl serde::de::Visitor for FileVisitor {$/;"	i
+Value	target/package/actiondb-0.3.1/src/matcher/pattern/file/serialized/deser.rs	/^    type Value = SerializedPatternFile;$/;"	T
+visit_map	target/package/actiondb-0.3.1/src/matcher/pattern/file/serialized/deser.rs	/^    fn visit_map<V>(&mut self, mut visitor: V) -> Result<SerializedPatternFile, V::Error>$/;"	f
+test_given_json_document_when_it_does_not_contain_errors_then_pattern_can_be_created_from_it	target/package/actiondb-0.3.1/src/matcher/pattern/test.rs	/^fn test_given_json_document_when_it_does_not_contain_errors_then_pattern_can_be_created_from_it() {$/;"	f
+test_given_json_pattern_when_it_does_not_have_the_optional_paramaters_then_pattern_can_be_built_from_it	target/package/actiondb-0.3.1/src/matcher/pattern/test.rs	/^fn test_given_json_pattern_when_it_does_not_have_the_optional_paramaters_then_pattern_can_be_built_from_it() {$/;"	f
+test_given_json_pattern_when_its_uuid_is_invalid_then_pattern_cannot_be_built_from_it	target/package/actiondb-0.3.1/src/matcher/pattern/test.rs	/^fn test_given_json_pattern_when_its_uuid_is_invalid_then_pattern_cannot_be_built_from_it() {$/;"	f
+test_given_json_pattern_when_its_pattern_is_invalid_then_pattern_cannot_be_built_from_it	target/package/actiondb-0.3.1/src/matcher/pattern/test.rs	/^fn test_given_json_pattern_when_its_pattern_is_invalid_then_pattern_cannot_be_built_from_it() {$/;"	f
+test_given_json_pattern_when_test_messages_are_specified_then_they_are_parsed	target/package/actiondb-0.3.1/src/matcher/pattern/test.rs	/^fn test_given_json_pattern_when_test_messages_are_specified_then_they_are_parsed() {$/;"	f
+test_given_json_pattern_with_invalid_uuid_when_we_try_to_create_pattern_then_it_fails	target/package/actiondb-0.3.1/src/matcher/pattern/test.rs	/^fn test_given_json_pattern_with_invalid_uuid_when_we_try_to_create_pattern_then_it_fails() {$/;"	f
+test_given_json_pattern_when_it_does_not_have_the_pattern_field_then_it_cannot_be_created	target/package/actiondb-0.3.1/src/matcher/pattern/test.rs	/^fn test_given_json_pattern_when_it_does_not_have_the_pattern_field_then_it_cannot_be_created() {$/;"	f
+BuildResult	target/package/actiondb-0.3.1/src/matcher/pattern/source.rs	/^pub type BuildResult = Result<Pattern, BuildError>;$/;"	T
+Source	target/package/actiondb-0.3.1/src/matcher/pattern/source.rs	/^pub trait Source: Iterator<Item=BuildResult> {}$/;"	t
+PatternSource	target/package/actiondb-0.3.1/src/matcher/pattern/source.rs	/^pub type PatternSource = Source<Item=BuildResult>;$/;"	T
+Pattern	target/package/actiondb-0.3.1/src/matcher/pattern/pattern.rs	/^pub struct Pattern {$/;"	s
+Pattern	target/package/actiondb-0.3.1/src/matcher/pattern/pattern.rs	/^impl Pattern {$/;"	i
+with_uuid	target/package/actiondb-0.3.1/src/matcher/pattern/pattern.rs	/^    pub fn with_uuid(uuid: Uuid) -> Pattern {$/;"	f
+new	target/package/actiondb-0.3.1/src/matcher/pattern/pattern.rs	/^    pub fn new(name: Option<String>, uuid: Uuid, pattern: CompiledPattern, test_messages: Option<Vec<TestMessage>>, values: Option<BTreeMap<String, String>>, tags: Option<Vec<String>>) -> Pattern {$/;"	f
+with_random_uuid	target/package/actiondb-0.3.1/src/matcher/pattern/pattern.rs	/^    pub fn with_random_uuid() -> Pattern {$/;"	f
+name	target/package/actiondb-0.3.1/src/matcher/pattern/pattern.rs	/^    pub fn name(&self) -> Option<&str> {$/;"	f
+uuid	target/package/actiondb-0.3.1/src/matcher/pattern/pattern.rs	/^    pub fn uuid(&self) -> &Uuid {$/;"	f
+pattern	target/package/actiondb-0.3.1/src/matcher/pattern/pattern.rs	/^    pub fn pattern(&self) -> &CompiledPattern {$/;"	f
+values	target/package/actiondb-0.3.1/src/matcher/pattern/pattern.rs	/^    pub fn values(&self) -> Option<&BTreeMap<String, String>> {$/;"	f
+tags	target/package/actiondb-0.3.1/src/matcher/pattern/pattern.rs	/^    pub fn tags(&self) -> Option<&[String]> {$/;"	f
+from_json	target/package/actiondb-0.3.1/src/matcher/pattern/pattern.rs	/^    pub fn from_json(doc: &str) -> Result<Pattern, serde_json::error::Error> {$/;"	f
+set_pattern	target/package/actiondb-0.3.1/src/matcher/pattern/pattern.rs	/^    pub fn set_pattern(&mut self, pattern: CompiledPattern) {$/;"	f
+pop_first_token	target/package/actiondb-0.3.1/src/matcher/pattern/pattern.rs	/^    pub fn pop_first_token(&mut self) -> TokenType {$/;"	f
+has_more_tokens	target/package/actiondb-0.3.1/src/matcher/pattern/pattern.rs	/^    pub fn has_more_tokens(&self) -> bool {$/;"	f
+pop_test_message	target/package/actiondb-0.3.1/src/matcher/pattern/pattern.rs	/^    pub fn pop_test_message(&mut self) -> Option<TestMessage> {$/;"	f
+Template	target/package/actiondb-0.3.1/src/matcher/pattern/template.rs	/^pub trait Template: Debug {$/;"	t
+render	target/package/actiondb-0.3.1/src/matcher/pattern/template.rs	/^    fn render(&mut self) -> String;$/;"	f
+test	target/package/actiondb-0.3.1/src/matcher/pattern/testmessage/mod.rs	/^mod test;$/;"	m
+deser	target/package/actiondb-0.3.1/src/matcher/pattern/testmessage/mod.rs	/^mod deser;$/;"	m
+error	target/package/actiondb-0.3.1/src/matcher/pattern/testmessage/mod.rs	/^mod error;$/;"	m
+message	target/package/actiondb-0.3.1/src/matcher/pattern/testmessage/mod.rs	/^mod message;$/;"	m
+Error	target/package/actiondb-0.3.1/src/matcher/pattern/testmessage/error.rs	/^pub enum Error {$/;"	g
+Error	target/package/actiondb-0.3.1/src/matcher/pattern/testmessage/error.rs	/^impl Error {$/;"	i
+value_not_match	target/package/actiondb-0.3.1/src/matcher/pattern/testmessage/error.rs	/^    pub fn value_not_match(pattern_uuid: &Uuid, key: &str, expected_value: &str, got_value: &str) -> Error {$/;"	f
+key_not_found	target/package/actiondb-0.3.1/src/matcher/pattern/testmessage/error.rs	/^    pub fn key_not_found(pattern_uuid: &Uuid, key: &str) -> Error {$/;"	f
+test_message_does_not_match	target/package/actiondb-0.3.1/src/matcher/pattern/testmessage/error.rs	/^    pub fn test_message_does_not_match(pattern_uuid: &Uuid, test_msg: &TestMessage) -> Error {$/;"	f
+matched_to_other_pattern	target/package/actiondb-0.3.1/src/matcher/pattern/testmessage/error.rs	/^    pub fn matched_to_other_pattern(expected_uuid: &Uuid, got_uuid: &Uuid, test_message: &str) -> Error {$/;"	f
+unexpected_tags	target/package/actiondb-0.3.1/src/matcher/pattern/testmessage/error.rs	/^    pub fn unexpected_tags(pattern_uuid: &Uuid, expected: Option<Vec<String>>, got: Option<Vec<String>>) -> Error {$/;"	f
+fmt::Display for Error	target/package/actiondb-0.3.1/src/matcher/pattern/testmessage/error.rs	/^impl fmt::Display for Error {$/;"	i
+fmt	target/package/actiondb-0.3.1/src/matcher/pattern/testmessage/error.rs	/^    fn fmt(&self, fmt: &mut fmt::Formatter) -> Result<(), fmt::Error> {$/;"	f
+error::Error for Error	target/package/actiondb-0.3.1/src/matcher/pattern/testmessage/error.rs	/^impl error::Error for Error {$/;"	i
+description	target/package/actiondb-0.3.1/src/matcher/pattern/testmessage/error.rs	/^    fn description(&self) -> &str {$/;"	f
+test_given_json_test_message_when_it_is_deserialized_then_we_get_the_right_instance	target/package/actiondb-0.3.1/src/matcher/pattern/testmessage/test.rs	/^fn test_given_json_test_message_when_it_is_deserialized_then_we_get_the_right_instance() {$/;"	f
+test_given_json_test_message_when_it_does_not_have_a_message_field_then_error_is_returned	target/package/actiondb-0.3.1/src/matcher/pattern/testmessage/test.rs	/^fn test_given_json_test_message_when_it_does_not_have_a_message_field_then_error_is_returned() {$/;"	f
+test_given_json_test_message_when_it_does_not_have_the_optional_fields_then_it_can_be_loaded_successfully	target/package/actiondb-0.3.1/src/matcher/pattern/testmessage/test.rs	/^fn test_given_json_test_message_when_it_does_not_have_the_optional_fields_then_it_can_be_loaded_successfully() {$/;"	f
+test_given_json_test_message_when_it_contains_not_just_the_valid_fields_then_we_return_an_error	target/package/actiondb-0.3.1/src/matcher/pattern/testmessage/test.rs	/^fn test_given_json_test_message_when_it_contains_not_just_the_valid_fields_then_we_return_an_error() {$/;"	f
+TestMessage	target/package/actiondb-0.3.1/src/matcher/pattern/testmessage/message.rs	/^pub struct TestMessage {$/;"	s
+TestMessage	target/package/actiondb-0.3.1/src/matcher/pattern/testmessage/message.rs	/^impl TestMessage {$/;"	i
+new	target/package/actiondb-0.3.1/src/matcher/pattern/testmessage/message.rs	/^    pub fn new(message: String, values: BTreeMap<String, String>, tags: Option<Vec<String>>) -> TestMessage {$/;"	f
+message	target/package/actiondb-0.3.1/src/matcher/pattern/testmessage/message.rs	/^    pub fn message(&self) -> &str {$/;"	f
+values	target/package/actiondb-0.3.1/src/matcher/pattern/testmessage/message.rs	/^    pub fn values(&self) -> &BTreeMap<String, String> {$/;"	f
+tags	target/package/actiondb-0.3.1/src/matcher/pattern/testmessage/message.rs	/^    pub fn tags(&self) -> Option<&[String]> {$/;"	f
+test_result	target/package/actiondb-0.3.1/src/matcher/pattern/testmessage/message.rs	/^    pub fn test_result(&self, result: &MatchResult) -> Result<(), Error> {$/;"	f
+test_values	target/package/actiondb-0.3.1/src/matcher/pattern/testmessage/message.rs	/^    fn test_values(&self, result: &MatchResult) -> Result<(), Error> {$/;"	f
+test_value	target/package/actiondb-0.3.1/src/matcher/pattern/testmessage/message.rs	/^    fn test_value(key: &str, value: &str, values: &BTreeMap<&str, &str>, result: &MatchResult) -> Result<(), Error> {$/;"	f
+merge_values	target/package/actiondb-0.3.1/src/matcher/pattern/testmessage/message.rs	/^    fn merge_values<'a>(result: &'a MatchResult) -> BTreeMap<&'a str, &'a str> {$/;"	f
+test_tags	target/package/actiondb-0.3.1/src/matcher/pattern/testmessage/message.rs	/^    fn test_tags(&self, result: &MatchResult) -> Result<(), Error> {$/;"	f
+test_expected_tags_can_be_found_in_got_tags	target/package/actiondb-0.3.1/src/matcher/pattern/testmessage/message.rs	/^    fn test_expected_tags_can_be_found_in_got_tags(&self, expected_tags: &[String], got_tags: &[String], result: &MatchResult) -> Result<(), Error> {$/;"	f
+report_unexpected_tags_error	target/package/actiondb-0.3.1/src/matcher/pattern/testmessage/message.rs	/^    fn report_unexpected_tags_error(&self, result: &MatchResult) -> Error {$/;"	f
+serde::Deserialize for TestMessage	target/package/actiondb-0.3.1/src/matcher/pattern/testmessage/deser.rs	/^impl serde::Deserialize for TestMessage {$/;"	i
+deserialize	target/package/actiondb-0.3.1/src/matcher/pattern/testmessage/deser.rs	/^    fn deserialize<D>(deserializer: &mut D) -> Result<TestMessage, D::Error>$/;"	f
+Field	target/package/actiondb-0.3.1/src/matcher/pattern/testmessage/deser.rs	/^enum Field {$/;"	g
+serde::Deserialize for Field	target/package/actiondb-0.3.1/src/matcher/pattern/testmessage/deser.rs	/^impl serde::Deserialize for Field {$/;"	i
+deserialize	target/package/actiondb-0.3.1/src/matcher/pattern/testmessage/deser.rs	/^    fn deserialize<D>(deserializer: &mut D) -> Result<Field, D::Error>$/;"	f
+FieldVisitor	target/package/actiondb-0.3.1/src/matcher/pattern/testmessage/deser.rs	/^        struct FieldVisitor;$/;"	s
+serde::de::Visitor for FieldVisitor	target/package/actiondb-0.3.1/src/matcher/pattern/testmessage/deser.rs	/^        impl serde::de::Visitor for FieldVisitor {$/;"	i
+Value	target/package/actiondb-0.3.1/src/matcher/pattern/testmessage/deser.rs	/^            type Value = Field;$/;"	T
+visit_str	target/package/actiondb-0.3.1/src/matcher/pattern/testmessage/deser.rs	/^            fn visit_str<E>(&mut self, value: &str) -> Result<Field, E>$/;"	f
+TestMessageVisitor	target/package/actiondb-0.3.1/src/matcher/pattern/testmessage/deser.rs	/^struct TestMessageVisitor;$/;"	s
+serde::de::Visitor for TestMessageVisitor	target/package/actiondb-0.3.1/src/matcher/pattern/testmessage/deser.rs	/^impl serde::de::Visitor for TestMessageVisitor {$/;"	i
+Value	target/package/actiondb-0.3.1/src/matcher/pattern/testmessage/deser.rs	/^    type Value = TestMessage;$/;"	T
+visit_map	target/package/actiondb-0.3.1/src/matcher/pattern/testmessage/deser.rs	/^    fn visit_map<V>(&mut self, mut visitor: V) -> Result<TestMessage, V::Error>$/;"	f
+serde::Deserialize for Pattern	target/package/actiondb-0.3.1/src/matcher/pattern/deser.rs	/^impl serde::Deserialize for Pattern {$/;"	i
+deserialize	target/package/actiondb-0.3.1/src/matcher/pattern/deser.rs	/^    fn deserialize<D>(deserializer: &mut D) -> Result<Pattern, D::Error>$/;"	f
+Field	target/package/actiondb-0.3.1/src/matcher/pattern/deser.rs	/^enum Field {$/;"	g
+serde::Deserialize for Field	target/package/actiondb-0.3.1/src/matcher/pattern/deser.rs	/^impl serde::Deserialize for Field {$/;"	i
+deserialize	target/package/actiondb-0.3.1/src/matcher/pattern/deser.rs	/^    fn deserialize<D>(deserializer: &mut D) -> Result<Field, D::Error>$/;"	f
+FieldVisitor	target/package/actiondb-0.3.1/src/matcher/pattern/deser.rs	/^        struct FieldVisitor;$/;"	s
+serde::de::Visitor for FieldVisitor	target/package/actiondb-0.3.1/src/matcher/pattern/deser.rs	/^        impl serde::de::Visitor for FieldVisitor {$/;"	i
+Value	target/package/actiondb-0.3.1/src/matcher/pattern/deser.rs	/^            type Value = Field;$/;"	T
+visit_str	target/package/actiondb-0.3.1/src/matcher/pattern/deser.rs	/^            fn visit_str<E>(&mut self, value: &str) -> Result<Field, E>$/;"	f
+PatternVisitor	target/package/actiondb-0.3.1/src/matcher/pattern/deser.rs	/^struct PatternVisitor;$/;"	s
+PatternVisitor	target/package/actiondb-0.3.1/src/matcher/pattern/deser.rs	/^impl PatternVisitor {$/;"	i
+parse_uuid	target/package/actiondb-0.3.1/src/matcher/pattern/deser.rs	/^    pub fn parse_uuid<V: serde::de::MapVisitor>(uuid: Option<String>) -> Result<Uuid, V::Error> {$/;"	f
+serde::de::Visitor for PatternVisitor	target/package/actiondb-0.3.1/src/matcher/pattern/deser.rs	/^impl serde::de::Visitor for PatternVisitor {$/;"	i
+Value	target/package/actiondb-0.3.1/src/matcher/pattern/deser.rs	/^    type Value = Pattern;$/;"	T
+visit_map	target/package/actiondb-0.3.1/src/matcher/pattern/deser.rs	/^    fn visit_map<V>(&mut self, mut visitor: V) -> Result<Pattern, V::Error>$/;"	f
+CompiledPattern	target/package/actiondb-0.3.1/src/matcher/trie/node/node.rs	/^pub type CompiledPattern = Vec<TokenType>;$/;"	T
+TokenType	target/package/actiondb-0.3.1/src/matcher/trie/node/node.rs	/^pub enum TokenType {$/;"	g
+Clone for TokenType	target/package/actiondb-0.3.1/src/matcher/trie/node/node.rs	/^impl Clone for TokenType {$/;"	i
+clone	target/package/actiondb-0.3.1/src/matcher/trie/node/node.rs	/^    fn clone(&self) -> TokenType {$/;"	f
+Node	target/package/actiondb-0.3.1/src/matcher/trie/node/node.rs	/^pub struct Node {$/;"	s
+LiteralLookupResult	target/package/actiondb-0.3.1/src/matcher/trie/node/node.rs	/^enum LiteralLookupResult<'a> {$/;"	g
+Node	target/package/actiondb-0.3.1/src/matcher/trie/node/node.rs	/^impl Node {$/;"	i
+new	target/package/actiondb-0.3.1/src/matcher/trie/node/node.rs	/^    pub fn new() -> Node {$/;"	f
+add_literal_node	target/package/actiondb-0.3.1/src/matcher/trie/node/node.rs	/^    pub fn add_literal_node(&mut self, lnode: LiteralNode) {$/;"	f
+is_leaf	target/package/actiondb-0.3.1/src/matcher/trie/node/node.rs	/^    pub fn is_leaf(&self) -> bool {$/;"	f
+lookup_literal_mut	target/package/actiondb-0.3.1/src/matcher/trie/node/node.rs	/^    pub fn lookup_literal_mut(&mut self, literal: &str) -> Result<(&mut Node, usize), (&mut Node, usize)> {$/;"	f
+lookup_literal	target/package/actiondb-0.3.1/src/matcher/trie/node/node.rs	/^    pub fn lookup_literal(&self, literal: &str) -> Result<(&Node, usize), (&Node, usize)> {$/;"	f
+search	target/package/actiondb-0.3.1/src/matcher/trie/node/node.rs	/^    fn search<'a, 'b>(&'a self, literal: &'b str) -> LiteralLookupResult<'b> {$/;"	f
+search_prefix_is_found	target/package/actiondb-0.3.1/src/matcher/trie/node/node.rs	/^    fn search_prefix_is_found<'a, 'b>(&'a self, literal: &'b str, pos: usize) -> LiteralLookupResult<'b> {$/;"	f
+search_prefix_is_found_and_node_is_leaf	target/package/actiondb-0.3.1/src/matcher/trie/node/node.rs	/^    fn search_prefix_is_found_and_node_is_leaf<'a, 'b>(&'a self, literal: &'b str, pos: usize) -> LiteralLookupResult<'b> {$/;"	f
+search_prefix_is_found_and_node_is_not_leaf	target/package/actiondb-0.3.1/src/matcher/trie/node/node.rs	/^    fn search_prefix_is_found_and_node_is_not_leaf<'a, 'b>(&'a self, literal: &'b str, pos: usize) -> LiteralLookupResult<'b> {$/;"	f
+parse	target/package/actiondb-0.3.1/src/matcher/trie/node/node.rs	/^    pub fn parse<'a, 'b>(&'a self, text: &'b str) -> Option<MatchResult<'a, 'b>> {$/;"	f
+parse_with_parsers	target/package/actiondb-0.3.1/src/matcher/trie/node/node.rs	/^    fn parse_with_parsers<'a, 'b>(&'a self, text: &'b str) -> Option<MatchResult<'a, 'b>> {$/;"	f
+parse_then_push_kvpair	target/package/actiondb-0.3.1/src/matcher/trie/node/node.rs	/^    pub fn parse_then_push_kvpair<'a, 'b>(&'a self, text: &'b str, kvpair: ParseResult<'a, 'b>) -> Option<MatchResult<'a, 'b>> {$/;"	f
+lookup_parser	target/package/actiondb-0.3.1/src/matcher/trie/node/node.rs	/^    fn lookup_parser(&mut self, parser: &Parser<>) -> Option<usize> {$/;"	f
+insert_literal_tail	target/package/actiondb-0.3.1/src/matcher/trie/node/node.rs	/^    fn insert_literal_tail(&mut self, tail: &str) -> &mut LiteralNode {$/;"	f
+lookup_freshly_inserted_literal	target/package/actiondb-0.3.1/src/matcher/trie/node/node.rs	/^    fn lookup_freshly_inserted_literal(&mut self, pos: usize, literal: &str) -> &mut LiteralNode {$/;"	f
+TrieOperations for Node	target/package/actiondb-0.3.1/src/matcher/trie/node/node.rs	/^impl TrieOperations for Node {$/;"	i
+insert_literal	target/package/actiondb-0.3.1/src/matcher/trie/node/node.rs	/^    fn insert_literal(&mut self, literal: &str) -> &mut LiteralNode {$/;"	f
+insert_parser	target/package/actiondb-0.3.1/src/matcher/trie/node/node.rs	/^    fn insert_parser(&mut self, parser: Box<Parser>) -> &mut ParserNode {$/;"	f
+test	target/package/actiondb-0.3.1/src/matcher/trie/node/node.rs	/^mod test {$/;"	m
+given_empty_trie_when_literals_are_inserted_then_they_can_be_looked_up	target/package/actiondb-0.3.1/src/matcher/trie/node/node.rs	/^    fn given_empty_trie_when_literals_are_inserted_then_they_can_be_looked_up() {$/;"	f
+test_given_empty_trie_when_literals_are_inserted_the_child_counts_are_right	target/package/actiondb-0.3.1/src/matcher/trie/node/node.rs	/^    fn test_given_empty_trie_when_literals_are_inserted_the_child_counts_are_right() {$/;"	f
+test_given_empty_trie_when_literals_are_inserted_the_nodes_are_split_on_the_right_place	target/package/actiondb-0.3.1/src/matcher/trie/node/node.rs	/^    fn test_given_empty_trie_when_literals_are_inserted_the_nodes_are_split_on_the_right_place() {$/;"	f
+test_given_trie_when_literals_are_looked_up_then_the_edges_in_the_trie_are_not_counted_as_literals	target/package/actiondb-0.3.1/src/matcher/trie/node/node.rs	/^    fn test_given_trie_when_literals_are_looked_up_then_the_edges_in_the_trie_are_not_counted_as_literals() {$/;"	f
+test_given_node_when_the_same_parsers_are_inserted_then_they_are_merged_into_one_parsernode	target/package/actiondb-0.3.1/src/matcher/trie/node/node.rs	/^    fn test_given_node_when_the_same_parsers_are_inserted_then_they_are_merged_into_one_parsernode() {$/;"	f
+test_given_node_when_different_parsers_are_inserted_then_they_are_not_merged	target/package/actiondb-0.3.1/src/matcher/trie/node/node.rs	/^    fn test_given_node_when_different_parsers_are_inserted_then_they_are_not_merged() {$/;"	f
+create_parser_trie	target/package/actiondb-0.3.1/src/matcher/trie/node/node.rs	/^    fn create_parser_trie() -> ParserTrie {$/;"	f
+test_given_parser_trie_when_some_patterns_are_inserted_then_texts_can_be_parsed	target/package/actiondb-0.3.1/src/matcher/trie/node/node.rs	/^    fn test_given_parser_trie_when_some_patterns_are_inserted_then_texts_can_be_parsed() {$/;"	f
+test_given_parser_trie_when_some_patterns_are_inserted_then_fully_matching_literals_are_returned_as_empty_vectors	target/package/actiondb-0.3.1/src/matcher/trie/node/node.rs	/^    fn test_given_parser_trie_when_some_patterns_are_inserted_then_fully_matching_literals_are_returned_as_empty_vectors() {$/;"	f
+test_given_parser_trie_when_some_patterns_are_inserted_then_literal_matches_have_precedence_over_parser_matches	target/package/actiondb-0.3.1/src/matcher/trie/node/node.rs	/^    fn test_given_parser_trie_when_some_patterns_are_inserted_then_literal_matches_have_precedence_over_parser_matches() {$/;"	f
+create_complex_parser_trie	target/package/actiondb-0.3.1/src/matcher/trie/node/node.rs	/^    fn create_complex_parser_trie() -> ParserTrie {$/;"	f
+test_given_parser_trie_when_a_parser_is_not_matched_then_the_parser_stack_is_unwind_so_an_untried_parser_is_tried	target/package/actiondb-0.3.1/src/matcher/trie/node/node.rs	/^    fn test_given_parser_trie_when_a_parser_is_not_matched_then_the_parser_stack_is_unwind_so_an_untried_parser_is_tried() {$/;"	f
+test_given_parser_trie_when_the_to_be_parsed_literal_is_not_matched_then_the_parse_result_is_none	target/package/actiondb-0.3.1/src/matcher/trie/node/node.rs	/^    fn test_given_parser_trie_when_the_to_be_parsed_literal_is_not_matched_then_the_parse_result_is_none() {$/;"	f
+test_given_parser_trie_when_the_to_be_parsed_literal_is_a_prefix_in_the_tree_then_the_parse_result_is_none	target/package/actiondb-0.3.1/src/matcher/trie/node/node.rs	/^    fn test_given_parser_trie_when_the_to_be_parsed_literal_is_a_prefix_in_the_tree_then_the_parse_result_is_none() {$/;"	f
+test_given_empty_parser_node_when_it_is_used_for_parsing_then_it_returns_none	target/package/actiondb-0.3.1/src/matcher/trie/node/node.rs	/^    fn test_given_empty_parser_node_when_it_is_used_for_parsing_then_it_returns_none() {$/;"	f
+literal	target/package/actiondb-0.3.1/src/matcher/trie/node/mod.rs	/^mod literal;$/;"	m
+parser	target/package/actiondb-0.3.1/src/matcher/trie/node/mod.rs	/^mod parser;$/;"	m
+node	target/package/actiondb-0.3.1/src/matcher/trie/node/mod.rs	/^mod node;$/;"	m
+test	target/package/actiondb-0.3.1/src/matcher/trie/node/mod.rs	/^mod test {$/;"	m
+test_given_node_when_literals_are_inserted_in_chains_then_they_can_be_looked_up	target/package/actiondb-0.3.1/src/matcher/trie/node/mod.rs	/^    fn test_given_node_when_literals_are_inserted_in_chains_then_they_can_be_looked_up() {$/;"	f
+ParserNode	target/package/actiondb-0.3.1/src/matcher/trie/node/parser.rs	/^pub struct ParserNode {$/;"	s
+ParserNode	target/package/actiondb-0.3.1/src/matcher/trie/node/parser.rs	/^impl ParserNode {$/;"	i
+new	target/package/actiondb-0.3.1/src/matcher/trie/node/parser.rs	/^    pub fn new(parser: Box<Parser>) -> ParserNode {$/;"	f
+parser	target/package/actiondb-0.3.1/src/matcher/trie/node/parser.rs	/^    pub fn parser(&self) -> &Parser {$/;"	f
+is_leaf	target/package/actiondb-0.3.1/src/matcher/trie/node/parser.rs	/^    pub fn is_leaf(&self) -> bool {$/;"	f
+node	target/package/actiondb-0.3.1/src/matcher/trie/node/parser.rs	/^    pub fn node(&self) -> Option<&Node> {$/;"	f
+parse	target/package/actiondb-0.3.1/src/matcher/trie/node/parser.rs	/^    pub fn parse<'a, 'b>(&'a self, text: &'b str) -> Option<MatchResult<'a, 'b>> {$/;"	f
+push_last_kvpair	target/package/actiondb-0.3.1/src/matcher/trie/node/parser.rs	/^    fn push_last_kvpair<'a, 'b>(&'a self, text: &'b str, kvpair: ParseResult<'a, 'b>) -> Option<MatchResult<'a, 'b>> {$/;"	f
+TrieOperations for ParserNode	target/package/actiondb-0.3.1/src/matcher/trie/node/parser.rs	/^impl TrieOperations for ParserNode {$/;"	i
+insert_literal	target/package/actiondb-0.3.1/src/matcher/trie/node/parser.rs	/^    fn insert_literal(&mut self, literal: &str) -> &mut LiteralNode {$/;"	f
+insert_parser	target/package/actiondb-0.3.1/src/matcher/trie/node/parser.rs	/^    fn insert_parser(&mut self, parser: Box<Parser>) -> &mut ParserNode {$/;"	f
+HasPattern for ParserNode	target/package/actiondb-0.3.1/src/matcher/trie/node/parser.rs	/^impl HasPattern for ParserNode {$/;"	i
+set_pattern	target/package/actiondb-0.3.1/src/matcher/trie/node/parser.rs	/^    fn set_pattern(&mut self, pattern: Pattern) {$/;"	f
+pattern	target/package/actiondb-0.3.1/src/matcher/trie/node/parser.rs	/^    fn pattern(&self) -> Option<&Pattern> {$/;"	f
+Clone for ParserNode	target/package/actiondb-0.3.1/src/matcher/trie/node/parser.rs	/^impl Clone for ParserNode {$/;"	i
+clone	target/package/actiondb-0.3.1/src/matcher/trie/node/parser.rs	/^    fn clone(&self) -> ParserNode {$/;"	f
+LiteralNode	target/package/actiondb-0.3.1/src/matcher/trie/node/literal.rs	/^pub struct LiteralNode {$/;"	s
+LiteralNode	target/package/actiondb-0.3.1/src/matcher/trie/node/literal.rs	/^impl LiteralNode {$/;"	i
+new	target/package/actiondb-0.3.1/src/matcher/trie/node/literal.rs	/^    pub fn new(literal: String) -> LiteralNode {$/;"	f
+from_str	target/package/actiondb-0.3.1/src/matcher/trie/node/literal.rs	/^    pub fn from_str(literal: &str) -> LiteralNode {$/;"	f
+literal	target/package/actiondb-0.3.1/src/matcher/trie/node/literal.rs	/^    pub fn literal(&self) -> &str {$/;"	f
+has_value	target/package/actiondb-0.3.1/src/matcher/trie/node/literal.rs	/^    pub fn has_value(&self) -> bool {$/;"	f
+set_has_value	target/package/actiondb-0.3.1/src/matcher/trie/node/literal.rs	/^    pub fn set_has_value(&mut self, has_value: bool) {$/;"	f
+set_node	target/package/actiondb-0.3.1/src/matcher/trie/node/literal.rs	/^    pub fn set_node(&mut self, node: Option<Box<Node>>) {$/;"	f
+node_mut	target/package/actiondb-0.3.1/src/matcher/trie/node/literal.rs	/^    pub fn node_mut(&mut self) -> Option<&mut Node> {$/;"	f
+node	target/package/actiondb-0.3.1/src/matcher/trie/node/literal.rs	/^    pub fn node(&self) -> Option<&Node> {$/;"	f
+cmp_str	target/package/actiondb-0.3.1/src/matcher/trie/node/literal.rs	/^    pub fn cmp_str(&self, other: &str) -> Ordering {$/;"	f
+split	target/package/actiondb-0.3.1/src/matcher/trie/node/literal.rs	/^    pub fn split(self,$/;"	f
+is_leaf	target/package/actiondb-0.3.1/src/matcher/trie/node/literal.rs	/^    pub fn is_leaf(&self) -> bool {$/;"	f
+compare_first_chars	target/package/actiondb-0.3.1/src/matcher/trie/node/literal.rs	/^    fn compare_first_chars(&self, other : &LiteralNode) -> Ordering {$/;"	f
+TrieOperations for LiteralNode	target/package/actiondb-0.3.1/src/matcher/trie/node/literal.rs	/^impl TrieOperations for LiteralNode {$/;"	i
+insert_literal	target/package/actiondb-0.3.1/src/matcher/trie/node/literal.rs	/^    fn insert_literal(&mut self, literal: &str) -> &mut LiteralNode {$/;"	f
+insert_parser	target/package/actiondb-0.3.1/src/matcher/trie/node/literal.rs	/^    fn insert_parser(&mut self, parser: Box<Parser>) -> &mut ParserNode {$/;"	f
+HasPattern for LiteralNode	target/package/actiondb-0.3.1/src/matcher/trie/node/literal.rs	/^impl HasPattern for LiteralNode {$/;"	i
+set_pattern	target/package/actiondb-0.3.1/src/matcher/trie/node/literal.rs	/^    fn set_pattern(&mut self, pattern: Pattern) {$/;"	f
+pattern	target/package/actiondb-0.3.1/src/matcher/trie/node/literal.rs	/^    fn pattern(&self) -> Option<&Pattern> {$/;"	f
+Eq for LiteralNode	target/package/actiondb-0.3.1/src/matcher/trie/node/literal.rs	/^impl Eq for LiteralNode {}$/;"	i
+PartialEq for LiteralNode	target/package/actiondb-0.3.1/src/matcher/trie/node/literal.rs	/^impl PartialEq for LiteralNode {$/;"	i
+eq	target/package/actiondb-0.3.1/src/matcher/trie/node/literal.rs	/^    fn eq(&self, other: &Self) -> bool {$/;"	f
+ne	target/package/actiondb-0.3.1/src/matcher/trie/node/literal.rs	/^    fn ne(&self, other: &Self) -> bool {$/;"	f
+Ord for LiteralNode	target/package/actiondb-0.3.1/src/matcher/trie/node/literal.rs	/^impl Ord for LiteralNode {$/;"	i
+cmp	target/package/actiondb-0.3.1/src/matcher/trie/node/literal.rs	/^    fn cmp(&self, other: &Self) -> Ordering {$/;"	f
+PartialOrd for LiteralNode	target/package/actiondb-0.3.1/src/matcher/trie/node/literal.rs	/^impl PartialOrd for LiteralNode {$/;"	i
+partial_cmp	target/package/actiondb-0.3.1/src/matcher/trie/node/literal.rs	/^    fn partial_cmp(&self, other: &Self) -> Option<Ordering> {$/;"	f
+test	target/package/actiondb-0.3.1/src/matcher/trie/node/literal.rs	/^mod test {$/;"	m
+given_literal_node_when_its_leafness_is_checked_the_right_result_is_returned	target/package/actiondb-0.3.1/src/matcher/trie/node/literal.rs	/^    fn given_literal_node_when_its_leafness_is_checked_the_right_result_is_returned() {$/;"	f
+given_literal_node_when_it_is_compared_to_an_other_literal_node_then_only_their_first_chars_are_checked	target/package/actiondb-0.3.1/src/matcher/trie/node/literal.rs	/^    fn given_literal_node_when_it_is_compared_to_an_other_literal_node_then_only_their_first_chars_are_checked() {$/;"	f
+node	target/package/actiondb-0.3.1/src/matcher/trie/mod.rs	/^pub mod node;$/;"	m
+trie	target/package/actiondb-0.3.1/src/matcher/trie/mod.rs	/^mod trie;$/;"	m
+matcher	target/package/actiondb-0.3.1/src/matcher/trie/mod.rs	/^mod matcher;$/;"	m
+TrieOperations	target/package/actiondb-0.3.1/src/matcher/trie/mod.rs	/^pub trait TrieOperations {$/;"	t
+insert_literal	target/package/actiondb-0.3.1/src/matcher/trie/mod.rs	/^    fn insert_literal(&mut self, literal: &str) -> &mut LiteralNode;$/;"	f
+insert_parser	target/package/actiondb-0.3.1/src/matcher/trie/mod.rs	/^    fn insert_parser(&mut self, parser: Box<Parser>) -> &mut ParserNode;$/;"	f
+HasPattern	target/package/actiondb-0.3.1/src/matcher/trie/mod.rs	/^pub trait HasPattern {$/;"	t
+set_pattern	target/package/actiondb-0.3.1/src/matcher/trie/mod.rs	/^    fn set_pattern(&mut self, pattern: Pattern);$/;"	f
+pattern	target/package/actiondb-0.3.1/src/matcher/trie/mod.rs	/^    fn pattern(&self) -> Option<&Pattern>;$/;"	f
+ParserTrie	target/package/actiondb-0.3.1/src/matcher/trie/trie.rs	/^pub struct ParserTrie {$/;"	s
+insert_recurse	target/package/actiondb-0.3.1/src/matcher/trie/trie.rs	/^macro_rules! insert_recurse {$/;"	d
+ParserTrie	target/package/actiondb-0.3.1/src/matcher/trie/trie.rs	/^impl ParserTrie {$/;"	i
+new	target/package/actiondb-0.3.1/src/matcher/trie/trie.rs	/^    pub fn new() -> ParserTrie {$/;"	f
+insert	target/package/actiondb-0.3.1/src/matcher/trie/trie.rs	/^    pub fn insert(&mut self, pattern: Pattern) -> &mut TrieOperations {$/;"	f
+parse	target/package/actiondb-0.3.1/src/matcher/trie/trie.rs	/^    pub fn parse<'a, 'b>(&'a self, text: &'b str) -> Option<MatchResult<'a, 'b>> {$/;"	f
+insert_pattern	target/package/actiondb-0.3.1/src/matcher/trie/trie.rs	/^    fn insert_pattern<'a>(node: &'a mut TrieOperations, mut pattern: Pattern) -> &'a mut TrieOperations {$/;"	f
+test	target/package/actiondb-0.3.1/src/matcher/trie/trie.rs	/^mod test {$/;"	m
+test_given_patterns_when_inserted_into_the_prefix_tree_then_the_proper_tree_is_built	target/package/actiondb-0.3.1/src/matcher/trie/trie.rs	/^    fn test_given_patterns_when_inserted_into_the_prefix_tree_then_the_proper_tree_is_built() {$/;"	f
+test_given_pattern_when_inserted_into_the_parser_tree_then_the_pattern_is_stored_in_the_leaf	target/package/actiondb-0.3.1/src/matcher/trie/trie.rs	/^    fn test_given_pattern_when_inserted_into_the_parser_tree_then_the_pattern_is_stored_in_the_leaf() {$/;"	f
+test_given_pattern_with_two_neighbouring_parser_when_the_pattern_is_inserted_into_the_trie_then_everything_is_ok	target/package/actiondb-0.3.1/src/matcher/trie/trie.rs	/^    fn test_given_pattern_with_two_neighbouring_parser_when_the_pattern_is_inserted_into_the_trie_then_everything_is_ok() {$/;"	f
+Matcher for ParserTrie	target/package/actiondb-0.3.1/src/matcher/trie/matcher.rs	/^impl Matcher for ParserTrie {$/;"	i
+parse	target/package/actiondb-0.3.1/src/matcher/trie/matcher.rs	/^    fn parse<'a, 'b>(&'a self, text: &'b str) -> Option<MatchResult<'a, 'b>> {$/;"	f
+add_pattern	target/package/actiondb-0.3.1/src/matcher/trie/matcher.rs	/^    fn add_pattern(&mut self, pattern: Pattern) {$/;"	f
+boxed_clone	target/package/actiondb-0.3.1/src/matcher/trie/matcher.rs	/^    fn boxed_clone(&self) -> Box<Matcher> {$/;"	f
+parsers	target/package/actiondb-0.3.1/src/lib.rs	/^pub mod parsers;$/;"	m
+utils	target/package/actiondb-0.3.1/src/lib.rs	/^pub mod utils;$/;"	m
+matcher	target/package/actiondb-0.3.1/src/lib.rs	/^pub mod matcher;$/;"	m
+grammar	target/package/actiondb-0.3.1/src/lib.rs	/^pub mod grammar;$/;"	m
+SetParser	target/package/actiondb-0.3.1/src/parsers/set.rs	/^pub struct SetParser {$/;"	s
+SetParser	target/package/actiondb-0.3.1/src/parsers/set.rs	/^impl SetParser {$/;"	i
+with_name	target/package/actiondb-0.3.1/src/parsers/set.rs	/^    pub fn with_name(name: String, set: &str) -> SetParser {$/;"	f
+new	target/package/actiondb-0.3.1/src/parsers/set.rs	/^    pub fn new(set: &str) -> SetParser {$/;"	f
+from_str	target/package/actiondb-0.3.1/src/parsers/set.rs	/^    pub fn from_str(name: &str, set: &str) -> SetParser {$/;"	f
+set_character_set	target/package/actiondb-0.3.1/src/parsers/set.rs	/^    pub fn set_character_set(&mut self, set: &str) {$/;"	f
+set_min_length	target/package/actiondb-0.3.1/src/parsers/set.rs	/^    pub fn set_min_length(&mut self, length: usize) {$/;"	f
+set_max_length	target/package/actiondb-0.3.1/src/parsers/set.rs	/^    pub fn set_max_length(&mut self, length: usize) {$/;"	f
+create_set_from_str	target/package/actiondb-0.3.1/src/parsers/set.rs	/^    fn create_set_from_str(set: &str) -> BTreeSet<u8> {$/;"	f
+calculate_match_length	target/package/actiondb-0.3.1/src/parsers/set.rs	/^    fn calculate_match_length(&self, value: &str) -> usize {$/;"	f
+Parser for SetParser	target/package/actiondb-0.3.1/src/parsers/set.rs	/^impl Parser for SetParser {$/;"	i
+parse	target/package/actiondb-0.3.1/src/parsers/set.rs	/^    fn parse<'a, 'b>(&'a self, value: &'b str) -> Option<ParseResult<'a, 'b>> {$/;"	f
+name	target/package/actiondb-0.3.1/src/parsers/set.rs	/^    fn name(&self) -> Option<&str> {$/;"	f
+set_name	target/package/actiondb-0.3.1/src/parsers/set.rs	/^    fn set_name(&mut self, name: Option<String>) {$/;"	f
+boxed_clone	target/package/actiondb-0.3.1/src/parsers/set.rs	/^    fn boxed_clone(&self) -> Box<Parser> {$/;"	f
+ObjectSafeHash for SetParser	target/package/actiondb-0.3.1/src/parsers/set.rs	/^impl ObjectSafeHash for SetParser {$/;"	i
+hash_os	target/package/actiondb-0.3.1/src/parsers/set.rs	/^    fn hash_os(&self) -> u64 {$/;"	f
+HasOptionalParameter for SetParser	target/package/actiondb-0.3.1/src/parsers/set.rs	/^impl HasOptionalParameter for SetParser {$/;"	i
+set_optional_params	target/package/actiondb-0.3.1/src/parsers/set.rs	/^    fn set_optional_params<'a>(&mut self, params: &Vec<OptionalParameter<'a>>) -> bool {$/;"	f
+test	target/package/actiondb-0.3.1/src/parsers/set.rs	/^mod test {$/;"	m
+test_given_empty_string_when_parsed_it_wont_match	target/package/actiondb-0.3.1/src/parsers/set.rs	/^    fn test_given_empty_string_when_parsed_it_wont_match() {$/;"	f
+test_given_not_matching_string_when_parsed_it_wont_match	target/package/actiondb-0.3.1/src/parsers/set.rs	/^    fn test_given_not_matching_string_when_parsed_it_wont_match() {$/;"	f
+test_given_matching_string_when_parsed_it_matches	target/package/actiondb-0.3.1/src/parsers/set.rs	/^    fn test_given_matching_string_when_parsed_it_matches() {$/;"	f
+test_given_minimum_match_length_when_a_match_is_shorter_it_doesnt_count_as_a_match	target/package/actiondb-0.3.1/src/parsers/set.rs	/^    fn test_given_minimum_match_length_when_a_match_is_shorter_it_doesnt_count_as_a_match() {$/;"	f
+test_given_maximum_match_length_when_a_match_is_longer_it_doesnt_count_as_a_match	target/package/actiondb-0.3.1/src/parsers/set.rs	/^    fn test_given_maximum_match_length_when_a_match_is_longer_it_doesnt_count_as_a_match() {$/;"	f
+test_given_minimum_and_maximum_match_length_when_a_proper_length_match_occures_it_counts_as_a_match	target/package/actiondb-0.3.1/src/parsers/set.rs	/^    fn test_given_minimum_and_maximum_match_length_when_a_proper_length_match_occures_it_counts_as_a_match() {$/;"	f
+test_given_set_parser_and_when_differently_parametrized_instances_are_hashed_then_the_hashes_are_different	target/package/actiondb-0.3.1/src/parsers/set.rs	/^    fn test_given_set_parser_and_when_differently_parametrized_instances_are_hashed_then_the_hashes_are_different() {$/;"	f
+set	target/package/actiondb-0.3.1/src/parsers/mod.rs	/^mod set;$/;"	m
+base	target/package/actiondb-0.3.1/src/parsers/mod.rs	/^mod base;$/;"	m
+int	target/package/actiondb-0.3.1/src/parsers/mod.rs	/^mod int;$/;"	m
+length_checked	target/package/actiondb-0.3.1/src/parsers/mod.rs	/^mod length_checked;$/;"	m
+greedy	target/package/actiondb-0.3.1/src/parsers/mod.rs	/^mod greedy;$/;"	m
+ObjectSafeHash	target/package/actiondb-0.3.1/src/parsers/mod.rs	/^pub trait ObjectSafeHash {$/;"	t
+hash_os	target/package/actiondb-0.3.1/src/parsers/mod.rs	/^    fn hash_os(&self) -> u64;$/;"	f
+Parser	target/package/actiondb-0.3.1/src/parsers/mod.rs	/^pub trait Parser: Debug + ObjectSafeHash {$/;"	t
+parse	target/package/actiondb-0.3.1/src/parsers/mod.rs	/^    fn parse<'a, 'b>(&'a self, value: &'b str) -> Option<ParseResult<'a, 'b>>;$/;"	f
+name	target/package/actiondb-0.3.1/src/parsers/mod.rs	/^    fn name(&self) -> Option<&str>;$/;"	f
+set_name	target/package/actiondb-0.3.1/src/parsers/mod.rs	/^    fn set_name(&mut self, Option<String>);$/;"	f
+boxed_clone	target/package/actiondb-0.3.1/src/parsers/mod.rs	/^    fn boxed_clone(&self) -> Box<Parser>;$/;"	f
+HasOptionalParameter	target/package/actiondb-0.3.1/src/parsers/mod.rs	/^pub trait HasOptionalParameter {$/;"	t
+set_optional_params	target/package/actiondb-0.3.1/src/parsers/mod.rs	/^    fn set_optional_params<'a>(&mut self, params: &Vec<OptionalParameter<'a>>) -> bool;$/;"	f
+OptionalParameter	target/package/actiondb-0.3.1/src/parsers/mod.rs	/^pub enum OptionalParameter<'a> {$/;"	g
+ParseResult	target/package/actiondb-0.3.1/src/parsers/mod.rs	/^pub struct ParseResult<'a, 'b> {$/;"	s
+ParseResult	target/package/actiondb-0.3.1/src/parsers/mod.rs	/^impl<'a, 'b> ParseResult<'a, 'b> {$/;"	i
+new	target/package/actiondb-0.3.1/src/parsers/mod.rs	/^    pub fn new(parser: &'a Parser, value: &'b str) -> ParseResult<'a, 'b> {$/;"	f
+parser	target/package/actiondb-0.3.1/src/parsers/mod.rs	/^    pub fn parser(&self) -> &'a Parser {$/;"	f
+value	target/package/actiondb-0.3.1/src/parsers/mod.rs	/^    pub fn value(&self) -> &'b str {$/;"	f
+ParserBase	target/package/actiondb-0.3.1/src/parsers/base.rs	/^pub struct ParserBase {$/;"	s
+ParserBase	target/package/actiondb-0.3.1/src/parsers/base.rs	/^impl ParserBase {$/;"	i
+with_name	target/package/actiondb-0.3.1/src/parsers/base.rs	/^    pub fn with_name(name: String) -> ParserBase {$/;"	f
+new	target/package/actiondb-0.3.1/src/parsers/base.rs	/^    pub fn new() -> ParserBase {$/;"	f
+name	target/package/actiondb-0.3.1/src/parsers/base.rs	/^    pub fn name(&self) -> Option<&str> {$/;"	f
+set_name	target/package/actiondb-0.3.1/src/parsers/base.rs	/^    pub fn set_name(&mut self, name: Option<String>) {$/;"	f
+IntParser	target/package/actiondb-0.3.1/src/parsers/int.rs	/^pub struct IntParser {$/;"	s
+IntParser	target/package/actiondb-0.3.1/src/parsers/int.rs	/^impl IntParser {$/;"	i
+from_str	target/package/actiondb-0.3.1/src/parsers/int.rs	/^    pub fn from_str(name: &str) -> IntParser {$/;"	f
+with_name	target/package/actiondb-0.3.1/src/parsers/int.rs	/^    pub fn with_name(name: String) -> IntParser {$/;"	f
+new	target/package/actiondb-0.3.1/src/parsers/int.rs	/^    pub fn new() -> IntParser {$/;"	f
+set_min_length	target/package/actiondb-0.3.1/src/parsers/int.rs	/^    pub fn set_min_length(&mut self, length: usize) {$/;"	f
+set_max_length	target/package/actiondb-0.3.1/src/parsers/int.rs	/^    pub fn set_max_length(&mut self, length: usize) {$/;"	f
+Parser for IntParser	target/package/actiondb-0.3.1/src/parsers/int.rs	/^impl Parser for IntParser {$/;"	i
+parse	target/package/actiondb-0.3.1/src/parsers/int.rs	/^    fn parse<'a, 'b>(&'a self, value: &'b str) -> Option<ParseResult<'a, 'b>> {$/;"	f
+name	target/package/actiondb-0.3.1/src/parsers/int.rs	/^    fn name(&self) -> Option<&str> {$/;"	f
+set_name	target/package/actiondb-0.3.1/src/parsers/int.rs	/^    fn set_name(&mut self, name: Option<String>) {$/;"	f
+boxed_clone	target/package/actiondb-0.3.1/src/parsers/int.rs	/^    fn boxed_clone(&self) -> Box<Parser> {$/;"	f
+ObjectSafeHash for IntParser	target/package/actiondb-0.3.1/src/parsers/int.rs	/^impl ObjectSafeHash for IntParser {$/;"	i
+hash_os	target/package/actiondb-0.3.1/src/parsers/int.rs	/^    fn hash_os(&self) -> u64 {$/;"	f
+HasOptionalParameter for IntParser	target/package/actiondb-0.3.1/src/parsers/int.rs	/^impl HasOptionalParameter for IntParser {$/;"	i
+set_optional_params	target/package/actiondb-0.3.1/src/parsers/int.rs	/^    fn set_optional_params<'a>(&mut self, params: &Vec<OptionalParameter<'a>>) -> bool {$/;"	f
+test	target/package/actiondb-0.3.1/src/parsers/int.rs	/^mod test {$/;"	m
+test_given_int_parser_when_the_match_is_empty_then_the_result_isnt_successful	target/package/actiondb-0.3.1/src/parsers/int.rs	/^    fn test_given_int_parser_when_the_match_is_empty_then_the_result_isnt_successful() {$/;"	f
+test_given_matching_string_when_it_is_parsed_then_it_matches	target/package/actiondb-0.3.1/src/parsers/int.rs	/^    fn test_given_matching_string_when_it_is_parsed_then_it_matches() {$/;"	f
+test_given_matching_string_which_is_longer_than_the_max_match_length_when_it_is_parsed_then_it_does_not_match	target/package/actiondb-0.3.1/src/parsers/int.rs	/^    fn test_given_matching_string_which_is_longer_than_the_max_match_length_when_it_is_parsed_then_it_does_not_match() {$/;"	f
+LengthCheckedParserBase	target/package/actiondb-0.3.1/src/parsers/length_checked.rs	/^pub struct LengthCheckedParserBase {$/;"	s
+LengthCheckedParserBase	target/package/actiondb-0.3.1/src/parsers/length_checked.rs	/^impl LengthCheckedParserBase {$/;"	i
+with_name	target/package/actiondb-0.3.1/src/parsers/length_checked.rs	/^    pub fn with_name(name: String) -> LengthCheckedParserBase {$/;"	f
+new	target/package/actiondb-0.3.1/src/parsers/length_checked.rs	/^    pub fn new() -> LengthCheckedParserBase {$/;"	f
+set_min_length	target/package/actiondb-0.3.1/src/parsers/length_checked.rs	/^    pub fn set_min_length(&mut self, length: usize) {$/;"	f
+set_max_length	target/package/actiondb-0.3.1/src/parsers/length_checked.rs	/^    pub fn set_max_length(&mut self, length: usize) {$/;"	f
+is_match_length_ok	target/package/actiondb-0.3.1/src/parsers/length_checked.rs	/^    pub fn is_match_length_ok(&self, match_length: usize) -> bool {$/;"	f
+set_name	target/package/actiondb-0.3.1/src/parsers/length_checked.rs	/^    pub fn set_name(&mut self, name: Option<String>) {$/;"	f
+name	target/package/actiondb-0.3.1/src/parsers/length_checked.rs	/^    pub fn name(&self) -> Option<&str> {$/;"	f
+is_min_length_ok	target/package/actiondb-0.3.1/src/parsers/length_checked.rs	/^    fn is_min_length_ok(&self, match_length: usize) -> bool {$/;"	f
+is_max_length_ok	target/package/actiondb-0.3.1/src/parsers/length_checked.rs	/^    fn is_max_length_ok(&self, match_length: usize) -> bool {$/;"	f
+HasOptionalParameter for LengthCheckedParserBase	target/package/actiondb-0.3.1/src/parsers/length_checked.rs	/^impl HasOptionalParameter for LengthCheckedParserBase {$/;"	i
+set_optional_params	target/package/actiondb-0.3.1/src/parsers/length_checked.rs	/^    fn set_optional_params<'a>(&mut self, params: &Vec<OptionalParameter<'a>>) -> bool {$/;"	f
+test	target/package/actiondb-0.3.1/src/parsers/length_checked.rs	/^mod test {$/;"	m
+test_given_parser_when_the_match_length_is_not_constrained_then_the_match_length_is_ok_in_every_case	target/package/actiondb-0.3.1/src/parsers/length_checked.rs	/^    fn test_given_parser_when_the_match_length_is_not_constrained_then_the_match_length_is_ok_in_every_case() {$/;"	f
+test_given_parser_when_the_minimum_match_length_is_set_then_the_shorter_matches_are_discarded	target/package/actiondb-0.3.1/src/parsers/length_checked.rs	/^    fn test_given_parser_when_the_minimum_match_length_is_set_then_the_shorter_matches_are_discarded() {$/;"	f
+test_given_parser_when_the_maximum_match_length_is_set_then_the_longer_matches_are_discarded	target/package/actiondb-0.3.1/src/parsers/length_checked.rs	/^    fn test_given_parser_when_the_maximum_match_length_is_set_then_the_longer_matches_are_discarded() {$/;"	f
+GreedyParser	target/package/actiondb-0.3.1/src/parsers/greedy.rs	/^pub struct GreedyParser {$/;"	s
+GreedyParser	target/package/actiondb-0.3.1/src/parsers/greedy.rs	/^impl GreedyParser {$/;"	i
+with_name	target/package/actiondb-0.3.1/src/parsers/greedy.rs	/^    pub fn with_name(name: String) -> GreedyParser {$/;"	f
+from_str	target/package/actiondb-0.3.1/src/parsers/greedy.rs	/^    pub fn from_str(name: &str, end_string: &str) -> GreedyParser {$/;"	f
+new	target/package/actiondb-0.3.1/src/parsers/greedy.rs	/^    pub fn new() -> GreedyParser {$/;"	f
+set_end_string	target/package/actiondb-0.3.1/src/parsers/greedy.rs	/^    pub fn set_end_string(&mut self, end_string: String) {$/;"	f
+ObjectSafeHash for GreedyParser	target/package/actiondb-0.3.1/src/parsers/greedy.rs	/^impl ObjectSafeHash for GreedyParser {$/;"	i
+hash_os	target/package/actiondb-0.3.1/src/parsers/greedy.rs	/^    fn hash_os(&self) -> u64 {$/;"	f
+Parser for GreedyParser	target/package/actiondb-0.3.1/src/parsers/greedy.rs	/^impl Parser for GreedyParser {$/;"	i
+parse	target/package/actiondb-0.3.1/src/parsers/greedy.rs	/^    fn parse<'a, 'b>(&'a self, value: &'b str) -> Option<ParseResult<'a, 'b>> {$/;"	f
+name	target/package/actiondb-0.3.1/src/parsers/greedy.rs	/^    fn name(&self) -> Option<&str> {$/;"	f
+set_name	target/package/actiondb-0.3.1/src/parsers/greedy.rs	/^    fn set_name(&mut self, name: Option<String>) {$/;"	f
+boxed_clone	target/package/actiondb-0.3.1/src/parsers/greedy.rs	/^    fn boxed_clone(&self) -> Box<Parser> {$/;"	f
+test	target/package/actiondb-0.3.1/src/parsers/greedy.rs	/^mod test {$/;"	m
+test_given_greedy_parser_when_the_end_string_is_not_found_in_the_value_then_the_parser_doesnt_match	target/package/actiondb-0.3.1/src/parsers/greedy.rs	/^    fn test_given_greedy_parser_when_the_end_string_is_not_found_in_the_value_then_the_parser_doesnt_match() {$/;"	f
+test_given_greedy_parser_when_the_end_string_is_found_in_the_value_then_the_parser_matches	target/package/actiondb-0.3.1/src/parsers/greedy.rs	/^    fn test_given_greedy_parser_when_the_end_string_is_found_in_the_value_then_the_parser_matches() {$/;"	f
+SortedVec	target/package/actiondb-0.3.1/src/utils/sortedvec.rs	/^pub struct SortedVec<T> {$/;"	s
+SortedVec	target/package/actiondb-0.3.1/src/utils/sortedvec.rs	/^impl <T: Ord> SortedVec<T> {$/;"	i
+new	target/package/actiondb-0.3.1/src/utils/sortedvec.rs	/^    pub fn new() -> SortedVec<T> {$/;"	f
+push	target/package/actiondb-0.3.1/src/utils/sortedvec.rs	/^    pub fn push(&mut self, value: T) {$/;"	f
+find_pos	target/package/actiondb-0.3.1/src/utils/sortedvec.rs	/^    pub fn find_pos(&self, value: &T) -> Option<usize> {$/;"	f
+find	target/package/actiondb-0.3.1/src/utils/sortedvec.rs	/^    pub fn find(&self, value: &T) -> Option<&T> {$/;"	f
+remove	target/package/actiondb-0.3.1/src/utils/sortedvec.rs	/^    pub fn remove(&mut self, index: usize) -> T {$/;"	f
+get	target/package/actiondb-0.3.1/src/utils/sortedvec.rs	/^    pub fn get(&self, index: usize) -> Option<&T> {$/;"	f
+get_mut	target/package/actiondb-0.3.1/src/utils/sortedvec.rs	/^    pub fn get_mut(&mut self, index: usize) -> Option<&mut T> {$/;"	f
+len	target/package/actiondb-0.3.1/src/utils/sortedvec.rs	/^    pub fn len(&self) -> usize {$/;"	f
+is_empty	target/package/actiondb-0.3.1/src/utils/sortedvec.rs	/^    pub fn is_empty(&self) -> bool {$/;"	f
+binary_search_by	target/package/actiondb-0.3.1/src/utils/sortedvec.rs	/^    pub fn binary_search_by<F>(&self, f: F) -> Result<usize, usize> where F: FnMut(&T) -> Ordering {$/;"	f
+binary_search	target/package/actiondb-0.3.1/src/utils/sortedvec.rs	/^    fn binary_search<'a>(&self, needle: &T) -> Option<usize> {$/;"	f
+test	target/package/actiondb-0.3.1/src/utils/sortedvec.rs	/^mod test {$/;"	m
+test_given_sorted_vector_when_values_are_pushed_they_be_get	target/package/actiondb-0.3.1/src/utils/sortedvec.rs	/^    fn test_given_sorted_vector_when_values_are_pushed_they_be_get() {$/;"	f
+test_given_sorted_vector_when_values_are_pushed_they_get_sorted	target/package/actiondb-0.3.1/src/utils/sortedvec.rs	/^    fn test_given_sorted_vector_when_values_are_pushed_they_get_sorted() {$/;"	f
+test_given_sorted_vector_when_values_are_searched_they_can_be_found	target/package/actiondb-0.3.1/src/utils/sortedvec.rs	/^    fn test_given_sorted_vector_when_values_are_searched_they_can_be_found() {$/;"	f
+test_given_sorted_vector_when_length_is_queried_it_is_ok	target/package/actiondb-0.3.1/src/utils/sortedvec.rs	/^    fn test_given_sorted_vector_when_length_is_queried_it_is_ok() {$/;"	f
+test_given_sorted_vector_when_values_are_found_then_their_references_are_returned	target/package/actiondb-0.3.1/src/utils/sortedvec.rs	/^    fn test_given_sorted_vector_when_values_are_found_then_their_references_are_returned() {$/;"	f
+test_given_sorted_vector_when_values_are_searched_by_custom_cmp_func_they_can_be_found	target/package/actiondb-0.3.1/src/utils/sortedvec.rs	/^    fn test_given_sorted_vector_when_values_are_searched_by_custom_cmp_func_they_can_be_found() {$/;"	f
+test_given_sorted_vector_of_literal_nodes_when_binary_search_by_are_used_the_right_node_is_found	target/package/actiondb-0.3.1/src/utils/sortedvec.rs	/^    fn test_given_sorted_vector_of_literal_nodes_when_binary_search_by_are_used_the_right_node_is_found() {$/;"	f
+sortedvec	target/package/actiondb-0.3.1/src/utils/mod.rs	/^mod sortedvec;$/;"	m
+common_prefix	target/package/actiondb-0.3.1/src/utils/mod.rs	/^pub mod common_prefix;$/;"	m
+flatten_vec	target/package/actiondb-0.3.1/src/utils/mod.rs	/^pub fn flatten_vec<T>(vectors: Vec<Vec<T>>) -> Vec<T> {$/;"	f
+CommonPrefix	target/package/actiondb-0.3.1/src/utils/common_prefix.rs	/^pub trait CommonPrefix {$/;"	t
+has_common_prefix	target/package/actiondb-0.3.1/src/utils/common_prefix.rs	/^    fn has_common_prefix(&self, other: &Self) -> Option<usize> {$/;"	f
+common_prefix_len	target/package/actiondb-0.3.1/src/utils/common_prefix.rs	/^    fn common_prefix_len(&self, other: &Self) -> usize;$/;"	f
+ltrunc	target/package/actiondb-0.3.1/src/utils/common_prefix.rs	/^    fn ltrunc(&self, len: usize) -> &Self;$/;"	f
+rtrunc	target/package/actiondb-0.3.1/src/utils/common_prefix.rs	/^    fn rtrunc(&self, len: usize) -> &Self;$/;"	f
+CommonPrefix for str	target/package/actiondb-0.3.1/src/utils/common_prefix.rs	/^impl CommonPrefix for str {$/;"	i
+common_prefix_len	target/package/actiondb-0.3.1/src/utils/common_prefix.rs	/^    fn common_prefix_len(&self, other: &Self) -> usize {$/;"	f
+ltrunc	target/package/actiondb-0.3.1/src/utils/common_prefix.rs	/^    fn ltrunc(&self, len: usize) -> &Self {$/;"	f
+rtrunc	target/package/actiondb-0.3.1/src/utils/common_prefix.rs	/^    fn rtrunc(&self, len: usize) -> &Self {$/;"	f
+test	target/package/actiondb-0.3.1/src/utils/common_prefix.rs	/^mod test {$/;"	m
+given_a_string_when_longest_common_prefix_is_calulated_then_the_result_is_right	target/package/actiondb-0.3.1/src/utils/common_prefix.rs	/^    fn given_a_string_when_longest_common_prefix_is_calulated_then_the_result_is_right() {$/;"	f
+test_given_a_string_when_truncated_by_left_then_the_result_is_the_expected	target/package/actiondb-0.3.1/src/utils/common_prefix.rs	/^    fn test_given_a_string_when_truncated_by_left_then_the_result_is_the_expected() {$/;"	f
+test_given_a_string_when_truncated_by_right_then_the_result_is_the_expected	target/package/actiondb-0.3.1/src/utils/common_prefix.rs	/^    fn test_given_a_string_when_truncated_by_right_then_the_result_is_the_expected() {$/;"	f
+logger	target/package/actiondb-0.3.1/src/bin/adbtool.rs	/^mod logger;$/;"	m
+parse	target/package/actiondb-0.3.1/src/bin/adbtool.rs	/^mod parse;$/;"	m
+build_command_line_argument_parser	target/package/actiondb-0.3.1/src/bin/adbtool.rs	/^fn build_command_line_argument_parser<'a, 'b, 'c, 'd, 'e, 'f>() -> App<'a, 'b, 'c, 'd, 'e, 'f> {$/;"	f
+handle_validate	target/package/actiondb-0.3.1/src/bin/adbtool.rs	/^fn handle_validate(matches: &ArgMatches) {$/;"	f
+handle_parse	target/package/actiondb-0.3.1/src/bin/adbtool.rs	/^fn handle_parse(matches: &ArgMatches) {$/;"	f
+setup_stdout_logger	target/package/actiondb-0.3.1/src/bin/adbtool.rs	/^fn setup_stdout_logger() {$/;"	f
+main	target/package/actiondb-0.3.1/src/bin/adbtool.rs	/^fn main() {$/;"	f
+StdoutLogger	target/package/actiondb-0.3.1/src/bin/logger.rs	/^pub struct StdoutLogger;$/;"	s
+log::Log for StdoutLogger	target/package/actiondb-0.3.1/src/bin/logger.rs	/^impl log::Log for StdoutLogger {$/;"	i
+enabled	target/package/actiondb-0.3.1/src/bin/logger.rs	/^    fn enabled(&self, metadata: &LogMetadata) -> bool {$/;"	f
+log	target/package/actiondb-0.3.1/src/bin/logger.rs	/^    fn log(&self, record: &LogRecord) {$/;"	f
+parse	target/package/actiondb-0.3.1/src/bin/parse.rs	/^pub fn parse(pattern_file_path: &str, input_file_path: &str, output_file_path: &str) -> Result<(), Error> {$/;"	f
+parse_file	target/package/actiondb-0.3.1/src/bin/parse.rs	/^fn parse_file(input_file: &File, output_file: &mut File, matcher: &Box<Matcher>) {$/;"	f
+pattern_parser	target/package/actiondb-0.3.1/src/grammar/mod.rs	/^pub mod pattern_parser;$/;"	m
+test	target/package/actiondb-0.3.1/src/grammar/mod.rs	/^mod test;$/;"	m
+parser	target/package/actiondb-0.3.1/src/grammar/mod.rs	/^pub mod parser {$/;"	m
+unescape_literal	target/package/actiondb-0.3.1/src/grammar/mod.rs	/^pub fn unescape_literal(literal: &str) -> String {$/;"	f
+set_optional_params	target/package/actiondb-0.3.1/src/grammar/mod.rs	/^pub fn set_optional_params<'a, T: HasOptionalParameter>(parser: &mut T, params: Option<&Vec<OptionalParameter<'a>>>) {$/;"	f
+escape_default	target/package/actiondb-0.3.1/src/grammar/pattern_parser.rs	/^fn escape_default(s: &str) -> String {$/;"	f
+char_range_at	target/package/actiondb-0.3.1/src/grammar/pattern_parser.rs	/^fn char_range_at(s: &str, pos: usize) -> (char, usize) {$/;"	f
+RuleResult	target/package/actiondb-0.3.1/src/grammar/pattern_parser.rs	/^enum RuleResult<T> { Matched(usize, T), Failed, }$/;"	g
+ParseError	target/package/actiondb-0.3.1/src/grammar/pattern_parser.rs	/^pub struct ParseError {$/;"	s
+ParseResult	target/package/actiondb-0.3.1/src/grammar/pattern_parser.rs	/^pub type ParseResult<T> = Result<T, ParseError>;$/;"	T
+::std::fmt::Display for ParseError	target/package/actiondb-0.3.1/src/grammar/pattern_parser.rs	/^impl ::std::fmt::Display for ParseError {$/;"	i
+fmt	target/package/actiondb-0.3.1/src/grammar/pattern_parser.rs	/^    fn fmt(&self, fmt: &mut ::std::fmt::Formatter)$/;"	f
+::std::error::Error for ParseError	target/package/actiondb-0.3.1/src/grammar/pattern_parser.rs	/^impl ::std::error::Error for ParseError {$/;"	i
+description	target/package/actiondb-0.3.1/src/grammar/pattern_parser.rs	/^    fn description(&self) -> &str { "parse error" }$/;"	f
+slice_eq	target/package/actiondb-0.3.1/src/grammar/pattern_parser.rs	/^fn slice_eq(input: &str, state: &mut ParseState, pos: usize, m: &'static str)$/;"	f
+slice_eq_case_insensitive	target/package/actiondb-0.3.1/src/grammar/pattern_parser.rs	/^fn slice_eq_case_insensitive(input: &str, state: &mut ParseState, pos: usize,$/;"	f
+any_char	target/package/actiondb-0.3.1/src/grammar/pattern_parser.rs	/^fn any_char(input: &str, state: &mut ParseState, pos: usize)$/;"	f
+pos_to_line	target/package/actiondb-0.3.1/src/grammar/pattern_parser.rs	/^fn pos_to_line(input: &str, pos: usize) -> (usize, usize) {$/;"	f
+ParseState	target/package/actiondb-0.3.1/src/grammar/pattern_parser.rs	/^struct ParseState<'input> {$/;"	s
+ParseState	target/package/actiondb-0.3.1/src/grammar/pattern_parser.rs	/^impl <'input> ParseState<'input> {$/;"	i
+new	target/package/actiondb-0.3.1/src/grammar/pattern_parser.rs	/^    fn new() -> ParseState<'input> {$/;"	f
+mark_failure	target/package/actiondb-0.3.1/src/grammar/pattern_parser.rs	/^    fn mark_failure(&mut self, pos: usize, expected: &'static str)$/;"	f
+parse_pattern	target/package/actiondb-0.3.1/src/grammar/pattern_parser.rs	/^fn parse_pattern<'input>(input: &'input str, state: &mut ParseState<'input>,$/;"	f
+parse_pattern_piece	target/package/actiondb-0.3.1/src/grammar/pattern_parser.rs	/^fn parse_pattern_piece<'input>(input: &'input str,$/;"	f
+parse_piece_literal	target/package/actiondb-0.3.1/src/grammar/pattern_parser.rs	/^fn parse_piece_literal<'input>(input: &'input str,$/;"	f
+parse_piece_parser	target/package/actiondb-0.3.1/src/grammar/pattern_parser.rs	/^fn parse_piece_parser<'input>(input: &'input str,$/;"	f
+parse_parser	target/package/actiondb-0.3.1/src/grammar/pattern_parser.rs	/^fn parse_parser<'input>(input: &'input str, state: &mut ParseState<'input>,$/;"	f
+parse_parser_SET	target/package/actiondb-0.3.1/src/grammar/pattern_parser.rs	/^fn parse_parser_SET<'input>(input: &'input str,$/;"	f
+parse_parser_SET_optional_params	target/package/actiondb-0.3.1/src/grammar/pattern_parser.rs	/^fn parse_parser_SET_optional_params<'input>(input: &'input str,$/;"	f
+parse_parser_INT	target/package/actiondb-0.3.1/src/grammar/pattern_parser.rs	/^fn parse_parser_INT<'input>(input: &'input str,$/;"	f
+parse_parser_INT_optional_params	target/package/actiondb-0.3.1/src/grammar/pattern_parser.rs	/^fn parse_parser_INT_optional_params<'input>(input: &'input str,$/;"	f
+parse_parser_GREEDY	target/package/actiondb-0.3.1/src/grammar/pattern_parser.rs	/^fn parse_parser_GREEDY<'input>(input: &'input str,$/;"	f
+parse_parser_BASE_optional_param	target/package/actiondb-0.3.1/src/grammar/pattern_parser.rs	/^fn parse_parser_BASE_optional_param<'input>(input: &'input str,$/;"	f
+parse_MIN_LEN	target/package/actiondb-0.3.1/src/grammar/pattern_parser.rs	/^fn parse_MIN_LEN<'input>(input: &'input str, state: &mut ParseState<'input>,$/;"	f
+parse_MAX_LEN	target/package/actiondb-0.3.1/src/grammar/pattern_parser.rs	/^fn parse_MAX_LEN<'input>(input: &'input str, state: &mut ParseState<'input>,$/;"	f
+parse_INT	target/package/actiondb-0.3.1/src/grammar/pattern_parser.rs	/^fn parse_INT<'input>(input: &'input str, state: &mut ParseState<'input>,$/;"	f
+parse_SET	target/package/actiondb-0.3.1/src/grammar/pattern_parser.rs	/^fn parse_SET<'input>(input: &'input str, state: &mut ParseState<'input>,$/;"	f
+parse_GREEDY	target/package/actiondb-0.3.1/src/grammar/pattern_parser.rs	/^fn parse_GREEDY<'input>(input: &'input str, state: &mut ParseState<'input>,$/;"	f
+parse_PARSER_BEGIN	target/package/actiondb-0.3.1/src/grammar/pattern_parser.rs	/^fn parse_PARSER_BEGIN<'input>(input: &'input str,$/;"	f
+parse_PARSER_END	target/package/actiondb-0.3.1/src/grammar/pattern_parser.rs	/^fn parse_PARSER_END<'input>(input: &'input str,$/;"	f
+parse_PARSER_PARAMS_BEGIN	target/package/actiondb-0.3.1/src/grammar/pattern_parser.rs	/^fn parse_PARSER_PARAMS_BEGIN<'input>(input: &'input str,$/;"	f
+parse_PARSER_PARAMS_END	target/package/actiondb-0.3.1/src/grammar/pattern_parser.rs	/^fn parse_PARSER_PARAMS_END<'input>(input: &'input str,$/;"	f
+parse_parser_name	target/package/actiondb-0.3.1/src/grammar/pattern_parser.rs	/^fn parse_parser_name<'input>(input: &'input str,$/;"	f
+parse_identifier	target/package/actiondb-0.3.1/src/grammar/pattern_parser.rs	/^fn parse_identifier<'input>(input: &'input str,$/;"	f
+parse_string	target/package/actiondb-0.3.1/src/grammar/pattern_parser.rs	/^fn parse_string<'input>(input: &'input str, state: &mut ParseState<'input>,$/;"	f
+parse_literal	target/package/actiondb-0.3.1/src/grammar/pattern_parser.rs	/^fn parse_literal<'input>(input: &'input str, state: &mut ParseState<'input>,$/;"	f
+parse_all_chars_until_quotation_mark	target/package/actiondb-0.3.1/src/grammar/pattern_parser.rs	/^fn parse_all_chars_until_quotation_mark<'input>(input: &'input str,$/;"	f
+parse_comma	target/package/actiondb-0.3.1/src/grammar/pattern_parser.rs	/^fn parse_comma<'input>(input: &'input str, state: &mut ParseState<'input>,$/;"	f
+parse_int	target/package/actiondb-0.3.1/src/grammar/pattern_parser.rs	/^fn parse_int<'input>(input: &'input str, state: &mut ParseState<'input>,$/;"	f
+pattern	target/package/actiondb-0.3.1/src/grammar/pattern_parser.rs	/^pub fn pattern<'input>(input: &'input str) -> ParseResult<CompiledPattern> {$/;"	f
+assert_parser_name_equals	target/package/actiondb-0.3.1/src/grammar/test.rs	/^fn assert_parser_name_equals(item: Option<&TokenType>, expected_name: Option<&str>) {$/;"	f
+assert_parser_equals	target/package/actiondb-0.3.1/src/grammar/test.rs	/^fn assert_parser_equals(got: Option<&TokenType>, expected: &Parser) {$/;"	f
+assert_literal_equals	target/package/actiondb-0.3.1/src/grammar/test.rs	/^fn assert_literal_equals(item: Option<&TokenType>, expected: &str) {$/;"	f
+test_given_parser_as_a_string_when_it_is_parsed_then_we_get_the_instantiated_parser	target/package/actiondb-0.3.1/src/grammar/test.rs	/^fn test_given_parser_as_a_string_when_it_is_parsed_then_we_get_the_instantiated_parser() {$/;"	f
+test_given_parser_as_a_string_when_its_name_is_invalid_then_we_dont_get_the_instantiated_parser	target/package/actiondb-0.3.1/src/grammar/test.rs	/^fn test_given_parser_as_a_string_when_its_name_is_invalid_then_we_dont_get_the_instantiated_parser() {$/;"	f
+test_given_parser_as_a_string_when_its_name_is_valid_then_we_get_the_instantiated_parser	target/package/actiondb-0.3.1/src/grammar/test.rs	/^fn test_given_parser_as_a_string_when_its_name_is_valid_then_we_get_the_instantiated_parser() {$/;"	f
+test_given_parser_as_a_string_when_its_type_isnt_exist_then_we_get_an_error	target/package/actiondb-0.3.1/src/grammar/test.rs	/^fn test_given_parser_as_a_string_when_its_type_isnt_exist_then_we_get_an_error() {$/;"	f
+test_given_literal_as_a_string_when_it_is_parsed_then_we_stop_at_the_parsers_begin	target/package/actiondb-0.3.1/src/grammar/test.rs	/^fn test_given_literal_as_a_string_when_it_is_parsed_then_we_stop_at_the_parsers_begin() {$/;"	f
+test_given_pattern_as_a_string_when_it_is_parsed_with_the_grammar_we_got_the_right_compiled_pattern	target/package/actiondb-0.3.1/src/grammar/test.rs	/^fn test_given_pattern_as_a_string_when_it_is_parsed_with_the_grammar_we_got_the_right_compiled_pattern() {$/;"	f
+test_given_invalid_string_when_we_parse_it_then_the_parser_returns_with_error	target/package/actiondb-0.3.1/src/grammar/test.rs	/^fn test_given_invalid_string_when_we_parse_it_then_the_parser_returns_with_error() {$/;"	f
+test_given_string_which_contains_escaped_chars_when_we_parse_it_then_we_get_the_right_string	target/package/actiondb-0.3.1/src/grammar/test.rs	/^fn test_given_string_which_contains_escaped_chars_when_we_parse_it_then_we_get_the_right_string() {$/;"	f
+test_given_set_parser_with_character_set_parameter_when_we_parse_it_then_we_get_the_right_parser	target/package/actiondb-0.3.1/src/grammar/test.rs	/^fn test_given_set_parser_with_character_set_parameter_when_we_parse_it_then_we_get_the_right_parser() {$/;"	f
+test_given_set_parser_with_optional_parameters_when_we_parse_it_then_we_get_the_right_parser	target/package/actiondb-0.3.1/src/grammar/test.rs	/^fn test_given_set_parser_with_optional_parameters_when_we_parse_it_then_we_get_the_right_parser() {$/;"	f
+test_given_int_parser_with_optional_parameters_when_we_parse_it_then_we_get_the_right_parser	target/package/actiondb-0.3.1/src/grammar/test.rs	/^fn test_given_int_parser_with_optional_parameters_when_we_parse_it_then_we_get_the_right_parser() {$/;"	f
+test_given_greedy_parser_when_we_parse_it_then_we_get_the_right_result	target/package/actiondb-0.3.1/src/grammar/test.rs	/^fn test_given_greedy_parser_when_we_parse_it_then_we_get_the_right_result() {$/;"	f
+test_given_greedy_parser_when_there_is_no_literal_after_it_then_we_take_all_the_remaining_intput_as_matching	target/package/actiondb-0.3.1/src/grammar/test.rs	/^fn test_given_greedy_parser_when_there_is_no_literal_after_it_then_we_take_all_the_remaining_intput_as_matching() {$/;"	f
+test_given_parser_when_there_is_a_dot_in_its_name_then_it_is_ok	target/package/actiondb-0.3.1/src/grammar/test.rs	/^fn test_given_parser_when_there_is_a_dot_in_its_name_then_it_is_ok() {$/;"	f
+test_given_invalid_pattern_as_a_string_when_we_parse_them_then_we_get_error	target/package/actiondb-0.3.1/src/grammar/test.rs	/^fn test_given_invalid_pattern_as_a_string_when_we_parse_them_then_we_get_error() {$/;"	f
+test_given_valid_pattern_when_it_contains_cr_character_then_we_can_parse_it	target/package/actiondb-0.3.1/src/grammar/test.rs	/^fn test_given_valid_pattern_when_it_contains_cr_character_then_we_can_parse_it() {$/;"	f
+test_given_valid_pattern_when_it_does_not_have_a_name_then_we_can_parse_the_pattern	target/package/actiondb-0.3.1/src/grammar/test.rs	/^fn test_given_valid_pattern_when_it_does_not_have_a_name_then_we_can_parse_the_pattern() {$/;"	f
+test_given_json_file_when_its_syntax_is_ok_then_matcher_can_be_built_from_it	target/package/actiondb-0.3.1/tests/matcher/mod.rs	/^fn test_given_json_file_when_its_syntax_is_ok_then_matcher_can_be_built_from_it() {$/;"	f
+test_given_json_file_when_its_syntax_is_not_ok_then_matcher_cannot_be_built_from_it	target/package/actiondb-0.3.1/tests/matcher/mod.rs	/^fn test_given_json_file_when_its_syntax_is_not_ok_then_matcher_cannot_be_built_from_it() {$/;"	f
+test_given_non_existing_json_file_when_it_is_loaded_then_matcher_cannot_be_created_from_it	target/package/actiondb-0.3.1/tests/matcher/mod.rs	/^fn test_given_non_existing_json_file_when_it_is_loaded_then_matcher_cannot_be_created_from_it() {$/;"	f
+test_given_json_file_when_matcher_is_created_by_factory_then_the_right_file_type_is_used_based_on_the_extension	target/package/actiondb-0.3.1/tests/matcher/mod.rs	/^fn test_given_json_file_when_matcher_is_created_by_factory_then_the_right_file_type_is_used_based_on_the_extension() {$/;"	f
+test_given_json_file_when_the_tests_contain_tags_but_the_pattern_does_not_have_them_then_we_fail	target/package/actiondb-0.3.1/tests/matcher/mod.rs	/^fn test_given_json_file_when_the_tests_contain_tags_but_the_pattern_does_not_have_them_then_we_fail() {$/;"	f
+test_given_json_file_when_a_pattern_contains_test_tags_then_we_only_check_the_expected_ones	target/package/actiondb-0.3.1/tests/matcher/mod.rs	/^fn test_given_json_file_when_a_pattern_contains_test_tags_then_we_only_check_the_expected_ones() {$/;"	f
+test_given_json_file_when_a_pattern_contains_test_values_then_we_only_check_the_expected_ones	target/package/actiondb-0.3.1/tests/matcher/mod.rs	/^fn test_given_json_file_when_a_pattern_contains_test_values_then_we_only_check_the_expected_ones() {$/;"	f
+test_given_json_file_when_an_expected_value_is_not_found_then_we_fail	target/package/actiondb-0.3.1/tests/matcher/mod.rs	/^fn test_given_json_file_when_an_expected_value_is_not_found_then_we_fail() {$/;"	f
+test_given_json_file_when_a_pattern_contains_cr_characters_then_we_handle_it_properly	target/package/actiondb-0.3.1/tests/matcher/mod.rs	/^fn test_given_json_file_when_a_pattern_contains_cr_characters_then_we_handle_it_properly() {$/;"	f
+test_given_json_file_when_we_check_the_test_messages_then_the_resulting_pattern_should_be_the_tested_one	target/package/actiondb-0.3.1/tests/matcher/mod.rs	/^fn test_given_json_file_when_we_check_the_test_messages_then_the_resulting_pattern_should_be_the_tested_one() {$/;"	f
+file	target/package/actiondb-0.3.1/tests/lib.rs	/^mod file;$/;"	m
+matcher	target/package/actiondb-0.3.1/tests/lib.rs	/^mod matcher;$/;"	m
+test_given_a_valid_json_pattern_file_when_it_is_deserialized_then_we_can_extract_the_patterns_from_it	target/package/actiondb-0.3.1/tests/file/mod.rs	/^fn test_given_a_valid_json_pattern_file_when_it_is_deserialized_then_we_can_extract_the_patterns_from_it() {$/;"	f
+test_given_an_invalid_json_pattern_file_when_it_is_deserialized_then_we_get_deserialization_error	target/package/actiondb-0.3.1/tests/file/mod.rs	/^fn test_given_an_invalid_json_pattern_file_when_it_is_deserialized_then_we_get_deserialization_error() {$/;"	f
+test_given_a_non_existing_pattern_file_when_it_is_deserialized_then_we_get_io_error	target/package/actiondb-0.3.1/tests/file/mod.rs	/^fn test_given_a_non_existing_pattern_file_when_it_is_deserialized_then_we_get_io_error() {$/;"	f
+macros	/home/tibi/workspace/pegtokenizer/src/lib.rs	/^mod macros;$/;"	modules	line:5
+Token	/home/tibi/workspace/pegtokenizer/src/lib.rs	/^pub enum Token {$/;"	enum	line:8
+tests	/home/tibi/workspace/pegtokenizer/src/lib.rs	/^mod tests {$/;"	modules	line:140
+parse_and_assert_eq	/home/tibi/workspace/pegtokenizer/src/lib.rs	/^    fn parse_and_assert_eq(message: &str, expected: Vec<Token>, error_message: &str) {$/;"	functions	line:144
+assert_mac_token_is_valid	/home/tibi/workspace/pegtokenizer/src/lib.rs	/^    fn assert_mac_token_is_valid(message: &str) {$/;"	functions	line:151
+assert_hex_string_token_is_valid	/home/tibi/workspace/pegtokenizer/src/lib.rs	/^    fn assert_hex_string_token_is_valid(message: &str) {$/;"	functions	line:156
+assert_float_token_is_valid	/home/tibi/workspace/pegtokenizer/src/lib.rs	/^    fn assert_float_token_is_valid(message: &str) {$/;"	functions	line:161
+test_given_tokenizer_when_it_parses_a_mac_address_then_we_got_the_mac_token	/home/tibi/workspace/pegtokenizer/src/lib.rs	/^    fn test_given_tokenizer_when_it_parses_a_mac_address_then_we_got_the_mac_token() {$/;"	functions	line:167
+test_given_tokenizer_when_it_parser_a_cisco_mac_address_then_we_get_the_mac_token	/home/tibi/workspace/pegtokenizer/src/lib.rs	/^    fn test_given_tokenizer_when_it_parser_a_cisco_mac_address_then_we_get_the_mac_token() {$/;"	functions	line:172
+test_given_tokenizer_when_it_parses_an_integer_then_we_get_the_int_token	/home/tibi/workspace/pegtokenizer/src/lib.rs	/^    fn test_given_tokenizer_when_it_parses_an_integer_then_we_get_the_int_token() {$/;"	functions	line:177
+test_given_tokenizer_when_it_parses_tokens_separated_with_space_characters_then_we_got_the_tokens	/home/tibi/workspace/pegtokenizer/src/lib.rs	/^    fn test_given_tokenizer_when_it_parses_tokens_separated_with_space_characters_then_we_got_the_tokens() {$/;"	functions	line:184
+test_given_tokenizer_when_it_parses_an_ipv4_address_then_we_get_an_ipv4_token	/home/tibi/workspace/pegtokenizer/src/lib.rs	/^    fn test_given_tokenizer_when_it_parses_an_ipv4_address_then_we_get_an_ipv4_token() {$/;"	functions	line:195
+test_given_tokenizer_when_it_parses_a_hex_string_with_0x_prefix_then_we_get_the_hex_string_token	/home/tibi/workspace/pegtokenizer/src/lib.rs	/^    fn test_given_tokenizer_when_it_parses_a_hex_string_with_0x_prefix_then_we_get_the_hex_string_token() {$/;"	functions	line:202
+test_given_tokenizer_when_it_parses_a_hex_string_with_0X_prefix_then_we_het_the_hex_string_token	/home/tibi/workspace/pegtokenizer/src/lib.rs	/^    fn test_given_tokenizer_when_it_parses_a_hex_string_with_0X_prefix_then_we_het_the_hex_string_token() {$/;"	functions	line:208
+test_given_tokenizer_when_it_parses_a_float_token_then_we_get_the_float_token	/home/tibi/workspace/pegtokenizer/src/lib.rs	/^    fn test_given_tokenizer_when_it_parses_a_float_token_then_we_get_the_float_token() {$/;"	functions	line:213
+test_given_tokenizer_when_it_parses_a_float_token_with_exponent_then_we_get_the_float_token	/home/tibi/workspace/pegtokenizer/src/lib.rs	/^    fn test_given_tokenizer_when_it_parses_a_float_token_with_exponent_then_we_get_the_float_token() {$/;"	functions	line:218
+test_given_tokenizer_when_there_is_no_other_higher_precedence_match_it_creates_literal_tokens	/home/tibi/workspace/pegtokenizer/src/lib.rs	/^    fn test_given_tokenizer_when_there_is_no_other_higher_precedence_match_it_creates_literal_tokens() {$/;"	functions	line:223
+test_given_tokenizer_when_it_parses_tokens_in_braces_then_we_get_the_expected_composite_token	/home/tibi/workspace/pegtokenizer/src/lib.rs	/^    fn test_given_tokenizer_when_it_parses_tokens_in_braces_then_we_get_the_expected_composite_token() {$/;"	functions	line:230
+test_given_tokenizer_when_it_parses_tokens_in_brackets_then_we_get_the_expected_composite_token	/home/tibi/workspace/pegtokenizer/src/lib.rs	/^    fn test_given_tokenizer_when_it_parses_tokens_in_brackets_then_we_get_the_expected_composite_token() {$/;"	functions	line:242
+test_given_tokenizer_when_it_parses_tokens_in_parentheses_then_we_get_the_expected_composite_token	/home/tibi/workspace/pegtokenizer/src/lib.rs	/^    fn test_given_tokenizer_when_it_parses_tokens_in_parentheses_then_we_get_the_expected_composite_token() {$/;"	functions	line:254
+test_given_tokenizer_when_it_parses_tokens_separated_by_punctuation_marks_then_we_get_the_expected_composite_token	/home/tibi/workspace/pegtokenizer/src/lib.rs	/^    fn test_given_tokenizer_when_it_parses_tokens_separated_by_punctuation_marks_then_we_get_the_expected_composite_token() {$/;"	functions	line:266
+test_given_tokenizer_when_it_parses_tokens_in_parens_then_we_get_the_expected_composite_token	/home/tibi/workspace/pegtokenizer/src/lib.rs	/^    fn test_given_tokenizer_when_it_parses_tokens_in_parens_then_we_get_the_expected_composite_token() {$/;"	functions	line:278
+test_given_tokenizer_when_it_parses_a_log_message_then_we_get_the_expected_tokens	/home/tibi/workspace/pegtokenizer/src/lib.rs	/^    fn test_given_tokenizer_when_it_parses_a_log_message_then_we_get_the_expected_tokens() {$/;"	functions	line:294
+test_given_tokenizer_when_it_parses_key_value_pairs_in_sequence_then_we_get_the_expected_tokens	/home/tibi/workspace/pegtokenizer/src/lib.rs	/^  fn test_given_tokenizer_when_it_parses_key_value_pairs_in_sequence_then_we_get_the_expected_tokens() {$/;"	functions	line:318
+test_given_tokenizer_when_it_parses_a_key_value_pair_and_the_value_is_not_a_simple_token_then_we_get_the_expected_tokens	/home/tibi/workspace/pegtokenizer/src/lib.rs	/^  fn test_given_tokenizer_when_it_parses_a_key_value_pair_and_the_value_is_not_a_simple_token_then_we_get_the_expected_tokens() {$/;"	functions	line:338
+test_given_tokenizer_when_it_parses_a_quoted_string_then_we_get_the_expected_token	/home/tibi/workspace/pegtokenizer/src/lib.rs	/^  fn test_given_tokenizer_when_it_parses_a_quoted_string_then_we_get_the_expected_token() {$/;"	functions	line:358
+test_given_tokenizer_when_it_parses_a_quoted_string_with_apostrophe_then_we_get_the_expected_token	/home/tibi/workspace/pegtokenizer/src/lib.rs	/^  fn test_given_tokenizer_when_it_parses_a_quoted_string_with_apostrophe_then_we_get_the_expected_token() {$/;"	functions	line:372
+test_given_tokenizer_when_it_parses_a_key_value_pair_and_the_value_consists_of_more_than_one_tokens_then_we_get_the_expected_tokens	/home/tibi/workspace/pegtokenizer/src/lib.rs	/^  fn test_given_tokenizer_when_it_parses_a_key_value_pair_and_the_value_consists_of_more_than_one_tokens_then_we_get_the_expected_tokens() {$/;"	functions	line:386
+test_given_tokenizer_when_it_parses_auditd_log_then_we_get_the_expected_token	/home/tibi/workspace/pegtokenizer/src/lib.rs	/^  fn test_given_tokenizer_when_it_parses_auditd_log_then_we_get_the_expected_token() {$/;"	functions	line:400
+brace	/home/tibi/workspace/pegtokenizer/src/macros.rs	/^macro_rules! brace {$/;"	macros	line:1
+bracket	/home/tibi/workspace/pegtokenizer/src/macros.rs	/^macro_rules! bracket {$/;"	macros	line:7
+paren	/home/tibi/workspace/pegtokenizer/src/macros.rs	/^macro_rules! paren {$/;"	macros	line:13
+kvpair	/home/tibi/workspace/pegtokenizer/src/macros.rs	/^macro_rules! kvpair {$/;"	macros	line:19
+literal	/home/tibi/workspace/pegtokenizer/src/macros.rs	/^macro_rules! literal {$/;"	macros	line:25
+qliteral	/home/tibi/workspace/pegtokenizer/src/macros.rs	/^macro_rules! qliteral {$/;"	macros	line:31
+float	/home/tibi/workspace/pegtokenizer/src/macros.rs	/^macro_rules! float {$/;"	macros	line:37
+int	/home/tibi/workspace/pegtokenizer/src/macros.rs	/^macro_rules! int {$/;"	macros	line:43
+hexstring	/home/tibi/workspace/pegtokenizer/src/macros.rs	/^macro_rules! hexstring {$/;"	macros	line:49
+mac	/home/tibi/workspace/pegtokenizer/src/macros.rs	/^macro_rules! mac {$/;"	macros	line:55
+ipv4	/home/tibi/workspace/pegtokenizer/src/macros.rs	/^macro_rules! ipv4 {$/;"	macros	line:61

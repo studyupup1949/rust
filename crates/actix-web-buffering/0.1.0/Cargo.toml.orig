@@ -1,0 +1,24 @@
+[package]
+name = "actix-web-buffering"
+version = "0.1.0"
+authors = ["Irek Nigmatullin <nigma143@mail.ru>"]
+description = "Request/Response body buffering with support spooled to a temp file on disk"
+documentation = "http://docs.rs/actix-web-buffering/"
+repository = "http://github.com/nigma143/actix-web-buffering"
+readme = "README.md"
+keywords = ["actix-web", "actix", "buffering", "request", "response"]
+license  = "BSD-2-Clause"
+edition = "2018"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+futures = { version = "0.3" }
+actix-web = { version = "3" }
+uuid = { version = "0.8.2", features = ["v4"] }
+
+[dev-dependencies]
+actix-service = "1.0"
+
+[[example]]
+name = "main" # examples/main.rs

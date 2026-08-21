@@ -1,0 +1,20 @@
+load("@buckal//:wrapper.bzl", "rust_library")
+
+rust_library(
+    name = "actr_config",
+    srcs = glob(["**/*.rs"]),
+    crate = "actr_config",
+    crate_root = "src/lib.rs",
+    edition = "2024",
+
+    visibility = ["PUBLIC"],
+    deps = [
+        "//third-party/rust/crates/actr-protocol/0.1.8:actr_protocol",
+        "//third-party/rust/crates/actr-version/0.1.5:actr_version",
+        "//third-party/rust/crates/chrono/0.4.45:chrono",
+        "//third-party/rust/crates/serde/1.0.229:serde",
+        "//third-party/rust/crates/thiserror/1.0.69:thiserror",
+        "//third-party/rust/crates/toml/0.8.23:toml",
+        "//third-party/rust/crates/url/2.5.8:url",
+    ],
+)

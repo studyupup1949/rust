@@ -1,0 +1,2 @@
+1000 acl execute
+    40 allow  path="../../*"

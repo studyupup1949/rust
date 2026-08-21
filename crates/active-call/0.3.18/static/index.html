@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Playbook Runner</title>
+    <style>
+        body {
+            font-family: sans-serif;
+            padding: 20px;
+        }
+
+        .container {
+            display: flex;
+            gap: 20px;
+        }
+
+        .panel {
+            flex: 1;
+            border: 1px solid #ccc;
+            padding: 10px;
+        }
+
+        #logs {
+            height: 300px;
+            overflow-y: scroll;
+            background: #f0f0f0;
+            border: 1px solid #999;
+            padding: 5px;
+        }
+
+        .active {
+            font-weight: bold;
+            color: green;
+        }
+    </style>
+</head>
+
+<body>
+    <h1>Playbook Runner</h1>
+    <div class="container">
+        <div class="panel">
+            <h3>Playbooks</h3>
+            <ul id="playbook-list"></ul>
+        </div>
+        <div class="panel">
+            <h3>Controls</h3>
+            <button id="run-btn" disabled>Run Selected (WebRTC)</button>
+            <button id="hangup-btn" disabled>Hangup</button>
+            <div id="status">Status: Idle</div>
+        </div>
+    </div>
+    <h3>Logs</h3>
+    <div id="logs"></div>
+
+    <script>
+        let selectedPlaybook = null;
+        let ws = null;
+        let pc = null;
+
+        async function loadPlaybooks() {
+            try {
+                const res = await fetch('/api/playbooks');
+                const playbooks = await res.json();
+                const list = document.getElementById('playbook-list');
+                list.innerHTML = '';
+                playbooks.forEach(p => {
+                    const li = document.createElement('li');
+                    li.textContent = p.name;
+                    li.style.cursor = 'pointer';
+                    li.onclick = () => {
+                        selectedPlaybook = p.name;
+                        document.querySelectorAll('li').forEach(el => el.classList.remove('active'));
+                        li.classList.add('active');
+                        document.getElementById('run-btn').disabled = false;
+                    };
+                    list.appendChild(li);
+                });
+            } catch (e) {
+                log('Failed to load playbooks: ' + e);
+            }
+        }
+
+        document.getElementById('run-btn').onclick = async () => {
+            if (!selectedPlaybook) return;
+            log('Starting playbook: ' + selectedPlaybook);
+
+            try {
+                const res = await fetch('/api/playbook/run', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ playbook: selectedPlaybook, type: 'webrtc' })
+                });
+                const data = await res.json();
+                const sessionId = data.session_id;
+                log('Session ID: ' + sessionId);
+
+                startCall(sessionId);
+            } catch (e) {
+                log('Error: ' + e);
+            }
+        };
+
+        document.getElementById('hangup-btn').onclick = () => {
+            if (ws) ws.close();
+            if (pc) pc.close();
+            ws = null;
+            pc = null;
+            document.getElementById('status').textContent = 'Status: Disconnected';
+            document.getElementById('hangup-btn').disabled = true;
+            document.getElementById('run-btn').disabled = false;
+        };
+
+        async function startCall(sessionId) {
+            pc = new RTCPeerConnection();
+
+            // Add transceiver to ensure we offer audio
+            pc.addTransceiver('audio', { direction: 'sendrecv' });
+
+            // Handle incoming tracks (audio from server)
+            pc.ontrack = (event) => {
+                log('Received remote track');
+                const audio = new Audio();
+                audio.srcObject = event.streams[0];
+                audio.play();
+            };
+
+            const offer = await pc.createOffer();
+            await pc.setLocalDescription(offer);
+
+            const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+            const url = `${protocol}//${window.location.host}/call/webrtc?id=${sessionId}`;
+            ws = new WebSocket(url);
+
+            ws.onopen = () => {
+                log('WebSocket connected');
+                document.getElementById('status').textContent = 'Status: Connected';
+                document.getElementById('hangup-btn').disabled = false;
+                document.getElementById('run-btn').disabled = true;
+
+                const cmd = {
+                    command: 'invite',
+                    option: {
+                        sdp: offer.sdp
+                    }
+                };
+                ws.send(JSON.stringify(cmd));
+            };
+
+            ws.onmessage = async (event) => {
+                try {
+                    const msg = JSON.parse(event.data);
+                    log('WS Event: ' + (msg.event || msg.command || 'unknown'));
+
+                    if (msg.event === 'answer') {
+                        await pc.setRemoteDescription({
+                            type: 'answer',
+                            sdp: msg.sdp
+                        });
+                        log('Call established (Remote Description Set)');
+                    }
+                } catch (e) {
+                    log('Error parsing WS message: ' + e);
+                }
+            };
+
+            ws.onclose = () => {
+                log('WebSocket closed');
+                document.getElementById('status').textContent = 'Status: Disconnected';
+                document.getElementById('hangup-btn').disabled = true;
+                document.getElementById('run-btn').disabled = false;
+            };
+        }
+
+        function log(msg) {
+            const div = document.getElementById('logs');
+            div.innerHTML += `<div>${new Date().toLocaleTimeString()} ${msg}</div>`;
+            div.scrollTop = div.scrollHeight;
+        }
+
+        loadPlaybooks();
+    </script>
+</body>
+
+</html>

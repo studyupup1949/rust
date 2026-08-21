@@ -1,0 +1,42 @@
+[package]
+name = "actix-extended-session"
+version = "0.1.0"
+edition = "2021"
+license = "MIT"
+authors = ["zignis <velociraptorm77@gmail.com>"]
+description = "Extended session management for Actix Web"
+keywords = ["http", "web", "framework", "async", "session"]
+repository = "https://github.com/storiny/actix-extended-session.git"
+
+[package.metadata.docs.rs]
+rustdoc-args = ["--cfg", "docsrs"]
+all-features = true
+
+[features]
+default = []
+cookie-session = []
+redis-rs-session = ["redis", "rand"]
+redis-rs-tls-session = ["redis-rs-session", "redis/tokio-native-tls-comp"]
+
+[dependencies]
+actix-service = "2"
+actix-utils = "3"
+actix-web = { version = "4", default-features = false, features = ["cookies", "secure-cookies"] }
+
+anyhow = "1"
+async-trait = "0.1"
+derive_more = "0.99.7"
+rand = { version = "0.8", optional = true }
+serde = { version = "1" }
+serde_json = { version = "1" }
+tracing = { version = "0.1.30", default-features = false, features = ["log"] }
+
+# redis-rs-session
+redis = { version = "0.23", default-features = false, features = ["tokio-comp", "connection-manager"], optional = true }
+
+[dev-dependencies]
+actix-extended-session = { path = ".", features = ["cookie-session", "redis-rs-session"] }
+actix-test = "0.1.0-beta.10"
+actix-web = { version = "4", default-features = false, features = ["cookies", "secure-cookies", "macros"] }
+env_logger = "0.10"
+log = "0.4"

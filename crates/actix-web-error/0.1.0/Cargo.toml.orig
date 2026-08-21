@@ -1,0 +1,22 @@
+[package]
+name = "actix-web-error"
+version = "0.1.0"
+edition = "2021"
+license = "MIT OR Apache-2.0"
+repository = "https://github.com/Nerixyz/actix-web-error"
+readme = "README.md"
+keywords = ["error", "derive", "actix-web", "http"]
+categories = ["web-programming"]
+description = "Derive ResponseError for your errors"
+authors = ["Nerixyz"]
+
+[workspace]
+members = ["derive"]
+
+[dependencies]
+actix-web-error-derive = { version = "=0.1.0", path = "derive" }
+serde = "1.0"
+
+[dev-dependencies]
+actix-web = { version = "4.1.0", default-features = false }
+thiserror = "1.0"

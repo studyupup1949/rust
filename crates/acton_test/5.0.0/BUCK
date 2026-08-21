@@ -1,0 +1,17 @@
+load("@buckal//:wrapper.bzl", "rust_library")
+
+rust_library(
+    name = "acton_test",
+    srcs = glob(["**/*.rs"]),
+    crate = "acton_test",
+    crate_root = "src/lib.rs",
+    edition = "2021",
+
+    visibility = ["PUBLIC"],
+    deps = [
+        "//third-party/rust/crates/acton_test_macro/5.0.0:acton_test_macro",
+        "//third-party/rust/crates/parking_lot/0.12.5:parking_lot",
+        "//third-party/rust/crates/tokio/1.53.1:tokio",
+        "//third-party/rust/crates/tracing/0.1.44:tracing",
+    ],
+)

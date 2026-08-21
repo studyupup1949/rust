@@ -1,0 +1,43 @@
+{% if render_partial and render_partial == true %}
+
+{% block content %}
+{% endblock content %}
+
+{% else %}
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    {% include "head.html" %}
+</head>
+
+<body>
+    {% include "navbar.html" %}
+    <div class="container is-fluid">
+        <div id="notifications">
+            {% if notifications %}
+            {% for notification in notifications -%}
+            <div class="notification mb-4 is-light {{ notification.css_class }}">
+                <button class="delete" onclick="this.parentElement.remove()"></button>
+                {{ notification.message }}
+            </div>
+            {% endfor %}
+            {% endif %}
+        </div>
+
+        <div id="content">
+            <div class="columns">
+                <aside id="nav_aside" class="column is-2 {% if not view_model.default_show_aside %}is-hidden{% endif %} is-narrow-mobile is-fullheight is-hidden-mobile">
+                    {% block aside %}
+                    {% endblock aside %}
+                </aside>
+
+                {% block content %}
+                {% endblock content %}
+            </div>
+        </div>
+    </div>
+</body>
+
+</html>
+{% endif %}

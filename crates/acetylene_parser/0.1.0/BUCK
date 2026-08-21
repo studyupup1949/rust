@@ -1,0 +1,15 @@
+load("@buckal//:wrapper.bzl", "rust_library")
+
+rust_library(
+    name = "acetylene_parser",
+    srcs = glob(["**/*.rs"]),
+    crate = "acetylene_parser",
+    crate_root = "src/lib.rs",
+    edition = "2015",
+
+    visibility = ["PUBLIC"],
+    deps = [
+        "//third-party/rust/crates/lazy_static/0.2.11:lazy_static",
+        "//third-party/rust/crates/regex/0.1.80:regex",
+    ],
+)

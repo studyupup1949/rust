@@ -1,0 +1,26 @@
+[package]
+name = "access-rs"
+version = "0.1.0"
+edition = "2021"
+description = "A rust-based access-control token library for Web3 developers, providing a high-performance, secure, and customizable solution."
+license = "MIT"
+repository = "https://github.com/nzengi/access-rs"
+homepage = "https://github.com/nzengi/access-rs"
+documentation = "https://docs.rs/access-rs"
+readme = "README.md"
+keywords = ["WASM", "access-control", "blockchain", "WebAssembly", "Rust"]
+categories = ["cryptography", "web-programming"]
+
+[lib]
+crate-type = ["cdylib"]
+
+[dependencies]
+ethers = "2.0"
+serde = { version = "1.0", features = ["derive"] }
+tokio = { version = "1", features = ["full"] }
+serde_json = "1.0"
+
+[package.metadata.docs.rs]
+rustdoc-args = ["--cfg", "docsrs"]
+all-features = true
+no-default-features = false

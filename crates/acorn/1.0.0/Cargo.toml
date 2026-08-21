@@ -1,0 +1,9 @@
+[package]
+
+name = "acorn"
+version = "1.0.0"
+authors = [ "Tim Cameron Ryan <tim@technical.io>" ]
+
+[[bin]]
+
+name = "acorn"

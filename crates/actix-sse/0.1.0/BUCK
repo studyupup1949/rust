@@ -1,0 +1,21 @@
+load("@buckal//:wrapper.bzl", "rust_library")
+
+rust_library(
+    name = "actix_sse",
+    srcs = glob(["**/*.rs"]),
+    crate = "actix_sse",
+    crate_root = "src/lib.rs",
+    edition = "2024",
+
+    visibility = ["PUBLIC"],
+    deps = [
+        "//third-party/rust/crates/actix-web/4.14.1:actix_web",
+        "//third-party/rust/crates/bytes/1.12.1:bytes",
+        "//third-party/rust/crates/bytestring/1.5.1:bytestring",
+        "//third-party/rust/crates/futures-core/0.3.34:futures_core",
+        "//third-party/rust/crates/mime/0.3.17:mime",
+        "//third-party/rust/crates/pin-project-lite/0.2.17:pin_project_lite",
+        "//third-party/rust/crates/serde/1.0.229:serde",
+        "//third-party/rust/crates/tokio/1.53.1:tokio",
+    ],
+)

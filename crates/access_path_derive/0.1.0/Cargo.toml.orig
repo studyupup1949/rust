@@ -1,0 +1,15 @@
+[package]
+name = "access_path_derive"
+version = "0.1.0"
+edition = "2021"
+description = "Proc macro implementation for the KeyPath derive macro"
+license = "MIT OR Apache-2.0"
+repository = "https://github.com/wupeng1221/keypath"
+
+[lib]
+proc-macro = true
+
+[dependencies]
+syn = { version = "2", features = ["derive"] }
+quote = "1"
+proc-macro2 = "1"

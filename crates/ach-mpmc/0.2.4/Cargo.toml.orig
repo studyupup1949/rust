@@ -1,0 +1,22 @@
+[package]
+authors.workspace = true
+categories.workspace = true
+description.workspace = true
+edition.workspace = true
+keywords.workspace = true
+license-file.workspace = true
+name = "ach-mpmc"
+readme.workspace = true
+repository.workspace = true
+version.workspace = true
+
+[features]
+alloc = []
+default = []
+
+[dependencies]
+ach-ring = {version = "0.2", path = "../ach-ring"}
+util = {package = "ach-util", version = "0.2", path = "../ach-util"}
+
+[dev-dependencies]
+on_drop = "0.1"

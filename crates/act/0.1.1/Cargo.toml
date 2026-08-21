@@ -1,0 +1,23 @@
+[package]
+name = "act"
+version = "0.1.1"
+authors = ["Dimitri Wayland <dimitrischeibe@gmail.com>"]
+description = "Act is a simple engine for making simple, text-based adventure games"
+homepage = "https://github.com/ichy-wayland/act"
+repository = "https://github.com/ichy-wayland/act"
+readme = "README.md"
+keywords = ["terminal","adventure","game","engine"]
+license = "Unlicense"
+
+[dependencies]
+rustc-serialize = "0.3.19"
+ansi-escapes = "0.1"
+
+[lib]
+name = "act"
+path = "src/lib.rs"
+doc = true
+
+[[bin]]
+name = "act"
+doc = false

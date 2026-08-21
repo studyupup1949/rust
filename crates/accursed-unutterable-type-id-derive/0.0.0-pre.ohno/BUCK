@@ -1,0 +1,17 @@
+load("@buckal//:wrapper.bzl", "rust_library")
+
+rust_library(
+    name = "accursed_unutterable_type_id_derive",
+    srcs = glob(["**/*.rs"]),
+    crate = "accursed_unutterable_type_id_derive",
+    crate_root = "src/lib.rs",
+    edition = "2021",
+    proc_macro = True,
+
+    visibility = ["PUBLIC"],
+    deps = [
+        "//third-party/rust/crates/fslock/0.2.1:fslock",
+        "//third-party/rust/crates/quote/1.0.47:quote",
+        "//third-party/rust/crates/syn/1.0.109:syn",
+    ],
+)

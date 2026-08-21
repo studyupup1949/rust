@@ -1,0 +1,16 @@
+load("@buckal//:wrapper.bzl", "rust_library")
+
+rust_library(
+    name = "actix_web_helmet",
+    srcs = glob(["**/*.rs"]),
+    crate = "actix_web_helmet",
+    crate_root = "src/lib.rs",
+    edition = "2021",
+
+    visibility = ["PUBLIC"],
+    deps = [
+        "//third-party/rust/crates/actix-web/4.14.1:actix_web",
+        "//third-party/rust/crates/futures/0.3.34:futures",
+        "//third-party/rust/crates/helmet-core/0.3.0:helmet_core",
+    ],
+)

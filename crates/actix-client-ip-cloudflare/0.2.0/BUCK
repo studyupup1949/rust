@@ -1,0 +1,20 @@
+load("@buckal//:wrapper.bzl", "rust_library")
+
+rust_library(
+    name = "actix_client_ip_cloudflare",
+    srcs = glob(["**/*.rs"]),
+    crate = "actix_client_ip_cloudflare",
+    crate_root = "src/lib.rs",
+    edition = "2021",
+    features = ["default"],
+
+    visibility = ["PUBLIC"],
+    deps = [
+        "//third-party/rust/crates/actix-utils/3.0.1:actix_utils",
+        "//third-party/rust/crates/actix-web/4.14.1:actix_web",
+        "//third-party/rust/crates/impl-more/0.1.9:impl_more",
+        "//third-party/rust/crates/ipnetwork/0.20.0:ipnetwork",
+        "//third-party/rust/crates/serde/1.0.229:serde",
+        "//third-party/rust/crates/tracing/0.1.44:tracing",
+    ],
+)

@@ -1,0 +1,15 @@
+load("@buckal//:wrapper.bzl", "rust_library")
+
+rust_library(
+    name = "activitystreams",
+    srcs = glob(["**/*.rs"]),
+    crate = "activitystreams",
+    crate_root = "src/lib.rs",
+    edition = "2015",
+
+    visibility = ["PUBLIC"],
+    deps = [
+        "//third-party/rust/crates/activitystreams-traits/0.1.0:activitystreams_traits",
+        "//third-party/rust/crates/activitystreams-types/0.2.3:activitystreams_types",
+    ],
+)

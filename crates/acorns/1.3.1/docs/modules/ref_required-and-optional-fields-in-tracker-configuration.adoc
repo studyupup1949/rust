@@ -1,0 +1,128 @@
+:_content-type: REFERENCE
+
+[id="required-and-optional-fields-in-tracker-configuration_{context}"]
+= Required and optional fields in tracker configuration
+
+The lists below describe mandatory and optional fields for the `{bin-name}/trackers.yaml` configuration file.
+
+.Bugzilla configuration
+
+[source,yaml]
+----
+bugzilla:
+  host: "https://bugzilla.host.org"
+  fields:
+    # Required
+    doc_type:
+      - "cf_doc_type"
+    doc_text:
+      - "cf_release_notes"
+    doc_text_status:
+      - "requires_doc_text"
+    # Optional
+    docs_contact:
+      - "cf_my_docs_contact"
+    target_release:
+      - "cf_internal_target_release"
+    subsystems:
+      - "pool"
+----
+
+The following fields are required:
+
+`host`::
+The base URL to your Bugzilla instance.
+
+`doc_type`::
+The ID of the *Doc Type* field, which is probably a drop-down menu of values.
+
+`doc_text`::
+The ID of the *Doc Text* field, which is a text box that contains your release note.
+
+`doc_text_status`::
+The ID of the flag that describes the status of the release note.
+
+The following fields are optional:
+
+`docs_contact`::
+By default, {name} uses the standard Bugzilla *Docs Contact* field. You can override it with a custom field.
+
+`target_release`::
+By default, {name} uses the standard Bugzilla *Target Release* field. You can override it with a custom field.
+
+`subsystems`::
+This field is required only if you configure your templates to organize using the subsystem.
++
+Currently, this field expects an *Agile Pool* menu.
+
+
+.Jira configuration
+
+[source,yaml]
+----
+jira:
+  host: "https://jira.host.org"
+  private_projects:
+    - "SECRETPROJECT"
+    - "MYPROJECT"
+  fields:
+    # Required
+    doc_type:
+      - "customfield_12345678"
+    doc_text:
+      - "customfield_23456789"
+    doc_text_status:
+      - "customfield_34567890"
+    docs_contact:
+      - "customfield_45678901"
+    # Optional
+    target_release:
+      - "customfield_56789012"
+    subsystems:
+      - "customfield_67890123"
+
+----
+
+The following fields are required:
+
+`host`::
+The base URL to your Jira instance.
+
+`doc_type`::
+The ID of the field that lists the type of the release note. It is a drop-down menu of values.
+
+`doc_text`::
+The ID of the field that contains your release note. It is a text box.
+
+`doc_text_status`::
+The ID of the field that lists the status of the release note. It is a drop-down menu of values.
+
+The following fields are optional:
+
+`private_projects`::
+If you set certain Jira projects as private, all ticket IDs in these projects will be non-clickable, even if the ticket itself is public in Jira.
+
+`target_release`::
+By default, {name} uses the standard Jira *Fix Version/s* field. You can override it with a custom field.
+
+`subsystems`::
+This field is required only if you configure your templates to organize using the subsystem. It is a drop-down menu of values.
+
+
+.Multiple field IDs from different projects
+
+Settings in the `fields` entry always accept a list of IDs that {name} tries out successively.
+
+For example, if you use Jira tickets from three different projects that each set a different doc text field, you can list all field IDs:
+
+[source,yaml]
+----
+jira:
+  host: "https://jira.host.org"
+  fields:
+    # All possible IDs
+    doc_text:
+      - "customfield_23456789"
+      - "customfield_34567890"
+      - "customfield_45678901"
+----

@@ -1,0 +1,17 @@
+[package]
+authors.workspace = true
+categories.workspace = true
+description.workspace = true
+edition.workspace = true
+keywords.workspace = true
+license-file.workspace = true
+name = "ach-lazy"
+readme.workspace = true
+repository.workspace = true
+version.workspace = true
+
+[dependencies]
+ach-once = {version = "0.2", path = "../ach-once"}
+
+[dev-dependencies]
+on_drop = "0.1"

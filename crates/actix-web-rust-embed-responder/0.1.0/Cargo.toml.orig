@@ -1,0 +1,73 @@
+[package]
+name = "actix-web-rust-embed-responder"
+version = "0.1.0"
+edition = "2021"
+description = "An actix-web responder for rust-embed that implements cache revalidation and compressed responses."
+license = "MIT"
+readme = "Readme.md"
+
+[features]
+default = ["support-rust-embed", "support-rust-embed-for-web"]
+support-rust-embed = ["rust-embed", "flate2", "base64", "chrono"]
+support-rust-embed-for-web = ["rust-embed-for-web"]
+
+[dependencies]
+actix-web = "4.2"
+futures-core = "0.3"
+lazy_static = "1.4"
+regex = "1.6"
+# rust-embed only
+rust-embed = { version = "6.4", optional = true }
+flate2 = { version = "1.0", optional = true }     # gzip compressed responses
+base64 = { version = "0.13", optional = true }    # ETag
+chrono = { version = "0.4", optional = true }     # Last-Modified
+# rust-embed-for-web only
+rust-embed-for-web = { version = "9.0", optional = true }
+
+[dev-dependencies]
+criterion = { version = "0.4", features = ["async_tokio"] }
+tokio = { version = "1.21", features = ["rt"] }
+actix-http = "3.2"
+
+#
+# Example programs
+#
+
+[[example]]
+name = "rust_embed"
+path = "examples/rust_embed.rs"
+required-features = ["support-rust-embed"]
+
+[[example]]
+name = "rust_embed_for_web"
+path = "examples/rust_embed_for_web.rs"
+required-features = ["support-rust-embed-for-web"]
+
+#
+# Benchmarks
+#
+
+[[bench]]
+# Benchmark for getting a single HTML page.
+name = "html_page"
+harness = false
+
+[[bench]]
+# Benchmark for getting an image file, a much larger file than the HTML page benchmark.
+name = "image"
+harness = false
+
+[[bench]]
+# Benchmark for getting a single HTML page, with compression.
+name = "html_page_with_compression"
+harness = false
+
+[[bench]]
+# Benchmark for cached responses only.
+name = "cached"
+harness = false
+
+[[bench]]
+# Benchmark for a mixed of cached and non-cached responses, some with and some without compression.
+name = "mix"
+harness = false

@@ -1,0 +1,18 @@
+[package]
+name = "acty"
+version = "1.0.1"
+edition = "2024"
+authors = ["Numeration<boxed87@outlook.com>"]
+description = "A lightweight, async actor framework built on Tokio."
+license = "MIT OR Apache-2.0"
+repository = "https://github.com/Numeration/acty"
+readme = "README.md"
+documentation = "https://docs.rs/acty"
+keywords = ["actor", "tokio", "async", "framework", "concurrency"]
+categories = ["asynchronous", "concurrency", "network-programming"]
+
+[dependencies]
+futures = "0.3"
+tokio = { version = "1", features = ["rt", "rt-multi-thread", "sync", "macros", "signal"] }
+tokio-stream = "0.1"
+trait-variant = "0.1"

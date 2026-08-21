@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<meta charset="UTF-8"> 
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AcceptXMR NoJS Demo</title>
+
+<div class="acceptxmr">
+    <div class="instruction-container">
+        <p id="instruction">Address Expired!</p>
+    </div>
+    <hr />
+    <div id="payment-content" class="content">
+        <div class="qrcode-container" id="qrcode-container">
+            <svg viewBox="0 0 100 100" id="qrcode" src=""></svg>
+        </div>
+        <div class="details">
+            <label>Address</label>
+            <div id="address-container">
+                <p id="address">Expired!</p>
+            </div>
+            <label>Status</label>
+            <p class="status">
+                Paid: <span id="paid">0.00000000</span> / <span id="due">0.00000000</span> XMR<br />
+                Confirmations:
+                <span id="confirmations">0</span> / <span id="confirmations-required">0</span><br />
+            </p>
+        </div>
+    </div>
+    <div class="content">
+        <form id="start-over" action="/">
+            <button>Start Over</button>
+        </form>
+    </div>
+</div>
+<link rel="stylesheet" href="acceptxmr.css">
+
+<style>
+    body {
+        background-color: #4d4d4d;
+    }
+</style>

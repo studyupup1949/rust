@@ -1,0 +1,20 @@
+load("@buckal//:wrapper.bzl", "rust_library")
+
+rust_library(
+    name = "actix_tools",
+    srcs = glob(["**/*.rs"]),
+    crate = "actix_tools",
+    crate_root = "src/lib.rs",
+    edition = "2015",
+    features = ["default"],
+
+    visibility = ["PUBLIC"],
+    deps = [
+        "//third-party/rust/crates/log/0.4.33:log",
+        "//third-party/rust/crates/num_cpus/1.17.0:num_cpus",
+        "//third-party/rust/crates/serde/1.0.229:serde",
+        "//third-party/rust/crates/serde_derive/1.0.229:serde_derive",
+        "//third-party/rust/crates/serde_json/1.0.151:serde_json",
+        "//third-party/rust/crates/url/1.7.2:url",
+    ],
+)

@@ -1,0 +1,33 @@
+load("@buckal//:wrapper.bzl", "rust_library")
+
+rust_library(
+    name = "ac_node_api",
+    srcs = glob(["**/*.rs"]),
+    crate = "ac_node_api",
+    crate_root = "src/lib.rs",
+    edition = "2021",
+    features = ["default"],
+
+    visibility = ["PUBLIC"],
+    deps = [
+        "//third-party/rust/crates/bitvec/1.1.1:bitvec",
+        "//third-party/rust/crates/derive_more/2.1.1:derive_more",
+        "//third-party/rust/crates/either/1.17.0:either",
+        "//third-party/rust/crates/frame-metadata/23.0.1:frame_metadata",
+        "//third-party/rust/crates/hex/0.4.3:hex",
+        "//third-party/rust/crates/log/0.4.33:log",
+        "//third-party/rust/crates/parity-scale-codec/3.7.5:parity_scale_codec",
+        "//third-party/rust/crates/scale-decode/0.16.2:scale_decode",
+        "//third-party/rust/crates/scale-encode/0.10.1:scale_encode",
+        "//third-party/rust/crates/scale-info/2.11.6:scale_info",
+        "//third-party/rust/crates/scale-value/0.18.2:scale_value",
+        "//third-party/rust/crates/serde/1.0.229:serde",
+        "//third-party/rust/crates/serde_json/1.0.151:serde_json",
+        "//third-party/rust/crates/sp-application-crypto/43.0.0:sp_application_crypto",
+        "//third-party/rust/crates/sp-core/38.1.0:sp_core",
+        "//third-party/rust/crates/sp-crypto-hashing/0.1.0:sp_crypto_hashing",
+        "//third-party/rust/crates/sp-runtime-interface/32.0.0:sp_runtime_interface",
+        "//third-party/rust/crates/sp-runtime/44.0.0:sp_runtime",
+        "//third-party/rust/crates/sp-storage/22.0.0:sp_storage",
+    ],
+)

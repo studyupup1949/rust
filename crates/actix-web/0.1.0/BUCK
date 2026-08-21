@@ -1,0 +1,32 @@
+load("@buckal//:wrapper.bzl", "rust_library")
+
+rust_library(
+    name = "actix_web",
+    srcs = glob(["**/*.rs"]),
+    crate = "actix_web",
+    crate_root = "src/lib.rs",
+    edition = "2015",
+    features = ["default"],
+
+    visibility = ["PUBLIC"],
+    deps = [
+        "//third-party/rust/crates/actix/0.3.5:actix",
+        "//third-party/rust/crates/bytes/0.4.12:bytes",
+        "//third-party/rust/crates/cookie/0.10.1:cookie",
+        "//third-party/rust/crates/futures/0.1.31:futures",
+        "//third-party/rust/crates/http-range/0.1.5:http_range",
+        "//third-party/rust/crates/http/0.1.21:http",
+        "//third-party/rust/crates/httparse/0.1.6:httparse",
+        "//third-party/rust/crates/log/0.3.9:log",
+        "//third-party/rust/crates/mime/0.3.17:mime",
+        "//third-party/rust/crates/mime_guess/1.8.8:mime_guess",
+        "//third-party/rust/crates/regex/0.2.11:regex",
+        "//third-party/rust/crates/sha1/0.2.0:sha1",
+        "//third-party/rust/crates/slab/0.4.12:slab",
+        "//third-party/rust/crates/time/0.1.45:time",
+        "//third-party/rust/crates/tokio-core/0.1.18:tokio_core",
+        "//third-party/rust/crates/tokio-io/0.1.13:tokio_io",
+        "//third-party/rust/crates/tokio-proto/0.1.1:tokio_proto",
+        "//third-party/rust/crates/url/1.7.2:url",
+    ],
+)

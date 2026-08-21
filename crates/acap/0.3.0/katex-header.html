@@ -1,0 +1,24 @@
+<!-- Credit: https://stackoverflow.com/a/54573800 -->
+<!-- Credit: https://github.com/m-ou-se/rust-horrible-katex-hack/blob/master/src/lib.rs -->
+
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.13.11/dist/katex.min.css" integrity="sha384-Um5gpz1odJg5Z4HAmzPtgZKdTBHZdw8S29IecapCSB31ligYPhHQZMIlWLYQGVoc" crossorigin="anonymous">
+
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.13.11/dist/katex.min.js" integrity="sha384-YNHdsYkH6gMx9y3mRkmcJ2mFUjTd0qNQQvY9VYZgQd7DcN7env35GzlmFaZ23JGp" crossorigin="anonymous"></script>
+
+<script>
+    document.addEventListener("DOMContentLoaded", () => {
+        let codes = [...document.getElementsByTagName("code")];
+        for (let code of codes) {
+            if (code.classList.contains("language-math")) {
+                let p = document.createElement("p");
+                katex.render(code.textContent, p, { displayMode: true });
+                let pre = code.parentNode;
+                pre.parentNode.replaceChild(p, pre);
+            } else if (/^\$.*\$$/.test(code.textContent)) {
+                let span = document.createElement("span");
+                katex.render(code.textContent.slice(1, -1), span);
+                code.parentNode.replaceChild(span, code);
+            }
+        }
+    });
+</script>

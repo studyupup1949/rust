@@ -1,0 +1,20 @@
+[package]
+name = "acton-acn"
+version = "0.6.0"
+edition = "2021"
+description = "Acton Core — адаптивный кристаллический протокол связи"
+license = "MIT"
+repository = "https://github.com/Acton-ACN/acton_core"
+
+[dependencies]
+rand = "0.8"
+rand_chacha = "0.3"
+sha2 = "0.10"
+chacha20poly1305 = "0.10"
+x25519-dalek = { version = "2.0", features = ["static_secrets"] }
+ed25519-dalek = "2.0"
+hkdf = "0.12"
+serde = { version = "1.0", features = ["derive"] }
+bincode = "1.3"
+thiserror = "1.0"
+hex = "0.4"

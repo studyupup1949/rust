@@ -1,0 +1,12 @@
+language: rust
+
+rust:
+  - nightly
+  - beta
+  - stable
+
+script:
+  - cargo build --features "stable"
+  - cargo test --features "stable"
+  - if [[ "$TRAVIS_RUST_VERSION" == "nightly" ]]; then cargo bench; fi
+  - if [[ "$TRAVIS_RUST_VERSION" == "nightly" ]]; then cargo build && cargo test && cargo bench; fi

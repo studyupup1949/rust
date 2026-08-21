@@ -1,0 +1,18 @@
+load("@buckal//:wrapper.bzl", "rust_library")
+
+rust_library(
+    name = "acton_ern",
+    srcs = glob(["**/*.rs"]),
+    crate = "acton_ern",
+    crate_root = "src/lib.rs",
+    edition = "2024",
+    features = ["default"],
+
+    visibility = ["PUBLIC"],
+    deps = [
+        "//third-party/rust/crates/derive-new/0.7.0:derive_new",
+        "//third-party/rust/crates/derive_more/2.1.1:derive_more",
+        "//third-party/rust/crates/mti/1.1.1:mti",
+        "//third-party/rust/crates/thiserror/2.0.20:thiserror",
+    ],
+)

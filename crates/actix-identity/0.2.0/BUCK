@@ -1,0 +1,18 @@
+load("@buckal//:wrapper.bzl", "rust_library")
+
+rust_library(
+    name = "actix_identity",
+    srcs = glob(["**/*.rs"]),
+    crate = "actix_identity",
+    crate_root = "src/lib.rs",
+    edition = "2018",
+
+    visibility = ["PUBLIC"],
+    deps = [
+        "//third-party/rust/crates/actix-service/1.0.6:actix_service",
+        "//third-party/rust/crates/futures/0.3.34:futures",
+        "//third-party/rust/crates/serde/1.0.229:serde",
+        "//third-party/rust/crates/serde_json/1.0.151:serde_json",
+        "//third-party/rust/crates/time/0.1.45:time",
+    ],
+)

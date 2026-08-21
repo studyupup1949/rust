@@ -1,0 +1,42 @@
+AutoCore Control Tool (acctl) - Proprietary License
+
+Copyright (c) 2024 Automated Design Corp. (ADC)
+All Rights Reserved.
+
+TERMS AND CONDITIONS
+
+1. GRANT OF LICENSE
+   This software is licensed, not sold. Automated Design Corp. ("ADC")
+   grants you a limited, non-exclusive, non-transferable license to use this
+   software ("acctl") solely in connection with a validly licensed installation
+   of AutoCore Server software.
+
+2. RESTRICTIONS
+   You may NOT:
+   - Use this software without a valid AutoCore Server license
+   - Use this software to connect to or manage systems not licensed for AutoCore
+   - Redistribute, sublicense, sell, or transfer this software
+   - Modify, reverse engineer, decompile, or disassemble this software
+   - Remove or alter any proprietary notices or labels
+
+3. AUTHORIZED USE
+   This software is authorized for use only with AutoCore Server installations
+   that are properly licensed from ADC. Each AutoCore Server license includes
+   the right to use acctl for managing that specific licensed installation.
+
+4. NO WARRANTY
+   THIS SOFTWARE IS PROVIDED "AS IS" WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+   IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+   FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
+
+5. LIMITATION OF LIABILITY
+   IN NO EVENT SHALL ADC BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY,
+   WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF
+   OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+   SOFTWARE.
+
+6. TERMINATION
+   This license automatically terminates if you violate any of these terms or
+   if your AutoCore Server license expires or is terminated.
+
+For licensing inquiries: support@automateddesign.com

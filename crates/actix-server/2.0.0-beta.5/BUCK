@@ -1,0 +1,23 @@
+load("@buckal//:wrapper.bzl", "rust_library")
+
+rust_library(
+    name = "actix_server",
+    srcs = glob(["**/*.rs"]),
+    crate = "actix_server",
+    crate_root = "src/lib.rs",
+    edition = "2018",
+    features = ["default"],
+
+    visibility = ["PUBLIC"],
+    deps = [
+        "//third-party/rust/crates/actix-rt/2.11.0:actix_rt",
+        "//third-party/rust/crates/actix-service/2.0.3:actix_service",
+        "//third-party/rust/crates/actix-utils/3.0.1:actix_utils",
+        "//third-party/rust/crates/futures-core/0.3.34:futures_core",
+        "//third-party/rust/crates/log/0.4.33:log",
+        "//third-party/rust/crates/mio/0.7.14:mio",
+        "//third-party/rust/crates/num_cpus/1.17.0:num_cpus",
+        "//third-party/rust/crates/slab/0.4.12:slab",
+        "//third-party/rust/crates/tokio/1.53.1:tokio",
+    ],
+)

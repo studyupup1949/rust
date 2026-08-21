@@ -1,0 +1,19 @@
+load("@buckal//:wrapper.bzl", "rust_library")
+
+rust_library(
+    name = "ace_uds",
+    srcs = glob(["**/*.rs"]),
+    crate = "ace_uds",
+    crate_root = "src/lib.rs",
+    edition = "2024",
+    features = ["default"],
+
+    visibility = ["PUBLIC"],
+    deps = [
+        "//third-party/rust/crates/ace-core/0.1.0:ace_core",
+        "//third-party/rust/crates/ace-macros/0.1.0:ace_macros",
+        "//third-party/rust/crates/ace-proto/0.1.0:ace_proto",
+        "//third-party/rust/crates/bytes/1.12.1:bytes",
+        "//third-party/rust/crates/heapless/0.9.3:heapless",
+    ],
+)

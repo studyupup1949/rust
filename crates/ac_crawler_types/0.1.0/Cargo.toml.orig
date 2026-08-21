@@ -1,0 +1,16 @@
+[package]
+name = "ac_crawler_types"
+version = "0.1.0"
+edition = "2021"
+authors = ["beckerinj"]
+description = "normalized types for the anti capital public data crawlers"
+license = "MIT"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+serde = "1.0"
+serde_derive = "1.0"
+mungos = "0.2.24"
+strum = "0.24"
+strum_macros = "0.24"

@@ -1,0 +1,20 @@
+name: Release
+
+on:
+  push:
+    tags: 
+    - "v*"
+
+
+env:
+  CARGO_TERM_COLOR: always
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: publish
+      run: cargo publish --token ${{ secrets.CRATES_IO_TOKEN}} --verbose 
+      if: success()

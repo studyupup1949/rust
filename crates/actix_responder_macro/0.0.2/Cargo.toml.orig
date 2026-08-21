@@ -1,0 +1,26 @@
+[package]
+name = "actix_responder_macro"
+version = "0.0.2"
+authors = ["Petar Dambovaliev <petar.atanasov.1987@gmail.com>"]
+keywords = ["proc_macro", "procmacro", "actix-web", "actix", "actix_responder"]
+edition = "2018"
+description = "An attribute macro to transform a response struct to an actix responder"
+repository = "https://github.com/petar-dambovaliev/actix-responder-macro"
+readme = "README.md"
+license = "MIT OR Apache-2.0"
+
+[lib]
+proc-macro = true
+
+[dependencies]
+quote = "1"
+proc-macro2 = "1.0"
+syn = "1.0"
+actix-web = "3"
+futures = "0.3.5"
+serde_json = "1.0"
+serde = { version = "1.0", features = ["derive"] }
+proc-macro-error = "1.0"
+typed-builder = "0.7.1"
+trybuild = "1.0.35"
+

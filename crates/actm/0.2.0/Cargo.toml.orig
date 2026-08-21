@@ -1,0 +1,33 @@
+[package]
+name = "actm"
+version = "0.2.0"
+authors = ["Nathan McCarty <nathan@mccarty.io>"]
+edition = "2024"
+description = "Tiny async actors framework for rust"
+readme = "README.md"
+homepage = "https://sr.ht/~thatonelutenist/actm/"
+repository = "https://git.sr.ht/~thatonelutenist/actm"
+license = "0BSD"
+
+[features]
+# Support for the async-std executor
+async-std = ["dep:async-std"]
+default = ["async-std"]
+
+[dependencies]
+async-mutex = "1.4.1"
+async-std = { version = "1.13.1", optional = true }
+async-trait = "0.1.88"
+enum_dispatch = "0.3.13"
+flume = "0.11.1"
+futures = "0.3.31"
+itertools = "0.14.0"
+once_cell = "1.21.3"
+snafu = "0.8.5"
+tracing = "0.1.41"
+
+[dev-dependencies]
+async-std = { version = "1.13.1", features = ["attributes"] }
+nanorand = "0.7.0"
+proptest = "1.6.0"
+proptest-derive = "0.5.1"

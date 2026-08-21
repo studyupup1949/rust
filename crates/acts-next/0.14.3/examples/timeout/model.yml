@@ -1,0 +1,35 @@
+name: a timeout example
+id: timeout
+steps:
+  - name: prepare
+    id: prepare
+    acts:
+      - act: irq
+        key: init
+  - name: step1
+    id: step1
+    acts:
+      - act: irq
+        key: act1
+    timeout:
+      - on: 2s
+        then:
+          - act: msg
+            key: step1_timeout_2s
+            inputs:
+              a: 1
+      - on: 5s
+        then:
+          - act: irq
+            key: step1_timeout_5s
+            inputs:
+              a: 2
+      - on: 8s
+        then:
+          - act: do
+            key: error
+            inputs:
+              error:
+                ecode: err_timeout_8s
+  - name: final
+    id: final

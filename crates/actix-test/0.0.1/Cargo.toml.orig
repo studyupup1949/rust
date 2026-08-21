@@ -1,0 +1,9 @@
+[package]
+name = "actix-test"
+version = "0.0.1"
+authors = ["Rob Ede <robjtede@icloud.com>"]
+edition = "2018"
+description = "Actix Web is a powerful, pragmatic, and extremely fast web framework for Rust"
+license = "MIT OR Apache-2.0"
+
+[dependencies]

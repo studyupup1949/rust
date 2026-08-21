@@ -1,0 +1,28 @@
+[package]
+name = "actix-request-identifier"
+authors = ["Valentin Brandl <mail+rust@vbrandl.net>"]
+edition = "2018"
+description = "Middlerware for actix-web to associate an ID with each request."
+documentation = "https://docs.rs/actix-request-identifier"
+exclude = [
+  ".github/*"
+]
+license = "Apache-2.0 OR MIT"
+homepage = "https://github.com/vbrandl/actix-request-identifier"
+repository = "https://github.com/vbrandl/actix-request-identifier"
+readme = "README.md"
+version = "4.2.0"
+
+[dependencies]
+actix-web = { version = "4.1.0", default-features = false }
+futures = "0.3.4"
+uuid = { version = "1.8.0", default-features = false, optional = true }
+
+[dev-dependencies]
+actix-web = "4.1.0"
+bytes = "1.2.1"
+
+[features]
+default = [ "uuid-generator" ]
+uuid-generator = [ "uuid/v4" ]
+uuid-v7-generator = [ "uuid/v7", "uuid/std" ]

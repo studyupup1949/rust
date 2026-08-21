@@ -1,0 +1,25 @@
+[package]
+name = "actix-web-sqlx-tx"
+version = "0.1.5"
+edition = "2021"
+license = "Apache-2.0"
+authors = ["Jonatan Lemes"]
+description = "A simple actix sql tx support"
+repository = "https://github.com/jonatansalemes/actix-web-sqlx-tx.git"
+homepage = "https://github.com/jonatansalemes/actix-web-sqlx-tx.git"
+documentation = "https://docs.rs/actix-web-sqlx-tx"
+readme = "README.md"
+keywords = ["actix", "web", "tx", "sqlx", "transaction"]
+categories = ["web-programming"]
+
+[dependencies]
+actix-web = { version = "4.8.0" }
+sqlx = { version = "0.8.0" }
+scoped-futures = { version = "0.1.3" }
+derive_more = { version = "0.99.17" }
+serde = { version = "1.0.204", features = ["derive"] }
+serde_json = { version = "1.0.66" }
+validator = { version = "0.18.1" }
+
+[dev-dependencies]
+

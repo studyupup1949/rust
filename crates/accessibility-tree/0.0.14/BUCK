@@ -1,0 +1,31 @@
+load("@buckal//:wrapper.bzl", "rust_library")
+
+rust_library(
+    name = "accessibility_tree",
+    srcs = glob(["**/*.rs"]),
+    crate = "accessibility_tree",
+    crate_root = "src/lib.rs",
+    edition = "2018",
+
+    visibility = ["PUBLIC"],
+    deps = [
+        "//third-party/rust/crates/accessibility-scraper/0.0.14:accessibility_scraper",
+        "//third-party/rust/crates/atomic_refcell/0.1.14:atomic_refcell",
+        "//third-party/rust/crates/cssparser/0.27.2:cssparser",
+        "//third-party/rust/crates/dtoa/0.4.8:dtoa",
+        "//third-party/rust/crates/euclid/0.19.9:euclid",
+        "//third-party/rust/crates/fast_html5ever/0.26.6:fast_html5ever",
+        "//third-party/rust/crates/itoa/0.4.8:itoa",
+        "//third-party/rust/crates/lazy_static/1.5.0:lazy_static",
+        "//third-party/rust/crates/lock_api/0.1.5:lock_api",
+        "//third-party/rust/crates/num-traits/0.2.19:num_traits",
+        "//third-party/rust/crates/rayon/1.12.0:rayon",
+        "//third-party/rust/crates/rayon_croissant/0.1.1:rayon_croissant",
+        "//third-party/rust/crates/selectors/0.22.0:selectors",
+        "//third-party/rust/crates/smallbitvec/2.6.1:smallbitvec",
+        "//third-party/rust/crates/smallvec/1.15.2:smallvec",
+        "//third-party/rust/crates/victor-tree-internal-proc-macros/0.0.1:victor_tree_internal_proc_macros",
+        "//third-party/rust/crates/xi-unicode/0.1.0:xi_unicode",
+        "//third-party/rust/crates/xml-rs/0.8.29:xml_rs",
+    ],
+)

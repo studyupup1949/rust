@@ -1,0 +1,17 @@
+load("@buckal//:wrapper.bzl", "rust_binary")
+
+rust_binary(
+    name = "ac_lib_bundle",
+    srcs = glob(["**/*.rs"]),
+    crate = "ac_lib_bundle",
+    crate_root = "src/main.rs",
+    edition = "2021",
+
+    visibility = ["PUBLIC"],
+    deps = [
+        "//third-party/rust/crates/pathdiff/0.2.3:pathdiff",
+        "//third-party/rust/crates/proc-macro2/1.0.107:proc_macro2",
+        "//third-party/rust/crates/serde/1.0.229:serde",
+        "//third-party/rust/crates/syn/2.0.119:syn",
+    ],
+)

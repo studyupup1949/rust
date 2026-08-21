@@ -1,0 +1,14 @@
+load("@buckal//:wrapper.bzl", "rust_library")
+
+rust_library(
+    name = "acroform",
+    srcs = glob(["**/*.rs"]),
+    crate = "acroform",
+    crate_root = "src/lib.rs",
+    edition = "2021",
+
+    visibility = ["PUBLIC"],
+    deps = [
+        "//third-party/rust/crates/acroform-pdf/0.0.15:acroform_pdf",
+    ],
+)

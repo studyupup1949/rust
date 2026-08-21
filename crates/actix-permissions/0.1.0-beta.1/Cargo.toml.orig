@@ -1,0 +1,27 @@
+[package]
+name = "actix-permissions"
+version = "0.1.0-beta.1"
+edition = "2018"
+authors = ["Ana Bujan <ana@eisberg-labs.com>"]
+readme = "README.md"
+repository = "https://github.com/eisberg-labs/actix-permissions"
+description = "Permission and input validation extension for Actix Web. Alternative to actix guard, with access to HttpRequest and Payload."
+keywords = ["actix", "permissions", "authorization", "actix-web"]
+categories = ["web-programming"]
+license = "MIT/Apache-2.0"
+include = ["src/", "LICENSE-*", "README.md"]
+
+[lib]
+name = "actix_permissions"
+path = "src/lib.rs"
+
+[dependencies]
+actix-web = "4.0.1"
+futures-core = { version = "0.3.7", default-features = false, features = ["alloc"]}
+
+[dev-dependencies]
+serde_json = "1.0"
+serde = { version = "1", features = ["derive"] }
+serde_derive = "1.0.116"
+
+

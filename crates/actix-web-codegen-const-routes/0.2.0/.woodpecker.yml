@@ -1,0 +1,5 @@
+pipeline:
+  backend:
+    image: rust
+    commands:
+      - cargo test --all-features --no-fail-fast

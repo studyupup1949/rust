@@ -1,0 +1,15 @@
+load("@buckal//:wrapper.bzl", "rust_library")
+
+rust_library(
+    name = "acrylic_png",
+    srcs = glob(["**/*.rs"]),
+    crate = "acrylic_png",
+    crate_root = "src/lib.rs",
+    edition = "2021",
+
+    visibility = ["PUBLIC"],
+    deps = [
+        "//third-party/rust/crates/acrylic/0.1.30:acrylic",
+        "//third-party/rust/crates/png/0.17.16:png",
+    ],
+)

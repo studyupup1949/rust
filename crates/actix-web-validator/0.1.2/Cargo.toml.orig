@@ -1,0 +1,20 @@
+[package]
+name = "actix-web-validator"
+version = "0.1.2"
+authors = ["Kolomatskiy Artem <kolomatskiy@bk.ru>"]
+edition = "2018"
+description = "Validation mechanism for actix-web"
+keywords = ["actix-web", "serialization", "querystring", "validator", "validation"]
+categories = ["encoding", "web-programming"]
+license = "MIT"
+repository = "https://github.com/rambler-digital-solutions/actix-web-validator"
+
+[dependencies]
+actix-web = "1.0"
+derive_more = "0.99"
+actix-http = "0.2.11"
+validator = "0.10"
+validator_derive = "0.10"
+serde = "1.0.104"
+serde_urlencoded = "0.6.1"
+log = "0.4.8"

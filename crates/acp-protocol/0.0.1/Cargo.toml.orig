@@ -1,0 +1,18 @@
+[package]
+name = "acp-protocol"
+version = "0.0.1"
+edition = "2021"
+authors = ["ACP Protocol Contributors"]
+description = "AI Context Protocol - core library for indexing codebases for AI-assisted development"
+documentation = "https://github.com/acp-protocol/acp-spec"
+homepage = "https://github.com/acp-protocol/acp-spec"
+repository = "https://github.com/acp-protocol/acp-spec"
+readme = "README.md"
+license = "MIT"
+keywords = ["ai", "context", "protocol", "llm", "indexing"]
+categories = ["development-tools", "parser-implementations"]
+
+[lib]
+path = "src/lib.rs"
+
+[dependencies]

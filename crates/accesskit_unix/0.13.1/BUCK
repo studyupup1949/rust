@@ -1,0 +1,20 @@
+load("@buckal//:wrapper.bzl", "rust_library")
+
+rust_library(
+    name = "accesskit_unix",
+    srcs = glob(["**/*.rs"]),
+    crate = "accesskit_unix",
+    crate_root = "src/lib.rs",
+    edition = "2021",
+    features = ["default"],
+
+    visibility = ["PUBLIC"],
+    deps = [
+        "//third-party/rust/crates/accesskit/0.17.1:accesskit",
+        "//third-party/rust/crates/accesskit_atspi_common/0.10.1:accesskit_atspi_common",
+        "//third-party/rust/crates/atspi/0.22.0:atspi",
+        "//third-party/rust/crates/futures-lite/2.6.1:futures_lite",
+        "//third-party/rust/crates/serde/1.0.229:serde",
+        "//third-party/rust/crates/zbus/4.4.0:zbus",
+    ],
+)

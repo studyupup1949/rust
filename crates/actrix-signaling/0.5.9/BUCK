@@ -1,0 +1,30 @@
+load("@buckal//:wrapper.bzl", "rust_library")
+
+rust_library(
+    name = "signaling",
+    srcs = glob(["**/*.rs"]),
+    crate = "signaling",
+    crate_root = "src/lib.rs",
+    edition = "2024",
+    features = ["default"],
+
+    visibility = ["PUBLIC"],
+    deps = [
+        "//third-party/rust/crates/anyhow/1.0.104:anyhow",
+        "//third-party/rust/crates/axum/0.8.9:axum",
+        "//third-party/rust/crates/base64/0.22.1:base64",
+        "//third-party/rust/crates/bytes/1.12.1:bytes",
+        "//third-party/rust/crates/chrono/0.4.45:chrono",
+        "//third-party/rust/crates/futures-util/0.3.34:futures_util",
+        "//third-party/rust/crates/governor/0.10.4:governor",
+        "//third-party/rust/crates/prost/0.14.4:prost",
+        "//third-party/rust/crates/serde/1.0.229:serde",
+        "//third-party/rust/crates/serde_json/1.0.151:serde_json",
+        "//third-party/rust/crates/sqlx/0.8.6:sqlx",
+        "//third-party/rust/crates/thiserror/2.0.20:thiserror",
+        "//third-party/rust/crates/tokio-util/0.7.19:tokio_util",
+        "//third-party/rust/crates/tokio/1.53.1:tokio",
+        "//third-party/rust/crates/tracing/0.1.44:tracing",
+        "//third-party/rust/crates/uuid/1.24.0:uuid",
+    ],
+)

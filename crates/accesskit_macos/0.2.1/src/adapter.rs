@@ -1,0 +1,121 @@
+// Copyright 2022 The AccessKit Authors. All rights reserved.
+// Licensed under the Apache License, Version 2.0 (found in
+// the LICENSE-APACHE file) or the MIT license (found in
+// the LICENSE-MIT file), at your option.
+
+use accesskit::{kurbo::Point, ActionHandler, TreeUpdate};
+use accesskit_consumer::{FilterResult, Tree};
+use objc2::{
+    foundation::{MainThreadMarker, NSArray, NSObject, NSPoint},
+    rc::{Id, Shared, WeakId},
+};
+use std::{ffi::c_void, ptr::null_mut, rc::Rc};
+
+use crate::{
+    appkit::NSView,
+    context::Context,
+    event::{EventGenerator, QueuedEvents},
+    node::{can_be_focused, filter},
+};
+
+pub struct Adapter {
+    context: Rc<Context>,
+}
+
+impl Adapter {
+    /// Create a new macOS adapter. This function must be called on
+    /// the main thread.
+    ///
+    /// # Safety
+    ///
+    /// `view` must be a valid, unreleased pointer to an `NSView`.
+    pub unsafe fn new(
+        view: *mut c_void,
+        initial_state: TreeUpdate,
+        action_handler: Box<dyn ActionHandler>,
+    ) -> Self {
+        let view = unsafe { Id::retain(view as *mut NSView) }.unwrap();
+        let view = WeakId::new(&view);
+        let tree = Tree::new(initial_state, action_handler);
+        let mtm = MainThreadMarker::new().unwrap();
+        Self {
+            context: Context::new(view, tree, mtm),
+        }
+    }
+
+    /// Apply the provided update to the tree.
+    ///
+    /// The caller must call [`QueuedEvents::raise`] on the return value.
+    pub fn update(&self, update: TreeUpdate) -> QueuedEvents {
+        let mut event_generator = EventGenerator::new(self.context.clone());
+        self.context
+            .tree
+            .update_and_process_changes(update, &mut event_generator);
+        event_generator.into_result()
+    }
+
+    pub fn view_children(&self) -> *mut NSArray<NSObject> {
+        let state = self.context.tree.read();
+        let node = state.root();
+        let platform_nodes = if filter(&node) == FilterResult::Include {
+            vec![Id::into_super(Id::into_super(
+                self.context.get_or_create_platform_node(node.id()),
+            ))]
+        } else {
+            node.filtered_children(filter)
+                .map(|node| {
+                    Id::into_super(Id::into_super(
+                        self.context.get_or_create_platform_node(node.id()),
+                    ))
+                })
+                .collect::<Vec<Id<NSObject, Shared>>>()
+        };
+        let array = NSArray::from_vec(platform_nodes);
+        Id::autorelease_return(array)
+    }
+
+    pub fn focus(&self) -> *mut NSObject {
+        let state = self.context.tree.read();
+        if let Some(node) = state.focus() {
+            if can_be_focused(&node) {
+                return Id::autorelease_return(self.context.get_or_create_platform_node(node.id()))
+                    as *mut _;
+            }
+        }
+        null_mut()
+    }
+
+    pub fn hit_test(&self, point: NSPoint) -> *mut NSObject {
+        let view = match self.context.view.load() {
+            Some(view) => view,
+            None => {
+                return null_mut();
+            }
+        };
+
+        let window = view.window().unwrap();
+        let point = window.convert_point_from_screen(point);
+        let point = view.convert_point_from_view(point, None);
+        // AccessKit coordinates are in physical (DPI-dependent) pixels, but
+        // macOS provides logical (DPI-independent) coordinates here.
+        let factor = view.backing_scale_factor();
+        let point = Point::new(
+            point.x * factor,
+            if view.is_flipped() {
+                point.y * factor
+            } else {
+                let view_bounds = view.bounds();
+                (view_bounds.size.height - point.y) * factor
+            },
+        );
+
+        let state = self.context.tree.read();
+        let root = state.root();
+        let point = root.transform().inverse() * point;
+        if let Some(node) = root.node_at_point(point, &filter) {
+            return Id::autorelease_return(self.context.get_or_create_platform_node(node.id()))
+                as *mut _;
+        }
+        null_mut()
+    }
+}

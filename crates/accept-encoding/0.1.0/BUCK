@@ -1,0 +1,16 @@
+load("@buckal//:wrapper.bzl", "rust_library")
+
+rust_library(
+    name = "accept_encoding",
+    srcs = glob(["**/*.rs"]),
+    crate = "accept_encoding",
+    crate_root = "src/lib.rs",
+    edition = "2018",
+
+    visibility = ["PUBLIC"],
+    deps = [
+        "//third-party/rust/crates/derive_is_enum_variant/0.1.1:derive_is_enum_variant",
+        "//third-party/rust/crates/failure/0.1.8:failure",
+        "//third-party/rust/crates/http/0.1.21:http",
+    ],
+)

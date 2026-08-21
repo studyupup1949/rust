@@ -1,0 +1,59 @@
+[package]
+name = "actori-http-test"
+version = "1.0.0"
+authors = ["Christian Haynes <06chaynes@gmail.com>", "Nikolay Kim <fafhrd91@gmail.com>"]
+description = "Actori http test server"
+readme = "README.md"
+keywords = ["http", "web", "framework", "async", "futures"]
+homepage = "https://actori.t42x.net"
+repository = "https://github.com/actori/actori-web.git"
+documentation = "https://docs.rs/actori-http-test/"
+categories = ["network-programming", "asynchronous",
+              "web-programming::http-server",
+              "web-programming::websocket"]
+license = "MIT/Apache-2.0"
+exclude = [".gitignore", ".travis.yml", ".cargo/config", "appveyor.yml"]
+edition = "2018"
+workspace = ".."
+
+[package.metadata.docs.rs]
+features = []
+
+[lib]
+name = "actori_http_test"
+path = "src/lib.rs"
+
+[features]
+default = []
+
+# openssl
+openssl = ["open-ssl", "actoriwc/openssl"]
+
+[dependencies]
+actori-service = "1.0.5"
+actori-codec = "0.2.0"
+actori-connect = "1.0.2"
+actori-utils = "1.0.6"
+actori-rt = "1.0.0"
+actori-server = "1.0.1"
+actori-testing = "1.0.0"
+actoriwc = "1.0.1"
+
+base64 = "0.11"
+bytes = "0.5.3"
+futures = "0.3.1"
+http = "0.2.0"
+log = "0.4"
+env_logger = "0.6"
+net2 = "0.2"
+serde = "1.0"
+serde_json = "1.0"
+sha1 = "0.6"
+slab = "0.4"
+serde_urlencoded = "0.6.1"
+time = "0.1"
+open-ssl = { version="0.10", package="openssl", optional = true }
+
+[dev-dependencies]
+actori-web = "2.0.0"
+actori-http = "1.0.1"

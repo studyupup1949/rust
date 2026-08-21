@@ -1,0 +1,6 @@
+**/target
+**/result
+**/result-doc
+**/result-bin
+**/result-man
+**/.nix_store_state

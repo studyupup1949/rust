@@ -1,0 +1,1627 @@
+//! Top-level DWG file writer
+//!
+//! Orchestrates all section writers to produce a complete DWG binary file.
+//! Supports three file formats:
+//!
+//! - **AC15** (R13/R14/R2000): Linear format with sequential sections
+//! - **AC18** (R2004/R2010+): Page-based format with LZ77 compression
+//! - **AC21** (R2007): RS-encoded pages with LZ77 AC21 compression and CRC-64
+//!
+//! ## Usage
+//!
+//! ```no_run
+//! use acadrust::document::CadDocument;
+//! use acadrust::io::dwg::DwgWriter;
+//!
+//! let doc = CadDocument::new();
+//! DwgWriter::write_to_file("output.dwg", &doc).unwrap();
+//! ```
+//!
+//! Based on ACadSharp's `DwgWriter` class.
+
+use std::fs::File;
+use std::io::{BufWriter, Cursor, Seek, Write};
+use std::path::Path;
+
+use crate::document::{CadDocument, HeaderVariables};
+use crate::error::{DxfError, Result};
+use crate::types::{DxfVersion, Handle};
+
+use super::dwg_stream_writers::{
+    app_info_writer, aux_header_writer, classes_writer, handle_writer, header_writer,
+    preview_writer, DwgObjectWriter,
+};
+use super::file_headers::{
+    section_names, DwgFileHeaderWriterAC15, DwgFileHeaderWriterAC18, DwgFileHeaderWriterAC21,
+};
+
+// ════════════════════════════════════════════════════════════════════════════
+//  Public API
+// ════════════════════════════════════════════════════════════════════════════
+
+/// DWG binary file writer.
+///
+/// Produces a complete DWG file from a [`CadDocument`].
+/// The output version is determined by [`CadDocument::version`].
+pub struct DwgWriter;
+
+impl DwgWriter {
+    /// Write a DWG file to the given path.
+    ///
+    /// # Errors
+    /// Returns an error if:
+    /// - The version is `Unknown`
+    /// - An I/O error occurs
+    /// - The document contains invalid data
+    pub fn write_to_file<P: AsRef<Path>>(path: P, document: &CadDocument) -> Result<()> {
+        let file = File::create(path)?;
+        let writer = BufWriter::new(file);
+        Self::write_to_writer(writer, document)
+    }
+
+    /// Write a DWG file to any `Write + Seek` output.
+    pub fn write_to_writer<W: Write + Seek>(mut output: W, document: &CadDocument) -> Result<()> {
+        validate_version(document.version)?;
+        let version = document.version;
+
+        if uses_ac21_format(version) {
+            write_ac21(&mut output, document, version)
+        } else if uses_paged_format(version) {
+            write_ac18(&mut output, document, version)
+        } else {
+            write_ac15(&mut output, document, version)
+        }
+    }
+
+    /// Write an AC21 DWG file **without LZ77 compression** (diagnostic).
+    ///
+    /// Pages are still RS-encoded but LZ77 is bypassed, storing raw data.
+    /// Useful for isolating whether a read error is caused by compression
+    /// or by the object data itself.
+    pub fn write_to_file_no_lz77<P: AsRef<Path>>(path: P, document: &CadDocument) -> Result<()> {
+        let file = File::create(path)?;
+        let writer = BufWriter::new(file);
+        Self::write_to_writer_no_lz77(writer, document)
+    }
+
+    /// Write an AC21 DWG without LZ77 to any `Write + Seek` output.
+    pub fn write_to_writer_no_lz77<W: Write + Seek>(
+        mut output: W,
+        document: &CadDocument,
+    ) -> Result<()> {
+        validate_version(document.version)?;
+        write_ac21_impl(&mut output, document, document.version, true)
+    }
+
+    /// Write a DWG file to a byte vector (useful for testing).
+    pub fn write_to_vec(document: &CadDocument) -> Result<Vec<u8>> {
+        let mut buffer = Cursor::new(Vec::new());
+        Self::write_to_writer(&mut buffer, document)?;
+        Ok(buffer.into_inner())
+    }
+}
+
+// ════════════════════════════════════════════════════════════════════════════
+//  Validation
+// ════════════════════════════════════════════════════════════════════════════
+
+/// Validate that the document version is supported for DWG writing.
+fn validate_version(version: DxfVersion) -> Result<()> {
+    match version {
+        DxfVersion::Unknown => Err(DxfError::UnsupportedVersion(
+            "Unknown version".to_string(),
+        )),
+        _ => Ok(()),
+    }
+}
+
+/// Whether the version uses the AC21 (R2007) file format.
+///
+/// AC1021 uses RS-encoded pages, LZ77 AC21 compression, and CRC-64
+/// checksums — distinct from both the AC18 and AC15 formats.
+fn uses_ac21_format(version: DxfVersion) -> bool {
+    version == DxfVersion::AC1021
+}
+
+/// Whether the version uses the AC18 page-based file format.
+fn uses_paged_format(version: DxfVersion) -> bool {
+    version >= DxfVersion::AC1018
+}
+
+/// Prepare the header for writing by synchronizing all handle references
+/// from the actual document objects and correcting the handle seed.
+///
+/// This is critical because after a DWG read-roundtrip, header handle
+/// references may be NULL (the header reader for R2007+ doesn't correctly
+/// read handles from the three-stream merged format). Without syncing,
+/// the header would write NULL handles for table controls and the root
+/// dictionary, causing IntelliCAD (and other CAD apps) to report
+/// "null object id" for every object.
+///
+/// Also updates EXTMIN/EXTMAX from the computed model-space extents so that
+/// "Zoom Extents" works correctly when the file is first opened.
+fn prepare_header(
+    document: &CadDocument,
+    handle_map: &[(u64, u32)],
+    extents: &Option<crate::types::BoundingBox3D>,
+) -> HeaderVariables {
+    let mut h = document.header.clone();
+
+    // ── Sync table control handles from actual table objects ──
+    // The tables always have valid handles from initialize_defaults(),
+    // but the header might have NULL handles after a DWG read.
+    h.block_control_handle = document.block_records.handle();
+    h.layer_control_handle = document.layers.handle();
+    h.style_control_handle = document.text_styles.handle();
+    h.linetype_control_handle = document.line_types.handle();
+    h.view_control_handle = document.views.handle();
+    h.ucs_control_handle = document.ucss.handle();
+    h.vport_control_handle = document.vports.handle();
+    h.appid_control_handle = document.app_ids.handle();
+    h.dimstyle_control_handle = document.dim_styles.handle();
+
+    // ── Sync root dictionary handle ──
+    // Find the root dictionary by scanning document.objects for a
+    // Dictionary with owner == NULL. Prefer non-0x0C handles (file's
+    // root dict) over the initialize_defaults() one.
+    if h.named_objects_dict_handle.is_null() {
+        h.named_objects_dict_handle = find_root_dict_handle(&document.objects);
+    }
+    // Verify the root dict handle actually exists in objects
+    if !h.named_objects_dict_handle.is_null() && !document.objects.contains_key(&h.named_objects_dict_handle) {
+        // Handle points to nonexistent object — try to find the real root dict
+        h.named_objects_dict_handle = find_root_dict_handle(&document.objects);
+    }
+
+    // ── Sync child dictionary handles from root dict entries ──
+    if let Some(crate::objects::ObjectType::Dictionary(root_dict)) =
+        document.objects.get(&h.named_objects_dict_handle)
+    {
+        if let Some(handle) = root_dict.get("ACAD_GROUP") {
+            h.acad_group_dict_handle = handle;
+        }
+        if let Some(handle) = root_dict.get("ACAD_MLINESTYLE") {
+            h.acad_mlinestyle_dict_handle = handle;
+        }
+        if let Some(handle) = root_dict.get("ACAD_LAYOUT") {
+            h.acad_layout_dict_handle = handle;
+        }
+        if let Some(handle) = root_dict.get("ACAD_PLOTSETTINGS") {
+            h.acad_plotsettings_dict_handle = handle;
+        }
+        if let Some(handle) = root_dict.get("ACAD_PLOTSTYLENAME") {
+            h.acad_plotstylename_dict_handle = handle;
+        }
+        if let Some(handle) = root_dict.get("ACAD_MATERIAL") {
+            h.acad_material_dict_handle = handle;
+        }
+        if let Some(handle) = root_dict.get("ACAD_COLOR") {
+            h.acad_color_dict_handle = handle;
+        }
+        if let Some(handle) = root_dict.get("ACAD_VISUALSTYLE") {
+            h.acad_visualstyle_dict_handle = handle;
+        }
+    }
+
+    // ── Sync linetype handles by name ──
+    if let Some(lt) = document.line_types.get("ByLayer") {
+        h.bylayer_linetype_handle = lt.handle;
+    }
+    if let Some(lt) = document.line_types.get("ByBlock") {
+        h.byblock_linetype_handle = lt.handle;
+    }
+    if let Some(lt) = document.line_types.get("Continuous") {
+        h.continuous_linetype_handle = lt.handle;
+    }
+
+    // ── Sync model/paper space block handles ──
+    if let Some(br) = document.block_records.get("*Model_Space") {
+        h.model_space_block_handle = br.handle;
+    }
+    if let Some(br) = document.block_records.get("*Paper_Space") {
+        h.paper_space_block_handle = br.handle;
+    }
+
+    // ── Sync current style handles (if NULL, resolve from defaults) ──
+    if h.current_layer_handle.is_null() {
+        if let Some(layer) = document.layers.get("0") {
+            h.current_layer_handle = layer.handle;
+        }
+    }
+    if h.current_text_style_handle.is_null() {
+        if let Some(style) = document.text_styles.get("Standard") {
+            h.current_text_style_handle = style.handle;
+        }
+    }
+    if h.current_dimstyle_handle.is_null() {
+        if let Some(ds) = document.dim_styles.get("Standard") {
+            h.current_dimstyle_handle = ds.handle;
+        }
+    }
+    if h.current_linetype_handle.is_null() {
+        h.current_linetype_handle = h.bylayer_linetype_handle;
+    }
+    if h.current_multiline_style_handle.is_null() {
+        // Find MLineStyle "Standard" in the objects map
+        for (_, obj) in &document.objects {
+            if let crate::objects::ObjectType::MLineStyle(mls) = obj {
+                if mls.name == "Standard" {
+                    h.current_multiline_style_handle = mls.handle;
+                    break;
+                }
+            }
+        }
+    }
+
+    // ── Correct HANDSEED ──
+    let max_handle = handle_map.iter().map(|&(ha, _)| ha).max().unwrap_or(0);
+    if h.handle_seed <= max_handle {
+        h.handle_seed = max_handle + 1;
+    }
+
+    // ── Update model-space extents ──
+    if let Some(ref ext) = extents {
+        h.model_space_extents_min = ext.min;
+        h.model_space_extents_max = ext.max;
+    }
+
+    h
+}
+
+/// Find the root dictionary handle by scanning the objects map.
+///
+/// The root dictionary is a Dictionary with `owner == Handle::NULL`.
+/// If multiple candidates exist (e.g., from `initialize_defaults` and
+/// from file data), prefer the one with more entries (the file's root dict).
+fn find_root_dict_handle(
+    objects: &std::collections::HashMap<crate::types::Handle, crate::objects::ObjectType>,
+) -> crate::types::Handle {
+    use crate::objects::ObjectType;
+    use crate::types::Handle;
+
+    let mut best_handle = Handle::NULL;
+    let mut best_entry_count = 0usize;
+
+    for (handle, obj) in objects {
+        if let ObjectType::Dictionary(dict) = obj {
+            if dict.owner.is_null() {
+                // Prefer the dictionary with more entries (richer = file's root dict);
+                // on tie, prefer higher handle (likely from file, not initialize_defaults)
+                if dict.entries.len() > best_entry_count
+                    || (dict.entries.len() == best_entry_count && handle.value() > best_handle.value())
+                {
+                    best_handle = *handle;
+                    best_entry_count = dict.entries.len();
+                }
+            }
+        }
+    }
+
+    best_handle
+}
+
+// ════════════════════════════════════════════════════════════════════════════
+//  AC15 format (R13/R14/R2000) — linear file layout
+// ════════════════════════════════════════════════════════════════════════════
+
+fn write_ac15<W: Write + Seek>(
+    output: &mut W,
+    document: &CadDocument,
+    version: DxfVersion,
+) -> Result<()> {
+    let mut fhw = DwgFileHeaderWriterAC15::new(version);
+
+    // ── Phase 1: Compute objects FIRST to get handle map ──
+    let obj_writer = DwgObjectWriter::new(document)?;
+    let (obj_data, handle_map_u32, extents, _sab_entries) = obj_writer.write();
+
+    // ── Phase 2: Prepare header (sync handles + correct HANDSEED) ──
+    let corrected_header = prepare_header(document, &handle_map_u32, &extents);
+
+    // ── Section: Header (uses synced + corrected header) ──
+    let header_data = header_writer::write_header(version, &corrected_header);
+    fhw.add_section(section_names::HEADER, header_data);
+
+    // ── Section: Classes ──
+    let classes: Vec<_> = document.classes.iter().cloned().collect();
+    let classes_data = classes_writer::write_classes(version, &classes);
+    fhw.add_section(section_names::CLASSES, classes_data);
+
+    // ── Section: AcDbObjects (pre-computed) ──
+    fhw.add_section(section_names::ACDB_OBJECTS, obj_data);
+
+    // ── Section: ObjFreeSpace ──
+    let obj_free_space = build_obj_free_space(version, document, handle_map_u32.len());
+    fhw.add_section(section_names::OBJ_FREE_SPACE, obj_free_space);
+
+    // ── Section: Template ──
+    let template = build_template();
+    fhw.add_section(section_names::TEMPLATE, template);
+
+    // ── Section: AuxHeader (uses corrected HANDSEED) ──
+    let aux_data = aux_header_writer::write_aux_header(version, &corrected_header);
+    fhw.add_section(section_names::AUX_HEADER, aux_data);
+
+    // ── Section: Handles (must be last — needs objects offset) ──
+    let section_offset = fhw.handle_section_offset() as i32;
+    let handle_map_i64: Vec<(u64, i64)> = handle_map_u32
+        .iter()
+        .map(|&(h, o)| (h, o as i64))
+        .collect();
+    let handles_data = handle_writer::write_handles(&handle_map_i64, section_offset);
+    fhw.add_section(section_names::HANDLES, handles_data);
+
+    // ── Section: Preview ──
+    let preview_data = preview_writer::write_preview(version);
+    fhw.add_section(section_names::PREVIEW, preview_data);
+
+    // ── Write final file ──
+    fhw.write_file(output)?;
+
+    Ok(())
+}
+
+// ════════════════════════════════════════════════════════════════════════════
+//  AC18 format (R2004/R2010/R2013/R2018) — page-based with LZ77
+// ════════════════════════════════════════════════════════════════════════════
+
+fn write_ac18<W: Write + Seek>(
+    output: &mut W,
+    document: &CadDocument,
+    version: DxfVersion,
+) -> Result<()> {
+    // AC18 writer reserves 0x100 bytes at file start for metadata
+    let mut fhw = DwgFileHeaderWriterAC18::new(version, output)?;
+
+    // R2004+ default page size for most sections
+    const PAGE_SIZE: usize = 0x7400;
+    // Smaller page for metadata-style sections
+    const SMALL_PAGE: usize = 0x80;
+
+    // ── Phase 1: Compute objects FIRST to get handle map ──
+    let obj_writer = DwgObjectWriter::new(document)?;
+    let (obj_data, handle_map_u32, extents, sab_entries) = obj_writer.write();
+
+    // ── Phase 2: Prepare header (sync handles + correct HANDSEED) ──
+    let corrected_header = prepare_header(document, &handle_map_u32, &extents);
+
+    // ── Section: Header (uses synced + corrected header) ──
+    let header_data = header_writer::write_header(version, &corrected_header);
+    fhw.add_section(output, section_names::HEADER, &header_data, true, PAGE_SIZE)?;
+
+    // ── Section: Classes ──
+    let classes: Vec<_> = document.classes.iter().cloned().collect();
+    let classes_data = classes_writer::write_classes(version, &classes);
+    fhw.add_section(output, section_names::CLASSES, &classes_data, true, PAGE_SIZE)?;
+
+    // ── Section: SummaryInfo ──
+    let summary_data = build_summary_info(version);
+    fhw.add_section(
+        output,
+        section_names::SUMMARY_INFO,
+        &summary_data,
+        false,
+        0x100,
+    )?;
+
+    // ── Section: Preview ──
+    let preview_data = preview_writer::write_preview(version);
+    fhw.add_section(output, section_names::PREVIEW, &preview_data, false, 0x400)?;
+
+    // ── Section: AppInfo ──
+    let app_info_data = app_info_writer::write_app_info(version);
+    fhw.add_section(output, section_names::APP_INFO, &app_info_data, false, SMALL_PAGE)?;
+
+    // ── Section: FileDepList ──
+    let file_dep_data = build_file_dep_list();
+    fhw.add_section(output, section_names::FILE_DEP_LIST, &file_dep_data, false, SMALL_PAGE)?;
+
+    // ── Section: RevHistory ──
+    let rev_history_data = build_rev_history();
+    fhw.add_section(output, section_names::REV_HISTORY, &rev_history_data, true, PAGE_SIZE)?;
+
+    // ── Section: AuxHeader (uses corrected HANDSEED) ──
+    let aux_data = aux_header_writer::write_aux_header(version, &corrected_header);
+    fhw.add_section(output, section_names::AUX_HEADER, &aux_data, true, PAGE_SIZE)?;
+
+    // ── Section: AcDbObjects (pre-computed) ──
+    fhw.add_section(output, section_names::ACDB_OBJECTS, &obj_data, true, PAGE_SIZE)?;
+
+    // ── Section: AcDsPrototype_1b (AC1027+ ACIS SAB storage) ──
+    if !sab_entries.is_empty() {
+        let acds_data = build_acds_prototype(&sab_entries);
+        fhw.add_section(output, section_names::ACDS_PROTOTYPE, &acds_data, true, PAGE_SIZE)?;
+    }
+
+    // ── Section: ObjFreeSpace ──
+    let obj_free_space = build_obj_free_space(version, document, handle_map_u32.len());
+    fhw.add_section(output, section_names::OBJ_FREE_SPACE, &obj_free_space, true, PAGE_SIZE)?;
+
+    // ── Section: Template ──
+    let template = build_template();
+    fhw.add_section(output, section_names::TEMPLATE, &template, true, PAGE_SIZE)?;
+
+    // ── Section: Handles (last — needs objects data) ──
+    let section_offset = fhw.handle_section_offset() as i32;
+    let handle_map_i64: Vec<(u64, i64)> = handle_map_u32
+        .iter()
+        .map(|&(h, o)| (h, o as i64))
+        .collect();
+    let handles_data = handle_writer::write_handles(&handle_map_i64, section_offset);
+    fhw.add_section(output, section_names::HANDLES, &handles_data, true, PAGE_SIZE)?;
+
+    // ── Write file header, section map, and page map ──
+    fhw.write_file(output)?;
+
+    Ok(())
+}
+
+// ════════════════════════════════════════════════════════════════════════════
+//  AC21 format (R2007) — RS-encoded pages with LZ77 AC21 compression
+// ════════════════════════════════════════════════════════════════════════════
+
+fn write_ac21<W: Write + Seek>(
+    output: &mut W,
+    document: &CadDocument,
+    version: DxfVersion,
+) -> Result<()> {
+    write_ac21_impl(output, document, version, false)
+}
+
+fn write_ac21_impl<W: Write + Seek>(
+    output: &mut W,
+    document: &CadDocument,
+    version: DxfVersion,
+    skip_lz77: bool,
+) -> Result<()> {
+    // AC21 writer reserves 0x480 bytes at file start (0x80 metadata + 0x400 file header)
+    let mut fhw = DwgFileHeaderWriterAC21::new(version, output)?;
+    fhw.skip_lz77 = skip_lz77;
+
+    // ── Phase 1: Compute objects FIRST to get handle map ──
+    let obj_writer = DwgObjectWriter::new(document)?;
+    let (obj_data, handle_map_u32, extents, sab_entries) = obj_writer.write();
+
+    // ── Phase 2: Prepare header (sync handles + correct HANDSEED) ──
+    let corrected_header = prepare_header(document, &handle_map_u32, &extents);
+
+    // ── Sections in spec §5.1 stream order ──
+    // AC21 add_section looks up encoding/encryption/page_size automatically
+    // from ac21_section_info, so no page_size or compressed flag needed.
+
+    // SummaryInfo
+    let summary_data = build_summary_info(version);
+    fhw.add_section(output, section_names::SUMMARY_INFO, &summary_data)?;
+
+    // Preview
+    let preview_data = preview_writer::write_preview(version);
+    fhw.add_section(output, section_names::PREVIEW, &preview_data)?;
+
+    // AppInfo
+    let app_info_data = app_info_writer::write_app_info(version);
+    fhw.add_section(output, section_names::APP_INFO, &app_info_data)?;
+
+    // FileDepList
+    let file_dep_data = build_file_dep_list();
+    fhw.add_section(output, section_names::FILE_DEP_LIST, &file_dep_data)?;
+
+    // RevHistory
+    let rev_history_data = build_rev_history();
+    fhw.add_section(output, section_names::REV_HISTORY, &rev_history_data)?;
+
+    // AcDbObjects (pre-computed)
+    fhw.add_section(output, section_names::ACDB_OBJECTS, &obj_data)?;
+
+    // AcDsPrototype_1b (AC1027+ ACIS SAB storage)
+    if !sab_entries.is_empty() {
+        let acds_data = build_acds_prototype(&sab_entries);
+        fhw.add_section(output, section_names::ACDS_PROTOTYPE, &acds_data)?;
+    }
+
+    // ObjFreeSpace
+    let obj_free_space = build_obj_free_space(version, document, handle_map_u32.len());
+    fhw.add_section(output, section_names::OBJ_FREE_SPACE, &obj_free_space)?;
+
+    // Template
+    let template = build_template();
+    fhw.add_section(output, section_names::TEMPLATE, &template)?;
+
+    // Handles (needs objects data for offsets)
+    let section_offset = fhw.handle_section_offset() as i32;
+    let handle_map_i64: Vec<(u64, i64)> = handle_map_u32
+        .iter()
+        .map(|&(h, o)| (h, o as i64))
+        .collect();
+    let handles_data = handle_writer::write_handles(&handle_map_i64, section_offset);
+    fhw.add_section(output, section_names::HANDLES, &handles_data)?;
+
+    // Classes
+    let classes: Vec<_> = document.classes.iter().cloned().collect();
+    let classes_data = classes_writer::write_classes(version, &classes);
+    fhw.add_section(output, section_names::CLASSES, &classes_data)?;
+
+    // AuxHeader (uses corrected HANDSEED)
+    let aux_data = aux_header_writer::write_aux_header(version, &corrected_header);
+    fhw.add_section(output, section_names::AUX_HEADER, &aux_data)?;
+
+    // Header (uses corrected HANDSEED)
+    let header_data = header_writer::write_header(version, &corrected_header);
+    fhw.add_section(output, section_names::HEADER, &header_data)?;
+
+    // ── Finalize: section map, page map, file header, metadata ──
+    fhw.write_file(output)?;
+
+    Ok(())
+}
+
+// ════════════════════════════════════════════════════════════════════════════
+//  Section data builders for simple/metadata sections
+// ════════════════════════════════════════════════════════════════════════════
+
+/// Build ObjFreeSpace section data.
+///
+/// Contains approximate object count and a fixed data template.
+/// Matches ACadSharp's `writeObjFreeSpace`.
+fn build_obj_free_space(
+    version: DxfVersion,
+    document: &CadDocument,
+    handle_count: usize,
+) -> Vec<u8> {
+    let mut data = Vec::with_capacity(64);
+
+    // Int32: 0
+    data.extend_from_slice(&0i32.to_le_bytes());
+    // UInt32: approximate number of objects (handles)
+    data.extend_from_slice(&(handle_count as u32).to_le_bytes());
+
+    // Julian datetime (8 bytes)
+    // For simplicity, write zeros (ODA-compatible)
+    if version >= DxfVersion::AC1015 {
+        let _ = &document.header; // future: use TDUPDATE
+    }
+    data.extend_from_slice(&0i32.to_le_bytes()); // jdate
+    data.extend_from_slice(&0i32.to_le_bytes()); // milli
+
+    // UInt32: offset of objects section (0 for paged format)
+    data.extend_from_slice(&0u32.to_le_bytes());
+
+    // UInt8: number of 64-bit values that follow (ODA writes 4)
+    data.push(4);
+    // 4 × (u32 + u32) = 4 × 8 bytes of fixed ODA values
+    data.extend_from_slice(&0x00000032u32.to_le_bytes());
+    data.extend_from_slice(&0x00000000u32.to_le_bytes());
+    data.extend_from_slice(&0x00000064u32.to_le_bytes());
+    data.extend_from_slice(&0x00000000u32.to_le_bytes());
+    data.extend_from_slice(&0x00000200u32.to_le_bytes());
+    data.extend_from_slice(&0x00000000u32.to_le_bytes());
+    data.extend_from_slice(&0xFFFFFFFFu32.to_le_bytes());
+    data.extend_from_slice(&0x00000000u32.to_le_bytes());
+
+    data
+}
+
+/// Build Template section data.
+///
+/// Contains template description length (0 = no template).
+/// AutoCAD reference files only write the 4-byte RL length with no
+/// MEASUREMENT field when the template description is empty.
+fn build_template() -> Vec<u8> {
+    let mut data = Vec::with_capacity(4);
+    // RL (raw long = 4 bytes): template description length (0)
+    data.extend_from_slice(&0i32.to_le_bytes());
+    data
+}
+
+/// Build SummaryInfo section data (AC18+ only).
+///
+/// Writes empty summary info fields (all empty strings).
+///
+/// **AC1018 (R2004)**: Windows-1252 (ANSI) strings.
+///   Format: UInt16(byte_count_incl_null) + bytes + null.
+///   Empty → UInt16(1) + 0x00 = 3 bytes.
+///
+/// **AC1021 (R2007)**: UTF-16LE strings.
+///   Format: UInt16(char_count_incl_null) + UTF-16LE chars.
+///   Empty → UInt16(1) + 0x00 0x00 = 4 bytes.
+fn build_summary_info(version: DxfVersion) -> Vec<u8> {
+    let mut data = Vec::with_capacity(128);
+    let is_utf16 = version >= DxfVersion::AC1021;
+
+    // 8 × empty strings
+    // Title, Subject, Author, Keywords, Comments, LastSavedBy, RevisionNumber, HyperlinkBase
+    for _ in 0..8 {
+        data.extend_from_slice(&1u16.to_le_bytes()); // char/byte count including null
+        if is_utf16 {
+            // UTF-16LE null terminator: 2 bytes
+            data.push(0);
+            data.push(0);
+        } else {
+            // ANSI null terminator: 1 byte
+            data.push(0);
+        }
+    }
+
+    // Total editing time: 2 × Int32 (zeros)
+    data.extend_from_slice(&0i32.to_le_bytes());
+    data.extend_from_slice(&0i32.to_le_bytes());
+
+    // Created date: 8 bytes (zeros)
+    data.extend_from_slice(&0i32.to_le_bytes());
+    data.extend_from_slice(&0i32.to_le_bytes());
+
+    // Modified date: 8 bytes (zeros)
+    data.extend_from_slice(&0i32.to_le_bytes());
+    data.extend_from_slice(&0i32.to_le_bytes());
+
+    // Property count: Int16 (0)
+    data.extend_from_slice(&0u16.to_le_bytes());
+
+    // 2 × Int32 (trailing zeros)
+    data.extend_from_slice(&0i32.to_le_bytes());
+    data.extend_from_slice(&0i32.to_le_bytes());
+
+    data
+}
+
+/// Build FileDepList section data (AC18+ only).
+///
+/// Empty dependency list (0 features, 0 files).
+fn build_file_dep_list() -> Vec<u8> {
+    let mut data = Vec::with_capacity(8);
+    // Int32: feature count (0)
+    data.extend_from_slice(&0u32.to_le_bytes());
+    // Int32: file count (0)
+    data.extend_from_slice(&0u32.to_le_bytes());
+    data
+}
+
+/// Build RevHistory section data (AC18+ only).
+///
+/// Empty revision history (3 × Int32 zeros).
+fn build_rev_history() -> Vec<u8> {
+    let mut data = Vec::with_capacity(16);
+    data.extend_from_slice(&0u32.to_le_bytes());
+    data.extend_from_slice(&0u32.to_le_bytes());
+    data.extend_from_slice(&1u32.to_le_bytes()); // revision counter
+    data.extend_from_slice(&0u32.to_le_bytes());
+    data
+}
+
+/// Build AcDsPrototype_1b section data (AC1027+ only).
+///
+/// This section stores SAB binary ACIS data for 3DSOLID, REGION, and BODY
+/// entities in R2013+ DWG files.  The entity stream writes `acis_empty=true`
+/// and the actual SAB data lives here, linked by entity handle.
+///
+/// ## Binary format (reverse-engineered from IntelliCAD-saved reference files)
+///
+/// The section consists of a 128-byte "jard" header followed by 7 segments:
+///
+/// | Segment   | ID | Description                                   |
+/// |-----------|----|-----------------------------------------------|
+/// | `_data_`  | 2  | SAB binary data records (one per entity)      |
+/// | `_data_`  | 3  | Thumbnail data table (empty, boilerplate)     |
+/// | `datidx`  | 4  | Data index                                    |
+/// | `schdat`  | 5  | Schema column definitions                     |
+/// | `schidx`  | 6  | Schema index + schema names                   |
+/// | `search`  | 7  | Handle-based search/lookup index              |
+/// | `segidx`  | 1  | Segment index (offsets of all other segments)  |
+///
+/// Each segment has a 48-byte header:
+///   `marker[8] + id[4] + pad[4] + size[8] + records[8] + meta[8] + fill[8]`
+///
+/// Segments are padded with 0x70 bytes to 16-byte alignment.
+fn build_acds_prototype(sab_entries: &[(Handle, Vec<u8>)]) -> Vec<u8> {
+    if sab_entries.is_empty() {
+        return Vec::new();
+    }
+
+    // Use first entry only (extend to multi-entry later if needed).
+    let (entity_handle, sab_data) = &sab_entries[0];
+    let handle_val = entity_handle.value() as u32;
+
+    // ── Segment 1: _data_ id=2 (SAB data records) ─────────────────
+    let data2 = build_acds_data2_segment(handle_val, sab_data);
+
+    // ── Segment 2: _data_ id=3 (thumbnail, empty boilerplate) ─────
+    #[rustfmt::skip]
+    let data3: &[u8] = &[
+        0xAC, 0xD5, 0x5F, 0x64, 0x61, 0x74, 0x61, 0x5F, // marker "_data_"
+        0x03, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, // id=3
+        0x40, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, // size=64
+        0x01, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, // records=1
+        0x00, 0x00, 0x00, 0x00, 0x04, 0x00, 0x00, 0x00, // meta: 0, cols=4
+        0x55, 0x55, 0x55, 0x55, 0x55, 0x55, 0x55, 0x55, // fill "UUUUUUUU"
+        0x62, 0x62, 0x62, 0x62, 0x62, 0x62, 0x62, 0x62, // content "bbbb..."
+        0x62, 0x62, 0x62, 0x62, 0x62, 0x62, 0x62, 0x62,
+    ];
+
+    // ── Segment 3: datidx id=4 ────────────────────────────────────
+    let datidx = build_acds_datidx();
+
+    // ── Segment 4: schdat id=5 (schema definitions, fixed) ────────
+    let schdat = ACDS_SCHDAT_TEMPLATE;
+
+    // ── Segment 5: schidx id=6 (schema index, fixed) ─────────────
+    let schidx = ACDS_SCHIDX_TEMPLATE;
+
+    // ── Segment 6: search id=7 ───────────────────────────────────
+    let search = build_acds_search_segment(handle_val);
+
+    // ── Segment 7: segidx id=1 ───────────────────────────────────
+    // Compute offsets (all relative to section start = after jard header)
+    let off_data2 = 0x80u32;
+    let off_data3 = off_data2 + data2.len() as u32;
+    let off_datidx = off_data3 + data3.len() as u32;
+    let off_schdat = off_datidx + datidx.len() as u32;
+    let off_schidx = off_schdat + schdat.len() as u32;
+    let off_search = off_schidx + schidx.len() as u32;
+    let off_segidx = off_search + search.len() as u32;
+    let segidx_size = 192u32;
+
+    let segidx = build_acds_segidx(
+        off_segidx, segidx_size,
+        off_data2, data2.len() as u32,
+        off_data3, data3.len() as u32,
+        off_datidx, datidx.len() as u32,
+        off_schdat, schdat.len() as u32,
+        off_schidx, schidx.len() as u32,
+        off_search, search.len() as u32,
+    );
+
+    // ── Jard header ──────────────────────────────────────────────
+    let total_size = off_segidx + segidx_size;
+    let segidx_offset = off_segidx; // data_size field = segidx offset
+    let header = build_acds_jard_header(
+        sab_entries.len() as u32,
+        segidx_offset,
+        total_size,
+    );
+
+    // ── Assemble ─────────────────────────────────────────────────
+    let mut result = Vec::with_capacity(total_size as usize);
+    result.extend_from_slice(&header);
+    result.extend_from_slice(&data2);
+    result.extend_from_slice(data3);
+    result.extend_from_slice(&datidx);
+    result.extend_from_slice(schdat);
+    result.extend_from_slice(schidx);
+    result.extend_from_slice(&search);
+    result.extend_from_slice(&segidx);
+
+    debug_assert_eq!(result.len(), total_size as usize);
+    result
+}
+
+/// Build the "jard" header (128 bytes).
+fn build_acds_jard_header(
+    num_records: u32,
+    segidx_offset: u32,
+    total_size: u32,
+) -> Vec<u8> {
+    let mut h = vec![0u8; 128];
+    // Magic
+    h[0..4].copy_from_slice(b"jard");
+    // Header size
+    h[4..8].copy_from_slice(&128u32.to_le_bytes());
+    // Schema version
+    h[8..12].copy_from_slice(&2u32.to_le_bytes());
+    // Num schemas
+    h[12..16].copy_from_slice(&2u32.to_le_bytes());
+    // Unknown
+    h[16..20].copy_from_slice(&0u32.to_le_bytes());
+    // Record count
+    h[20..24].copy_from_slice(&num_records.to_le_bytes());
+    // Segidx offset (u64)
+    h[24..32].copy_from_slice(&(segidx_offset as u64).to_le_bytes());
+    // Segidx entry count (null + 7 segments = 8)
+    h[32..36].copy_from_slice(&8u32.to_le_bytes());
+    // Num segments excluding segidx
+    h[36..40].copy_from_slice(&6u32.to_le_bytes());
+    // Unknown (4)
+    h[40..44].copy_from_slice(&4u32.to_le_bytes());
+    // Num segments total
+    h[44..48].copy_from_slice(&7u32.to_le_bytes());
+    // Unknown (0)
+    h[48..52].copy_from_slice(&0u32.to_le_bytes());
+    // Total size (u64)
+    h[52..60].copy_from_slice(&(total_size as u64).to_le_bytes());
+    // Remaining bytes are zero (padding)
+    h
+}
+
+/// Build `_data_` segment id=2 containing SAB record(s).
+fn build_acds_data2_segment(handle_val: u32, sab_data: &[u8]) -> Vec<u8> {
+    let sab_len = sab_data.len();
+    // Raw size = 48 (segment header) + 36 (record metadata) + sab_len
+    let raw_size = 84 + sab_len;
+    let seg_size = align16(raw_size);
+    let padding = seg_size - raw_size;
+
+    let mut seg = Vec::with_capacity(seg_size);
+
+    // Segment header (48 bytes)
+    seg.extend_from_slice(&[0xAC, 0xD5, 0x5F, 0x64, 0x61, 0x74, 0x61, 0x5F]); // "_data_"
+    seg.extend_from_slice(&2u32.to_le_bytes()); // id=2
+    seg.extend_from_slice(&0u32.to_le_bytes()); // pad
+    seg.extend_from_slice(&(seg_size as u64).to_le_bytes()); // segment size
+    seg.extend_from_slice(&1u64.to_le_bytes()); // record count = 1
+    seg.extend_from_slice(&0u32.to_le_bytes()); // meta field1 = 0
+    seg.extend_from_slice(&5u32.to_le_bytes()); // meta field2 = 5 (num columns)
+    seg.extend_from_slice(&[0x55; 8]); // fill "UUUUUUUU"
+
+    // Record metadata (36 bytes)
+    seg.extend_from_slice(&0x14u32.to_le_bytes()); // col0 = 20
+    seg.extend_from_slice(&1u32.to_le_bytes());     // col1 = record index (1-based)
+    seg.extend_from_slice(&(handle_val as u64).to_le_bytes()); // col2 = entity handle
+    seg.extend_from_slice(&0u32.to_le_bytes());     // col3 = 0
+    seg.extend_from_slice(&[0x62; 12]);              // col4 fill "bbbbbbbbbbbb"
+    seg.extend_from_slice(&(sab_len as u32).to_le_bytes()); // SAB blob size
+
+    // SAB binary data
+    seg.extend_from_slice(sab_data);
+
+    // Padding with 0x70 to 16-byte alignment
+    seg.extend(std::iter::repeat(0x70u8).take(padding));
+
+    debug_assert_eq!(seg.len(), seg_size);
+    seg
+}
+
+/// Build `datidx` segment id=4.
+fn build_acds_datidx() -> Vec<u8> {
+    let mut seg = vec![0x70u8; 128];
+
+    // Segment header
+    seg[0..8].copy_from_slice(&[0xAC, 0xD5, 0x64, 0x61, 0x74, 0x69, 0x64, 0x78]); // "datidx"
+    seg[8..12].copy_from_slice(&4u32.to_le_bytes());    // id=4
+    seg[12..16].copy_from_slice(&0u32.to_le_bytes());   // pad
+    seg[16..24].copy_from_slice(&128u64.to_le_bytes()); // segment size
+    seg[24..32].copy_from_slice(&1u64.to_le_bytes());   // record count
+    seg[32..40].copy_from_slice(&0u64.to_le_bytes());   // meta
+    seg[40..48].copy_from_slice(&[0x55; 8]);             // fill
+
+    // Content: index entries
+    // (row_index=1, schema_id=2, data_count=1)
+    seg[48..52].copy_from_slice(&1u32.to_le_bytes());
+    seg[52..56].copy_from_slice(&0u32.to_le_bytes());
+    seg[56..60].copy_from_slice(&2u32.to_le_bytes());
+    seg[60..64].copy_from_slice(&0u32.to_le_bytes());
+    seg[64..68].copy_from_slice(&1u32.to_le_bytes());
+    // Rest is padding (already 0x70)
+
+    seg
+}
+
+/// Build `search` segment id=7 with entity handle reference.
+fn build_acds_search_segment(handle_val: u32) -> Vec<u8> {
+    let mut seg = vec![0x70u8; 192];
+
+    // Segment header
+    seg[0..8].copy_from_slice(&[0xAC, 0xD5, 0x73, 0x65, 0x61, 0x72, 0x63, 0x68]); // "search"
+    seg[8..12].copy_from_slice(&7u32.to_le_bytes());    // id=7
+    seg[12..16].copy_from_slice(&0u32.to_le_bytes());   // pad
+    seg[16..24].copy_from_slice(&192u64.to_le_bytes()); // segment size
+    seg[24..32].copy_from_slice(&1u64.to_le_bytes());   // record count
+    seg[32..40].copy_from_slice(&0u64.to_le_bytes());   // meta
+    seg[40..48].copy_from_slice(&[0x55; 8]);             // fill
+
+    // Content (matches reference file layout)
+    // Search index entries
+    let content: &[u8] = &[
+        0x02, 0x00, 0x00, 0x00, // num_schemas_with_data = 2
+        0x01, 0x00, 0x00, 0x00, // ?
+        0x01, 0x00, 0x00, 0x00, // ?
+        0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, // zeros
+        0x00, 0x00, 0x00, 0x00, // ?
+        0x01, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, // ?
+        0x01, 0x00, 0x00, 0x00, // ?
+    ];
+    seg[48..48 + content.len()].copy_from_slice(content);
+
+    // Entity handle at offset 0x54 from segment start (= 48 + 36 = 84)
+    // Actually from the dump: handle "2A" is at segment offset +0x54
+    // = content offset 0x54 - 0x30 = 0x24 from content start (48 + 36 = 84)
+    // Let me recalculate: segment starts at 0x19C0 in reference,
+    // handle 0x2A at 0x1A14 = 0x19C0 + 0x54.
+    // So offset within segment is 0x54 = 84.
+    seg[84..88].copy_from_slice(&handle_val.to_le_bytes());
+    seg[88..92].copy_from_slice(&0u32.to_le_bytes()); // pad
+
+    // Remaining fields after handle
+    let tail: &[u8] = &[
+        0x01, 0x00, 0x00, 0x00, // ?
+        0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, // zeros
+        0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, // zeros
+        0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, // zeros
+        0x00, 0x00, 0x00, 0x00, // zeros
+        0x01, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, // ?
+        0x00, 0x00, 0x00, 0x00, // ?
+    ];
+    seg[92..92 + tail.len()].copy_from_slice(tail);
+    // Rest is padding (already 0x70)
+
+    seg
+}
+
+/// Build `segidx` segment id=1 with offsets for all other segments.
+#[allow(clippy::too_many_arguments)]
+fn build_acds_segidx(
+    off_segidx: u32, sz_segidx: u32,
+    off_data2: u32, sz_data2: u32,
+    off_data3: u32, sz_data3: u32,
+    off_datidx: u32, sz_datidx: u32,
+    off_schdat: u32, sz_schdat: u32,
+    off_schidx: u32, sz_schidx: u32,
+    off_search: u32, sz_search: u32,
+) -> Vec<u8> {
+    let mut seg = vec![0x70u8; sz_segidx as usize];
+
+    // Segment header
+    seg[0..8].copy_from_slice(&[0xAC, 0xD5, 0x73, 0x65, 0x67, 0x69, 0x64, 0x78]); // "segidx"
+    seg[8..12].copy_from_slice(&1u32.to_le_bytes());    // id=1
+    seg[12..16].copy_from_slice(&0u32.to_le_bytes());   // pad
+    seg[16..24].copy_from_slice(&(sz_segidx as u64).to_le_bytes()); // segment size
+    seg[24..32].copy_from_slice(&1u64.to_le_bytes());   // record count
+    seg[32..40].copy_from_slice(&0u64.to_le_bytes());   // meta
+    seg[40..48].copy_from_slice(&[0x55; 8]);             // fill
+
+    // Content: 8 entries × 12 bytes = 96 bytes
+    // Entry format: (u32 offset, u32 pad=0, u32 size)
+    let mut pos = 48;
+
+    // Entry 0: null
+    write_segidx_entry(&mut seg, pos, 0, 0); pos += 12;
+    // Entry 1: segidx
+    write_segidx_entry(&mut seg, pos, off_segidx, sz_segidx); pos += 12;
+    // Entry 2: _data_ id=2
+    write_segidx_entry(&mut seg, pos, off_data2, sz_data2); pos += 12;
+    // Entry 3: _data_ id=3
+    write_segidx_entry(&mut seg, pos, off_data3, sz_data3); pos += 12;
+    // Entry 4: datidx
+    write_segidx_entry(&mut seg, pos, off_datidx, sz_datidx); pos += 12;
+    // Entry 5: schdat
+    write_segidx_entry(&mut seg, pos, off_schdat, sz_schdat); pos += 12;
+    // Entry 6: schidx
+    write_segidx_entry(&mut seg, pos, off_schidx, sz_schidx); pos += 12;
+    // Entry 7: search
+    write_segidx_entry(&mut seg, pos, off_search, sz_search);
+    // Rest is padding (already 0x70)
+
+    seg
+}
+
+/// Write one segidx entry: (offset u32, pad u32, size u32).
+fn write_segidx_entry(buf: &mut [u8], pos: usize, offset: u32, size: u32) {
+    buf[pos..pos + 4].copy_from_slice(&offset.to_le_bytes());
+    buf[pos + 4..pos + 8].copy_from_slice(&0u32.to_le_bytes());
+    buf[pos + 8..pos + 12].copy_from_slice(&size.to_le_bytes());
+}
+
+/// Round up to next 16-byte boundary.
+fn align16(n: usize) -> usize {
+    (n + 15) & !15
+}
+
+/// Schema data template (448 bytes) — fixed content defining column
+/// types and names for AcDb_Thumbnail_Schema and AcDb3DSolid_ASM_Data.
+#[rustfmt::skip]
+const ACDS_SCHDAT_TEMPLATE: &[u8] = &[
+    // Segment header
+    0xAC, 0xD5, 0x73, 0x63, 0x68, 0x64, 0x61, 0x74, // "schdat"
+    0x05, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, // id=5
+    0xC0, 0x01, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, // size=448
+    0x01, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, // records=1
+    0x14, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, // meta: field_count=20
+    0x55, 0x55, 0x55, 0x55, 0x55, 0x55, 0x55, 0x55, // fill
+    // Column type definitions (8 bytes each: type u32, flags u32)
+    0x08, 0x00, 0x00, 0x00, 0x01, 0x00, 0x00, 0x00,
+    0x08, 0x00, 0x00, 0x00, 0x01, 0x00, 0x00, 0x00,
+    0x08, 0x00, 0x00, 0x00, 0x01, 0x00, 0x00, 0x00,
+    0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+    0x08, 0x00, 0x00, 0x00, 0x01, 0x00, 0x00, 0x00,
+    0x08, 0x00, 0x00, 0x00, 0x01, 0x00, 0x00, 0x00,
+    0x08, 0x00, 0x00, 0x00, 0x01, 0x00, 0x00, 0x00,
+    0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+    // Schema field descriptors
+    0x02, 0x00, 0x04, 0x00, 0x00, 0x00, 0x00, 0x00,
+    0x00, 0x00, 0x05, 0x00, 0x00, 0x00, 0x00, 0x00,
+    0x00, 0x00, 0x02, 0x00, 0x00, 0x00, 0x00, 0x00,
+    0x00, 0x00, 0x00, 0x00, 0x0A, 0x00, 0x00, 0x00,
+    0x02, 0x00, 0x06, 0x00, 0x00, 0x00, 0x00, 0x00,
+    0x00, 0x00, 0x07, 0x00, 0x00, 0x00, 0x00, 0x00,
+    0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x01, 0x00,
+    0x00, 0x00, 0x0F, 0x00, 0x00, 0x00, 0x00, 0x00,
+    0x02, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+    0x00, 0x00, 0x01, 0x00, 0x00, 0x00, 0x00, 0x00,
+    0x00, 0x00, 0x02, 0x00, 0x00, 0x00, 0x00, 0x00,
+    0x00, 0x00, 0x00, 0x00, 0x0A, 0x00, 0x00, 0x00,
+    0x02, 0x00, 0x02, 0x00, 0x00, 0x00, 0x00, 0x00,
+    0x00, 0x00, 0x03, 0x00, 0x00, 0x00, 0x00, 0x00,
+    0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0x00,
+    0x00, 0x00, 0x0F, 0x00, 0x00, 0x00, 0x00, 0x00,
+    // Schema records (sub-structures)
+    0x00, 0x00, 0x01, 0x00, 0x00, 0x00, 0x00, 0x00,
+    0x03, 0x00, 0x00, 0x00, 0x01, 0x00, 0x00, 0x00,
+    0x00, 0x00, 0x00, 0x00, 0x01, 0x00, 0x00, 0x00,
+    0x00, 0x00, 0x04, 0x00, 0x00, 0x00, 0x01, 0x00,
+    0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x01, 0x00,
+    0x00, 0x00, 0x00, 0x00, 0x05, 0x00, 0x00, 0x00,
+    0x01, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+    0x01, 0x00, 0x08, 0x00, 0x00, 0x00, 0x06, 0x00,
+    0x00, 0x00, 0x07, 0x00, 0x00, 0x00, 0x01, 0x00,
+    0x00, 0x00, 0x01, 0x00, 0x00,
+    // NUL-terminated schema field name strings
+    0x73, 0x73, 0x73, // "sss" (separator/padding?)
+    0x07, 0x00, 0x00, 0x00,
+    // "AcDbDs::ID"
+    0x41, 0x63, 0x44, 0x62, 0x44, 0x73, 0x3A, 0x3A, 0x49, 0x44, 0x00,
+    // "Thumbnail_Data"
+    0x54, 0x68, 0x75, 0x6D, 0x62, 0x6E, 0x61, 0x69, 0x6C, 0x5F, 0x44, 0x61, 0x74, 0x61, 0x00,
+    // "ASM_Data"
+    0x41, 0x53, 0x4D, 0x5F, 0x44, 0x61, 0x74, 0x61, 0x00,
+    // "AcDbDs::TreatedAsObjectData"
+    0x41, 0x63, 0x44, 0x62, 0x44, 0x73, 0x3A, 0x3A,
+    0x54, 0x72, 0x65, 0x61, 0x74, 0x65, 0x64, 0x41, 0x73, 0x4F, 0x62, 0x6A, 0x65, 0x63, 0x74, 0x44,
+    0x61, 0x74, 0x61, 0x00,
+    // "AcDbDs::Legacy"
+    0x41, 0x63, 0x44, 0x62, 0x44, 0x73, 0x3A, 0x3A, 0x4C, 0x65, 0x67, 0x61, 0x63, 0x79, 0x00,
+    // "AcDs:Indexable"
+    0x41, 0x63, 0x44, 0x73, 0x3A, 0x49, 0x6E, 0x64, 0x65, 0x78, 0x61, 0x62, 0x6C, 0x65, 0x00,
+    // "AcDbDs::HandleAttribute"
+    0x41, 0x63, 0x44, 0x62, 0x44, 0x73, 0x3A, 0x3A, 0x48, 0x61, 0x6E, 0x64, 0x6C, 0x65, 0x41,
+    0x74, 0x74, 0x72, 0x69, 0x62, 0x75, 0x74, 0x65, 0x00,
+    // Padding to 448 bytes
+    0x70, 0x70, 0x70, 0x70, 0x70, 0x70, 0x70,
+];
+
+/// Schema index template (448 bytes) — fixed content listing schema
+/// names and column offset tables.
+#[rustfmt::skip]
+const ACDS_SCHIDX_TEMPLATE: &[u8] = &[
+    // Segment header
+    0xAC, 0xD5, 0x73, 0x63, 0x68, 0x69, 0x64, 0x78, // "schidx"
+    0x06, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, // id=6
+    0xC0, 0x01, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, // size=448
+    0x01, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, // records=1
+    0x0F, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, // meta: 15
+    0x55, 0x55, 0x55, 0x55, 0x55, 0x55, 0x55, 0x55, // fill
+    // Schema index content
+    0x06, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+    0x00, 0x00, 0x00, 0x00, 0x05, 0x00, 0x00, 0x00,
+    0x40, 0x00, 0x00, 0x00, 0x01, 0x00, 0x00, 0x00,
+    0x05, 0x00, 0x00, 0x00, 0x80, 0x00, 0x00, 0x00,
+    0x02, 0x00, 0x00, 0x00, 0x05, 0x00, 0x00, 0x00,
+    0xC0, 0x00, 0x00, 0x00, 0x03, 0x00, 0x00, 0x00,
+    0x05, 0x00, 0x00, 0x00, 0xD2, 0x00, 0x00, 0x00,
+    0x04, 0x00, 0x00, 0x00, 0x05, 0x00, 0x00, 0x00,
+    0xE4, 0x00, 0x00, 0x00, 0x05, 0x00, 0x00, 0x00,
+    0x05, 0x00, 0x00, 0x00, 0xF6, 0x00, 0x00, 0x00,
+    0x0C, 0xF1, 0x0A, 0x00, 0x00, 0x00, 0x00, 0x00,
+    0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+    0x05, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+    0x02, 0x00, 0x00, 0x00, 0x05, 0x00, 0x00, 0x00,
+    0x08, 0x00, 0x00, 0x00, 0x03, 0x00, 0x00, 0x00,
+    0x05, 0x00, 0x00, 0x00, 0x10, 0x00, 0x00, 0x00,
+    0x04, 0x00, 0x00, 0x00, 0x05, 0x00, 0x00, 0x00,
+    0x18, 0x00, 0x00, 0x00, 0x05, 0x00, 0x00, 0x00,
+    0x05, 0x00, 0x00, 0x00, 0x20, 0x00, 0x00, 0x00,
+    0x02, 0x00, 0x00, 0x00, 0x05, 0x00, 0x00, 0x00,
+    0x28, 0x00, 0x00, 0x00, 0x03, 0x00, 0x00, 0x00,
+    0x05, 0x00, 0x00, 0x00, 0x30, 0x00, 0x00, 0x00,
+    0x04, 0x00, 0x00, 0x00, 0x05, 0x00, 0x00, 0x00,
+    0x38, 0x00, 0x00, 0x00, 0x05, 0x00, 0x00, 0x00,
+    // Schema names (NUL-terminated strings)
+    0x06, 0x00, 0x00, 0x00,
+    // "AcDb_Thumbnail_Schema"
+    0x41, 0x63, 0x44, 0x62, 0x5F, 0x54, 0x68, 0x75, 0x6D, 0x62, 0x6E, 0x61,
+    0x69, 0x6C, 0x5F, 0x53, 0x63, 0x68, 0x65, 0x6D, 0x61, 0x00,
+    // "AcDb3DSolid_ASM_Data"
+    0x41, 0x63, 0x44, 0x62, 0x33, 0x44,
+    0x53, 0x6F, 0x6C, 0x69, 0x64, 0x5F, 0x41, 0x53, 0x4D, 0x5F, 0x44, 0x61, 0x74, 0x61, 0x00,
+    // "AcDbDs::TreatedAsObjectDataSchema"
+    0x41,
+    0x63, 0x44, 0x62, 0x44, 0x73, 0x3A, 0x3A, 0x54, 0x72, 0x65, 0x61, 0x74, 0x65, 0x64, 0x41, 0x73,
+    0x4F, 0x62, 0x6A, 0x65, 0x63, 0x74, 0x44, 0x61, 0x74, 0x61, 0x53, 0x63, 0x68, 0x65, 0x6D, 0x61,
+    0x00,
+    // "AcDbDs::LegacySchema"
+    0x41, 0x63, 0x44, 0x62, 0x44, 0x73, 0x3A, 0x3A, 0x4C, 0x65, 0x67, 0x61, 0x63, 0x79,
+    0x53, 0x63, 0x68, 0x65, 0x6D, 0x61, 0x00,
+    // "AcDbDs::IndexedPropertySchema"
+    0x41, 0x63, 0x44, 0x62, 0x44, 0x73, 0x3A, 0x3A, 0x49, 0x6E,
+    0x64, 0x65, 0x78, 0x65, 0x64, 0x50, 0x72, 0x6F, 0x70, 0x65, 0x72, 0x74, 0x79, 0x53, 0x63, 0x68,
+    0x65, 0x6D, 0x61, 0x00,
+    // "AcDbDs::HandleAttributeSchema"
+    0x41, 0x63, 0x44, 0x62, 0x44, 0x73, 0x3A, 0x3A, 0x48, 0x61, 0x6E, 0x64,
+    0x6C, 0x65, 0x41, 0x74, 0x74, 0x72, 0x69, 0x62, 0x75, 0x74, 0x65, 0x53, 0x63, 0x68, 0x65, 0x6D,
+    0x61, 0x00,
+    // Padding
+    0x70, 0x70, 0x70, 0x70, 0x70, 0x70, 0x70, 0x70, 0x70, 0x70, 0x70, 0x70, 0x70, 0x70,
+    0x70, 0x70, 0x70, 0x70, 0x70, 0x70, 0x70, 0x70, 0x70, 0x70, 0x70, 0x70, 0x70, 0x70, 0x70, 0x70,
+    0x70, 0x70, 0x70, 0x70, 0x70, 0x70, 0x70, 0x70, 0x70, 0x70, 0x70, 0x70, 0x70, 0x70, 0x70, 0x70,
+];
+
+// ════════════════════════════════════════════════════════════════════════════
+//  Tests
+// ════════════════════════════════════════════════════════════════════════════
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::document::CadDocument;
+    use crate::types::{DxfVersion, Handle};
+
+    #[test]
+    fn test_validate_version_r2007_ok() {
+        assert!(validate_version(DxfVersion::AC1021).is_ok());
+    }
+
+    #[test]
+    fn test_validate_version_unknown_rejected() {
+        let result = validate_version(DxfVersion::Unknown);
+        assert!(result.is_err());
+    }
+
+    #[test]
+    fn test_validate_version_r2000_ok() {
+        assert!(validate_version(DxfVersion::AC1015).is_ok());
+    }
+
+    #[test]
+    fn test_validate_version_r2004_ok() {
+        assert!(validate_version(DxfVersion::AC1018).is_ok());
+    }
+
+    #[test]
+    fn test_validate_version_r2010_ok() {
+        assert!(validate_version(DxfVersion::AC1024).is_ok());
+    }
+
+    #[test]
+    fn test_build_template() {
+        let t = build_template();
+        assert_eq!(t.len(), 4);
+        assert_eq!(i32::from_le_bytes([t[0], t[1], t[2], t[3]]), 0); // desc length (RL = 4 bytes)
+    }
+
+    #[test]
+    fn test_build_obj_free_space() {
+        let doc = CadDocument::new();
+        let data = build_obj_free_space(DxfVersion::AC1015, &doc, 42);
+        // Int32(0) + UInt32(42) + 8 date + UInt32(0) + 1 + 32
+        assert_eq!(data.len(), 4 + 4 + 8 + 4 + 1 + 32);
+        // Check handle count at offset 4
+        let count = u32::from_le_bytes([data[4], data[5], data[6], data[7]]);
+        assert_eq!(count, 42);
+    }
+
+    #[test]
+    fn test_build_file_dep_list() {
+        let d = build_file_dep_list();
+        assert_eq!(d.len(), 8);
+    }
+
+    #[test]
+    fn test_build_rev_history() {
+        let d = build_rev_history();
+        assert_eq!(d.len(), 16);
+    }
+
+    #[test]
+    fn test_build_summary_info_ac18() {
+        let d = build_summary_info(DxfVersion::AC1018);
+        // 8 × 3 bytes (u16(1) + ANSI null) + 8 + 16 + 2 + 8 = 58
+        assert_eq!(d.len(), 58);
+        assert_eq!(u16::from_le_bytes([d[0], d[1]]), 1);
+        assert_eq!(d[2], 0);
+        // Next string starts at offset 3
+        assert_eq!(u16::from_le_bytes([d[3], d[4]]), 1);
+    }
+
+    #[test]
+    fn test_build_summary_info_ac21() {
+        let d = build_summary_info(DxfVersion::AC1021);
+        // 8 × 4 bytes (u16(1) + UTF-16LE null) + 8 + 16 + 2 + 8 = 66
+        assert_eq!(d.len(), 66);
+        // First string: u16(1) + 00 00
+        assert_eq!(u16::from_le_bytes([d[0], d[1]]), 1);
+        assert_eq!(d[2], 0);
+        assert_eq!(d[3], 0);
+        // Next string starts at offset 4
+        assert_eq!(u16::from_le_bytes([d[4], d[5]]), 1);
+    }
+
+    #[test]
+    fn test_write_to_vec_r2000() {
+        let mut doc = CadDocument::new();
+        doc.version = DxfVersion::AC1015;
+        let result = DwgWriter::write_to_vec(&doc);
+        assert!(result.is_ok());
+        let bytes = result.unwrap();
+        // AC15 file header magic: "AC1015"
+        assert!(bytes.len() > 100);
+        let magic = std::str::from_utf8(&bytes[0..6]).unwrap_or("");
+        assert_eq!(magic, "AC1015");
+    }
+
+    #[test]
+    fn test_write_to_vec_r2004() {
+        let mut doc = CadDocument::new();
+        doc.version = DxfVersion::AC1018;
+        let result = DwgWriter::write_to_vec(&doc);
+        assert!(result.is_ok());
+        let bytes = result.unwrap();
+        assert!(bytes.len() > 0x100);
+        // AC18 magic at offset 0
+        let magic = std::str::from_utf8(&bytes[0..6]).unwrap_or("");
+        assert_eq!(magic, "AC1018");
+    }
+
+    #[test]
+    fn test_write_to_vec_r2010() {
+        let mut doc = CadDocument::new();
+        doc.version = DxfVersion::AC1024;
+        let result = DwgWriter::write_to_vec(&doc);
+        assert!(result.is_ok());
+        let bytes = result.unwrap();
+        assert!(bytes.len() > 0x100);
+    }
+
+    #[test]
+    fn test_write_to_vec_r2013() {
+        let mut doc = CadDocument::new();
+        doc.version = DxfVersion::AC1027;
+        let result = DwgWriter::write_to_vec(&doc);
+        assert!(result.is_ok());
+    }
+
+    #[test]
+    fn test_write_to_vec_r2018() {
+        let mut doc = CadDocument::new();
+        doc.version = DxfVersion::AC1032;
+        let result = DwgWriter::write_to_vec(&doc);
+        assert!(result.is_ok());
+    }
+
+    #[test]
+    fn test_write_to_vec_r2007() {
+        let mut doc = CadDocument::new();
+        doc.version = DxfVersion::AC1021;
+        let result = DwgWriter::write_to_vec(&doc);
+        assert!(result.is_ok(), "AC1021 writing should succeed");
+        let bytes = result.unwrap();
+        assert!(bytes.len() > 0x480, "AC1021 file should be larger than header");
+        let magic = std::str::from_utf8(&bytes[0..6]).unwrap_or("");
+        assert_eq!(magic, "AC1021");
+    }
+
+    #[test]
+    fn test_uses_ac21_format() {
+        assert!(uses_ac21_format(DxfVersion::AC1021));
+        assert!(!uses_ac21_format(DxfVersion::AC1018));
+        assert!(!uses_ac21_format(DxfVersion::AC1024));
+        assert!(!uses_ac21_format(DxfVersion::AC1015));
+    }
+
+    #[test]
+    fn test_write_to_vec_r14() {
+        let mut doc = CadDocument::new();
+        doc.version = DxfVersion::AC1014;
+        let result = DwgWriter::write_to_vec(&doc);
+        assert!(result.is_ok());
+        let bytes = result.unwrap();
+        let magic = std::str::from_utf8(&bytes[0..6]).unwrap_or("");
+        assert_eq!(magic, "AC1014");
+    }
+
+    #[test]
+    fn test_roundtrip_file_write() {
+        let doc = CadDocument::new();
+        let mut doc2 = doc.clone();
+        doc2.version = DxfVersion::AC1015;
+
+        let bytes = DwgWriter::write_to_vec(&doc2).unwrap();
+        // Verify non-trivial output
+        assert!(bytes.len() > 200, "DWG file should be non-trivial");
+    }
+
+    #[test]
+    fn test_prepare_header_syncs_null_handles() {
+        // Simulate the bug: create a document and zero out all header handles
+        // (as would happen after reading a DWG with a broken header reader).
+        let mut doc = CadDocument::new();
+        doc.version = DxfVersion::AC1015;
+
+        // Save correct handles for later verification
+        let correct_block_control = doc.block_records.handle();
+        let correct_layer_control = doc.layers.handle();
+        let correct_style_control = doc.text_styles.handle();
+        let correct_ltype_control = doc.line_types.handle();
+        let correct_view_control = doc.views.handle();
+        let correct_ucs_control = doc.ucss.handle();
+        let correct_vport_control = doc.vports.handle();
+        let correct_appid_control = doc.app_ids.handle();
+        let correct_dimstyle_control = doc.dim_styles.handle();
+        let correct_root_dict = doc.header.named_objects_dict_handle;
+
+        // Zero out all header handles (simulate the reader bug)
+        doc.header.block_control_handle = Handle::NULL;
+        doc.header.layer_control_handle = Handle::NULL;
+        doc.header.style_control_handle = Handle::NULL;
+        doc.header.linetype_control_handle = Handle::NULL;
+        doc.header.view_control_handle = Handle::NULL;
+        doc.header.ucs_control_handle = Handle::NULL;
+        doc.header.vport_control_handle = Handle::NULL;
+        doc.header.appid_control_handle = Handle::NULL;
+        doc.header.dimstyle_control_handle = Handle::NULL;
+        doc.header.named_objects_dict_handle = Handle::NULL;
+        doc.header.acad_group_dict_handle = Handle::NULL;
+        doc.header.acad_mlinestyle_dict_handle = Handle::NULL;
+        doc.header.acad_layout_dict_handle = Handle::NULL;
+        doc.header.bylayer_linetype_handle = Handle::NULL;
+        doc.header.byblock_linetype_handle = Handle::NULL;
+        doc.header.continuous_linetype_handle = Handle::NULL;
+        doc.header.current_layer_handle = Handle::NULL;
+        doc.header.current_text_style_handle = Handle::NULL;
+        doc.header.current_dimstyle_handle = Handle::NULL;
+        doc.header.current_linetype_handle = Handle::NULL;
+
+        // prepare_header should sync all handles from document objects
+        let handle_map = vec![(1u64, 0u32), (2, 100), (3, 200)]; // dummy
+        let prepared = prepare_header(&doc, &handle_map, &None);
+
+        // Table control handles must be synced from the actual table objects
+        assert_eq!(prepared.block_control_handle, correct_block_control,
+            "block_control_handle should be synced from block_records.handle()");
+        assert_eq!(prepared.layer_control_handle, correct_layer_control,
+            "layer_control_handle should be synced from layers.handle()");
+        assert_eq!(prepared.style_control_handle, correct_style_control,
+            "style_control_handle should be synced from text_styles.handle()");
+        assert_eq!(prepared.linetype_control_handle, correct_ltype_control,
+            "linetype_control_handle should be synced from line_types.handle()");
+        assert_eq!(prepared.view_control_handle, correct_view_control,
+            "view_control_handle should be synced from views.handle()");
+        assert_eq!(prepared.ucs_control_handle, correct_ucs_control,
+            "ucs_control_handle should be synced from ucss.handle()");
+        assert_eq!(prepared.vport_control_handle, correct_vport_control,
+            "vport_control_handle should be synced from vports.handle()");
+        assert_eq!(prepared.appid_control_handle, correct_appid_control,
+            "appid_control_handle should be synced from app_ids.handle()");
+        assert_eq!(prepared.dimstyle_control_handle, correct_dimstyle_control,
+            "dimstyle_control_handle should be synced from dim_styles.handle()");
+
+        // Root dictionary must be found
+        assert_eq!(prepared.named_objects_dict_handle, correct_root_dict,
+            "named_objects_dict_handle should be found by scanning objects");
+        assert!(!prepared.named_objects_dict_handle.is_null(),
+            "named_objects_dict_handle must not be NULL");
+
+        // Dict handles from root dict entries must be resolved
+        assert!(!prepared.acad_group_dict_handle.is_null(),
+            "acad_group_dict_handle must be resolved from root dict");
+        assert!(!prepared.acad_mlinestyle_dict_handle.is_null(),
+            "acad_mlinestyle_dict_handle must be resolved from root dict");
+        assert!(!prepared.acad_layout_dict_handle.is_null(),
+            "acad_layout_dict_handle must be resolved from root dict");
+
+        // Linetype handles must be resolved
+        assert!(!prepared.bylayer_linetype_handle.is_null(),
+            "bylayer_linetype_handle must be resolved");
+        assert!(!prepared.byblock_linetype_handle.is_null(),
+            "byblock_linetype_handle must be resolved");
+        assert!(!prepared.continuous_linetype_handle.is_null(),
+            "continuous_linetype_handle must be resolved");
+
+        // Current style handles must be resolved
+        assert!(!prepared.current_layer_handle.is_null(),
+            "current_layer_handle must be resolved");
+        assert!(!prepared.current_text_style_handle.is_null(),
+            "current_text_style_handle must be resolved");
+        assert!(!prepared.current_dimstyle_handle.is_null(),
+            "current_dimstyle_handle must be resolved");
+        assert!(!prepared.current_linetype_handle.is_null(),
+            "current_linetype_handle must be resolved (default to ByLayer)");
+    }
+
+    #[test]
+    fn test_prepare_header_null_handles_write_produces_valid_dwg() {
+        // Simulate bug and verify the written DWG file is still valid
+        let mut doc = CadDocument::new();
+        doc.version = DxfVersion::AC1015;
+
+        // Zero out all header handles
+        doc.header.block_control_handle = Handle::NULL;
+        doc.header.layer_control_handle = Handle::NULL;
+        doc.header.named_objects_dict_handle = Handle::NULL;
+
+        // Writing should succeed (prepare_header syncs handles)
+        let result = DwgWriter::write_to_vec(&doc);
+        assert!(result.is_ok(), "Writing with NULL headers should succeed after sync");
+        let bytes = result.unwrap();
+        assert!(bytes.len() > 200, "Output should be non-trivial");
+    }
+
+    // ── File-level DWG roundtrip tests for 3DSOLID / REGION / BODY ──
+
+    fn make_sat_sample() -> &'static str {
+        "700 0 1 0\n\
+         @7 unknown 12 ACIS 7.0 NT 24 Wed Jan 01 00:00:00 2025 1.0 9.9999999999999995e-007 1e-010\n\
+         body $-1 $1 $-1 $-1 #\n\
+         lump $-1 $-1 $2 $0 #\n\
+         shell $-1 $-1 $-1 $3 $-1 $1 #\n\
+         face $-1 $-1 $-1 $4 $2 $5 forward single #\n\
+         loop $-1 $-1 $6 $3 #\n\
+         plane-surface $-1 0 0 5 0 0 1 1 0 0 forward_v I I I I #\n\
+         coedge $-1 $6 $6 $-1 $7 forward $4 $-1 #\n\
+         edge $-1 $8 0 $8 1 $6 $9 forward #\n\
+         vertex $-1 $7 $10 #\n\
+         straight-curve $-1 -5 -5 5 1 0 0 I I #\n\
+         point $-1 -5 -5 5 #\n\
+         End-of-ACIS-data\n"
+    }
+
+    /// Write a Solid3D with SAT data to DWG R2000, read back, verify SAT preserved.
+    #[test]
+    fn test_roundtrip_solid3d_r2000() {
+        use crate::entities::solid3d::Solid3D;
+        use crate::entities::EntityType;
+        use crate::io::dwg::DwgReader;
+
+        let mut doc = CadDocument::new();
+        doc.version = DxfVersion::AC1015;
+        let solid = Solid3D::from_sat(make_sat_sample());
+        let _ = doc.add_entity(EntityType::Solid3D(solid));
+
+        let bytes = DwgWriter::write_to_vec(&doc).expect("write R2000 should succeed");
+        assert!(bytes.len() > 200);
+
+        let mut reader = DwgReader::from_stream(std::io::Cursor::new(bytes));
+        let doc2 = reader.read().expect("read R2000 should succeed");
+
+        let solids: Vec<&Solid3D> = doc2.entities().filter_map(|e| {
+            if let EntityType::Solid3D(s) = e { Some(s) } else { None }
+        }).collect();
+        assert_eq!(solids.len(), 1, "should have exactly one Solid3D");
+        assert!(!solids[0].acis_data.is_binary, "R2000 should use SAT text");
+        assert!(solids[0].acis_data.sat_data.contains("body"), "SAT data must contain 'body'");
+        assert!(solids[0].acis_data.sat_data.contains("plane-surface"), "SAT data must contain 'plane-surface'");
+    }
+
+    /// Write a Solid3D with SAT data to DWG R2004, read back, verify SAT preserved.
+    #[test]
+    fn test_roundtrip_solid3d_r2004() {
+        use crate::entities::solid3d::Solid3D;
+        use crate::entities::EntityType;
+        use crate::io::dwg::DwgReader;
+
+        let mut doc = CadDocument::new();
+        doc.version = DxfVersion::AC1018;
+        let solid = Solid3D::from_sat(make_sat_sample());
+        let _ = doc.add_entity(EntityType::Solid3D(solid));
+
+        let bytes = DwgWriter::write_to_vec(&doc).expect("write R2004 should succeed");
+        assert!(bytes.len() > 200);
+
+        let mut reader = DwgReader::from_stream(std::io::Cursor::new(bytes));
+        let doc2 = reader.read().expect("read R2004 should succeed");
+
+        let solids: Vec<&Solid3D> = doc2.entities().filter_map(|e| {
+            if let EntityType::Solid3D(s) = e { Some(s) } else { None }
+        }).collect();
+        assert_eq!(solids.len(), 1, "should have exactly one Solid3D");
+        assert!(!solids[0].acis_data.is_binary, "R2004 should use SAT text");
+        assert!(solids[0].acis_data.sat_data.contains("body"));
+    }
+
+    /// Write a Solid3D with SAT data to DWG R2007 (SAB binary format), read back.
+    #[test]
+    fn test_roundtrip_solid3d_r2007() {
+        use crate::entities::solid3d::Solid3D;
+        use crate::entities::EntityType;
+        use crate::io::dwg::DwgReader;
+
+        let mut doc = CadDocument::new();
+        doc.version = DxfVersion::AC1021;
+        let solid = Solid3D::from_sat(make_sat_sample());
+        let _ = doc.add_entity(EntityType::Solid3D(solid));
+
+        let bytes = DwgWriter::write_to_vec(&doc).expect("write R2007 should succeed");
+        assert!(bytes.len() > 200);
+
+        let mut reader = DwgReader::from_stream(std::io::Cursor::new(bytes));
+        let doc2 = reader.read().expect("read R2007 should succeed");
+
+        let solids: Vec<&Solid3D> = doc2.entities().filter_map(|e| {
+            if let EntityType::Solid3D(s) = e { Some(s) } else { None }
+        }).collect();
+        assert_eq!(solids.len(), 1, "should have exactly one Solid3D");
+        // R2007 should use SAT text format since we provided SAT text —
+        // the version in acis_data controls what's written, not the DWG version alone.
+        assert!(solids[0].acis_data.has_data(), "should have ACIS data");
+    }
+
+    /// Write a Region with SAT data to DWG R2000, read back.
+    #[test]
+    fn test_roundtrip_region_r2000() {
+        use crate::entities::solid3d::Region;
+        use crate::entities::EntityType;
+        use crate::io::dwg::DwgReader;
+
+        let mut doc = CadDocument::new();
+        doc.version = DxfVersion::AC1015;
+        let region = Region::from_sat(make_sat_sample());
+        let _ = doc.add_entity(EntityType::Region(region));
+
+        let bytes = DwgWriter::write_to_vec(&doc).expect("write R2000 should succeed");
+
+        let mut reader = DwgReader::from_stream(std::io::Cursor::new(bytes));
+        let doc2 = reader.read().expect("read R2000 should succeed");
+
+        let regions: Vec<&Region> = doc2.entities().filter_map(|e| {
+            if let EntityType::Region(r) = e { Some(r) } else { None }
+        }).collect();
+        assert_eq!(regions.len(), 1, "should have exactly one Region");
+        assert!(regions[0].acis_data.sat_data.contains("body"));
+    }
+
+    /// Write a Body with SAT data to DWG R2004, read back.
+    #[test]
+    fn test_roundtrip_body_r2004() {
+        use crate::entities::solid3d::Body;
+        use crate::entities::EntityType;
+        use crate::io::dwg::DwgReader;
+
+        let mut doc = CadDocument::new();
+        doc.version = DxfVersion::AC1018;
+        let body = Body::from_sat(make_sat_sample());
+        let _ = doc.add_entity(EntityType::Body(body));
+
+        let bytes = DwgWriter::write_to_vec(&doc).expect("write R2004 should succeed");
+
+        let mut reader = DwgReader::from_stream(std::io::Cursor::new(bytes));
+        let doc2 = reader.read().expect("read R2004 should succeed");
+
+        let bodies: Vec<&Body> = doc2.entities().filter_map(|e| {
+            if let EntityType::Body(b) = e { Some(b) } else { None }
+        }).collect();
+        assert_eq!(bodies.len(), 1, "should have exactly one Body");
+        assert!(bodies[0].acis_data.sat_data.contains("body"));
+    }
+
+    /// Write multiple ACIS entities to a single DWG at R2010, read back all three.
+    #[test]
+    fn test_roundtrip_mixed_acis_r2010() {
+        use crate::entities::solid3d::{Solid3D, Region, Body};
+        use crate::entities::EntityType;
+        use crate::io::dwg::DwgReader;
+
+        let mut doc = CadDocument::new();
+        doc.version = DxfVersion::AC1024;
+
+        let _ = doc.add_entity(EntityType::Solid3D(Solid3D::from_sat(make_sat_sample())));
+        let _ = doc.add_entity(EntityType::Region(Region::from_sat(make_sat_sample())));
+        let _ = doc.add_entity(EntityType::Body(Body::from_sat(make_sat_sample())));
+
+        let bytes = DwgWriter::write_to_vec(&doc).expect("write R2010 should succeed");
+
+        let mut reader = DwgReader::from_stream(std::io::Cursor::new(bytes));
+        let doc2 = reader.read().expect("read R2010 should succeed");
+
+        let n_solid = doc2.entities().filter(|e| matches!(e, EntityType::Solid3D(_))).count();
+        let n_region = doc2.entities().filter(|e| matches!(e, EntityType::Region(_))).count();
+        let n_body = doc2.entities().filter(|e| matches!(e, EntityType::Body(_))).count();
+        assert_eq!(n_solid, 1, "should have 1 Solid3D");
+        assert_eq!(n_region, 1, "should have 1 Region");
+        assert_eq!(n_body, 1, "should have 1 Body");
+
+        // Verify data integrity on each
+        for e in doc2.entities() {
+            match e {
+                EntityType::Solid3D(s) => assert!(s.acis_data.sat_data.contains("body")),
+                EntityType::Region(r) => assert!(r.acis_data.sat_data.contains("body")),
+                EntityType::Body(b) => assert!(b.acis_data.sat_data.contains("body")),
+                _ => {}
+            }
+        }
+    }
+}

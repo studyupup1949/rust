@@ -1,0 +1,17 @@
+load("@buckal//:wrapper.bzl", "rust_library")
+
+rust_library(
+    name = "accn_gyro_mag_collection",
+    srcs = glob(["**/*.rs"]),
+    crate = "accn_gyro_mag_collection",
+    crate_root = "src/lib.rs",
+    edition = "2024",
+    features = ["default"],
+
+    visibility = ["PUBLIC"],
+    deps = [
+        "//third-party/rust/crates/embedded-hal/1.0.0:embedded_hal",
+        "//third-party/rust/crates/nalgebra/0.33.3:nalgebra",
+        "//third-party/rust/crates/ufmt/0.2.0:ufmt",
+    ],
+)

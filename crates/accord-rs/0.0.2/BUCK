@@ -1,0 +1,19 @@
+load("@buckal//:wrapper.bzl", "rust_library")
+
+rust_library(
+    name = "accord",
+    srcs = glob(["**/*.rs"]),
+    crate = "accord",
+    crate_root = "src/lib.rs",
+    edition = "2021",
+
+    visibility = ["PUBLIC"],
+    deps = [
+        "//third-party/rust/crates/clap/4.6.6:clap",
+        "//third-party/rust/crates/counter/0.6.0:counter",
+        "//third-party/rust/crates/itertools/0.13.0:itertools",
+        "//third-party/rust/crates/log/0.4.33:log",
+        "//third-party/rust/crates/pyo3/0.22.6:pyo3",
+        "//third-party/rust/crates/rust-htslib/0.46.0:rust_htslib",
+    ],
+)

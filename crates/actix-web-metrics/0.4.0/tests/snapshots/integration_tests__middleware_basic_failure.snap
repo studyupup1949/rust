@@ -1,0 +1,172 @@
+---
+source: tests/integration_tests.rs
+expression: snapshot
+---
+Snapshot(
+    [
+        (
+            CompositeKey(
+                Gauge,
+                Key {
+                    name: KeyName(
+                        "http.server.active_requests",
+                    ),
+                    labels: [
+                        Label(
+                            "http.request.method",
+                            "GET",
+                        ),
+                        Label(
+                            "url.scheme",
+                            "http",
+                        ),
+                    ],
+                    hashed: true,
+                    hash: 1764143306982493858,
+                },
+            ),
+            None,
+            Some(
+                "Number of active HTTP server requests.",
+            ),
+            Gauge(
+                0.0,
+            ),
+        ),
+        (
+            CompositeKey(
+                Histogram,
+                Key {
+                    name: KeyName(
+                        "http.server.request.duration",
+                    ),
+                    labels: [
+                        Label(
+                            "http.route",
+                            "/health_checkz",
+                        ),
+                        Label(
+                            "http.request.method",
+                            "GET",
+                        ),
+                        Label(
+                            "http.response.status_code",
+                            "404",
+                        ),
+                        Label(
+                            "network.protocol.name",
+                            "http",
+                        ),
+                        Label(
+                            "network.protocol.version",
+                            "1.1",
+                        ),
+                    ],
+                    hashed: true,
+                    hash: 25129047093963930,
+                },
+            ),
+            Some(
+                Seconds,
+            ),
+            Some(
+                "HTTP request duration in seconds for all requests",
+            ),
+            Histogram(
+                [
+                    [VALUE],
+                ],
+            ),
+        ),
+        (
+            CompositeKey(
+                Histogram,
+                Key {
+                    name: KeyName(
+                        "http.server.request.body.size",
+                    ),
+                    labels: [
+                        Label(
+                            "http.route",
+                            "/health_checkz",
+                        ),
+                        Label(
+                            "http.request.method",
+                            "GET",
+                        ),
+                        Label(
+                            "http.response.status_code",
+                            "404",
+                        ),
+                        Label(
+                            "network.protocol.name",
+                            "http",
+                        ),
+                        Label(
+                            "network.protocol.version",
+                            "1.1",
+                        ),
+                    ],
+                    hashed: true,
+                    hash: 4503426486413587047,
+                },
+            ),
+            Some(
+                Bytes,
+            ),
+            Some(
+                "HTTP request size in bytes for all requests",
+            ),
+            Histogram(
+                [
+                    0.0,
+                ],
+            ),
+        ),
+        (
+            CompositeKey(
+                Histogram,
+                Key {
+                    name: KeyName(
+                        "http.server.response.body.size",
+                    ),
+                    labels: [
+                        Label(
+                            "http.route",
+                            "/health_checkz",
+                        ),
+                        Label(
+                            "http.request.method",
+                            "GET",
+                        ),
+                        Label(
+                            "http.response.status_code",
+                            "404",
+                        ),
+                        Label(
+                            "network.protocol.name",
+                            "http",
+                        ),
+                        Label(
+                            "network.protocol.version",
+                            "1.1",
+                        ),
+                    ],
+                    hashed: true,
+                    hash: 16607261531665141877,
+                },
+            ),
+            Some(
+                Bytes,
+            ),
+            Some(
+                "HTTP response size in bytes for all requests",
+            ),
+            Histogram(
+                [
+                    0.0,
+                ],
+            ),
+        ),
+    ],
+)

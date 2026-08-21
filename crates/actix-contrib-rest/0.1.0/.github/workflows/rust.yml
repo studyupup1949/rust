@@ -1,0 +1,25 @@
+name: Rust
+
+on: [push, pull_request]
+
+env:
+  CARGO_TERM_COLOR: always
+
+jobs:
+  build:
+
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v3
+    - uses: Swatinem/rust-cache@v2
+    - name: Build without features
+      run: make build
+    - name: Build with all features
+      run: make all
+    - name: Lint
+      run: make lint
+    - name: Tests
+      run: make test
+    - name: Docs
+      run: make docs

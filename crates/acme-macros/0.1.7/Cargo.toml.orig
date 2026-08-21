@@ -1,0 +1,25 @@
+[package]
+authors = ["FL03 <jo3mccain@icloud.com>"]
+description = "Procedural macros created to support Acme, an all-in-one blockchain toolkit"
+edition = "2021"
+keywords = ["blockchain", "toolkit"]
+name = "acme-macros"
+license = "MIT"
+readme = "README.md"
+repository = "https://github.com/FL03/acme/crates/macros"
+version = "0.1.7" # TODO - Current Release v0.1.6
+
+[lib]
+bench = false
+proc-macro = true
+test = true
+
+[features]
+default = []
+
+[[test]]
+name = "test"
+path = "tests/test.rs"
+test = true
+
+[dependencies]

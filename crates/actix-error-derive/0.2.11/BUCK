@@ -1,0 +1,22 @@
+load("@buckal//:wrapper.bzl", "rust_library")
+
+rust_library(
+    name = "actix_error_derive",
+    srcs = glob(["**/*.rs"]),
+    crate = "actix_error_derive",
+    crate_root = "src/lib.rs",
+    edition = "2021",
+    proc_macro = True,
+
+    visibility = ["PUBLIC"],
+    deps = [
+        "//third-party/rust/crates/actix-web/4.14.1:actix_web",
+        "//third-party/rust/crates/convert_case/0.8.0:convert_case",
+        "//third-party/rust/crates/darling/0.20.11:darling",
+        "//third-party/rust/crates/proc-macro2/1.0.107:proc_macro2",
+        "//third-party/rust/crates/quote/1.0.47:quote",
+        "//third-party/rust/crates/serde/1.0.229:serde",
+        "//third-party/rust/crates/serde_json/1.0.151:serde_json",
+        "//third-party/rust/crates/syn/2.0.119:syn",
+    ],
+)

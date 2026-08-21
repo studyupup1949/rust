@@ -1,0 +1,7 @@
+{
+  "git": {
+    "sha1": "00db3b44678c6c8cb8858afb9985f6060968f179",
+    "dirty": true
+  },
+  "path_in_vcs": "sdks/rust/core"
+}

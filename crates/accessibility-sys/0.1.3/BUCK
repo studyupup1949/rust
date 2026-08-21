@@ -1,0 +1,14 @@
+load("@buckal//:wrapper.bzl", "rust_library")
+
+rust_library(
+    name = "accessibility_sys",
+    srcs = glob(["**/*.rs"]),
+    crate = "accessibility_sys",
+    crate_root = "src/lib.rs",
+    edition = "2018",
+
+    visibility = ["PUBLIC"],
+    deps = [
+        "//third-party/rust/crates/core-foundation-sys/0.8.7:core_foundation_sys",
+    ],
+)

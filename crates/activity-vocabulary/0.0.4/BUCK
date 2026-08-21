@@ -1,0 +1,18 @@
+load("@buckal//:wrapper.bzl", "rust_library")
+
+rust_library(
+    name = "activity_vocabulary",
+    srcs = glob(["**/*.rs"]),
+    crate = "activity_vocabulary",
+    crate_root = "src/lib.rs",
+    edition = "2021",
+
+    visibility = ["PUBLIC"],
+    deps = [
+        "//third-party/rust/crates/activity-vocabulary-core/0.0.4:activity_vocabulary_core",
+        "//third-party/rust/crates/serde-value/0.7.0:serde_value",
+        "//third-party/rust/crates/serde/1.0.229:serde",
+        "//third-party/rust/crates/typed-builder/0.18.2:typed_builder",
+        "//third-party/rust/crates/url/2.5.8:url",
+    ],
+)

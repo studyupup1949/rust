@@ -1,0 +1,26 @@
+[package]
+name        = "accelerometer"
+version     = "0.10.0" # Also update html_root_url in lib.rs when bumping this
+description = """
+Generic, embedded-friendly accelerometer support, including
+traits and types for taking readings from 2 or 3-axis
+accelerometers and tracking device orientations.
+"""
+authors     = ["Tony Arcieri <bascule@gmail.com>"]
+license     = "Apache-2.0 OR MIT"
+repository  = "https://github.com/NeoBirth/accelerometer.rs"
+readme      = "README.md"
+edition     = "2018"
+categories  = ["embedded", "hardware-support", "no-std"]
+keywords    = ["acceleration", "position", "tracking"]
+
+[badges]
+maintenance = { status = "passively-maintained" }
+
+[dependencies.micromath]
+version = "1"
+features = ["vector"]
+
+[features]
+default = ["orientation"]
+orientation = []

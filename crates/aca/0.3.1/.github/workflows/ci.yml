@@ -1,0 +1,141 @@
+name: CI
+
+on:
+  push:
+    branches: [ master, main ]
+  pull_request:
+    branches: [ master, main ]
+  workflow_dispatch:
+
+env:
+  CARGO_TERM_COLOR: always
+
+jobs:
+  test:
+    name: Test Suite
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Install Rust
+      uses: dtolnay/rust-toolchain@stable
+      with:
+        components: rustfmt, clippy
+
+    - name: Cache Rust dependencies and build artifacts
+      uses: Swatinem/rust-cache@v2
+
+    - name: Run tests (unit + integration, excluding Claude and Codex tests)
+      run: cargo test --verbose --lib -- --skip "::claude::test" --skip "::openai_codex::" && cargo test --verbose --test cli_functionality --test config_generation_integration --test config_toml_integration
+
+    - name: Run tests with all features (unit + integration, excluding Claude and Codex tests)
+      run: cargo test --verbose --all-features --lib -- --skip "::claude::test" --skip "::openai_codex::" && cargo test --verbose --all-features --test cli_functionality --test config_generation_integration --test config_toml_integration
+
+  claude-integration-tests:
+    name: Claude Integration Tests
+    runs-on: ubuntu-latest
+    # Only run on manual dispatch or when explicitly requested
+    if: github.event_name == 'workflow_dispatch' || contains(github.event.head_commit.message, '[run-claude-tests]')
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Install Rust
+      uses: dtolnay/rust-toolchain@stable
+      with:
+        components: rustfmt, clippy
+
+    - name: Cache Rust dependencies and build artifacts
+      uses: Swatinem/rust-cache@v2
+
+    - name: Check Claude CLI availability
+      run: |
+        if ! command -v claude &> /dev/null; then
+          echo "⚠️  Claude CLI not available in CI environment"
+          echo "Claude integration tests require the Claude CLI to be installed"
+          exit 1
+        fi
+
+    - name: Run Claude integration tests
+      run: cargo test --verbose --test setup_commands_integration --test backup_strategy_integration --test error_handling_integration --test claude_integration
+      env:
+        # Add any required environment variables for Claude tests
+        RUST_LOG: info
+
+  lint:
+    name: Linting
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Install Rust
+      uses: dtolnay/rust-toolchain@stable
+      with:
+        components: rustfmt, clippy
+
+    - name: Cache Rust dependencies and build artifacts
+      uses: Swatinem/rust-cache@v2
+
+    - name: Check formatting
+      run: cargo fmt --all -- --check
+
+    - name: Run clippy
+      run: cargo clippy --all-targets --all-features -- -D warnings
+
+    - name: Check documentation
+      run: cargo doc --no-deps --document-private-items --all-features
+      env:
+        RUSTDOCFLAGS: -D warnings
+
+  security:
+    name: Security Audit
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Install Rust
+      uses: dtolnay/rust-toolchain@stable
+
+    - name: Install cargo-audit
+      run: cargo install cargo-audit
+
+    - name: Run security audit
+      run: cargo audit
+
+
+  build:
+    name: Build Check
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [ubuntu-latest, windows-latest, macos-latest]
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Install Rust
+      uses: dtolnay/rust-toolchain@stable
+
+    - name: Cache Rust dependencies and build artifacts
+      uses: Swatinem/rust-cache@v2
+
+    - name: Check build
+      run: cargo check --verbose
+
+    - name: Build
+      run: cargo build --verbose
+
+    - name: Build release
+      run: cargo build --verbose --release
+
+  minimum-rust-version:
+    name: Minimum Rust Version
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Install Rust 1.90 (minimum supported)
+      uses: dtolnay/rust-toolchain@master
+      with:
+        toolchain: 1.90.0
+
+    - name: Check with minimum Rust version
+      run: cargo check --verbose

@@ -1,0 +1,10 @@
+[package]
+name = "activation"
+version = "0.1.0"
+authors = ["Joseph Mark <sjeohp@gmail.com>"]
+license = "MIT"
+description = "various activation functions"
+repository = "https://github.com/sjeohp/activation.git"
+keywords = ["activation", "sigmoid", "softplus", "tanh"]
+
+[dependencies]

@@ -1,0 +1,481 @@
+{
+  "generated_at": "2025-10-03 21:53:38",
+  "bodies": [
+    {
+      "name": "AcmeFaucetBody",
+      "wire": "acmeFaucet",
+      "fields": [
+        {
+          "name": "Url",
+          "type": "url",
+          "required": true,
+          "repeatable": false
+        }
+      ]
+    },
+    {
+      "name": "ActivateProtocolVersionBody",
+      "wire": "activateProtocolVersion",
+      "fields": [
+        {
+          "name": "Version",
+          "type": "ExecutorVersion",
+          "required": false,
+          "repeatable": false
+        }
+      ]
+    },
+    {
+      "name": "AddCreditsBody",
+      "wire": "addCredits",
+      "fields": [
+        {
+          "name": "Recipient",
+          "type": "url",
+          "required": true,
+          "repeatable": false
+        },
+        {
+          "name": "Amount",
+          "type": "bigint",
+          "required": true,
+          "repeatable": false
+        },
+        {
+          "name": "Oracle",
+          "type": "uvarint",
+          "required": true,
+          "repeatable": false
+        }
+      ]
+    },
+    {
+      "name": "BlockValidatorAnchorBody",
+      "wire": "blockValidatorAnchor",
+      "fields": [
+        {
+          "name": "AcmeBurnt",
+          "type": "bigint",
+          "required": true,
+          "repeatable": false
+        }
+      ]
+    },
+    {
+      "name": "BurnCreditsBody",
+      "wire": "burnCredits",
+      "fields": [
+        {
+          "name": "Amount",
+          "type": "uint",
+          "required": true,
+          "repeatable": false
+        }
+      ]
+    },
+    {
+      "name": "BurnTokensBody",
+      "wire": "burnTokens",
+      "fields": [
+        {
+          "name": "Amount",
+          "type": "bigint",
+          "required": true,
+          "repeatable": false
+        }
+      ]
+    },
+    {
+      "name": "CreateDataAccountBody",
+      "wire": "createDataAccount",
+      "fields": [
+        {
+          "name": "Url",
+          "type": "url",
+          "required": true,
+          "repeatable": false
+        },
+        {
+          "name": "Authorities",
+          "type": "url",
+          "required": false,
+          "repeatable": true
+        }
+      ]
+    },
+    {
+      "name": "CreateIdentityBody",
+      "wire": "createIdentity",
+      "fields": [
+        {
+          "name": "Url",
+          "type": "url",
+          "required": true,
+          "repeatable": false
+        },
+        {
+          "name": "KeyHash",
+          "type": "bytes",
+          "required": false,
+          "repeatable": false
+        },
+        {
+          "name": "KeyBookUrl",
+          "type": "url",
+          "required": false,
+          "repeatable": false
+        },
+        {
+          "name": "Authorities",
+          "type": "url",
+          "required": false,
+          "repeatable": true
+        }
+      ]
+    },
+    {
+      "name": "CreateKeyBookBody",
+      "wire": "createKeyBook",
+      "fields": [
+        {
+          "name": "Url",
+          "type": "url",
+          "required": true,
+          "repeatable": false
+        },
+        {
+          "name": "PublicKeyHash",
+          "type": "bytes",
+          "required": true,
+          "repeatable": false
+        },
+        {
+          "name": "Authorities",
+          "type": "url",
+          "required": false,
+          "repeatable": true
+        }
+      ]
+    },
+    {
+      "name": "CreateKeyPageBody",
+      "wire": "createKeyPage",
+      "fields": [
+        {
+          "name": "Keys",
+          "type": "KeySpecParams",
+          "required": true,
+          "repeatable": true
+        }
+      ]
+    },
+    {
+      "name": "CreateLiteTokenAccountBody",
+      "wire": "createLiteTokenAccount",
+      "fields": []
+    },
+    {
+      "name": "CreateTokenBody",
+      "wire": "createToken",
+      "fields": [
+        {
+          "name": "Url",
+          "type": "url",
+          "required": true,
+          "repeatable": false
+        },
+        {
+          "name": "Symbol",
+          "type": "string",
+          "required": true,
+          "repeatable": false
+        },
+        {
+          "name": "Precision",
+          "type": "uvarint",
+          "required": true,
+          "repeatable": false
+        },
+        {
+          "name": "Properties",
+          "type": "url",
+          "required": false,
+          "repeatable": false
+        },
+        {
+          "name": "SupplyLimit",
+          "type": "bigint",
+          "required": false,
+          "repeatable": false
+        },
+        {
+          "name": "Authorities",
+          "type": "url",
+          "required": false,
+          "repeatable": true
+        }
+      ]
+    },
+    {
+      "name": "CreateTokenAccountBody",
+      "wire": "createTokenAccount",
+      "fields": [
+        {
+          "name": "Url",
+          "type": "url",
+          "required": true,
+          "repeatable": false
+        },
+        {
+          "name": "TokenUrl",
+          "type": "url",
+          "required": true,
+          "repeatable": false
+        },
+        {
+          "name": "Authorities",
+          "type": "url",
+          "required": false,
+          "repeatable": true
+        },
+        {
+          "name": "Proof",
+          "type": "TokenIssuerProof",
+          "required": false,
+          "repeatable": false
+        }
+      ]
+    },
+    {
+      "name": "DirectoryAnchorBody",
+      "wire": "directoryAnchor",
+      "fields": [
+        {
+          "name": "Updates",
+          "type": "NetworkAccountUpdate",
+          "required": true,
+          "repeatable": true
+        },
+        {
+          "name": "Receipts",
+          "type": "PartitionAnchorReceipt",
+          "required": true,
+          "repeatable": true
+        },
+        {
+          "name": "MakeMajorBlock",
+          "type": "uint",
+          "required": true,
+          "repeatable": false
+        },
+        {
+          "name": "MakeMajorBlockTime",
+          "type": "time",
+          "required": true,
+          "repeatable": false
+        }
+      ]
+    },
+    {
+      "name": "IssueTokensBody",
+      "wire": "issueTokens",
+      "fields": [
+        {
+          "name": "Recipient",
+          "type": "url",
+          "required": true,
+          "repeatable": false
+        },
+        {
+          "name": "Amount",
+          "type": "bigint",
+          "required": true,
+          "repeatable": false
+        },
+        {
+          "name": "To",
+          "type": "TokenRecipient",
+          "required": true,
+          "repeatable": true
+        }
+      ]
+    },
+    {
+      "name": "LockAccountBody",
+      "wire": "lockAccount",
+      "fields": [
+        {
+          "name": "Height",
+          "type": "uint",
+          "required": true,
+          "repeatable": false
+        }
+      ]
+    },
+    {
+      "name": "NetworkMaintenanceBody",
+      "wire": "networkMaintenance",
+      "fields": [
+        {
+          "name": "Operations",
+          "type": "NetworkMaintenanceOperation",
+          "required": true,
+          "repeatable": true
+        }
+      ]
+    },
+    {
+      "name": "RemoteTransactionBody",
+      "wire": "remoteTransaction",
+      "fields": [
+        {
+          "name": "Hash",
+          "type": "hash",
+          "required": false,
+          "repeatable": false
+        }
+      ]
+    },
+    {
+      "name": "SendTokensBody",
+      "wire": "sendTokens",
+      "fields": [
+        {
+          "name": "Hash",
+          "type": "hash",
+          "required": false,
+          "repeatable": false
+        },
+        {
+          "name": "Meta",
+          "type": "rawJson",
+          "required": false,
+          "repeatable": false
+        },
+        {
+          "name": "To",
+          "type": "TokenRecipient",
+          "required": true,
+          "repeatable": true
+        }
+      ]
+    },
+    {
+      "name": "SystemGenesisBody",
+      "wire": "systemGenesis",
+      "fields": []
+    },
+    {
+      "name": "SystemWriteDataBody",
+      "wire": "systemWriteData",
+      "fields": [
+        {
+          "name": "Entry",
+          "type": "DataEntry",
+          "required": true,
+          "repeatable": false
+        },
+        {
+          "name": "WriteToState",
+          "type": "bool",
+          "required": false,
+          "repeatable": false
+        }
+      ]
+    },
+    {
+      "name": "TransferCreditsBody",
+      "wire": "transferCredits",
+      "fields": [
+        {
+          "name": "To",
+          "type": "CreditRecipient",
+          "required": true,
+          "repeatable": true
+        }
+      ]
+    },
+    {
+      "name": "UpdateAccountAuthBody",
+      "wire": "updateAccountAuth",
+      "fields": [
+        {
+          "name": "Operations",
+          "type": "AccountAuthOperation",
+          "required": true,
+          "repeatable": true
+        }
+      ]
+    },
+    {
+      "name": "UpdateKeyBody",
+      "wire": "updateKey",
+      "fields": [
+        {
+          "name": "NewKeyHash",
+          "type": "bytes",
+          "required": true,
+          "repeatable": false
+        }
+      ]
+    },
+    {
+      "name": "UpdateKeyPageBody",
+      "wire": "updateKeyPage",
+      "fields": [
+        {
+          "name": "Operation",
+          "type": "KeyPageOperation",
+          "required": true,
+          "repeatable": true
+        }
+      ]
+    },
+    {
+      "name": "WriteDataBody",
+      "wire": "writeData",
+      "fields": [
+        {
+          "name": "Entry",
+          "type": "DataEntry",
+          "required": true,
+          "repeatable": false
+        },
+        {
+          "name": "Scratch",
+          "type": "bool",
+          "required": false,
+          "repeatable": false
+        },
+        {
+          "name": "WriteToState",
+          "type": "bool",
+          "required": false,
+          "repeatable": false
+        }
+      ]
+    },
+    {
+      "name": "WriteDataToBody",
+      "wire": "writeDataTo",
+      "fields": [
+        {
+          "name": "Recipient",
+          "type": "url",
+          "required": true,
+          "repeatable": false
+        },
+        {
+          "name": "Entry",
+          "type": "DataEntry",
+          "required": true,
+          "repeatable": false
+        }
+      ]
+    }
+  ],
+  "enum": "TransactionBody",
+  "counts": {
+    "transactions": 27
+  }
+}

@@ -1,0 +1,37 @@
+[package]
+name = "actix-contrib-rest"
+version = "0.7.0"
+edition = "2021"
+description = "Util types and functions for REST and webapp projects built on top of the Actix Web framework"
+license = "MIT OR Apache-2.0"
+authors = [
+    "Mariano Ruiz <mrsarm@gmail.com>",
+]
+readme = "README.md"
+homepage = "https://github.com/mrsarm/rust-actix-contrib-rest"
+repository = "https://github.com/mrsarm/rust-actix-contrib-rest"
+categories = ["web-programming"]
+exclude = [
+    ".github/workflows/",
+    ".gitignore",
+    ".editorconfig",
+]
+
+[dependencies]
+actix-http = "3.3"
+actix-web = "4.3"
+actix-web-validator = "7.0"
+anyhow = "1.0"
+awc = { version = "3.8", features = ["rustls"] }
+futures-core = "0.3"
+log = "0.4"
+serde = { version = "1.0", features = ["derive"] }
+thiserror = "2.0"
+validator = { version = "0.20", features = ["derive"] }
+
+server-env-config = { version = "0.1", optional = true }
+sqlx = { version = ">=0.8", features = ["runtime-async-std", "tls-native-tls"], optional = true }
+
+[features]
+sqlx = ["dep:sqlx", "dep:server-env-config"]
+sqlx-postgres = [ "sqlx", "sqlx/postgres" ]

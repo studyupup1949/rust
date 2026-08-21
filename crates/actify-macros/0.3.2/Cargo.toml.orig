@@ -1,0 +1,15 @@
+[package]
+name = "actify-macros"
+version = "0.3.2"
+edition = "2021"
+description = "Actify's procedural macros"
+license = "MIT"
+repository = "https://github.com/AvalorAI/actify"
+
+[dependencies]
+quote = "1.0"
+syn = { version = "2.0", features = ["full"] }
+proc-macro2 = "1.0"
+
+[lib]
+proc-macro = true

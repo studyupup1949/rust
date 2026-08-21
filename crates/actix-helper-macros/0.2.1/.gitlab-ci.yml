@@ -1,0 +1,53 @@
+stages:
+  - test
+  - deploy-actix-proc-macros-dryrun
+  - deploy-actix-proc-macros
+  - deploy-actix-helper-macros-dryrun
+  - deploy-actix-helper-macros
+
+Test actix-proc-macros:
+  stage: test
+  image: rustlang/rust:nightly-slim
+  script:
+    - cd actix-proc-macros
+    - cargo test
+
+Test actix-helper-macros:
+  stage: test
+  image: rustlang/rust:nightly-slim
+  script:
+    - cargo test
+
+Test publishing actix-proc-macros:
+  stage: deploy-actix-proc-macros-dryrun
+  image: rustlang/rust:nightly-slim
+  script:
+    - cd actix-proc-macros
+    - cargo publish --dry-run
+  only:
+    - tags
+
+Push actix-proc-macros:
+  stage: deploy-actix-proc-macros
+  image: rustlang/rust:nightly-slim
+  script:
+    - sh -c 'cargo login "${CARGO_TOKEN}" && cd actix-proc-macros && cargo publish'
+  only:
+    - tags
+
+Test publishing actix-helper-macros:
+  stage: deploy-actix-helper-macros-dryrun
+  image: rustlang/rust:nightly-slim
+  script:
+    - cargo publish --dry-run
+  only:
+    - tags
+
+Push actix-hepler-macros:
+  stage: deploy-actix-helper-macros
+  image: rustlang/rust:nightly-slim
+  script:
+    - sh -c 'cargo login "${CARGO_TOKEN}" && cargo publish'
+  only:
+    - tags
+

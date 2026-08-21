@@ -1,0 +1,19 @@
+[package]
+name = "actor-system-error"
+edition = "2021"
+version = "0.3.2-alpha.3"
+authors = ["Gear Technologies"]
+description = "Errors for the actor system"
+homepage = "https://www.gear-tech.io"
+license = "GPL-3.0"
+repository = "https://github.com/gear-tech/gear"
+
+[dependencies]
+derive_more = "0.99.17"
+
+[lib]
+path = "src/lib.rs"
+name = "actor_system_error"
+edition = "2021"
+crate-type = ["rlib"]
+required-features = []

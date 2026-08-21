@@ -1,0 +1,17 @@
+load("@buckal//:wrapper.bzl", "rust_library")
+
+rust_library(
+    name = "accounts_service",
+    srcs = glob(["**/*.rs"]),
+    crate = "accounts_service",
+    crate_root = "src/lib.rs",
+    edition = "2024",
+
+    visibility = ["PUBLIC"],
+    deps = [
+        "//third-party/rust/crates/accounts-service-sys/0.1.2:accounts_service_sys",
+        "//third-party/rust/crates/glib-sys/0.21.5:glib_sys",
+        "//third-party/rust/crates/glib/0.21.5:glib",
+        "//third-party/rust/crates/libc/0.2.189:libc",
+    ],
+)

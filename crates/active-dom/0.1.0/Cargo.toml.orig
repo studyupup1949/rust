@@ -1,0 +1,143 @@
+[package]
+name = "active-dom"
+version = "0.1.0"
+edition = "2021"
+authors = ["mdmahikaishar <mahikaishar@gmail.com"]
+description = "Reactive wasm web framework in Rust."
+repository = "https://github.com/mdmahikaishar/active-dom"
+keywords = ["wasm", "web", "reactive", "signal"]
+categories = ["web", "wasm"]
+license = "MIT"
+readme = "README.md"
+include = ["examples/**", "src/**", "README.md"]
+
+[lib]
+name = "active_dom"
+path = "src/lib.rs"
+
+[[example]]
+name = "main"
+path = "examples/main.rs"
+
+
+[dependencies]
+wasm-bindgen = "0.2.91"
+web-sys = { version = "0.3.68", features = [
+  "DocumentFragment",
+  "Element",
+  "HtmlTemplateElement",
+  "NodeList",
+  "Window",
+  "console",
+  "Comment",
+  "Document",
+  "DomTokenList",
+  "Location",
+  "Range",
+  "Text",
+  "HtmlCollection",
+  "TreeWalker",
+  "HtmlElement",
+
+  # Events
+  "AnimationEvent",
+  "BeforeUnloadEvent",
+  "ClipboardEvent",
+  "CompositionEvent",
+  "CustomEvent",
+  "DeviceMotionEvent",
+  "DeviceOrientationEvent",
+  "DragEvent",
+  "ErrorEvent",
+  "Event",
+  "FocusEvent",
+  "GamepadEvent",
+  "HashChangeEvent",
+  "InputEvent",
+  "KeyboardEvent",
+  "MessageEvent",
+  "MouseEvent",
+  "PageTransitionEvent",
+  "PointerEvent",
+  "PopStateEvent",
+  "ProgressEvent",
+  "PromiseRejectionEvent",
+  "SecurityPolicyViolationEvent",
+  "StorageEvent",
+  "SubmitEvent",
+  "TouchEvent",
+  "TransitionEvent",
+  "UiEvent",
+  "WheelEvent",
+
+  # Element Types
+  "HtmlHtmlElement",
+  "HtmlBaseElement",
+  "HtmlHeadElement",
+  "HtmlLinkElement",
+  "HtmlMetaElement",
+  "HtmlStyleElement",
+  "HtmlTitleElement",
+  "HtmlBodyElement",
+  "HtmlHeadingElement",
+  "HtmlQuoteElement",
+  "HtmlDivElement",
+  "HtmlDListElement",
+  "HtmlHrElement",
+  "HtmlLiElement",
+  "HtmlOListElement",
+  "HtmlParagraphElement",
+  "HtmlPreElement",
+  "HtmlUListElement",
+  "HtmlAnchorElement",
+  "HtmlBrElement",
+  "HtmlDataElement",
+  "HtmlQuoteElement",
+  "HtmlSpanElement",
+  "HtmlTimeElement",
+  "HtmlAreaElement",
+  "HtmlAudioElement",
+  "HtmlImageElement",
+  "HtmlMapElement",
+  "HtmlTrackElement",
+  "HtmlVideoElement",
+  "HtmlEmbedElement",
+  "HtmlIFrameElement",
+  "HtmlObjectElement",
+  "HtmlParamElement",
+  "HtmlPictureElement",
+  "HtmlSourceElement",
+  "SvgElement",
+  "HtmlCanvasElement",
+  "HtmlScriptElement",
+  "HtmlModElement",
+  "HtmlTableCaptionElement",
+  "HtmlTableColElement",
+  "HtmlTableColElement",
+  "HtmlTableElement",
+  "HtmlTableSectionElement",
+  "HtmlTableCellElement",
+  "HtmlTableSectionElement",
+  "HtmlTableCellElement",
+  "HtmlTableSectionElement",
+  "HtmlTableRowElement",
+  "HtmlButtonElement",
+  "HtmlDataListElement",
+  "HtmlFieldSetElement",
+  "HtmlFormElement",
+  "HtmlInputElement",
+  "HtmlLabelElement",
+  "HtmlLegendElement",
+  "HtmlMeterElement",
+  "HtmlOptGroupElement",
+  "HtmlOutputElement",
+  "HtmlProgressElement",
+  "HtmlSelectElement",
+  "HtmlTextAreaElement",
+  "HtmlDetailsElement",
+  "HtmlDialogElement",
+  "HtmlMenuElement",
+  "HtmlSlotElement",
+  "HtmlTemplateElement",
+  "HtmlOptionElement",
+] }

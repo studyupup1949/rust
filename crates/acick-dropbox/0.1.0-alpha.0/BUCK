@@ -1,0 +1,22 @@
+load("@buckal//:wrapper.bzl", "rust_library")
+
+rust_library(
+    name = "acick_dropbox",
+    srcs = glob(["**/*.rs"]),
+    crate = "acick_dropbox",
+    crate_root = "src/lib.rs",
+    edition = "2018",
+
+    visibility = ["PUBLIC"],
+    deps = [
+        "//third-party/rust/crates/anyhow/1.0.104:anyhow",
+        "//third-party/rust/crates/dropbox-sdk/0.3.0:dropbox_sdk",
+        "//third-party/rust/crates/hyper/0.10.16:hyper",
+        "//third-party/rust/crates/hyper/0.13.10:hyper",
+        "//third-party/rust/crates/rand/0.7.3:rand",
+        "//third-party/rust/crates/serde/1.0.229:serde",
+        "//third-party/rust/crates/serde_json/1.0.151:serde_json",
+        "//third-party/rust/crates/tokio/0.2.25:tokio",
+        "//third-party/rust/crates/url/2.5.8:url",
+    ],
+)

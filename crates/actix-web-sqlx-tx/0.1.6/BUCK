@@ -1,0 +1,22 @@
+load("@buckal//:wrapper.bzl", "rust_library")
+
+rust_library(
+    name = "actix_web_sqlx_tx",
+    srcs = glob(["**/*.rs"]),
+    crate = "actix_web_sqlx_tx",
+    crate_root = "src/lib.rs",
+    edition = "2021",
+
+    visibility = ["PUBLIC"],
+    deps = [
+        "//third-party/rust/crates/actix-web/4.14.1:actix_web",
+        "//third-party/rust/crates/apistos-schemars/0.8.22:apistos_schemars",
+        "//third-party/rust/crates/apistos/0.3.6:apistos",
+        "//third-party/rust/crates/derive_more/1.0.0:derive_more",
+        "//third-party/rust/crates/scoped-futures/0.1.4:scoped_futures",
+        "//third-party/rust/crates/serde/1.0.229:serde",
+        "//third-party/rust/crates/serde_json/1.0.151:serde_json",
+        "//third-party/rust/crates/sqlx/0.8.6:sqlx",
+        "//third-party/rust/crates/validator/0.18.1:validator",
+    ],
+)

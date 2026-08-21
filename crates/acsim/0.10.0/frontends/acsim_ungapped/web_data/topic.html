@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+
+<head>
+	<title>/{{board_designation}}/ - {{topic_number}}</title>
+	<link rel="stylesheet" type="text/css" href="/web_data/css/topic.css">
+	<link rel="stylesheet" type="text/css" href="/web_data/css/generic.css">
+	<meta charset="UTF-8">
+</head>
+
+<body>
+	<div id="grid_root">
+		<!-- head message here -->
+		{{{head_message}}}
+		<div id="submessage_container">
+		{{{submessages}}}
+		</div>
+		<div id="sidebar"> <!-- technically not a sidebar, but still -->
+			<form id="message_form" enctype="multipart/form-data" action="/{{board_designation}}/topic/{{topic_number}}" method="post" autocomplete="off">
+				<textarea placeholder="Author" type="text" name="author" maxlength="62"></textarea>
+				<textarea placeholder="Message" type="text" name="message" maxlength="4093" required></textarea>
+				<input type="file" accept="image/*, .mp4, .webm" multiple name="files[]">
+				<p>
+					<input type="checkbox" name="sage"> Sage
+				</p>
+				<input type="submit" value="Submit">
+			</form>
+		</div>
+	</div>
+</body>

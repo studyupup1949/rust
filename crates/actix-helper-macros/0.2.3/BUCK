@@ -1,0 +1,16 @@
+load("@buckal//:wrapper.bzl", "rust_library")
+
+rust_library(
+    name = "actix_helper_macros",
+    srcs = glob(["**/*.rs"]),
+    crate = "actix_helper_macros",
+    crate_root = "src/lib.rs",
+    edition = "2018",
+
+    visibility = ["PUBLIC"],
+    deps = [
+        "//third-party/rust/crates/actix-proc-macros/0.2.3:actix_proc_macros",
+        "//third-party/rust/crates/actix-web/2.0.0:actix_web",
+        "//third-party/rust/crates/serde/1.0.229:serde",
+    ],
+)

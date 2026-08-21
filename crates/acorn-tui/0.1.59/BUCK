@@ -1,0 +1,21 @@
+load("@buckal//:wrapper.bzl", "rust_library")
+
+rust_library(
+    name = "acorn_tui",
+    srcs = glob(["**/*.rs"]),
+    crate = "acorn_tui",
+    crate_root = "src/lib.rs",
+    edition = "2021",
+
+    visibility = ["PUBLIC"],
+    deps = [
+        "//third-party/rust/crates/acorn-lib/0.1.70:acorn_lib",
+        "//third-party/rust/crates/chrono/0.4.45:chrono",
+        "//third-party/rust/crates/color-eyre/0.6.5:color_eyre",
+        "//third-party/rust/crates/crossterm/0.28.1:crossterm",
+        "//third-party/rust/crates/ratatui/0.30.2:ratatui",
+        "//third-party/rust/crates/serde/1.0.229:serde",
+        "//third-party/rust/crates/serde_json/1.0.151:serde_json",
+        "//third-party/rust/crates/unicode-width/0.2.2:unicode_width",
+    ],
+)

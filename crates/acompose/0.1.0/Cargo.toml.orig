@@ -1,0 +1,32 @@
+[package]
+name = "acompose"
+version = "0.1.0"
+edition = "2024"
+description = "Agent composition orchestrator built in Rust using the Agent Client Protocol (ACP)"
+license = "MIT"
+repository = "https://github.com/joe/acompose"
+keywords = ["agent", "orchestrator", "acp", "mcp", "kimi"]
+categories = ["development-tools"]
+
+[lib]
+name = "acompose"
+path = "src/lib.rs"
+
+[[bin]]
+name = "acompose"
+path = "src/main.rs"
+
+[dependencies]
+agent-client-protocol = "1.0.0"
+anyhow = "1.0.102"
+axum = "0.8"
+clap = { version = "4.6.1", features = ["derive"] }
+rmcp = { version = "1.7", features = ["server", "macros", "schemars", "transport-streamable-http-server"] }
+schemars = "0.8"
+serde = { version = "1.0.228", features = ["derive"] }
+serde_json = "1.0"
+tokio = { version = "1.52.3", features = ["full"] }
+tokio-util = "0.7"
+toml = "1.1.2"
+tracing = "0.1.44"
+tracing-subscriber = "0.3.23"

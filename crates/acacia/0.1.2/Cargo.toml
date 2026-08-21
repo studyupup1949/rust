@@ -1,0 +1,34 @@
+[package]
+name = "acacia"
+version = "0.1.2"
+authors = ["Eduard Bopp <eduard.bopp@aepsil0n.de>"]
+description = "A spatial partitioning and tree library."
+documentation = "https://docs.rs/acacia/0.1.2/acacia/"
+homepage = "https://github.com/aepsil0n/acacia"
+repository = "https://github.com/aepsil0n/acacia"
+readme = "README.md"
+keywords = ["algorithms", "math", "tree", "spatial"]
+license = "MPL-2.0"
+
+[profile.test]
+debug = false
+
+[features]
+arbitrary = ["nalgebra/arbitrary", "quickcheck"]
+
+[dependencies]
+nalgebra = "0.10"
+itertools = "0.5"
+rand = "0.3"
+num = "0.1"
+
+[dependencies.quickcheck]
+optional = true
+version = "0.2"
+
+[dev-dependencies]
+quickcheck = "0.2"
+
+[dev-dependencies.nalgebra]
+version = "0.10"
+features = ["arbitrary"]

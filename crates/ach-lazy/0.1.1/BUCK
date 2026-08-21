@@ -1,0 +1,14 @@
+load("@buckal//:wrapper.bzl", "rust_library")
+
+rust_library(
+    name = "ach_lazy",
+    srcs = glob(["**/*.rs"]),
+    crate = "ach_lazy",
+    crate_root = "src/lib.rs",
+    edition = "2018",
+
+    visibility = ["PUBLIC"],
+    deps = [
+        "//third-party/rust/crates/ach-once/0.1.7:ach_once",
+    ],
+)

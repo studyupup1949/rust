@@ -1,0 +1,21 @@
+[package]
+name = "actix-json-validator"
+version = "0.1.0"
+edition = "2021"
+license-file = "LICENSE"
+description = "A user and client-friendly JSON validator for Actix Web that automatically returns structured, nested error messages for invalid requests."
+repository = "https://github.com/lordsarcastic/actix-json-validator"
+readme = "README.md"
+keywords = ["actix", "actix-web", "json", "serde", "validation"]
+categories = ["web-programming"]
+authors = ["lordsarcastic <adeoti.15.jude@gmail.com>"]
+exclude = [".github/*", "Cargo.toml.orig"]
+
+[dependencies]
+actix-web = "4.9.0"
+serde = "1.0.218"
+serde_valid = "1.0.5"
+serde_json = "1.0.139"
+futures-util = "0.3.31"
+thiserror = "2.0.11"
+mime = "0.3.17"

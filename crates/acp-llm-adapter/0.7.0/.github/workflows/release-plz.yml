@@ -1,0 +1,101 @@
+# Release-plz: automated Rust crate releases
+#
+# Two jobs:
+#   1. release-plz-pr     — Opens/updates a release PR with version bumps and
+#                           changelog entries based on conventional commits.
+#   2. release-plz-release — When the release PR is merged, publishes to
+#                           crates.io and creates a GitHub release + git tag.
+#
+# Tag format: v<version>  (e.g. v0.7.0) — single-crate repo, so release-plz
+# uses the bare `v{version}` tag, not the `<crate_name>-v<version>` workspace form.
+#
+# ---------------------------------------------------------------------------
+# PREREQUISITES (one-time setup)
+# ---------------------------------------------------------------------------
+#
+# A. GitHub Actions permissions
+#    Go to: https://github.com/euri10/acp-llm-adapter/settings/actions
+#    Under "Workflow permissions", select:
+#      ☑ Read and write permissions
+#      ☑ Allow GitHub Actions to create and approve pull requests
+#
+# B. crates.io Trusted Publishing (OIDC)
+#    Release-plz obtains a short-lived token via OIDC when `id-token: write`
+#    is present on the job. No static secrets needed.
+#
+#    NOTE: Trusted Publishing is configured per-crate and cannot bootstrap a
+#    crate that does not exist yet. The crate `acp-llm-adapter` was renamed
+#    from `deepseek-acp-adapter`, so its first version had to be published
+#    manually with an API token to claim the name; only then could a trusted
+#    publisher (owner `euri10`, repo `acp-llm-adapter`, workflow
+#    `release-plz.yml`) be added at
+#    https://crates.io/crates/acp-llm-adapter/settings — after which OIDC
+#    handles every subsequent release.
+#
+# ---------------------------------------------------------------------------
+
+name: Release-plz
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  # ── Publish to crates.io when the release PR is merged ──────────────────
+  release-plz-release:
+    name: Release-plz release
+    runs-on: ubuntu-latest
+    if: ${{ github.repository_owner == 'euri10' }}
+
+    permissions:
+      contents: write       # push tags, create GitHub releases
+      pull-requests: read   # detect the release PR
+      id-token: write       # OIDC token exchange for crates.io trusted publishing
+
+    steps:
+      - &checkout
+        name: Checkout repository
+        uses: actions/checkout@v7
+        with:
+          fetch-depth: 0           # full history needed for changelog generation
+          persist-credentials: false
+
+      - &install-rust
+        name: Install Rust toolchain
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          toolchain: "1.97"        # MSRV from Cargo.toml
+
+      - name: Run release-plz release
+        uses: release-plz/action@v0.5
+        with:
+          command: release
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  # ── Create / update the release PR ──────────────────────────────────────
+  release-plz-pr:
+    name: Release-plz PR
+    runs-on: ubuntu-latest
+    if: ${{ github.repository_owner == 'euri10' }}
+
+    permissions:
+      contents: write        # push to PR branch
+      pull-requests: write   # create and update PRs
+
+    # Only one release-plz PR job at a time to avoid race conditions.
+    concurrency:
+      group: release-plz-${{ github.ref }}
+      cancel-in-progress: false
+
+    steps:
+      - *checkout
+      - *install-rust
+
+      - name: Run release-plz release-pr
+        uses: release-plz/action@v0.5
+        with:
+          command: release-pr
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

@@ -1,0 +1,21 @@
+[package]
+name = "actix-htmx"
+version = "0.4.0"
+authors = ["Dave Lewis <dave@dllewis.org"]
+description = "Actix Web middleware for use when developing with htmx"
+readme = "../README.md"
+keywords = ["actix-web", "middleware", "htmx"]
+license = "MIT OR Apache-2.0"
+edition = "2021"
+repository = "https://github.com/welshdave/actix-htmx.git"
+
+[dependencies]
+actix-web = { version = "4", default-features = false }
+futures-util = "0.3"
+indexmap = "2"
+log = "0.4"
+serde = { version = "1.0" }
+serde_json = "1.0"
+
+[dev-dependencies]
+actix-web = { version = "4", features = ["macros"] }

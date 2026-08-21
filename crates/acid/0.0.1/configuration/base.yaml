@@ -1,0 +1,14 @@
+application:
+  port: 8000
+  hmac_secret: "very_secret_token_000000_000000_0000000_00000000000_000000000_00000000"
+database:
+  host: "localhost"
+  port: 5432
+  username: "postgres"
+  password: "password"
+  database_name: "acidarchive"
+email_client:
+  base_url: "localhost"
+  api_key: "CHANGE_ME"
+  api_token: "CHANGE_ME"
+redis_uri: "redis://127.0.0.1:6379"

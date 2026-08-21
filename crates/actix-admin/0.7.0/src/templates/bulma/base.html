@@ -1,0 +1,48 @@
+{% if render_partial and render_partial == true %}
+
+{% block content %}
+{% endblock content %}
+
+{% else %}
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    {% include "head.html" %}
+</head>
+
+<body>
+    {% include "navbar.html" %}
+    {% include "loader.html" %}
+    <div class="container is-fluid">
+        <div id="notifications">
+            {% if notifications %}
+            {% for notification in notifications -%}
+            <div class="notification mb-4 is-light {{ notification.css_class }}">
+                <button class="delete" onclick="this.parentElement.remove()"></button>
+                {{ notification.message }}
+            </div>
+            {% endfor %}
+            {% endif %}
+        </div>
+
+        <div id="content">
+            <div class="columns">
+                {% block content %}
+                {% endblock content %}
+
+                {%if support_path %}
+                <div id="support" class="column is-3 is-narrow-mobile is-fullheight is-hidden is-hidden-mobile" data-hx-get="{{ base_path}}/{{ support_path }}" data-hx-trigger="intersect" hx-target="#support_content">
+                    <p class="menu-label is-hidden-touch pb-2">Help & Support</p>
+                    <div id="support_content" style="height: 100%;">
+                        <div style="height: 100%;" class="skeleton-block"></div>
+                    </div>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</body>
+
+</html>
+{% endif %}

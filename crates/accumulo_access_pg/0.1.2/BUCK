@@ -1,0 +1,17 @@
+load("@buckal//:wrapper.bzl", "rust_library")
+
+rust_library(
+    name = "accumulo_access_pg",
+    srcs = glob(["**/*.rs"]),
+    crate = "accumulo_access_pg",
+    crate_root = "src/lib.rs",
+    edition = "2021",
+    features = ["default"],
+
+    visibility = ["PUBLIC"],
+    deps = [
+        "//third-party/rust/crates/accumulo-access/0.1.9:accumulo_access",
+        "//third-party/rust/crates/pgrx/0.11.4:pgrx",
+        "//third-party/rust/crates/serde/1.0.229:serde",
+    ],
+)

@@ -1,0 +1,18 @@
+// #[cfg(test)]
+// mod tests {
+//     use super::*;
+//     struct RawReq{}
+//     struct OrigReq{}
+//     struct OrigResp{}
+
+//     #[test]
+//     fn test_a() {
+//         let req = RawReq{};
+//         fn cbb(_: *const (), _: *const (), _: *const ()) {}
+//         let f = async {
+//             let f = async {
+//                 accioe!(req,RawReq,OrigResp,cbb)
+//             };
+//         };
+//     }
+// }

@@ -1,0 +1,15 @@
+load("@buckal//:wrapper.bzl", "rust_library")
+
+rust_library(
+    name = "actix_session_ext",
+    srcs = glob(["**/*.rs"]),
+    crate = "actix_session_ext",
+    crate_root = "src/lib.rs",
+    edition = "2021",
+
+    visibility = ["PUBLIC"],
+    deps = [
+        "//third-party/rust/crates/actix-session/0.10.1:actix_session",
+        "//third-party/rust/crates/serde/1.0.229:serde",
+    ],
+)

@@ -1,0 +1,22 @@
+[package]
+name = "actix-web-middleware-slack"
+version = "0.1.0"
+edition = "2021"
+repository = "https://github.com/yoshidan/actix-web-middleware-slack"
+keywords = ["slack", "actix-web", "actix-web-middleware"]
+license = "MIT"
+readme = "README.md"
+description = "actix-web middleware for verifying requests from Slack."
+documentation = "https://docs.rs/actix-web-middleware-slack/latest/actix-web-middleware-slack/"
+
+[dependencies]
+actix-web = { version="4", default_features = false }
+actix-http = "3"
+futures-util = { version="0.3", default_features = false }
+hmac = "0.12"
+sha2 = "0.10"
+hex = "0.4"
+
+[dev-dependencies]
+tokio-test = "0.4.2"
+tokio = { version="1.21.1", features=["macros", "rt-multi-thread"] }

@@ -1,0 +1,6 @@
+{
+  "git": {
+    "sha1": "d543c0a3b7bdd6132738b8c43c55ad197f90680e"
+  },
+  "path_in_vcs": "crates/acdp-safe-http"
+}

@@ -1,0 +1,38 @@
+name: Build
+on: [push]
+permissions:
+  contents: write
+jobs:
+  CleanupAndTest:
+    runs-on: ubuntu-latest
+    container:
+      image: rust:latest
+    steps:
+      - name: Add cargo features
+        run: rustup component add rustfmt clippy
+      - name: Checkout repository
+        uses: actions/checkout@v3
+        with:
+          path: repo
+      - name: Load cached dependencies
+        uses: Swatinem/rust-cache@v2
+        with:
+          key: clippy
+      - name: Fmt + clippy
+        run: |
+          cd repo
+          cargo clippy --all-features --all-targets --fix
+          cargo fmt
+      - name: Apply cleanup
+        uses: EndBug/add-and-commit@v9
+        with:
+          message: 'applying code formatting and lint fixes'
+          cwd: repo
+      - name: Fail build if clippy finds any error or warning
+        run: |
+          cd repo
+          cargo clippy --all-features --all-targets -- -D warnings -D clippy::pedantic
+      - name: Run test suite
+        run: |
+          cd repo
+          cargo test

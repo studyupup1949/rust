@@ -1,0 +1,28 @@
+[package]
+name = "acars"
+description = "Rust library to decode ACARS, VDL2, ADS-C, and CPDLC payloads"
+repository = "https://github.com/xoolive/datalink"
+keywords = ["acars", "vdl", "aviation", "decoder"]
+authors.workspace = true
+version.workspace = true
+license.workspace = true
+edition.workspace = true
+
+[features]
+default = []
+demod = ["dep:desperado", "dep:num-complex"]
+
+[dependencies]
+deku.workspace = true
+hex.workspace = true
+num-complex = { version = "0.4", optional = true }
+base64 = "0.22"
+flate2 = "1"
+serde.workspace = true
+serde_json.workspace = true
+thiserror.workspace = true
+desperado = { workspace = true, optional = true }
+rasn = "0.28"
+rasn-atn-cpdlc = "0.28"
+
+[dev-dependencies]

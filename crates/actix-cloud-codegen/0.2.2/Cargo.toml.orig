@@ -1,0 +1,27 @@
+[package]
+name = "actix-cloud-codegen"
+version = "0.2.2"
+edition = "2021"
+authors = ["MXWXZ <matrixwxz@gmail.com>"]
+description = "Proc macros for Actix Cloud."
+license = "MIT"
+repository = "https://github.com/MXWXZ/actix-cloud"
+
+[features]
+default = []
+i18n = ["dep:rust-i18n-support"]
+seaorm = []
+
+[dependencies]
+quote = "1.0.36"
+syn = "2.0.74"
+proc-macro2 = "1.0.86"
+
+rust-i18n-support = { version = "3.1.1", optional = true }
+
+[lib]
+proc-macro = true
+
+[package.metadata.docs.rs]
+all-features = true
+rustdoc-args = ["--cfg", "docsrs"]

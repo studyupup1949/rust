@@ -1,0 +1,23 @@
+load("@buckal//:wrapper.bzl", "rust_library")
+
+rust_library(
+    name = "actm",
+    srcs = glob(["**/*.rs"]),
+    crate = "actm",
+    crate_root = "src/lib.rs",
+    edition = "2024",
+    features = ["default"],
+
+    visibility = ["PUBLIC"],
+    deps = [
+        "//third-party/rust/crates/async-mutex/1.4.1:async_mutex",
+        "//third-party/rust/crates/async-trait/0.1.92:async_trait",
+        "//third-party/rust/crates/enum_dispatch/0.3.13:enum_dispatch",
+        "//third-party/rust/crates/flume/0.11.1:flume",
+        "//third-party/rust/crates/futures/0.3.34:futures",
+        "//third-party/rust/crates/itertools/0.14.0:itertools",
+        "//third-party/rust/crates/once_cell/1.21.4:once_cell",
+        "//third-party/rust/crates/snafu/0.8.9:snafu",
+        "//third-party/rust/crates/tracing/0.1.44:tracing",
+    ],
+)

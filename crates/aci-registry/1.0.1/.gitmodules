@@ -1,0 +1,3 @@
+[submodule "ACI-Registry"]
+	path = ACI-Registry
+	url = https://github.com/Clever-ISA/ACI-Registry

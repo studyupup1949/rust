@@ -1,0 +1,27 @@
+[package]
+name = "acme-lib"
+description = "Library for requesting certificates from an ACME provider."
+license = "MIT/Apache-2.0"
+repository = "https://github.com/algesten/acme-lib"
+readme = "README.md"
+version = "0.5.0"
+authors = ["Martin Algesten <martin@algesten.se>"]
+keywords = ["letsencrypt", "acme"]
+categories = ["web-programming", "api-bindings"]
+edition = "2018"
+
+[dependencies]
+base64 = "0.10.0"
+lazy_static = "1.2.0"
+log = "0.4.6"
+openssl = "0.10.16"
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
+time = "0.1"
+ureq = "0.9"
+
+[dev-dependencies]
+env_logger = { version = "0.6.0", default-features = false }
+futures = "0.1.25"
+hyper = "0.12"
+regex = "1.1.0"

@@ -1,0 +1,16 @@
+load("@buckal//:wrapper.bzl", "rust_library")
+
+rust_library(
+    name = "active_reporting",
+    srcs = glob(["**/*.rs"]),
+    crate = "active_reporting",
+    crate_root = "mod.rs",
+    edition = "2024",
+
+    visibility = ["PUBLIC"],
+    deps = [
+        "//third-party/rust/crates/issuing/0.0.0:issuing",
+        "//third-party/rust/crates/libutils-console/2.2.2:libutils_console",
+        "//third-party/rust/crates/libutils-terminal/1.2.2:libutils_terminal",
+    ],
+)

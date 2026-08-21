@@ -1,0 +1,17 @@
+[package]
+name = "actson"
+version = "0.1.0"
+authors = ["Michel Kraemer <michel@undercouch.de>"]
+description = "A reactive (or non-blocking, or asynchronous) JSON parser"
+edition = "2021"
+license = "MIT"
+repository = "https://github.com/michel-kraemer/actson-rs"
+keywords = ["json", "parser", "parsing", "deserialization"]
+categories = ["encoding", "parser-implementations"]
+
+[dependencies]
+ringbuffer = "0.14.0"
+
+[dev-dependencies]
+dtoa = "1.0.6"
+serde_json = { version = "1.0.97", features = ["float_roundtrip"] }

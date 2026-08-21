@@ -1,0 +1,120 @@
+use matcher::trie::node::{CompiledPattern};
+use matcher::trie::node::{Node, TokenType};
+use parsers::{SetParser, IntParser, Parser, OptionalParameter, HasOptionalParameter, GreedyParser};
+use grammar;
+use utils;
+
+use std::str::FromStr;
+
+#[pub]
+pattern_file -> Vec<CompiledPattern>
+  = patterns:(pattern ++ NEW_LINE) NEW_LINE? { patterns }
+
+#[pub]
+pattern -> CompiledPattern
+  = pieces:pattern_piece+ {
+    let mut pieces = pieces;
+    utils::flatten_vec(pieces)
+  }
+
+pattern_piece -> Vec<TokenType>
+  = parser_GREEDY
+  / piece_literal
+  / piece_parser
+
+piece_literal -> Vec<TokenType>
+  = literal:literal {
+      let unescaped_literal = grammar::unescape_literal(literal);
+      vec![TokenType::Literal(unescaped_literal)]
+    }
+
+piece_parser -> Vec<TokenType>
+  = PARSER_BEGIN parser:parser PARSER_END {
+    vec![TokenType::Parser(parser)]
+  }
+
+parser -> Box<Parser>
+  = parser_SET
+  / parser_INT
+
+parser_SET -> Box<Parser>
+  = SET PARSER_PARAMS_BEGIN set:string po:parser_SET_optional_params? PARSER_PARAMS_END name:parser_name {
+    let mut parser = SetParser::from_str(name, set);
+    grammar::set_optional_params(&mut parser, po.as_ref());
+    Box::new(parser)
+  }
+
+parser_SET_optional_params -> Vec<OptionalParameter<'input>>
+  = comma params:parser_BASE_optional_param ** comma { params }
+
+parser_INT -> Box<Parser>
+  = INT po:parser_INT_optional_params? name:parser_name {
+    let mut parser = IntParser::from_str(name);
+    grammar::set_optional_params(&mut parser, po.as_ref());
+    Box::new(parser)
+  }
+
+parser_INT_optional_params -> Vec<OptionalParameter<'input>>
+  = PARSER_PARAMS_BEGIN params:parser_BASE_optional_param ** comma PARSER_PARAMS_END { params }
+
+parser_GREEDY -> Vec<TokenType>
+  = PARSER_BEGIN GREEDY name:parser_name PARSER_END end_string:literal? {
+    let mut tokens = Vec::new();
+    let mut parser = GreedyParser::new(name.to_string());
+
+    if let Some(end_string) = end_string {
+      parser.set_end_string(end_string.to_string());
+    }
+
+    tokens.push(TokenType::Parser(Box::new(parser)));
+
+    if let Some(end_string) = end_string {
+      tokens.push(TokenType::Literal(end_string.to_string()));
+    }
+
+    tokens
+  }
+
+parser_BASE_optional_param -> OptionalParameter<'input>
+  = name:MIN_LEN "=" value:int { OptionalParameter::Int(name, value) }
+  / name:MAX_LEN "=" value:int { OptionalParameter::Int(name, value) }
+
+MIN_LEN -> &'input str
+  = "min_len" { match_str }
+
+MAX_LEN -> &'input str
+  = "max_len" { match_str }
+
+INT -> &'input str
+  = "INT" { match_str }
+
+SET -> &'input str
+  = "SET" { match_str }
+
+GREEDY -> &'input str
+  = "GREEDY" { match_str }
+
+PARSER_BEGIN = "%{"
+PARSER_END = "}"
+PARSER_PARAMS_BEGIN = "("
+PARSER_PARAMS_END = ")"
+NEW_LINE = "\n"
+parser_name -> &'input str
+  = ":" name:identifier { name }
+
+identifier -> &'input str
+  = [a-zA-Z_.]([a-z-A-Z0-9_.]![-])* { match_str }
+
+string -> &'input str
+  = '"' s:all_chars_until_quotation_mark '"' { s }
+
+literal -> &'input str
+  = (!PARSER_BEGIN !NEW_LINE .)+ { match_str }
+
+all_chars_until_quotation_mark -> &'input str
+  = (!'"' .)+ { match_str }
+
+comma = "," " "*
+
+int -> usize
+  = [0-9]+ { usize::from_str(match_str).ok().unwrap() }

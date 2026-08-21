@@ -1,0 +1,27 @@
+name: Debian pkg
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  build:
+
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v2
+
+    - name: Build package
+      run: contrib/debian/build.sh
+
+    - name: Rename package
+      run: mv target/debian/acme-redirect*.deb acme-redirect.deb
+
+    - name: Archive package
+      uses: actions/upload-artifact@v1
+      with:
+        name: acme-redirect-debian-amd64
+        path: acme-redirect.deb

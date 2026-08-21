@@ -1,0 +1,27 @@
+name: Update Homebrew Tap
+
+on:
+  release:
+    types: [published]
+
+permissions: {}
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  update-formula:
+    permissions:
+      contents: write
+      pull-requests: write
+    uses: luxass/shared-workflows/.github/workflows/reusable-homebrew-tap.yaml@6c46d97f278c967b6c64f4ede147cfeb3e734812 # v0.8.1
+    with:
+      tap-repository: luxass/homebrew-tap
+      formula-path: Formula/actioneer.rb
+      formula-name: actioneer
+      environment: homebrew-tap
+      targets: '["aarch64-apple-darwin", "x86_64-apple-darwin", "aarch64-unknown-linux-gnu", "x86_64-unknown-linux-gnu"]'
+    secrets:
+      app-id: ${{ secrets.HOMEBREW_TAP_APP_ID }}
+      app-private-key: ${{ secrets.HOMEBREW_TAP_APP_PRIVATE_KEY }}

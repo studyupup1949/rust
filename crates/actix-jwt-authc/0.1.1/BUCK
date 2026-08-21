@@ -1,0 +1,22 @@
+load("@buckal//:wrapper.bzl", "rust_library")
+
+rust_library(
+    name = "actix_jwt_authc",
+    srcs = glob(["**/*.rs"]),
+    crate = "actix_jwt_authc",
+    crate_root = "src/lib.rs",
+    edition = "2021",
+    features = ["default"],
+
+    visibility = ["PUBLIC"],
+    deps = [
+        "//third-party/rust/crates/actix-web/4.14.1:actix_web",
+        "//third-party/rust/crates/async-trait/0.1.92:async_trait",
+        "//third-party/rust/crates/derive_more/0.99.20:derive_more",
+        "//third-party/rust/crates/futures-util/0.3.34:futures_util",
+        "//third-party/rust/crates/jsonwebtoken/8.3.0:jsonwebtoken",
+        "//third-party/rust/crates/serde/1.0.229:serde",
+        "//third-party/rust/crates/time/0.3.55:time",
+        "//third-party/rust/crates/tokio/1.53.1:tokio",
+    ],
+)

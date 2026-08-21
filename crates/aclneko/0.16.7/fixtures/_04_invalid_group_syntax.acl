@@ -1,0 +1,3 @@
+1000 acl execute task.uid=@-normal-uid
+    10 allow task.uid=@normal-uid       task.domain="<agetty>"      transition="user-session"
+    10 allow task.uid=@normal-uid       task.domain="<systemd>"     transition="user-session"

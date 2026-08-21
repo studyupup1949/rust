@@ -1,0 +1,14 @@
+load("@buckal//:wrapper.bzl", "rust_library")
+
+rust_library(
+    name = "ach_pool",
+    srcs = glob(["**/*.rs"]),
+    crate = "ach_pool",
+    crate_root = "src/lib.rs",
+    edition = "2018",
+
+    visibility = ["PUBLIC"],
+    deps = [
+        "//third-party/rust/crates/ach-option/0.1.1:ach_option",
+    ],
+)

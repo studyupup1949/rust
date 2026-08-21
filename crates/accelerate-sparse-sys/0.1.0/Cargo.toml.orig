@@ -1,0 +1,25 @@
+[package]
+name = "accelerate-sparse-sys"
+description = "Raw FFI declarations for a C shim over the sparse solvers in Apple's Accelerate framework"
+readme = "README.md"
+# Declared so that two copies of this crate in one dependency tree are a Cargo error rather than
+# a duplicate-symbol failure at link time.
+links = "accelerate_sparse_shim"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+repository.workspace = true
+authors.workspace = true
+keywords.workspace = true
+categories.workspace = true
+publish.workspace = true
+
+[build-dependencies]
+cc = "1.2"
+
+[package.metadata.docs.rs]
+# docs.rs cross-compiles from Linux, where this crate is an empty library. Pinning the target
+# is what makes the macOS-only items exist at all in the rendered documentation.
+targets = ["aarch64-apple-darwin"]
+rustdoc-args = ["--cfg", "docsrs"]

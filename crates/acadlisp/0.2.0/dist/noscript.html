@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AutoLISP Interpreter in Rust/WASM - acadlisp.de</title>
+    <meta name="description" content="AutoLISP interpreter in Rust and WebAssembly. Experience CAD automation history from 1991.">
+    <link rel="canonical" href="https://acadlisp.de/">
+    <script>window.location.href = "https://acadlisp.de/";</script>
+    <style>
+        body { font-family: Georgia, serif; max-width: 800px; margin: 40px auto; padding: 20px; line-height: 1.6; }
+        h1 { color: #0066cc; }
+        h2 { color: #333; margin-top: 30px; }
+        code { background: #f4f4f4; padding: 2px 6px; }
+        pre { background: #f4f4f4; padding: 15px; overflow-x: auto; }
+        .demo-btn {
+            display: inline-block;
+            background: #0066cc;
+            color: white;
+            padding: 16px 32px;
+            font-size: 1.3em;
+            font-weight: bold;
+            text-decoration: none;
+            border-radius: 8px;
+            margin: 20px 0;
+        }
+        .demo-btn:hover { background: #0052a3; }
+    </style>
+</head>
+<body>
+    <article>
+        <h1>acadlisp: AutoLISP Interpreter in Rust/WebAssembly</h1>
+
+        <p>
+            <a href="https://acadlisp.de/" class="demo-btn">Try the Interactive Demo</a>
+        </p>
+
+        <h2>What is acadlisp?</h2>
+        <p>
+            <strong>acadlisp</strong> is an AutoLISP interpreter written in Rust and compiled to WebAssembly.
+            It runs AutoLISP code directly in the browser - no AutoCAD installation required.
+        </p>
+
+        <h2>The Story: Schematic Generator 1991</h2>
+        <p>
+            In 1991, a small electrical company in Bavaria, Germany faced a challenge:
+            every machine installation required custom electrical schematics - a time-consuming manual process.
+        </p>
+        <p>
+            The solution: <strong>AutoLISP</strong>, the programming language built into AutoCAD.
+            I invented a workflow using CSV files, templates, and LISP code to automate schematic generation.
+            Define components in spreadsheets, feed them through templates, generate complete technical drawings automatically.
+        </p>
+        <p>
+            I've never met anyone else who used this approach. Now I've built an interpreter in Rust/WASM
+            so this workflow can live on in the browser - partly nostalgia, partly preservation before
+            this knowledge disappears entirely.
+        </p>
+
+        <h2>LISP as Early AI</h2>
+        <p>
+            LISP (List Processing) was developed in 1958 by John McCarthy and was for decades
+            <em>the</em> language of Artificial Intelligence research. What makes LISP special?
+        </p>
+        <ul>
+            <li><strong>Homoiconicity:</strong> Code and data share the same structure (lists)</li>
+            <li><strong>Self-modification:</strong> Programs can write and modify themselves</li>
+            <li><strong>Symbolic processing:</strong> Manipulation of symbols, not just numbers</li>
+        </ul>
+        <p>
+            In the 1991 schematic generator, the code actually wrote itself:
+            inserting a component could trigger more components, templates generated templates.
+        </p>
+
+        <h2>Technical Details</h2>
+        <ul>
+            <li><strong>Language:</strong> Rust</li>
+            <li><strong>Target:</strong> WebAssembly (WASM)</li>
+            <li><strong>Output formats:</strong> SVG, DXF (AutoCAD R12/AC1009)</li>
+            <li><strong>Supported AutoLISP functions:</strong> defun, setq, if, while, cond, +, -, *, /, sin, cos, sqrt, car, cdr, list, nth, command, princ, and more</li>
+        </ul>
+
+        <h2>Example Code</h2>
+        <pre><code>; Draw a rectangle
+(defun draw-box (x y w h)
+  (command "LINE" (list x y) (list (+ x w) y) "")
+  (command "LINE" (list (+ x w) y) (list (+ x w) (+ y h)) "")
+  (command "LINE" (list (+ x w) (+ y h)) (list x (+ y h)) "")
+  (command "LINE" (list x (+ y h)) (list x y) ""))
+
+(draw-box 10 10 100 50)
+</code></pre>
+
+        <h2>Links</h2>
+        <ul>
+            <li><a href="https://acadlisp.de/">Interactive Demo (requires JavaScript)</a></li>
+            <li><a href="https://github.com/acadlisp/acadlisp">Source code on GitHub</a></li>
+        </ul>
+
+        <footer style="margin-top: 40px; padding-top: 20px; border-top: 1px solid #ddd; color: #666;">
+            <p>&copy; 2024 acadlisp.de - AutoLISP Interpreter in Rust/WebAssembly</p>
+        </footer>
+    </article>
+</body>
+</html>

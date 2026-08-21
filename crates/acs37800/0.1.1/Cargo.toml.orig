@@ -1,0 +1,30 @@
+[package]
+name = "acs37800"
+version = "0.1.1"
+description = "Driver for ACS37800 energy metering IC"
+keywords = ["acs37800", "i2c", "spi", "driver", "power"]
+categories = ["embedded", "hardware-support", "no-std"]
+edition = "2024"
+rust-version = "1.91.1"
+repository = "https://github.com/sbruton/acs37800"
+license = "MIT OR Apache-2.0"
+
+[[example]]
+name = "raspberry-pi-i2c"
+path = "examples/raspberry_pi_i2c.rs"
+required-features = ["std", "linux-embedded-hal"]
+
+[dependencies]
+bitfield-struct = "0.12.1"
+bon = { version = "3.8.1", default-features = false }
+defmt = { version = "1.0.1", optional = true }
+embedded-hal = "1.0.0"
+embedded-hal-async = { version = "1.0.0", optional = true }
+linux-embedded-hal = { version = "0.4.1", optional = true }
+thiserror = { version = "2.0.17", default-features = false }
+tracing = { version = "0.1.43", optional = true }
+
+[features]
+default = []
+std = ["bon/std", "thiserror/std", "dep:tracing"]
+async = ["dep:embedded-hal-async"]

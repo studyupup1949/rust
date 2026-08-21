@@ -1,0 +1,21 @@
+name: Update Bindings Libraries
+on: 
+  push:
+    branches:
+     - 'main'
+jobs:
+  rust-bindings:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: octokit/request-action@v2.3.1
+      id: dispatch_aci-registry-rs
+      with:
+        route: POST /repos/{owner}/{repo}/actions/workflows/{workflow_id}/dispatches
+        owner: Clever-ISA
+        repo: aci-registry-rs
+        workflow_id: deploy-crates-io.yml
+        ref: main
+        inputs: |
+          dry-run: false
+      env: 
+        GITHUB_TOKEN: ${{ secrets.WORKFLOW_GITHUB_TOKEN }}

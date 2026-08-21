@@ -1,0 +1,5 @@
+error: Invalid attribute argument. Only `meta_attr` is supported.
+ --> $DIR/panics_on_unsupported_attr.rs:8:19
+  |
+8 | #[actix_responder(imaginary_attr = "builder(default)")]
+  |                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^

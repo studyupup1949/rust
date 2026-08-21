@@ -1,0 +1,11 @@
+[package]
+name = "actix-web-auth"
+version = "0.1.0"
+edition = "2021"
+license = "MIT"
+description="actix web http auth middiware"
+keywords = ["actix", "http", "web", "auth"]
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]

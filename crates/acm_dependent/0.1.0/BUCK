@@ -1,0 +1,14 @@
+load("@buckal//:wrapper.bzl", "rust_binary")
+
+rust_binary(
+    name = "acm_dependent",
+    srcs = glob(["**/*.rs"]),
+    crate = "acm_dependent",
+    crate_root = "src/main.rs",
+    edition = "2021",
+
+    visibility = ["PUBLIC"],
+    deps = [
+        "//third-party/rust/crates/arithmetic_congruence_monoid/1.2.1:arithmetic_congruence_monoid",
+    ],
+)

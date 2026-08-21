@@ -1,0 +1,26 @@
+[package]
+name = "achievements"
+description = "Track and celebrate the passage of time"
+keywords = ["tracking", "time", "achievements", "utility", "cli"]
+version = "0.2.1"
+license = "MIT OR Apache-2.0"
+edition = "2021"
+rust-version = "1.74"
+
+documentation = "https://docs.rs/achievements"
+repository = "https://github.com/xoen/achievements"
+homepage = "https://github.com/xoen/achievements"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+clap = { version = "4.5.4", features = ["derive"] }
+homedir = "0.3.4"
+serde = { version = "1.0.197", features = ["derive"] }
+serde_json = "1.0.115"
+time = { version = "0.3.34", features = [
+    "serde",
+    "formatting",
+    "parsing",
+    "macros",
+] }

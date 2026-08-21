@@ -1,0 +1,9 @@
+quota memory audit 26777216
+quota memory query 1048576
+quota audit[1] allowed=1024 denied=0 unmatched=0
+quota audit[2] allowed=0 denied=1024 unmatched=0
+quota audit[3] allowed=1024 denied=1024 unmatched=0
+quota audit[4] allowed=0 denied=0 unmatched=1024
+quota audit[5] allowed=1024 denied=0 unmatched=1024
+quota audit[6] allowed=0 denied=1024 unmatched=1024
+quota audit[7] allowed=1024 denied=1024 unmatched=1024

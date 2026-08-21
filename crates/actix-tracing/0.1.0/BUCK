@@ -1,0 +1,17 @@
+load("@buckal//:wrapper.bzl", "rust_library")
+
+rust_library(
+    name = "actix_tracing",
+    srcs = glob(["**/*.rs"]),
+    crate = "actix_tracing",
+    crate_root = "src/lib.rs",
+    edition = "2018",
+
+    visibility = ["PUBLIC"],
+    deps = [
+        "//third-party/rust/crates/actix-service/1.0.6:actix_service",
+        "//third-party/rust/crates/futures-util/0.3.34:futures_util",
+        "//third-party/rust/crates/tracing-futures/0.2.5:tracing_futures",
+        "//third-party/rust/crates/tracing/0.1.44:tracing",
+    ],
+)

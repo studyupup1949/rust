@@ -1,0 +1,71 @@
+[package]
+name = "actix-tls"
+version = "3.0.3"
+authors = [
+    "Nikolay Kim <fafhrd91@gmail.com>",
+    "Rob Ede <robjtede@icloud.com>",
+]
+description = "TLS acceptor and connector services for Actix ecosystem"
+keywords = ["network", "tls", "ssl", "async", "transport"]
+repository = "https://github.com/actix/actix-net.git"
+categories = ["network-programming", "asynchronous", "cryptography"]
+license = "MIT OR Apache-2.0"
+edition = "2018"
+
+[package.metadata.docs.rs]
+all-features = true
+rustdoc-args = ["--cfg", "docsrs"]
+
+[lib]
+name = "actix_tls"
+path = "src/lib.rs"
+
+[features]
+default = ["accept", "connect"]
+
+# enable acceptor services
+accept = []
+
+# enable connector services
+connect = []
+
+# use openssl impls
+openssl = ["tls-openssl", "tokio-openssl"]
+
+# use rustls impls
+rustls = ["tokio-rustls", "webpki-roots"]
+
+# use native-tls impls
+native-tls = ["tokio-native-tls"]
+
+# support http::Uri as connect address
+uri = ["http"]
+
+[dependencies]
+actix-codec = "0.5.0"
+actix-rt = { version = "2.2.0", default-features = false }
+actix-service = "2.0.0"
+actix-utils = "3.0.0"
+
+futures-core = { version = "0.3.7", default-features = false, features = ["alloc"] }
+log = "0.4"
+pin-project-lite = "0.2.7"
+tokio-util = "0.7"
+
+# uri
+http = { version = "0.2.3", optional = true }
+
+# openssl
+tls-openssl = { package = "openssl", version = "0.10.9", optional = true }
+tokio-openssl = { version = "0.6", optional = true }
+
+# rustls
+tokio-rustls = { version = "0.23", optional = true }
+webpki-roots = { version = "0.22", optional = true }
+
+# native-tls
+tokio-native-tls = { version = "0.3", optional = true }
+
+[[example]]
+name = "accept-rustls"
+required-features = ["accept", "rustls"]

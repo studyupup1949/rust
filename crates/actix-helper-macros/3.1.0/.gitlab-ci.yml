@@ -1,0 +1,38 @@
+stages:
+  - test
+  - deploy-actix-proc-macros
+  - deploy-actix-helper-macros
+
+Test actix-proc-macros:
+  stage: test
+  image: rustlang/rust:nightly-slim
+  script:
+    - cd actix-proc-macros
+    - cargo test
+  artifacts:
+    paths:
+      - target
+    expire_in: 1 day
+
+Test actix-helper-macros:
+  stage: test
+  image: rustlang/rust:nightly-slim
+  script:
+    - cargo test
+
+Push actix-proc-macros:
+  stage: deploy-actix-proc-macros
+  image: rustlang/rust:nightly-slim
+  script:
+    - sh -c 'cargo login "${CARGO_TOKEN}" && cd actix-proc-macros && cargo publish'
+  only:
+    - tags
+
+Push actix-hepler-macros:
+  stage: deploy-actix-helper-macros
+  image: rustlang/rust:nightly-slim
+  script:
+    - sh -c 'cargo login "${CARGO_TOKEN}" && cargo publish'
+  only:
+    - tags
+

@@ -1,0 +1,24 @@
+load("@buckal//:wrapper.bzl", "rust_library")
+
+rust_library(
+    name = "acme_sdk",
+    srcs = glob(["**/*.rs"]),
+    crate = "acme_sdk",
+    crate_root = "src/lib.rs",
+    edition = "2021",
+    features = ["default"],
+
+    visibility = ["PUBLIC"],
+    deps = [
+        "//third-party/rust/crates/async-trait/0.1.92:async_trait",
+        "//third-party/rust/crates/bson/2.15.0:bson",
+        "//third-party/rust/crates/chrono/0.4.45:chrono",
+        "//third-party/rust/crates/coinbase-pro-rs/0.7.1:coinbase_pro_rs",
+        "//third-party/rust/crates/config/0.13.4:config",
+        "//third-party/rust/crates/futures/0.3.34:futures",
+        "//third-party/rust/crates/glob/0.3.4:glob",
+        "//third-party/rust/crates/reqwest/0.11.27:reqwest",
+        "//third-party/rust/crates/serde/1.0.229:serde",
+        "//third-party/rust/crates/serde_json/1.0.151:serde_json",
+    ],
+)

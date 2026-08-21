@@ -1,0 +1,36 @@
+[package]
+name = "acp-wasm"
+version = "1.0.0"
+edition = "2021"
+description = "WebAssembly bindings for StateSet ACP Handler"
+license = "MIT"
+repository = "https://github.com/stateset/stateset-acp-handler"
+documentation = "https://docs.rs/acp-wasm"
+readme = "README.md"
+keywords = ["acp", "commerce", "wasm", "webassembly", "stateset"]
+categories = ["api-bindings", "wasm"]
+
+[lib]
+crate-type = ["cdylib", "rlib"]
+
+[dependencies]
+wasm-bindgen = "0.2"
+wasm-bindgen-futures = "0.4"
+js-sys = "0.3"
+web-sys = { version = "0.3", features = ["console"] }
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
+serde-wasm-bindgen = "0.6"
+uuid = { version = "1.0", features = ["v4", "js"] }
+chrono = { version = "0.4", features = ["serde", "wasmbind"] }
+getrandom = { version = "0.2", features = ["js"] }
+
+[dev-dependencies]
+wasm-bindgen-test = "0.3"
+
+[profile.release]
+lto = true
+opt-level = "s"
+
+# Standalone package - not part of root workspace
+[workspace]

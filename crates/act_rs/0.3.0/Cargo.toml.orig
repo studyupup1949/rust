@@ -1,0 +1,41 @@
+[package]
+name = "act_rs"
+version = "0.3.0"
+edition = "2021"
+license = "MIT OR Apache-2.0"
+description = "Act.rs is an actor library built to be used with the standard library and Tokio."
+repository = "https://github.com/coruscateor/act_rs"
+homepage = "https://coruscateor.com/projects/act_rs"
+keywords = ["actor", "actors", "async", "message", "pipeline"]
+categories = ["asynchronous"]
+authors = ["Paul Saunders"]
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+tokio = { version = "1.44.2", features = ["rt", "rt-multi-thread", "sync", "macros"], optional = true }
+async-trait = { version = "0.1.88", optional = true }
+
+[features]
+std = []
+tokio = ["dep:tokio", "dep:async-trait"]
+
+[package.metadata.docs.rs]
+all-features = true
+rustdoc-args = ["--cfg", "docsrs"]
+
+#Apparently feature labelling in documentation compilation is unstable:
+
+#https://users.rust-lang.org/t/how-to-document-optional-features-in-api-docs/64577/2
+
+#https://doc.rust-lang.org/rustdoc/unstable-features.html
+
+#https://docs.rs/about/metadata
+
+
+
+#To compile the documentation use:
+
+#cargo doc --all-features
+
+

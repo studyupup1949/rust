@@ -1,0 +1,15 @@
+load("@buckal//:wrapper.bzl", "rust_library")
+
+rust_library(
+    name = "acute_core",
+    srcs = glob(["**/*.rs"]),
+    crate = "acute_core",
+    crate_root = "src/lib.rs",
+    edition = "2018",
+
+    visibility = ["PUBLIC"],
+    deps = [
+        "//third-party/rust/crates/acute_ecs/0.1.0:acute_ecs",
+        "//third-party/rust/crates/rusty_timer/1.0.3:rusty_timer",
+    ],
+)

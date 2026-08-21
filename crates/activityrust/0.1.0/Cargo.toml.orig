@@ -1,0 +1,16 @@
+[package]
+name = "activityrust"
+version = "0.1.0"
+authors = ["Lyra <teromene@teromene.fr>"]
+edition = "2018"
+repository = "https://github.com/teromene/activityrust"
+description = "ActivityRust is an implementation of the ActivityStream specifications"
+license = "MIT"
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+url = { version="2.1.0", features=["serde"] }
+chrono = "0.4.0"
+serde = { version = "1.0.103", features = ["derive"] }
+serde_json = "1.0.44"
+ambassador = "0.2.0"

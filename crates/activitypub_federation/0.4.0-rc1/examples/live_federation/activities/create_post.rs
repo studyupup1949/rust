@@ -1,0 +1,72 @@
+use crate::{
+    database::DatabaseHandle,
+    error::Error,
+    objects::{person::DbUser, post::Note},
+    utils::generate_object_id,
+    DbPost,
+};
+use activitypub_federation::{
+    activity_queue::send_activity,
+    config::RequestData,
+    fetch::object_id::ObjectId,
+    kinds::activity::CreateType,
+    protocol::{context::WithContext, helpers::deserialize_one_or_many},
+    traits::{ActivityHandler, ApubObject},
+};
+use serde::{Deserialize, Serialize};
+use url::Url;
+
+#[derive(Deserialize, Serialize, Debug)]
+#[serde(rename_all = "camelCase")]
+pub struct CreatePost {
+    pub(crate) actor: ObjectId<DbUser>,
+    #[serde(deserialize_with = "deserialize_one_or_many")]
+    pub(crate) to: Vec<Url>,
+    pub(crate) object: Note,
+    #[serde(rename = "type")]
+    pub(crate) kind: CreateType,
+    pub(crate) id: Url,
+}
+
+impl CreatePost {
+    pub async fn send(
+        note: Note,
+        inbox: Url,
+        data: &RequestData<DatabaseHandle>,
+    ) -> Result<(), Error> {
+        print!("Sending reply to {}", &note.attributed_to);
+        let create = CreatePost {
+            actor: note.attributed_to.clone(),
+            to: note.to.clone(),
+            object: note,
+            kind: CreateType::Create,
+            id: generate_object_id(data.domain())?,
+        };
+        let create_with_context = WithContext::new_default(create);
+        let private_key = data
+            .local_user()
+            .private_key
+            .expect("local user always has private key");
+        send_activity(create_with_context, private_key, vec![inbox], data).await?;
+        Ok(())
+    }
+}
+
+#[async_trait::async_trait]
+impl ActivityHandler for CreatePost {
+    type DataType = DatabaseHandle;
+    type Error = crate::error::Error;
+
+    fn id(&self) -> &Url {
+        &self.id
+    }
+
+    fn actor(&self) -> &Url {
+        self.actor.inner()
+    }
+
+    async fn receive(self, data: &RequestData<Self::DataType>) -> Result<(), Self::Error> {
+        DbPost::from_apub(self.object, data).await?;
+        Ok(())
+    }
+}

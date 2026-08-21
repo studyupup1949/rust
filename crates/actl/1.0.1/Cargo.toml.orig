@@ -1,0 +1,17 @@
+[package]
+name = "actl"
+version = "1.0.1"
+authors = ["Acrimon <joel.wejdenstal@gmail.com>"]
+description = "A command line tool for system maintenance and the like for Archlinux."
+documentation = "https://github.com/xacrimon/actl"
+repository = "https://gitea.nebulanet.cc/Acrimon/actl"
+readme = "README.md"
+license = "Apache-2.0"
+
+[dependencies]
+serde = "=1.0.37"
+serde_json = "=1.0.13"
+serde_derive = "=1.0.37"
+rand = "0.5"
+dirs = "1.0.4"
+ignite = "0.1.6"

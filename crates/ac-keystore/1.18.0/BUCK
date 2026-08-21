@@ -1,0 +1,20 @@
+load("@buckal//:wrapper.bzl", "rust_library")
+
+rust_library(
+    name = "ac_keystore",
+    srcs = glob(["**/*.rs"]),
+    crate = "ac_keystore",
+    crate_root = "src/lib.rs",
+    edition = "2021",
+
+    visibility = ["PUBLIC"],
+    deps = [
+        "//third-party/rust/crates/array-bytes/9.3.0:array_bytes",
+        "//third-party/rust/crates/parking_lot/0.12.5:parking_lot",
+        "//third-party/rust/crates/sc-keystore/35.0.0:sc_keystore",
+        "//third-party/rust/crates/serde_json/1.0.151:serde_json",
+        "//third-party/rust/crates/sp-application-crypto/40.1.0:sp_application_crypto",
+        "//third-party/rust/crates/sp-core/36.1.0:sp_core",
+        "//third-party/rust/crates/sp-keystore/0.42.0:sp_keystore",
+    ],
+)

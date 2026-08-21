@@ -1,0 +1,17 @@
+[package]
+name = "ac-library-rs-expander"
+version = "0.1.0"
+authors = ["Loptall <yutapypy0930@gmail.com>"]
+edition = "2018"
+description = "ac-library-rs snippets expander for cargo-compete"
+license-file = "LICENSE-WTFPL"
+repository = "https://github.com/Loptall/ac-library-rs-expander"
+
+[[bin]]
+name = "exl"
+path = "src/main.rs"
+
+[dependencies]
+structopt = "0.3"
+lazy_static = "1.4.0"
+cargo_metadata = "0.12.0"

@@ -1,0 +1,27 @@
+[package]
+name = "accord-rs"
+version = "0.0.5-alpha.1"
+authors = ["Fynn Freyer <fynn.freyer@googlemail.com>"]
+edition = "2021"
+description = "Calculate consensus sequences"
+readme = "README.md"
+license-file = "LICENSE"
+repository = "https://github.com/FynnFreyer/accord-rs"
+# documentation = "https://fynnfreyer.github.io/accord-rs"
+exclude = ["assets/*"]
+
+[lib]
+name = "accord"
+crate-type = ["cdylib"]
+
+[[bin]]
+name = "accord"
+path = "src/main.rs"
+
+[dependencies]
+pyo3 = "0.22"
+rust-htslib = "0.46"
+itertools = "0.13"
+counter = "0.6"
+clap = { version = "4.5", features = ["derive"] }
+log = "0.4"

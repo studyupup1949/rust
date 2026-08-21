@@ -1,0 +1,16 @@
+[package]
+name = "active_proc"
+version = "0.1.0"
+edition = "2021"
+license = "BSD-3-Clause"
+description = "Procedural macros for active_base."
+documentation = "https://docs.rs/active_proc"
+repository = "https://github.com/ramp-stack/active_proc"
+
+[lib]
+proc-macro = true
+
+[dependencies]
+proc-macro2 = "1.0.94"
+quote = "1.0.40"
+syn = {version ="2.0.106", features=["full"]}

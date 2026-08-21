@@ -1,0 +1,20 @@
+# Coverage
+lcov.info
+
+# Local
+.env
+*.log
+
+# macOS
+.DS_store
+
+# Rust
+Cargo.lock
+target/
+
+# Sensitive
+*.pem
+*.cer
+*.key
+*.pfx
+*.p12

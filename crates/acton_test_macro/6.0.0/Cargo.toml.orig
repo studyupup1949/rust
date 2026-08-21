@@ -1,0 +1,20 @@
+[package]
+name = "acton_test_macro"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+homepage.workspace = true
+repository.workspace = true
+description = "Testing utilities for Acton agents, providing tools to help in the testing and validation of agent behavior."
+
+[lib]
+proc-macro = true
+
+[dependencies]
+syn.workspace = true
+quote.workspace = true
+tracing.workspace = true
+parking_lot.workspace = true
+
+[lints]
+workspace = true

@@ -1,0 +1,438 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Active Call WebRTC Demo</title>
+    <style>
+        :root {
+            --bg: #f4f6f8;
+            --panel: #ffffff;
+            --ink: #101828;
+            --muted: #667085;
+            --line: #d0d5dd;
+            --primary: #1163ff;
+            --primary-ink: #ffffff;
+            --accent: #0f766e;
+            --danger: #b42318;
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            min-height: 100vh;
+            font-family: "IBM Plex Sans", "Noto Sans SC", "PingFang SC", sans-serif;
+            color: var(--ink);
+            background:
+                radial-gradient(circle at 90% 10%, #d5e3ff 0%, rgba(213, 227, 255, 0) 45%),
+                radial-gradient(circle at 10% 90%, #d8f6ec 0%, rgba(216, 246, 236, 0) 45%),
+                var(--bg);
+            display: grid;
+            place-items: center;
+            padding: 16px;
+        }
+
+        .card {
+            width: min(700px, 100%);
+            background: var(--panel);
+            border: 1px solid var(--line);
+            border-radius: 18px;
+            box-shadow: 0 12px 32px rgba(16, 24, 40, 0.08);
+            overflow: hidden;
+        }
+
+        .head {
+            padding: 20px 22px;
+            border-bottom: 1px solid var(--line);
+            background: linear-gradient(135deg, #ffffff 0%, #f8fbff 100%);
+        }
+
+        .head h1 {
+            margin: 0;
+            font-size: 22px;
+        }
+
+        .head p {
+            margin: 6px 0 0;
+            color: var(--muted);
+            font-size: 14px;
+        }
+
+        .body {
+            padding: 18px 22px 22px;
+            display: grid;
+            gap: 14px;
+        }
+
+        .row {
+            display: grid;
+            gap: 10px;
+        }
+
+        .inline {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        label {
+            font-size: 13px;
+            color: var(--muted);
+        }
+
+        select,
+        button {
+            height: 40px;
+            border-radius: 10px;
+            border: 1px solid var(--line);
+            font-size: 14px;
+        }
+
+        select {
+            padding: 0 12px;
+            min-width: 220px;
+            background: #fff;
+        }
+
+        button {
+            padding: 0 14px;
+            cursor: pointer;
+            font-weight: 600;
+            background: #fff;
+        }
+
+        .btn-primary {
+            border-color: var(--primary);
+            background: var(--primary);
+            color: var(--primary-ink);
+        }
+
+        .btn-danger {
+            border-color: var(--danger);
+            color: var(--danger);
+        }
+
+        .status {
+            font-size: 13px;
+            color: var(--muted);
+        }
+
+        .status strong {
+            color: var(--accent);
+        }
+
+        pre {
+            margin: 0;
+            background: #0f172a;
+            color: #d1d5db;
+            border-radius: 10px;
+            padding: 12px;
+            min-height: 120px;
+            max-height: 320px;
+            overflow: auto;
+            font-size: 12px;
+            line-height: 1.45;
+        }
+
+        @media (max-width: 640px) {
+            .head h1 {
+                font-size: 20px;
+            }
+
+            .inline {
+                flex-direction: column;
+            }
+
+            select,
+            button {
+                width: 100%;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <main class="card">
+        <section class="head">
+            <h1>rustrtc + audio_codec Demo</h1>
+            <p>连接后可播放 hello.mp3（通过 WebRTC Opus 传输）或进入 Echo 模式。</p>
+        </section>
+
+        <section class="body">
+            <div class="row">
+                <label for="mode">模式</label>
+                <div class="inline">
+                    <select id="mode">
+                        <option value="play">Play: fixtures/hello.mp3</option>
+                        <option value="echo">Echo: 本地回声试听</option>
+                    </select>
+                    <button id="connect" class="btn-primary">连接</button>
+                    <button id="hangup" class="btn-danger" disabled>挂断</button>
+                </div>
+            </div>
+
+            <div class="status">状态: <strong id="state">idle</strong></div>
+            <div class="status">最终 Codec: <strong id="codec">unknown</strong></div>
+
+            <div class="row">
+                <label>日志</label>
+                <pre id="log"></pre>
+            </div>
+        </section>
+    </main>
+
+    <script>
+        let pc = null;
+        let ws = null;
+        let micStream = null;
+        let sidetoneAudio = null;
+        let codecPollTimer = null;
+
+        const stateEl = document.getElementById("state");
+        const codecEl = document.getElementById("codec");
+        const logEl = document.getElementById("log");
+        const connectBtn = document.getElementById("connect");
+        const hangupBtn = document.getElementById("hangup");
+
+        function setState(next) {
+            stateEl.textContent = next;
+        }
+
+        function log(msg) {
+            const line = `[${new Date().toLocaleTimeString()}] ${msg}`;
+            logEl.textContent = `${line}\n${logEl.textContent}`;
+        }
+
+        function setCodec(text) {
+            codecEl.textContent = text;
+        }
+
+        function parseCodecFromAnswerSdp(sdp) {
+            if (!sdp || typeof sdp !== "string") {
+                return null;
+            }
+
+            const lines = sdp.split(/\r?\n/);
+            const mAudio = lines.find((line) => line.startsWith("m=audio "));
+            if (!mAudio) {
+                return null;
+            }
+
+            const parts = mAudio.trim().split(/\s+/);
+            if (parts.length < 4) {
+                return null;
+            }
+
+            const selectedPt = parts[3];
+            const rtpMapLine = lines.find((line) => line.startsWith(`a=rtpmap:${selectedPt} `));
+            if (!rtpMapLine) {
+                return `pt=${selectedPt}`;
+            }
+
+            const payload = rtpMapLine.replace(`a=rtpmap:${selectedPt} `, "").trim();
+            const codecName = payload.split("/")[0] || payload;
+            return `${codecName.toUpperCase()} (pt=${selectedPt})`;
+        }
+
+        async function readCodecFromStats() {
+            if (!pc) {
+                return null;
+            }
+
+            const stats = await pc.getStats();
+            let txCodec = null;
+            let rxCodec = null;
+
+            stats.forEach((report) => {
+                if (report.type === "outbound-rtp" && report.kind === "audio" && report.codecId) {
+                    const codec = stats.get(report.codecId);
+                    if (codec && codec.mimeType) {
+                        txCodec = codec.mimeType;
+                    }
+                }
+                if (report.type === "inbound-rtp" && report.kind === "audio" && report.codecId) {
+                    const codec = stats.get(report.codecId);
+                    if (codec && codec.mimeType) {
+                        rxCodec = codec.mimeType;
+                    }
+                }
+            });
+
+            if (!txCodec && !rxCodec) {
+                return null;
+            }
+            return `tx=${txCodec || "n/a"}, rx=${rxCodec || "n/a"}`;
+        }
+
+        function startCodecPolling() {
+            if (codecPollTimer) {
+                clearInterval(codecPollTimer);
+            }
+
+            codecPollTimer = setInterval(async () => {
+                try {
+                    const statsCodec = await readCodecFromStats();
+                    if (statsCodec) {
+                        setCodec(statsCodec);
+                    }
+                } catch (_) {
+                    // Ignore transient stats read errors.
+                }
+            }, 1000);
+        }
+
+        function cleanupSidetone() {
+            if (sidetoneAudio) {
+                sidetoneAudio.pause();
+                sidetoneAudio.srcObject = null;
+                sidetoneAudio.remove();
+                sidetoneAudio = null;
+            }
+        }
+
+        async function hangup() {
+            if (ws && ws.readyState === WebSocket.OPEN) {
+                ws.send(JSON.stringify({ command: "hangup" }));
+            }
+
+            if (ws) {
+                ws.close();
+                ws = null;
+            }
+
+            if (pc) {
+                pc.close();
+                pc = null;
+            }
+
+            if (micStream) {
+                micStream.getTracks().forEach((t) => t.stop());
+                micStream = null;
+            }
+
+            if (codecPollTimer) {
+                clearInterval(codecPollTimer);
+                codecPollTimer = null;
+            }
+
+            cleanupSidetone();
+            setState("idle");
+            setCodec("unknown");
+            connectBtn.disabled = false;
+            hangupBtn.disabled = true;
+            log("call closed");
+        }
+
+        async function connect() {
+            connectBtn.disabled = true;
+            hangupBtn.disabled = false;
+            setState("connecting");
+
+            const mode = document.getElementById("mode").value;
+            const sessionId = `demo.${crypto.randomUUID()}`;
+
+            try {
+                micStream = await navigator.mediaDevices.getUserMedia({
+                    audio: {
+                        echoCancellation: false,
+                        noiseSuppression: false,
+                        autoGainControl: false,
+                    },
+                });
+
+                const iceServers = await fetch("/iceservers").then((r) => r.json());
+                pc = new RTCPeerConnection({ iceServers });
+
+                micStream.getTracks().forEach((track) => pc.addTrack(track, micStream));
+
+                pc.onconnectionstatechange = () => {
+                    log(`pc state: ${pc.connectionState}`);
+                    if (pc.connectionState === "connected") {
+                        setState("connected");
+                    }
+                };
+
+                pc.ontrack = (ev) => {
+                    const audio = new Audio();
+                    audio.srcObject = ev.streams[0];
+                    audio.autoplay = true;
+                    audio.play().catch(() => {});
+                    log("remote audio track received");
+                };
+
+                const offer = await pc.createOffer();
+                await pc.setLocalDescription(offer);
+
+                const wsProto = window.location.protocol === "https:" ? "wss:" : "ws:";
+                ws = new WebSocket(`${wsProto}//${window.location.host}/call/webrtc?id=${sessionId}`);
+
+                ws.onopen = () => {
+                    log(`ws connected: ${sessionId}`);
+                    ws.send(JSON.stringify({
+                        command: "invite",
+                        option: {
+                            offer: offer.sdp,
+                            codec: "opus"
+                        }
+                    }));
+                };
+
+                ws.onmessage = async (event) => {
+                    const msg = JSON.parse(event.data);
+                    log(`event: ${msg.event || "unknown"}`);
+
+                    if (msg.event === "answer") {
+                        await pc.setRemoteDescription({ type: "answer", sdp: msg.sdp });
+                        setState("answered");
+
+                        const sdpCodec = parseCodecFromAnswerSdp(msg.sdp);
+                        if (sdpCodec) {
+                            setCodec(`sdp=${sdpCodec}`);
+                            log(`answer codec: ${sdpCodec}`);
+                        }
+                        startCodecPolling();
+
+                        if (mode === "play") {
+                            ws.send(JSON.stringify({
+                                command: "play",
+                                url: "fixtures/hello.mp3",
+                                playId: "demo-hello"
+                            }));
+                            log("sent play command: fixtures/hello.mp3");
+                        } else {
+                            sidetoneAudio = new Audio();
+                            sidetoneAudio.srcObject = micStream;
+                            sidetoneAudio.volume = 1.0;
+                            sidetoneAudio.autoplay = true;
+                            sidetoneAudio.play().catch(() => {});
+                            log("echo mode enabled (local sidetone)");
+                        }
+                    }
+                };
+
+                ws.onclose = () => {
+                    log("ws closed");
+                    if (pc || micStream) {
+                        hangup();
+                    }
+                };
+
+                ws.onerror = () => {
+                    log("ws error");
+                };
+            } catch (err) {
+                log(`connect failed: ${err}`);
+                await hangup();
+            }
+        }
+
+        connectBtn.addEventListener("click", connect);
+        hangupBtn.addEventListener("click", hangup);
+    </script>
+</body>
+
+</html>

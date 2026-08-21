@@ -1,0 +1,21 @@
+[package]
+name = "actix-type-handler"
+version = "0.1.0"
+edition = "2021"
+authors = ["eight"]
+license = "MIT"
+description="actix-type-handler is a procedural macro crate for Actix-web designed to simplify API creation. It enhances code readability by allowing direct struct argument passing, error handling with Result, and unique argument and return types for each API, while providing flexibility to define custom error responses."
+repository = "https://github.com/eightfx/actix-type-handler"
+documentation = "https://docs.rs/actix-type-handler"
+readme = "README.md"
+keyword = ["actix", "web", "proc", "macro", "API"]
+categories = ["API bindings"]
+
+
+[dependencies]
+proc-macro2 = "1.0.60"
+quote = "1.0.28"
+syn = { version = "2.0.18", features = ["full"] }
+[lib]
+proc-macro = true
+

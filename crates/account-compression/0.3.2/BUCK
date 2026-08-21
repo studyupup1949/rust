@@ -1,0 +1,30 @@
+load("@buckal//:wrapper.bzl", "rust_library")
+
+rust_library(
+    name = "account_compression",
+    srcs = glob(["**/*.rs"]),
+    crate = "account_compression",
+    crate_root = "src/lib.rs",
+    edition = "2021",
+    features = ["default"],
+
+    visibility = ["PUBLIC"],
+    deps = [
+        "//third-party/rust/crates/aligned-sized/0.1.4:aligned_sized",
+        "//third-party/rust/crates/anchor-lang/0.29.0:anchor_lang",
+        "//third-party/rust/crates/ark-ff/0.4.2:ark_ff",
+        "//third-party/rust/crates/ark-serialize/0.4.2:ark_serialize",
+        "//third-party/rust/crates/borsh/0.10.4:borsh",
+        "//third-party/rust/crates/bytemuck/1.25.2:bytemuck",
+        "//third-party/rust/crates/light-bounded-vec/0.1.4:light_bounded_vec",
+        "//third-party/rust/crates/light-concurrent-merkle-tree/0.1.4:light_concurrent_merkle_tree",
+        "//third-party/rust/crates/light-hash-set/0.1.4:light_hash_set",
+        "//third-party/rust/crates/light-hasher/0.1.4:light_hasher",
+        "//third-party/rust/crates/light-indexed-merkle-tree/0.1.4:light_indexed_merkle_tree",
+        "//third-party/rust/crates/light-macros/0.3.5:light_macros",
+        "//third-party/rust/crates/light-utils/0.1.4:light_utils",
+        "//third-party/rust/crates/light-verifier/0.1.4:light_verifier",
+        "//third-party/rust/crates/num-bigint/0.4.8:num_bigint",
+        "//third-party/rust/crates/num-traits/0.2.19:num_traits",
+    ],
+)

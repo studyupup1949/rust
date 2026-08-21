@@ -1,0 +1,34 @@
+#[doc = include_str!("../README.md")]
+use std::pin::Pin;
+use thiserror::Error as ThisError;
+
+mod execution;
+mod factory;
+mod server;
+mod submitting;
+mod task_handle;
+
+type TaskBox = Box<dyn Future<Output = ()> + Send + 'static>;
+pub(crate) type TaskPin = Pin<TaskBox>;
+
+/// Public error type.
+#[derive(Debug, ThisError)]
+pub enum Error {
+    #[error("executor task queue is full")]
+    FullTaskQueue,
+    #[error("failed to send cancel request")]
+    CancelSendFailure,
+}
+
+/// Public result type.
+pub type Result<T> = std::result::Result<T, Error>;
+
+pub use execution::Executor;
+pub use factory::Factory;
+pub use server::{
+    FeedbackReceiverMarker, NoFeedback, NoTaskStateSnapshot, Outcome, ServerConcept, ServerOutcome,
+    ServerSnapshot, ServerTask, TaskStateSnapshotReceiver, VisitOutcome, WithFeedback,
+    WithFeedbackWatch, WithTaskStateSnapshot, WithTaskStateSnapshotWatch,
+};
+pub use submitting::{CancelChannel, NoCancelChannel, SubmitGoal};
+pub use task_handle::{StatefulTaskHandle, TaskHandle, VisitableOutcome};

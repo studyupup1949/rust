@@ -1,0 +1,41 @@
+[package]
+name = "actix-server"
+version = "2.0.0-rc.2"
+authors = [
+    "Nikolay Kim <fafhrd91@gmail.com>",
+    "fakeshadow <24548779@qq.com>",
+    "Rob Ede <robjtede@icloud.com>",
+    "Ali MJ Al-Nasrawy <alimjalnasrawy@gmail.com>",
+]
+description = "General purpose TCP server built for the Actix ecosystem"
+keywords = ["network", "tcp", "server", "framework", "async"]
+categories = ["network-programming", "asynchronous"]
+homepage = "https://actix.rs"
+repository = "https://github.com/actix/actix-net.git"
+license = "MIT OR Apache-2.0"
+edition = "2018"
+
+[lib]
+name = "actix_server"
+path = "src/lib.rs"
+
+[features]
+default = []
+io-uring = ["tokio-uring", "actix-rt/io-uring"]
+
+[dependencies]
+actix-rt = { version = "2.4.0", default-features = false }
+actix-service = "2.0.0"
+actix-utils = "3.0.0"
+
+futures-core = { version = "0.3.7", default-features = false, features = ["alloc"] }
+futures-util = { version = "0.3.7", default-features = false, features = ["alloc"] }
+log = "0.4"
+mio = { version = "0.8", features = ["os-poll", "net"] }
+num_cpus = "1.13"
+socket2 = "0.4.2"
+tokio = { version = "1.5.1", features = ["sync"] }
+
+# runtime for io-uring feature
+tokio-uring = { version = "0.1", optional = true }
+

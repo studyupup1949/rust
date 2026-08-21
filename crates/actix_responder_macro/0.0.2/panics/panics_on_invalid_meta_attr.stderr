@@ -1,0 +1,5 @@
+error: empty meta_attr not allowed
+ --> $DIR/panics_on_invalid_meta_attr.rs:6:31
+  |
+6 | #[actix_responder(meta_attr = "")]
+  |                               ^^

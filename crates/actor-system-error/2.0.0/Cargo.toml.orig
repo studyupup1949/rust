@@ -1,0 +1,15 @@
+[package]
+name = "actor-system-error"
+description = "Helper crate for implementation of errors on gear backend"
+documentation = "https://docs.rs/actor-system-error"
+edition.workspace = true
+version.workspace = true
+authors.workspace = true
+license.workspace = true
+homepage.workspace = true
+repository.workspace = true
+rust-version.workspace = true
+
+[dependencies]
+derive_more.workspace = true
+gear-workspace-hack.workspace = true

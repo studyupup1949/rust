@@ -1,0 +1,14 @@
+load("@buckal//:wrapper.bzl", "rust_library")
+
+rust_library(
+    name = "acon",
+    srcs = glob(["**/*.rs"]),
+    crate = "acon",
+    crate_root = "src/lib.rs",
+    edition = "2015",
+
+    visibility = ["PUBLIC"],
+    deps = [
+        "//third-party/rust/crates/clippy/0.0.58:clippy",
+    ],
+)

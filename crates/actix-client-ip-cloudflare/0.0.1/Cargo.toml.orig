@@ -1,0 +1,8 @@
+[package]
+name = "actix-client-ip-cloudflare"
+version = "0.0.1"
+edition = "2021"
+description = "Upcoming project from @robjtede"
+license = "MIT"
+
+[dependencies]

@@ -1,0 +1,14 @@
+{
+  "name": "document",
+  "type": "block",
+  "location": [
+    {
+      "line": 1,
+      "col": 0
+    },
+    {
+      "line": 1,
+      "col": 0
+    }
+  ]
+}

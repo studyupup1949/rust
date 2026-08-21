@@ -1,0 +1,58 @@
+[package]
+name = "acsrs"
+version = "0.5.2"
+edition = "2021"
+description = "A simple ACS written in rust"
+readme = "README.md"
+repository = "https://github.com/guillaumepellegrino/acsrs"
+license = "GPL-3.0-or-later"
+authors = ["Guillaume Pellegrino <guillaume.pellegrino@yahoo.com>"]
+keywords = ["acs", "tr069", "cwmp", "network"]
+categories = ["network-programming"]
+
+[[bin]]
+name = "acsrs"
+path = "src/main.rs"
+
+[[bin]]
+name = "acscli"
+path = "src/acscli.rs"
+
+[dependencies]
+hyper = { version = "1.0.0-rc.4", features = ["full"] }
+tokio = { version = "1.35.0", features = ["full"] }
+tokio-native-tls = "0.3.1"
+pin-project-lite = "0.2.10"
+h2 = "0.3.17"
+spin = "0.9.8"
+native-tls = "0.2.11"
+reqwest = "0.11.15"
+serde = { version = "1.0.158", features = ["derive"] }
+serde_qs = "0.12.0"
+serde_json= "1.0.96"
+quick-xml = { version = "0.28.1", features = ["async-tokio", "serialize"] }
+toml = "0.7.3"
+digest_auth = "0.3.0"
+http-body-util = "0.1.0-rc.2" 
+bytes = "1.4.0"
+futures = "0.3.27"
+rand = "0.8.5"
+regex = "1.7.2"
+base64 = "0.21.0"
+clap = { version = "4.1.14", features = ["cargo"] }
+daemonize = "0.5.0"
+eyre = "0.6.8"
+flume = "0.10.14"
+termios = "0.3.3"
+tokiocli = "0.1.2"
+log = "0.4.17"
+simplelog = "0.12.1"
+syslog = "6.1.0"
+proc-macro2 = "1.0.66"
+
+[profile.release]
+opt-level = 3
+strip = true
+debug = false
+codegen-units = 1
+lto = true

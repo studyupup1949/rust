@@ -1,0 +1,28 @@
+[package]
+name = "active-reporting"
+description = "A custom error wrapper for detailed logs"
+version = "0.0.2"
+edition.workspace = true
+rust-version.workspace = true
+categories = ["caching", "development-tools::debugging", "rust-patterns"]
+keywords = ["reporting", "logging", "errors", "issue", "active"]
+homepage.workspace = true
+repository.workspace = true
+license.workspace = true
+authors.workspace = true
+
+[lib]
+path = "./mod.rs"
+
+[[bench]]
+name = "active-reporting"
+harness = false
+path = "benches.rs"
+
+[dependencies]
+issuing = {workspace = true}
+systemio = {workspace = true}
+systemstd = {workspace = true}
+
+[dev-dependencies]
+criterion = "0.8"

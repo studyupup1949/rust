@@ -1,0 +1,19 @@
+[package]
+name = "acceptor-alloc"
+version = "0.0.1"
+edition = "2024"
+
+authors = ["Mikou"]
+license = "MIT OR Apache-2.0"
+description = "alloc-based acceptors built on the accepts core traits"
+readme = "README.md"
+
+documentation = "https://docs.rs/acceptor-alloc"
+repository = "https://github.com/acceptor-rs/acceptor-alloc"
+homepage = "https://github.com/acceptor-rs/acceptor-alloc"
+
+keywords = ["accepts", "acceptor", "pipeline", "async"]
+categories = ["asynchronous"]
+
+[dependencies]
+accepts = { version = "0.0.2", default-features = false }

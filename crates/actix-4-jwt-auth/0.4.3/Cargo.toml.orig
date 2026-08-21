@@ -1,0 +1,40 @@
+[package]
+authors = ["Olger Warnier <olger@spectare.nl>"]
+categories = [
+  "network-programming",
+  "asynchronous",
+  "web-programming::http-server",
+]
+description = "OIDC authentication extractor for Actix 4"
+edition = "2021"
+keywords = ["actix", "http", "web", "cryptography"]
+license = "MIT"
+name = "actix-4-jwt-auth"
+repository = "https://github.com/spectare/actix-4-jwt-auth"
+version = "0.4.3"
+
+[package.metadata.docs.rs]
+rustdoc-args = ["--cfg", "docsrs"]
+
+[dependencies]
+actix-rt = "2.6.0"
+actix-service = "2.0.2"
+actix-web = "4.1.0"
+biscuit = "0.6.0-beta1"
+bytes = "1.1.0"
+derive_more = "0.99.17"
+env_logger = "0.9.0"
+futures = "0.3.19"
+futures-core = {version = "0.3.19", default-features = false, features = ["alloc"]}
+futures-util = {version = "0.3.19", default-features = false, features = ["alloc"]}
+log = "0.4.14"
+reqwest = {version = "0.11.9", features = ["json", "blocking"]}
+sanitize-filename = "0.4"
+serde = {version = "1", features = ["derive"]}
+serde_derive = "1"
+serde_json = "1"
+thiserror = "1.0.30"
+tokio = {version = "1.16.1", features = ["full"]}
+
+[dev-dependencies]
+pretty_assertions= "1.0.0"

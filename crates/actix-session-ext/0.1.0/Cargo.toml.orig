@@ -1,0 +1,20 @@
+[package]
+name = "actix-session-ext"
+version = "0.1.0"
+edition = "2021"
+license = "MIT"
+authors = ["Alexis Le Provost <alexis.leprovost@outlook.com>"]
+homepage = "https://github.com/alekece/actix-session-ext"
+repository = "https://github.com/alekece/actix-session-ext"
+description = "An extension library for safer session interface"
+rust-version = "1.78.0"
+
+[badges]
+maintenance = { status = "actively-developed" }
+
+[dependencies]
+actix-session = "0.10.1"
+serde = { version = "1.0.216", features = ["derive"] }
+
+[dev-dependencies]
+actix-web = "4.9.0"

@@ -1,0 +1,13 @@
+[package]
+name = "accurust-server"
+version = "0.0.1"
+authors = ["Samuel Naughton Baldwin <sam.naughton2000@gmail.com>"]
+edition = "2018"
+license = "MIT"
+description = "On hold for upcoming scheduling project."
+homepage = "https://github.com/samnaughtonb/accurust-server"
+repository = "https://github.com/samnaughtonb/accurust-server"
+readme = "README.md"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+[dependencies]

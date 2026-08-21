@@ -1,0 +1,39 @@
+[package]
+name = "actix-protobuf"
+version = "0.1.0"
+authors = ["kingxsp <jin.hb.zh@outlook.com>"]
+description = "Protobuf support for actix-web framework."
+readme = "README.md"
+keywords = ["actix"]
+homepage = "https://github.com/actix/actix-protobuf"
+license = "MIT/Apache-2.0"
+exclude = [".gitignore", ".travis.yml", ".cargo/config",
+           "appveyor.yml", "/examples/**"]
+
+[badges]
+travis-ci = { repository = "actix/actix-protobuf", branch = "master" }
+codecov = { repository = "actix/actix-protobuf", branch = "master", service = "github" }
+
+[lib]
+name = "actix_protobuf"
+path = "src/lib.rs"
+
+[dependencies]
+bytes = "0.4"
+futures = "0.1"
+failure = "0.1"
+
+actix = "0.5"
+actix-web = "0.4"
+
+prost = "0.2"
+
+[dev-dependencies]
+http = "^0.1.5"
+prost-derive = "^0.2"
+
+[workspace]
+members = [
+  "./",
+  "examples/prost-example",
+]

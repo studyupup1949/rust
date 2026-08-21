@@ -1,0 +1,38 @@
+[package]
+name = "acp-ws-bridge"
+version = "0.1.0"
+edition = "2021"
+description = "WebSocket bridge between GitHub Copilot CLI (ACP) and remote clients"
+license = "MIT"
+repository = "https://github.com/ytthuan/acp-ws-bridge"
+homepage = "https://github.com/ytthuan/acp-ws-bridge"
+readme = "README.md"
+keywords = ["acp", "websocket", "copilot", "bridge", "json-rpc"]
+categories = ["command-line-utilities", "network-programming", "web-programming::websocket"]
+
+[dependencies]
+tokio = { version = "1", features = ["full"] }
+tokio-tungstenite = "0.24"
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+tracing = "0.1"
+tracing-subscriber = { version = "0.3", features = ["env-filter"] }
+clap = { version = "4", features = ["derive"] }
+axum = { version = "0.7", features = ["ws"] }
+tower = "0.5"
+tower-http = { version = "0.5", features = ["cors", "trace"] }
+hyper = { version = "1", features = ["server"] }
+hyper-util = { version = "0.1", features = ["tokio", "server-auto"] }
+native-tls = "0.2"
+tokio-native-tls = "0.3"
+rcgen = "0.13"
+futures-util = "0.3"
+anyhow = "1"
+chrono = { version = "0.4", features = ["serde"] }
+rusqlite = { version = "0.32", features = ["bundled"] }
+dirs = "6"
+
+[dev-dependencies]
+tempfile = "3"
+tower = { version = "0.5", features = ["util"] }
+http-body-util = "0.1"

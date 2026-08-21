@@ -1,0 +1,11 @@
+[package]
+name = "actix-web-reqid"
+version = "0.1.1"
+edition = "2024"
+description = "Middleware for Actix Web to generate and extract UUID request IDs."
+license = "MIT"
+
+[dependencies]
+actix-web = "4.11.0"
+futures-util = "0.3.31"
+uuid = { version = "1.17.0", features = ["v4"] }

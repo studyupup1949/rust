@@ -1,0 +1,13 @@
+# This is a test file. It contains data, and their paths.
+[ test
+	{
+		{ input
+			key this is the value of the key
+		}
+		[ assert
+			{ key
+				key this is the value of the key
+			}
+		]
+	}
+]

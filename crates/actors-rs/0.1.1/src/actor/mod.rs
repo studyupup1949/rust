@@ -1,0 +1,270 @@
+pub(crate) mod actor_cell;
+pub(crate) mod actor_ref;
+pub(crate) mod channel;
+pub(crate) mod macros;
+pub(crate) mod props;
+pub(crate) mod selection;
+pub(crate) mod uri;
+
+use std::fmt;
+
+use crate::validate::InvalidName;
+
+// Public riker::actor API (plus the pub data types in this file)
+pub use self::{
+    actor_cell::Context,
+    channel::{
+        channel, All, Channel, ChannelMsg, ChannelRef, DLChannelMsg, DeadLetter, EventsChannel,
+        Publish, Subscribe, SysTopic, Topic, Unsubscribe, UnsubscribeAll,
+    },
+    macros::actor,
+    props::{ActorArgs, ActorFactory, ActorFactoryArgs, ActorProducer, BoxActorProd, Props},
+    selection::{ActorSelection, ActorSelectionFactory},
+    uri::{ActorId, ActorPath, ActorUri},
+};
+use crate::actor_ref::BasicActorRef;
+use crate::actor_ref::Sender;
+use crate::system::SystemMsg;
+use crate::Message;
+
+pub type MsgResult<T> = Result<(), MsgError<T>>;
+
+/// Internal message error when a message can't be added to an actor's mailbox
+#[doc(hidden)]
+#[derive(Clone, Debug)]
+pub struct MsgError<T> {
+    pub msg: T,
+}
+
+impl<T> MsgError<T> {
+    pub const fn new(msg: T) -> Self {
+        Self { msg }
+    }
+}
+
+impl<T> fmt::Display for MsgError<T> {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        f.write_str("The actor does not exist. It may have been terminated")
+    }
+}
+
+/// Error type when an `try_tell` fails on `Option<ActorRef<Msg>>`
+#[derive(Debug)]
+pub struct TryMsgError<T> {
+    pub msg: T,
+}
+
+impl<T> TryMsgError<T> {
+    pub const fn new(msg: T) -> Self {
+        Self { msg }
+    }
+}
+
+impl<T> fmt::Display for TryMsgError<T> {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        f.write_str("Option<ActorRef> is None")
+    }
+}
+
+/// Error type when an actor fails to start during `actor_of`.
+#[derive(Debug)]
+pub enum CreateError {
+    Panicked,
+    System,
+    InvalidName(String),
+    AlreadyExists(ActorPath),
+}
+
+impl fmt::Display for CreateError {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        match *self {
+            Self::Panicked => {
+                f.write_str("Failed to create actor. Cause: Actor panicked while starting")
+            }
+            Self::System => f.write_str("Failed to create actor. Cause: System failure"),
+            Self::InvalidName(ref name) => f.write_str(&format!(
+                "Failed to create actor. Cause: Invalid actor name ({})",
+                name
+            )),
+            Self::AlreadyExists(ref path) => f.write_str(&format!(
+                "Failed to create actor. Cause: An actor at the same path already exists ({})",
+                path
+            )),
+        }
+    }
+}
+
+impl From<InvalidName> for CreateError {
+    fn from(err: InvalidName) -> Self {
+        Self::InvalidName(err.name)
+    }
+}
+
+/// Error type when an actor fails to restart.
+#[derive(Debug)]
+pub struct RestartError;
+
+impl fmt::Display for RestartError {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        f.write_str("Failed to restart actor. Cause: Actor panicked while starting")
+    }
+}
+
+pub trait Actor: Send + 'static {
+    type Msg: Message;
+
+    /// Invoked when an actor is being started by the system.
+    ///
+    /// Any initialization inherent to the actor's role should be
+    /// performed here.
+    ///
+    /// Panics in `pre_start` do not invoke the
+    /// supervision strategy and the actor will be terminated.
+    fn pre_start(&mut self, _ctx: &Context<Self::Msg>) {}
+
+    /// Invoked after an actor has started.
+    ///
+    /// Any post initialization can be performed here, such as writing
+    /// to a log file, emmitting metrics.
+    ///
+    /// Panics in `post_start` follow the supervision strategy.
+    fn post_start(&mut self, _ctx: &Context<Self::Msg>) {}
+
+    /// Invoked after an actor has been stopped.
+    fn post_stop(&mut self) {}
+
+    /// Return a supervisor strategy that will be used when handling failed child actors.
+    fn supervisor_strategy(&self) -> Strategy {
+        Strategy::Restart
+    }
+
+    /// Invoked when an actor receives a message
+    ///
+    /// It is guaranteed that only one message in the actor's mailbox is processed
+    /// at any one time, including `recv` and `sys_recv`.
+    fn recv(&mut self, ctx: &Context<Self::Msg>, msg: Self::Msg, sender: Sender);
+
+    /// Invoked when an actor receives a system message
+    ///
+    /// It is guaranteed that only one message in the actor's mailbox is processed
+    /// at any one time, including `recv` and `sys_recv`.
+    fn sys_recv(&mut self, _ctx: &Context<Self::Msg>, _msg: SystemMsg, _sender: Sender) {}
+}
+
+impl<A: Actor + ?Sized> Actor for Box<A> {
+    type Msg = A::Msg;
+
+    fn pre_start(&mut self, ctx: &Context<Self::Msg>) {
+        (**self).pre_start(ctx);
+    }
+
+    fn post_start(&mut self, ctx: &Context<Self::Msg>) {
+        (**self).post_start(ctx)
+    }
+
+    fn post_stop(&mut self) {
+        (**self).post_stop()
+    }
+
+    fn supervisor_strategy(&self) -> Strategy {
+        (**self).supervisor_strategy()
+    }
+
+    fn recv(&mut self, ctx: &Context<Self::Msg>, msg: Self::Msg, sender: Option<BasicActorRef>) {
+        (**self).recv(ctx, msg, sender)
+    }
+
+    fn sys_recv(
+        &mut self,
+        ctx: &Context<Self::Msg>,
+        msg: SystemMsg,
+        sender: Option<BasicActorRef>,
+    ) {
+        (**self).sys_recv(ctx, msg, sender)
+    }
+}
+
+/// Receive and handle a specific message type
+///
+/// This trait is typically used in conjuction with the #[actor]
+/// attribute macro and implemented for each message type to receive.
+///
+/// # Examples
+///
+/// ```
+/// # use actors_rs::*;
+///
+/// #[derive(Clone, Debug)]
+/// pub struct Foo;
+/// #[derive(Clone, Debug)]
+/// pub struct Bar;
+/// #[actor(Foo, Bar)] // <-- set our actor to receive Foo and Bar types
+/// #[derive(Default)]
+/// struct MyActor;
+///
+/// impl Actor for MyActor {
+///     type Msg = MyActorMsg; // <-- MyActorMsg is provided for us
+///
+///     fn recv(&mut self,
+///                 ctx: &Context<Self::Msg>,
+///                 msg: Self::Msg,
+///                 sender: Sender) {
+///         self.receive(ctx, msg, sender); // <-- call the respective implementation
+///     }
+/// }
+///
+/// impl Receive<Foo> for MyActor {
+///     type Msg = MyActorMsg;
+///
+///     fn receive(&mut self,
+///                 ctx: &Context<Self::Msg>,
+///                 msg: Foo, // <-- receive Foo
+///                 sender: Sender) {
+///         println!("Received a Foo");
+///     }
+/// }
+///
+/// impl Receive<Bar> for MyActor {
+///     type Msg = MyActorMsg;
+///
+///     fn receive(&mut self,
+///                 ctx: &Context<Self::Msg>,
+///                 msg: Bar, // <-- receive Bar
+///                 sender: Sender) {
+///         println!("Received a Bar");
+///     }
+/// }
+///
+/// // main
+/// let sys = ActorSystem::new().unwrap();
+/// let actor = sys.actor_of::<MyActor>("my-actor").unwrap();
+///
+/// actor.tell(Foo, None);
+/// actor.tell(Bar, None);
+/// ```
+pub trait Receive<Msg: Message> {
+    type Msg: Message;
+
+    /// Invoked when an actor receives a message
+    ///
+    /// It is guaranteed that only one message in the actor's mailbox is processed
+    /// at any one time, including `receive`, `other_receive` and `system_receive`.
+    fn receive(&mut self, ctx: &Context<Self::Msg>, msg: Msg, sender: Option<BasicActorRef>);
+}
+
+/// The actor trait object
+pub type BoxActor<Msg> = Box<dyn Actor<Msg = Msg> + Send>;
+
+/// Supervision strategy
+///
+/// Returned in `Actor.supervision_strategy`
+pub enum Strategy {
+    /// Stop the child actor
+    Stop,
+
+    /// Attempt to restart the child actor
+    Restart,
+
+    /// Escalate the failure to a parent
+    Escalate,
+}

@@ -1,0 +1,14 @@
+load("@buckal//:wrapper.bzl", "rust_library")
+
+rust_library(
+    name = "acute_scenes",
+    srcs = glob(["**/*.rs"]),
+    crate = "acute_scenes",
+    crate_root = "src/lib.rs",
+    edition = "2018",
+
+    visibility = ["PUBLIC"],
+    deps = [
+        "//third-party/rust/crates/acute_ecs/0.1.0:acute_ecs",
+    ],
+)

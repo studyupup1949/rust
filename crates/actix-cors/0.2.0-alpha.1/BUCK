@@ -1,0 +1,15 @@
+load("@buckal//:wrapper.bzl", "rust_library")
+
+rust_library(
+    name = "actix_cors",
+    srcs = glob(["**/*.rs"]),
+    crate = "actix_cors",
+    crate_root = "src/lib.rs",
+    edition = "2018",
+
+    visibility = ["PUBLIC"],
+    deps = [
+        "//third-party/rust/crates/derive_more/0.15.0:derive_more",
+        "//third-party/rust/crates/futures/0.3.34:futures",
+    ],
+)

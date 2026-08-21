@@ -1,0 +1,6 @@
+{
+  "git": {
+    "sha1": "57cb6218a54f656399517daf60e6618108c09ae5"
+  },
+  "path_in_vcs": "crates/actionqueue-daemon"
+}

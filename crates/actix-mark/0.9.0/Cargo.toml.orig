@@ -1,0 +1,29 @@
+[package]
+name = "actix-mark"
+version = "0.9.0"
+edition = "2024"
+description = "Actix-web service for serving Markdown files as HTML"
+authors = ["Frédérik Bilhaut <frederik.bilhaut@gmail.com>"]
+license = "Apache-2.0"
+keywords = ["actix-web", "markdown"]
+readme = "./Readme.md"
+homepage = "https://github.com/fbilhaut/actix-mark"
+repository = "https://github.com/fbilhaut/actix-mark"
+documentation = "https://docs.rs/fbilhaut/actix-mark"
+
+[lib]
+path = "src/lib.rs"
+
+[[example]]
+name = "basic"
+path = "examples/basic/main.rs"
+
+[dependencies]
+actix-web = "4"
+actix-files = "0.6"
+pulldown-cmark = { version = "0.12", default-features = false, features = ["html"] }
+tokio = { version = "1", features = ["fs"] }
+
+[dev-dependencies]
+actix-rt = "2"
+env_logger = "0.11"

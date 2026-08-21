@@ -1,0 +1,37 @@
+load("@buckal//:wrapper.bzl", "rust_library")
+
+rust_library(
+    name = "acp_hub",
+    srcs = glob(["**/*.rs"]),
+    crate = "acp_hub",
+    crate_root = "src/lib.rs",
+    edition = "2024",
+
+    visibility = ["PUBLIC"],
+    deps = [
+        "//third-party/rust/crates/agent-client-protocol-conductor/1.2.0:agent_client_protocol_conductor",
+        "//third-party/rust/crates/agent-client-protocol/1.2.0:agent_client_protocol",
+        "//third-party/rust/crates/anyhow/1.0.104:anyhow",
+        "//third-party/rust/crates/async-process/2.5.0:async_process",
+        "//third-party/rust/crates/async-tungstenite/0.34.1:async_tungstenite",
+        "//third-party/rust/crates/base64/0.22.1:base64",
+        "//third-party/rust/crates/chrono/0.4.45:chrono",
+        "//third-party/rust/crates/dunce/1.0.5:dunce",
+        "//third-party/rust/crates/fd-lock/4.0.4:fd_lock",
+        "//third-party/rust/crates/futures/0.3.34:futures",
+        "//third-party/rust/crates/hmac/0.12.1:hmac",
+        "//third-party/rust/crates/interprocess/2.4.3:interprocess",
+        "//third-party/rust/crates/libc/0.2.189:libc",
+        "//third-party/rust/crates/parking_lot/0.12.5:parking_lot",
+        "//third-party/rust/crates/reqwest/0.13.4:reqwest",
+        "//third-party/rust/crates/rusqlite/0.40.2:rusqlite",
+        "//third-party/rust/crates/serde/1.0.229:serde",
+        "//third-party/rust/crates/serde_json/1.0.151:serde_json",
+        "//third-party/rust/crates/sha2/0.10.9:sha2",
+        "//third-party/rust/crates/tempfile/3.27.0:tempfile",
+        "//third-party/rust/crates/thiserror/2.0.20:thiserror",
+        "//third-party/rust/crates/tokio/1.53.1:tokio",
+        "//third-party/rust/crates/tracing/0.1.44:tracing",
+        "//third-party/rust/crates/uuid/1.24.0:uuid",
+    ],
+)

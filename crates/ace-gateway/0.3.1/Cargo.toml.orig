@@ -1,0 +1,22 @@
+[package]
+name = "ace-gateway"
+version = "0.3.1"
+edition = "2024"
+authors = ["Samuel Preston <samp.reston@outlook.com>"]
+description = "DoIP Gateway, ISO-TP bridge node, and DoIP Tester"
+readme = "README.md"
+repository = "https://github.com/samp-reston/ace"
+license = "MIT or Apache-2.0"
+keywords = ["diagnostics", "vehicle", "standards"]
+categories = ["development-tools", "network-programming", "automotive"]
+
+[dependencies]
+ace-sim = { workspace = true }
+ace-doip = { workspace = true }
+ace-can = { workspace = true }
+ace-proto = { workspace = true }
+ace-core = { workspace = true }
+ace-macros = { workspace = true }
+ace-client = { workspace = true }
+ace-server = { workspace = true }
+heapless = { workspace = true }

@@ -1,0 +1,109 @@
+{
+  "name": "document",
+  "type": "block",
+  "header": {
+    "title": [
+      {
+        "name": "text",
+        "type": "string",
+        "value": "Document Title: this is not the subtitle",
+        "location": [
+          {
+            "line": 3,
+            "col": 3
+          },
+          {
+            "line": 3,
+            "col": 42
+          }
+        ]
+      }
+    ],
+    "subtitle": [
+      {
+        "name": "text",
+        "type": "string",
+        "value": "this is the subtitle",
+        "location": [
+          {
+            "line": 3,
+            "col": 44
+          },
+          {
+            "line": 3,
+            "col": 64
+          }
+        ]
+      }
+    ],
+    "location": [
+      {
+        "line": 3,
+        "col": 1
+      },
+      {
+        "line": 3,
+        "col": 64
+      }
+    ]
+  },
+  "attributes": {},
+  "blocks": [
+    {
+      "name": "comment",
+      "type": "block",
+      "content": " this comment line is ignored",
+      "location": [
+        {
+          "line": 2,
+          "col": 1
+        },
+        {
+          "line": 2,
+          "col": 32
+        }
+      ]
+    },
+    {
+      "name": "paragraph",
+      "type": "block",
+      "inlines": [
+        {
+          "name": "text",
+          "type": "string",
+          "value": "body text",
+          "location": [
+            {
+              "line": 5,
+              "col": 1
+            },
+            {
+              "line": 5,
+              "col": 9
+            }
+          ]
+        }
+      ],
+      "location": [
+        {
+          "line": 5,
+          "col": 1
+        },
+        {
+          "line": 5,
+          "col": 9
+        }
+      ]
+    }
+  ],
+  "location": [
+    {
+      "line": 2,
+      "col": 1
+    },
+    {
+      "line": 5,
+      "col": 9
+    }
+  ]
+}

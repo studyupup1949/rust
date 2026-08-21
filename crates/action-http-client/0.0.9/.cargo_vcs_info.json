@@ -1,0 +1,6 @@
+{
+  "git": {
+    "sha1": "305658c08752662bd2d8457d3e1d1845077b822f"
+  },
+  "path_in_vcs": "crates/action-http-client"
+}

@@ -1,0 +1,150 @@
+{
+    "id": "simple",
+    "name": "Simple Workflow",
+    "desc": "A simple workflow example",
+    "env": {},
+    "nodes": [
+        {
+            "id": "n1",
+            "title": "start node",
+            "desc": "start node",
+            "uses": "start",
+            "error_strategy": "none",
+            "action": {}
+        },
+        {
+            "id": "n2",
+            "title": "http request",
+            "desc": "http request action",
+            "uses": "http_request",
+            "error_strategy": "none",
+            "retry": {
+                "interval": 1000,
+                "times": 3
+            },
+            "action": {
+                "url": "https://httpbin.org/get",
+                "method": "GET",
+                "auth": {
+                    "auth_type": "no_auth",
+                    "api_key": null,
+                    "header": null
+                },
+                "headers": {},
+                "params": {
+                    "code_executor": "python3"
+                },
+                "body": {
+                    "content_type": "none",
+                    "data": null
+                },
+                "timeout": 30000
+            }
+        },
+        {
+            "id": "n3",
+            "title": "data format",
+            "desc": "data format",
+            "uses": "code",
+            "error_strategy": "none",
+            "action": {
+                "variables": [
+                    {
+                        "variable": "body",
+                        "value_selector": "{{#n2.body#}}"
+                    }
+                ],
+                "code_language": "javascript",
+                "code": "function main({ body }) { const json_body = JSON.parse(body); return { body: json_body } }"
+            }
+        },
+        {
+            "id": "n4",
+            "title": "condition",
+            "desc": "if else action",
+            "uses": "if_else",
+            "error_strategy": "none",
+            "action": {
+                "cases": [
+                    {
+                        "case_id": "true",
+                        "logical_operator": "and",
+                        "conditions": [
+                            {
+                                "variable_selector": "{{#n3.body.args.code_executor#}}",
+                                "comparison_operator": "is",
+                                "value": "javascript"
+                            }
+                        ]
+                    }
+                ]
+            }
+        },
+        {
+            "id": "n5",
+            "title": "code",
+            "desc": "code action",
+            "uses": "code",
+            "error_strategy": "none",
+            "action": {
+                "variables": [
+                    {
+                        "variable": "value",
+                        "value_selector": "{{#n3.body.args.code_executor#}}"
+                    }
+                ],
+                "code_language": "javascript",
+                "code": "function main({value}) { return { result: value } }"
+            }
+        },
+        {
+            "id": "n6",
+            "title": "code",
+            "desc": "code action",
+            "uses": "code",
+            "error_strategy": "none",
+            "action": {
+                "variables": [
+                    {
+                        "variable": "params",
+                        "value_selector": "{{#n3.body.args.code_executor#}}"
+                    }
+                ],
+                "code_language": "python3",
+                "code": "def main(params): return { 'result': params }"
+            }
+        }
+    ],
+    "edges": [
+        {
+            "id": "e1",
+            "source": "n1",
+            "target": "n2",
+            "source_handle": "source"
+        },
+        {
+            "id": "e2",
+            "source": "n2",
+            "target": "n3",
+            "source_handle": "source"
+        },
+        {
+            "id": "e3",
+            "source": "n3",
+            "target": "n4",
+            "source_handle": "source"
+        },
+        {
+            "id": "e4",
+            "source": "n4",
+            "target": "n5",
+            "source_handle": "true"
+        },
+        {
+            "id": "e5",
+            "source": "n4",
+            "target": "n6",
+            "source_handle": "false"
+        }
+    ]
+}

@@ -1,0 +1,22 @@
+load("@buckal//:wrapper.bzl", "rust_library")
+
+rust_library(
+    name = "acr",
+    srcs = glob(["**/*.rs"]),
+    crate = "acr",
+    crate_root = "src/lib.rs",
+    edition = "2021",
+
+    visibility = ["PUBLIC"],
+    deps = [
+        "//third-party/rust/crates/chrono/0.4.45:chrono",
+        "//third-party/rust/crates/crc32fast/1.5.0:crc32fast",
+        "//third-party/rust/crates/deflate/1.0.0:deflate",
+        "//third-party/rust/crates/dh/0.8.1:dh",
+        "//third-party/rust/crates/inflate/0.4.5:inflate",
+        "//third-party/rust/crates/libaes/0.7.0:libaes",
+        "//third-party/rust/crates/lzma-rs/0.3.0:lzma_rs",
+        "//third-party/rust/crates/murmur3/0.5.2:murmur3",
+        "//third-party/rust/crates/sha2/0.10.9:sha2",
+    ],
+)

@@ -1,0 +1,17 @@
+[package]
+name = "actix-ez-oauth"
+version = "0.0.0"
+edition = "2024"
+authors = ["Alejandro Sempere <asempere158@gmail.com>"]
+description = "Actix easy auth library"
+license = "MIT OR Apache-2.0"
+repository = "https://github.com/Asempere123123/actix-ez-oauth"
+documentation = "https://docs.rs/actix-ez-oauth"
+readme = "README.md"
+keywords = ["actix", "actix-web", "oauth", "auth"]
+categories = ["authentication", "web-programming::http-server"]
+
+[dependencies]
+
+[package.metadata.docs.rs]
+all-features = true

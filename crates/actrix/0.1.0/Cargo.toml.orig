@@ -1,0 +1,13 @@
+[package]
+name = "actrix"
+version = "0.1.0"
+edition = "2021"
+authors = ["Actor RTC Contributors"]
+description = "Actor-based RTC framework"
+repository = "https://github.com/actor-rtc/actrix"
+license = "Apache-2.0"
+readme = "README.md"
+keywords = ["actor", "rtc", "async", "concurrent", "framework"]
+categories = ["concurrency", "network-programming"]
+
+[dependencies]

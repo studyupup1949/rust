@@ -1,0 +1,24 @@
+[package]
+name = "acid-rs"
+version = "1.0.0"
+edition = "2021"
+license = "MIT"
+authors = ["Alexander Abraham <youreccentricity@outlook.com>"]
+description= "A supersonic static-site generator written in Rust."
+homepage = "https://github.com/iamtheblackunicorn/acid"
+repository = "https://github.com/iamtheblackunicorn/acid"
+documentation = "https://github.com/iamtheblackunicorn/acid"
+readme = "README.markdown"
+keywords = ["static", "site", "generator"]
+categories = ["command-line-utilities"]
+exclude = ["/.github", "site", "assets"]
+
+
+[dependencies]
+liquid = "0.24.0"
+serde_json = "1.0.79"
+extract-frontmatter = "2.1.0"
+markdown = "0.3.0"
+kstring = "1.0.6"
+fs_extra = "1.2.0"
+colored = "2.0.0"

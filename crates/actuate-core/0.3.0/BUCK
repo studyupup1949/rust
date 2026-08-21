@@ -1,0 +1,16 @@
+load("@buckal//:wrapper.bzl", "rust_library")
+
+rust_library(
+    name = "actuate_core",
+    srcs = glob(["**/*.rs"]),
+    crate = "actuate_core",
+    crate_root = "src/lib.rs",
+    edition = "2021",
+    features = ["default"],
+
+    visibility = ["PUBLIC"],
+    deps = [
+        "//third-party/rust/crates/actuate-macros/0.1.6:actuate_macros",
+        "//third-party/rust/crates/thiserror/2.0.20:thiserror",
+    ],
+)

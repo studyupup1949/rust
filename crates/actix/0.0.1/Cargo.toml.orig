@@ -1,0 +1,35 @@
+[package]
+name = "actix"
+version = "0.0.1"
+authors = ["Nikolay Kim <fafhrd91@gmail.com>"]
+description = "Actor Library"
+readme = "README.md"
+keywords = []
+homepage = "https://github.com/fafhrd91/actix/"
+repository = "https://github.com/fafhrd91/actix.git"
+documentation = "https://fafhrd91.github.io/fafhrd91/actix/"
+categories = ["Actor", "Asynchronous"]
+license = "Apache-2.0"
+exclude = [".gitignore", ".travis.yml", ".cargo/config", "appveyor.yml"]
+
+[lib]
+name = "actix"
+path = "src/lib.rs"
+
+[dependencies]
+bitflags = "1.*"
+lazy_static = "0.2"
+
+# tokio
+bytes = "0.4"
+mio = "0.6"
+futures = "0.1"
+tokio-io = "0.1"
+tokio-core = "0.1"
+
+# logging
+log = "0.3"
+
+[profile.release]
+lto = true
+opt-level = 3

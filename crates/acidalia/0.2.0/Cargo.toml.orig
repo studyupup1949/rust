@@ -1,0 +1,43 @@
+[package]
+name = "acidalia"
+version = "0.2.0"
+authors = ["tasgon <tasgon_@outlook.com>"]
+edition = "2021"
+description = "The game's game engine's engine"
+license = "MPL-2.0"
+keywords = ["gamedev", "graphics", "game", "engine", "minimal"]
+homepage = "https://github.com/tasgon/acidalia"
+repository = "https://github.com/tasgon/acidalia"
+documentation = "https://docs.rs/acidalia"
+resolver = "2"
+
+[workspace]
+members = ["acidalia_core",
+           "acidalia_proc_macros",
+           "acidalia_imgui",
+           "acidalia_iced",
+           "acidalia_2d"]
+
+[features]
+default = []
+
+[dependencies]
+shaderc = "0.7"
+futures = "0.3"
+wgpu = { version = "0.12", features = ["spirv"] }
+winit = "0.26"
+derive_more = "0.99"
+acidalia_proc_macros = { path = "./acidalia_proc_macros/", version = "0.2" }
+acidalia_core = { path = "./acidalia_core", version = "0.2" }
+
+crossbeam-channel = "0.5.0"
+notify = "5.0.0-pre.13"
+dashmap = "5.0"
+
+#egui = "0.8"
+#epi = "0.8"
+#egui_wgpu_backend = "0.4"
+#egui_winit_platform = "0.4"
+
+#[patch.crates-io]
+#winit = { path = "../winit/" }

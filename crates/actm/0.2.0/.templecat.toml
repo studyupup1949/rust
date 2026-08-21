@@ -1,0 +1,17 @@
+[remote]
+uri = 'https://git.sr.ht/~thatonelutenist/rust-flake-template'
+reference = 'trunk'
+
+[globals]
+project_name = 'actm'
+authors = ["Nathan McCarty <nathan@mccarty.io>"]
+description = "Tiny actors framework for rust"
+repository = "https://git.sr.ht/~thatonelutenist/actm"
+hub = "https://sr.ht/~thatonelutenist/actm"
+mailing_list = "~thatonelutenist/actm"
+ann_mailing_list = "~thatonelutenist/actm"
+license = "0BSD"
+
+[locals."flake.nix"]
+dependencies = []
+build_dependencies = []

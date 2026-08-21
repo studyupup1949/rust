@@ -1,0 +1,22 @@
+[package]
+name = "actiondb"
+version = "0.6.1"
+authors = ["Tibor Benke <tibor.benke@balabit.com>"]
+homepage = "https://github.com/ihrwein/actiondb"
+repository = "https://github.com/ihrwein/actiondb"
+readme = "README.md"
+keywords = ["log", "parser"]
+description = "A safe and efficient unstructured text (log) parsing library."
+license = "LGPL-2.1"
+
+[[bin]]
+name = "adbtool"
+path = "src/bin/adbtool.rs"
+
+[dependencies]
+clap = "1.5"
+log = "0.3"
+uuid = "0.1"
+serde = "0.6"
+serde_json = "0.6"
+maplit = "0.1"

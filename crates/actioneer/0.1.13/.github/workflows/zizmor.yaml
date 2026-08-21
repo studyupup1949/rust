@@ -1,0 +1,30 @@
+name: GitHub Actions Security Analysis
+
+on:
+  workflow_dispatch:
+  pull_request:
+    types:
+      - opened
+      - synchronize
+    paths:
+      - ".github/workflows/**"
+  push:
+    branches:
+      - main
+    paths:
+      - ".github/workflows/**"
+
+permissions: {}
+
+jobs:
+  zizmor:
+    permissions:
+      # read workflow runs and history
+      actions: read
+      # checkout repository contents
+      contents: read
+      # upload SARIF results to GitHub Security tab
+      security-events: write
+      # OIDC token for GitHub API authentication
+      id-token: write
+    uses: luxass/shared-workflows/.github/workflows/reusable-ci-security.yaml@4d0e4c435120cb4b22c6773d375572dbf8ff06ce # v0.8.0

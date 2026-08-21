@@ -1,0 +1,19 @@
+load("@buckal//:wrapper.bzl", "rust_library")
+
+rust_library(
+    name = "acridotheres",
+    srcs = glob(["**/*.rs"]),
+    crate = "acridotheres",
+    crate_root = "src/lib.rs",
+    edition = "2021",
+
+    visibility = ["PUBLIC"],
+    deps = [
+        "//third-party/rust/crates/acr/0.3.2:acr",
+        "//third-party/rust/crates/acridotheres-3ds/0.2.1:acridotheres_3ds",
+        "//third-party/rust/crates/chrono/0.4.45:chrono",
+        "//third-party/rust/crates/crc32fast/1.5.0:crc32fast",
+        "//third-party/rust/crates/dh/0.8.1:dh",
+        "//third-party/rust/crates/neozip/0.3.3:neozip",
+    ],
+)

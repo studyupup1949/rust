@@ -1,0 +1,19 @@
+[package]
+name = "achan"
+version = "0.1.0"
+edition = "2021"
+license = "MPL-2.0"
+description = "A simple & convenient representation for any value"
+repository = "https://github.com/konall/achan"
+categories = ["data-structures", "no-std", "rust-patterns", "wasm"]
+
+[dependencies]
+serde = { version = "1", optional = true, default-features = false, features = ["alloc", "derive"] }
+wit-bindgen = { version = "0.17.0", optional = true, default-features = false, features = ["realloc"] }
+
+[features]
+serde = ["dep:serde"]
+wasm-component = ["dep:wit-bindgen"]
+
+[package.metadata.component]
+package = "konall:achan"

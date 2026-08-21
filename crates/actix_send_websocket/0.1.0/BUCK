@@ -1,0 +1,20 @@
+load("@buckal//:wrapper.bzl", "rust_library")
+
+rust_library(
+    name = "actix_send_websocket",
+    srcs = glob(["**/*.rs"]),
+    crate = "actix_send_websocket",
+    crate_root = "src/lib.rs",
+    edition = "2018",
+    features = ["default"],
+
+    visibility = ["PUBLIC"],
+    deps = [
+        "//third-party/rust/crates/actix-codec/0.3.0:actix_codec",
+        "//third-party/rust/crates/actix-http/2.2.2:actix_http",
+        "//third-party/rust/crates/actix-utils/2.0.0:actix_utils",
+        "//third-party/rust/crates/actix-web/3.3.3:actix_web",
+        "//third-party/rust/crates/futures-util/0.3.34:futures_util",
+        "//third-party/rust/crates/pin-project-lite/0.1.12:pin_project_lite",
+    ],
+)

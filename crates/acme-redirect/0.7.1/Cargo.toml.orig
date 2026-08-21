@@ -1,0 +1,62 @@
+[package]
+name = "acme-redirect"
+version = "0.7.1"
+description = "Tiny http daemon that answers acme challenges and redirects everything else to https"
+authors = ["kpcyrd <git@rxv.cc>"]
+license = "GPL-3.0-or-later"
+repository = "https://github.com/kpcyrd/acme-redirect"
+readme = "README.md"
+edition = "2021"
+
+[package.metadata.deb]
+extended-description = """\
+acme-redirect is a tiny http server that implements the ACME (Automated
+Certificate Management Environment) protocol and redirects everything else to
+https. It can run directly on port 80 and supports automatic issuance and renew
+of certificates out of the box with minimal configuration."""
+section = "web"
+priority = "optional"
+maintainer-scripts = "debian"
+assets = [
+    ["target/release/acme-redirect", "usr/bin/", "755"],
+
+    ["contrib/confs/acme-redirect.conf", "etc/", "644"],
+    ["contrib/confs/certs.d/example.com.conf", "etc/acme-redirect.d/example.com.conf.sample", "644"],
+
+    ["contrib/systemd/acme-redirect-renew.service", "usr/lib/systemd/system/", "644"],
+    ["contrib/systemd/acme-redirect-renew.timer", "usr/lib/systemd/system/", "644"],
+    ["contrib/systemd/acme-redirect.service", "usr/lib/systemd/system/", "644"],
+
+    ["contrib/systemd/acme-redirect.sysusers", "usr/lib/sysusers.d/acme-redirect.conf", "644"],
+    ["contrib/systemd/acme-redirect.tmpfiles", "usr/lib/tmpfiles.d/acme-redirect.conf", "644"],
+]
+
+[features]
+vendored = ["acme-micro/vendored"]
+
+[dependencies]
+acme-micro = "0.13"
+actix-web = "4"
+anyhow = "1.0.28"
+clap = { version = "4.0.32", features = ["derive", "env"] }
+clap_complete = "4.0.7"
+colored = "2"
+config = { version = "0.15", default-features = false, features = ["toml"] }
+env_logger = "0.11"
+log = "0.4.8"
+nix = { version = "0.29", features = ["fs", "user"] }
+pem = "3"
+rand = "0.8"
+serde = "1.0.106"
+serde_json = "1"
+time = { version = "0.3", features = ["formatting", "macros"] }
+toml = "0.8"
+ureq = "2"
+uzers = "0.12"
+x509-parser = "0.17"
+
+[target.'cfg(target_os="linux")'.dependencies]
+caps = "0.5"
+
+[dev-dependencies]
+boxxy = "0.14"

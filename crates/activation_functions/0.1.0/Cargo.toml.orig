@@ -1,0 +1,11 @@
+[package]
+name = "activation_functions"
+version = "0.1.0"
+authors = ["SnefDen (@SnefDenGames)"]
+edition = "2018"
+description = "This is a collection of activation functions"
+repository = "https://github.com/SnefDenGames/rust_activation_functions"
+license = "MIT OR Apache-2.0"
+keywords = ["ai","collection","functions","activation","function"]
+
+[dependencies]

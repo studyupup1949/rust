@@ -1,0 +1,15 @@
+/target
+node_modules
+uploads
+client/dist
+web/tmp
+web/build
+**/*.wasm
+tmp
+web/node_modules
+web/dist
+node_modules
+/assets/build.js
+/assets/build.js.map
+/assets/style.css
+config

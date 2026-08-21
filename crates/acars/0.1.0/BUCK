@@ -1,0 +1,23 @@
+load("@buckal//:wrapper.bzl", "rust_library")
+
+rust_library(
+    name = "acars",
+    srcs = glob(["**/*.rs"]),
+    crate = "acars",
+    crate_root = "src/lib.rs",
+    edition = "2021",
+    features = ["default"],
+
+    visibility = ["PUBLIC"],
+    deps = [
+        "//third-party/rust/crates/base64/0.21.7:base64",
+        "//third-party/rust/crates/deku/0.20.3:deku",
+        "//third-party/rust/crates/flate2/1.1.9:flate2",
+        "//third-party/rust/crates/hex/0.4.3:hex",
+        "//third-party/rust/crates/rasn-atn-cpdlc/0.28.14:rasn_atn_cpdlc",
+        "//third-party/rust/crates/rasn/0.28.14:rasn",
+        "//third-party/rust/crates/serde/1.0.229:serde",
+        "//third-party/rust/crates/serde_json/1.0.151:serde_json",
+        "//third-party/rust/crates/thiserror/2.0.20:thiserror",
+    ],
+)

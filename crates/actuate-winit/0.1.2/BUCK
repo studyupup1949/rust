@@ -1,0 +1,16 @@
+load("@buckal//:wrapper.bzl", "rust_library")
+
+rust_library(
+    name = "actuate_winit",
+    srcs = glob(["**/*.rs"]),
+    crate = "actuate_winit",
+    crate_root = "src/lib.rs",
+    edition = "2021",
+    features = ["default"],
+
+    visibility = ["PUBLIC"],
+    deps = [
+        "//third-party/rust/crates/actuate-core/0.2.2:actuate_core",
+        "//third-party/rust/crates/winit/0.30.13:winit",
+    ],
+)

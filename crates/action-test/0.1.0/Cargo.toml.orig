@@ -1,0 +1,13 @@
+[package]
+name = "action-test"
+version = "0.1.0"
+edition = "2021"
+homepage = "https://github.com/HGZ-TEST/action-test"
+license = "Apache-2.0"
+readme = "README.md"
+repository = "https://github.com/HGZ-TEST/action-test"
+description = "Test"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]

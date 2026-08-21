@@ -1,0 +1,70 @@
+{
+  "projectName": "accept-language-rs",
+  "projectOwner": "mike-engel",
+  "repoType": "github",
+  "repoHost": "https://github.com",
+  "files": [
+    "README.md"
+  ],
+  "imageSize": 100,
+  "commit": true,
+  "commitConvention": "angular",
+  "contributors": [
+    {
+      "login": "mike-engel",
+      "name": "Mike Engel",
+      "avatar_url": "https://avatars0.githubusercontent.com/u/464447?v=4",
+      "profile": "https://www.mike-engel.com",
+      "contributions": [
+        "bug",
+        "question",
+        "code",
+        "doc",
+        "design",
+        "ideas",
+        "infra",
+        "review",
+        "test"
+      ]
+    },
+    {
+      "login": "LukasKalbertodt",
+      "name": "Lukas Kalbertodt",
+      "avatar_url": "https://avatars1.githubusercontent.com/u/7419664?v=4",
+      "profile": "http://lukaskalbertodt.github.io/",
+      "contributions": [
+        "code"
+      ]
+    },
+    {
+      "login": "sstangl",
+      "name": "Sean Stangl",
+      "avatar_url": "https://avatars0.githubusercontent.com/u/171223?v=4",
+      "profile": "https://github.com/sstangl",
+      "contributions": [
+        "code",
+        "bug",
+        "test"
+      ]
+    },
+    {
+      "login": "kornelski",
+      "name": "Kornel",
+      "avatar_url": "https://avatars0.githubusercontent.com/u/72159?v=4",
+      "profile": "https://kornel.ski",
+      "contributions": [
+        "code"
+      ]
+    },
+    {
+      "login": "neosilky",
+      "name": "Daniel Lockyer",
+      "avatar_url": "https://avatars2.githubusercontent.com/u/964245?v=4",
+      "profile": "https://daniellockyer.com",
+      "contributions": [
+        "bug"
+      ]
+    }
+  ],
+  "contributorsPerLine": 7
+}

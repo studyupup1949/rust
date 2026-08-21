@@ -1,0 +1,28 @@
+load("@buckal//:wrapper.bzl", "rust_library")
+
+rust_library(
+    name = "accumulators",
+    srcs = glob(["**/*.rs"]),
+    crate = "accumulators",
+    crate_root = "src/lib.rs",
+    edition = "2021",
+    features = ["default"],
+
+    visibility = ["PUBLIC"],
+    deps = [
+        "//third-party/rust/crates/anyhow/1.0.104:anyhow",
+        "//third-party/rust/crates/async-trait/0.1.92:async_trait",
+        "//third-party/rust/crates/hex/0.4.3:hex",
+        "//third-party/rust/crates/indexmap/2.14.0:indexmap",
+        "//third-party/rust/crates/num-bigint/0.4.8:num_bigint",
+        "//third-party/rust/crates/num-traits/0.2.19:num_traits",
+        "//third-party/rust/crates/parking_lot/0.12.5:parking_lot",
+        "//third-party/rust/crates/primitive-types/0.10.1:primitive_types",
+        "//third-party/rust/crates/sha3/0.10.9:sha3",
+        "//third-party/rust/crates/sqlx/0.7.4:sqlx",
+        "//third-party/rust/crates/starknet-crypto/0.6.2:starknet_crypto",
+        "//third-party/rust/crates/starknet/0.6.0:starknet",
+        "//third-party/rust/crates/tokio/1.53.1:tokio",
+        "//third-party/rust/crates/uuid/1.24.0:uuid",
+    ],
+)

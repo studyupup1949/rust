@@ -1,0 +1,12 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "ALTER TABLE users DROP COLUMN email;",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Left": []
+    },
+    "nullable": []
+  },
+  "hash": "a7b6ae883facb27068b7b40c1c4ea1d00c0913c75062074d5c534489bf95c94b"
+}

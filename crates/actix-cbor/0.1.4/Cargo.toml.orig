@@ -1,0 +1,36 @@
+[package]
+name = "actix-cbor"
+version = "0.1.4"
+authors = ["noah <noah.kennedy.professional@gmail.com>"]
+edition = "2018"
+description = "CBOR support for Actix-Web"
+readme = "README.md"
+repository = "https://github.com/Noah-Kennedy/actix-cbor"
+license = "MIT OR Apache-2.0"
+keywords = ["serde", "actix", "cbor", "web", "async"]
+categories = ["encoding", "web-programming", "compression", "asynchronous"]
+exclude = ["CHANGELOG.md"]
+publish = true
+
+[features]
+compress = ["actix-web/compress"]
+
+[dependencies]
+log = "0.4.11"
+futures-util = "0.3.5"
+serde_cbor = "0.11.1"
+serde = "^1.0.0"
+actix-http = "^2.0.0"
+actix-rt = "^1.0.0"
+bytes = "0.5.6"
+
+[dependencies.actix-web]
+version = "^3.0.0"
+default-features = false
+
+[dev-dependencies]
+mime = "0.3.16"
+
+[dev-dependencies.serde]
+version = "^1.0.0"
+features = ["derive"]

@@ -1,0 +1,15 @@
+load("@buckal//:wrapper.bzl", "rust_library")
+
+rust_library(
+    name = "actor_system_error",
+    srcs = glob(["**/*.rs"]),
+    crate = "actor_system_error",
+    crate_root = "src/lib.rs",
+    edition = "2024",
+
+    visibility = ["PUBLIC"],
+    deps = [
+        "//third-party/rust/crates/derive_more/2.1.1:derive_more",
+        "//third-party/rust/crates/gear-workspace-hack/0.1.0:gear_workspace_hack",
+    ],
+)

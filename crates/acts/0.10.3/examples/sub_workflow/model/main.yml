@@ -1,0 +1,26 @@
+name: main
+id: main
+inputs:
+  v: 0
+outputs:
+  result: ${ $("v") }
+steps:
+  - name: prepare
+    id: prepare
+    acts:
+      - !req
+        id: init
+  - name: enter sub workflow
+    acts:
+      - !call
+        mid: sub
+        inputs:
+            v: ${ $("v") }
+  - name: final
+    id: final
+    acts:
+      - !req
+        id: action2
+        inputs:
+          v: ${ $("v") }
+    

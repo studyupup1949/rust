@@ -1,0 +1,16 @@
+[package]
+name = "active_base"
+version = "0.1.0"
+edition = "2024"
+authors = ["Caleb Couch <caleb@orange.me>"]
+description = "Base crate for active records"
+license = "BSD-3-Clause"
+repository = "https://github.com/ramp-stack/active_base"
+
+[dependencies]
+active_proc = "0.1.0"
+serde = "1.0.*"
+serde_json = "1.0.*"
+
+[features]
+wrappers = []

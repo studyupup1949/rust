@@ -1,0 +1,15 @@
+load("@buckal//:wrapper.bzl", "rust_library")
+
+rust_library(
+    name = "actions_toolkit",
+    srcs = glob(["**/*.rs"]),
+    crate = "actions_toolkit",
+    crate_root = "src/lib.rs",
+    edition = "2018",
+
+    visibility = ["PUBLIC"],
+    deps = [
+        "//third-party/rust/crates/actions-core/0.0.1:actions_core",
+        "//third-party/rust/crates/uuid/0.8.2:uuid",
+    ],
+)

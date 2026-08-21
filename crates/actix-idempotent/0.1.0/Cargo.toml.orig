@@ -1,0 +1,36 @@
+[package]
+name = "actix-idempotent"
+description = "A middleware for handling idempotent requests in actix-web applications."
+version = "0.1.0"
+edition = "2024"
+rust-version = "1.87.0"
+authors = ["Pavlos Polianidis <ppoliani@gmail.com>"]
+license = "MIT"
+homepage = "https://github.com/ppoliani/actix-idempotent"
+keywords = ["idempotency", "sessions", "actix"]
+categories = ["network-programming", "web-programming"]
+repository = "https://github.com/ppoliani/actix-idempotent"
+documentation = "https://docs.rs/actix-idempotent"
+readme = "README.md"
+
+[dependencies]
+blake3 = "1.8.2"
+tower-service = "0.3.3"
+tower-layer = "0.3.3"
+tracing = "0.1.41"
+actix-web = { version = "4.11.0", features = ["cookies", "secure-cookies"] }
+futures-util = "0.3.31"
+actix-session = { version = "0.10.1", features = ["redis-session", "redis-pool"] }
+bytes = "1.10.1"
+tokio-stream = "0.1.17"
+actix-http = "3.11.0"
+deadpool-redis = { version = "0.16.0", features = ["rt_tokio_1"] }
+
+[dev-dependencies]
+tower-cookies = "0.11.0"
+tokio = { version = "1.47.1", features = ["full"] }
+tower = "0.5.2"
+fred = "10.1.0"
+
+[[test]]
+name = "actix"

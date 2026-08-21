@@ -1,0 +1,66 @@
+[package]
+name = "acs37800"
+version = "0.2.1"
+description = "Driver for ACS37800 energy metering IC"
+keywords = ["acs37800", "i2c", "spi", "driver", "power"]
+categories = ["embedded", "hardware-support", "no-std"]
+edition = "2024"
+repository = "https://github.com/sbruton/acs37800"
+license = "MIT OR Apache-2.0"
+rust-version = "1.85"
+
+[[example]]
+name = "raspberry-pi-i2c"
+path = "examples/raspberry_pi_i2c.rs"
+required-features = ["std", "i2c"]
+
+[[example]]
+name = "rp2350-i2c-async"
+path = "examples/rp2350_i2c_async.rs"
+required-features = ["async", "defmt", "i2c"]
+
+[dependencies]
+bitfield-struct = "0.12.1"
+bon = { version = "3.8.1", default-features = false }
+defmt = { version = "1.0.1", optional = true }
+embedded-hal = "1.0.0"
+embedded-hal-async = { version = "1.0.0", optional = true }
+thiserror = { version = "2.0.17", default-features = false }
+tracing = { version = "0.1.43", optional = true }
+
+[features]
+default = []
+std = ["bon/std", "thiserror/std", "dep:tracing"]
+async = ["dep:embedded-hal-async"]
+i2c = []
+spi = []
+defmt = ["dep:defmt"]
+
+[target.'cfg(not(target_os = "none"))'.dev-dependencies]
+embedded-hal-mock = { version = "0.11.1", default-features = false, features = [
+    "eh1",
+    "embedded-hal-async",
+] }
+tokio = { version = "1.40", features = ["macros", "rt-multi-thread"] }
+
+[target.'cfg(target_os = "linux")'.dev-dependencies]
+linux-embedded-hal = "0.4.1"
+
+[target.'cfg(target_arch = "arm")'.dev-dependencies]
+defmt-rtt = "1.1.0"
+embassy-executor = { version = "0.9.1", features = [
+    "arch-cortex-m",
+    "executor-thread",
+] }
+embassy-rp = { version = "0.8.0", features = [
+    "critical-section-impl",
+    "defmt",
+    "rp235xb",
+    "time-driver",
+] }
+embassy-time = "0.5.0"
+panic-probe = { version = "1.0.0", features = ["print-defmt"] }
+cortex-m-rt = "0.7.5"
+
+[package.metadata.docs.rs]
+features = ["i2c"]

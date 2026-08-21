@@ -1,0 +1,29 @@
+load("@buckal//:wrapper.bzl", "rust_library")
+
+rust_library(
+    name = "actix_test",
+    srcs = glob(["**/*.rs"]),
+    crate = "actix_test",
+    crate_root = "src/lib.rs",
+    edition = "2018",
+    features = ["default"],
+
+    visibility = ["PUBLIC"],
+    deps = [
+        "//third-party/rust/crates/actix-codec/0.5.2:actix_codec",
+        "//third-party/rust/crates/actix-http-test/3.2.0:actix_http_test",
+        "//third-party/rust/crates/actix-http/3.13.3:actix_http",
+        "//third-party/rust/crates/actix-rt/2.11.0:actix_rt",
+        "//third-party/rust/crates/actix-service/2.0.3:actix_service",
+        "//third-party/rust/crates/actix-utils/3.0.1:actix_utils",
+        "//third-party/rust/crates/actix-web/4.14.1:actix_web",
+        "//third-party/rust/crates/awc/3.8.2:awc",
+        "//third-party/rust/crates/futures-core/0.3.34:futures_core",
+        "//third-party/rust/crates/futures-util/0.3.34:futures_util",
+        "//third-party/rust/crates/log/0.4.33:log",
+        "//third-party/rust/crates/serde/1.0.229:serde",
+        "//third-party/rust/crates/serde_json/1.0.151:serde_json",
+        "//third-party/rust/crates/serde_urlencoded/0.7.1:serde_urlencoded",
+        "//third-party/rust/crates/tokio/1.53.1:tokio",
+    ],
+)

@@ -1,0 +1,15 @@
+load("@buckal//:wrapper.bzl", "rust_library")
+
+rust_library(
+    name = "actix_json_responder",
+    srcs = glob(["**/*.rs"]),
+    crate = "actix_json_responder",
+    crate_root = "src/lib.rs",
+    edition = "2018",
+    proc_macro = True,
+
+    visibility = ["PUBLIC"],
+    deps = [
+        "//third-party/rust/crates/syn/1.0.109:syn",
+    ],
+)

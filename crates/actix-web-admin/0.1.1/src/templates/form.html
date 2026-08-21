@@ -1,0 +1,42 @@
+{% extends "base.html" %}
+{% block content %}
+<div style="max-width: 600px; margin: 0 auto;">
+    <h2 style="margin-bottom: 1.5rem;">{% if is_new %}Create {% else %}Edit {% endif %}{{ resource.name }}</h2>
+    <form method="POST">
+        {% for field in fields %}
+        <div class="form-group">
+            <label class="form-label">
+                {{ field.label }}
+                {% if field.required %}<span style="color: var(--error);">*</span>{% endif %}
+            </label>
+            
+            {% if field.field_type == 'TextArea' %}
+            <textarea name="{{ field.key }}" class="form-control" rows="{{ field.field_type.rows }}" {% if field.required %}required{% endif %}>{{ values[field.key] }}</textarea>
+            {% elif field.field_type == 'Select' %}
+            <select name="{{ field.key }}" class="form-control" {% if field.required %}required{% endif %}>
+                {% for opt in field.field_type.options %}
+                <option value="{{ opt.0 }}" {% if values[field.key] == opt.0 %}selected{% endif %}>{{ opt.1 }}</option>
+                {% endfor %}
+            </select>
+            {% elif field.field_type == 'Boolean' %}
+            <input type="checkbox" name="{{ field.key }}" {% if values[field.key] %}checked{% endif %}>
+            {% else %}
+            <input type="{{ field.field_type | lower }}" name="{{ field.key }}" 
+                    value="{{ values[field.key] }}" 
+
+                   placeholder="{{ field.placeholder }}" 
+                   class="form-control" {% if field.required %}required{% endif %}>
+            {% endif %}
+            
+            {% if field.help_text %}<div class="form-help">{{ field.help_text }}</div>{% endif %}
+            {% if errors[field.key] %}<div class="form-error">{{ errors[field.key] }}</div>{% endif %}
+        </div>
+        {% endfor %}
+        
+        <div style="display: flex; gap: 1rem; margin-top: 2rem;">
+            <button type="submit" class="btn btn-primary">Save</button>
+            <a href="{{ resource.path_list }}" class="btn" style="border: 1px solid var(--border);">Cancel</a>
+        </div>
+    </form>
+</div>
+{% endblock %}

@@ -1,0 +1,19 @@
+load("@buckal//:wrapper.bzl", "rust_library")
+
+rust_library(
+    name = "actix_web_httpauth",
+    srcs = glob(["**/*.rs"]),
+    crate = "actix_web_httpauth",
+    crate_root = "src/lib.rs",
+    edition = "2018",
+    features = ["default"],
+
+    visibility = ["PUBLIC"],
+    deps = [
+        "//third-party/rust/crates/actix-service/1.0.6:actix_service",
+        "//third-party/rust/crates/actix-web/2.0.0:actix_web",
+        "//third-party/rust/crates/base64/0.11.0:base64",
+        "//third-party/rust/crates/bytes/0.5.6:bytes",
+        "//third-party/rust/crates/futures/0.3.34:futures",
+    ],
+)

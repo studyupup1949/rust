@@ -1,0 +1,20 @@
+[package]
+name = "ac-qu-ai-nt-tui-ratatui"
+description = "A TUI (written with Ratatui) for ac-qu-ai-nt"
+version = "0.0.5"
+edition = "2021"
+rust-version = "1.76"
+
+authors = { workspace = true }
+license = { workspace = true }
+repository = { workspace = true }
+
+[package.metadata.binstall]
+pkg-url = "{ repo }/releases/download/{ name }-v{ version }/{ name }-{ target }{ archive-suffix }"
+
+[features]
+default = ["tracing"]
+tracing = ["dep:tracing"]
+
+[dependencies]
+tracing = { workspace = true, optional = true }

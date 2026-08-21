@@ -1,0 +1,72 @@
+name: Release to crates.io
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    environment: release
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Rust
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Extract version from tag
+        id: version
+        run: |
+          VERSION=${GITHUB_REF#refs/tags/}
+          echo "version=$VERSION" >> $GITHUB_OUTPUT
+
+      - name: Update package version
+        run: |
+          VERSION=${{ steps.version.outputs.version }}
+          VERSION_NUMBER=${VERSION#v}
+          sed -i "s/^version = \".*\"/version = \"$VERSION_NUMBER\"/" Cargo.toml
+          echo "Updated Cargo.toml version to $VERSION_NUMBER"
+
+      - name: Build
+        run: cargo build --release
+
+      - name: Run tests
+        run: cargo test --lib --tests
+
+      - name: Run clippy
+        run: cargo clippy -- -D warnings
+
+      - name: Publish to crates.io
+        run: cargo publish --token ${{ secrets.CRATES_IO_TOKEN }} --allow-dirty
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          name: activecube-rs ${{ steps.version.outputs.version }}
+          body: |
+            ## activecube-rs ${{ steps.version.outputs.version }}
+
+            GraphQL-to-SQL OLAP query engine for Rust.
+
+            ### Installation
+
+            ```toml
+            [dependencies]
+            activecube-rs = "${{ steps.version.outputs.version }}"
+            ```
+
+            ```bash
+            cargo add activecube-rs@${{ steps.version.outputs.version }}
+            ```
+
+            ### Links
+
+            - [crates.io](https://crates.io/crates/activecube-rs)
+            - [Documentation](https://docs.rs/activecube-rs)
+          draft: false
+          prerelease: false

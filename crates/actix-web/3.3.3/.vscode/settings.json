@@ -1,0 +1,65 @@
+{
+  "cSpell.words": [
+    "actix",
+    "Addrs",
+    "ahash",
+    "alpn",
+    "bitflags",
+    "Brotli",
+    "bytestring",
+    "Compat",
+    "Deque",
+    "deserialization",
+    "etag",
+    "impls",
+    "KEEPALIVE",
+    "middlewares",
+    "MSRV",
+    "ocsp",
+    "oneshot",
+    "pemfile",
+    "rcgen",
+    "rustls",
+    "serde",
+    "smallvec",
+    "struct",
+    "webpki",
+    "zstd"
+  ],
+  "githubIssues.queries": [
+    {
+      "label": "My Issues",
+      "query": "default"
+    },
+    {
+      "label": "Actix v4",
+      "query": "is:open milestone:\"actix-web v4\""
+    },
+    {
+      "label": "Created Issues",
+      "query": "author:${user} is:open repo:${owner}/${repository} sort:created-desc"
+    },
+    {
+      "label": "Recent Issues",
+      "query": "is:open repo:${owner}/${repository} sort:updated-desc"
+    }
+  ],
+  "githubPullRequests.queries": [
+    {
+      "label": "Waiting For My Review",
+      "query": "is:open review-requested:${user}"
+    },
+    {
+      "label": "Assigned To Me",
+      "query": "is:open assignee:${user}"
+    },
+    {
+        "label": "Created By Me",
+        "query": "is:open author:${user}"
+    },
+    {
+      "label": "Actix v4",
+      "query": "is:open milestone:\"actix-web v4\""
+    },
+  ]
+}

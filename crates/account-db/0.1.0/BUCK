@@ -1,0 +1,19 @@
+load("@buckal//:wrapper.bzl", "rust_library")
+
+rust_library(
+    name = "account_db",
+    srcs = glob(["**/*.rs"]),
+    crate = "account_db",
+    crate_root = "src/lib.rs",
+    edition = "2018",
+
+    visibility = ["PUBLIC"],
+    deps = [
+        "//third-party/rust/crates/tetsy-hash-db/0.15.3:tetsy_hash_db",
+        "//third-party/rust/crates/tetsy-keccak-hash/0.4.0:tetsy_keccak_hash",
+        "//third-party/rust/crates/tetsy-keccak-hasher/0.1.1:tetsy_keccak_hasher",
+        "//third-party/rust/crates/tetsy-kvdb/0.3.2:tetsy_kvdb",
+        "//third-party/rust/crates/tetsy-rlp/0.4.5:tetsy_rlp",
+        "//third-party/rust/crates/vapory-types/0.8.0:vapory_types",
+    ],
+)

@@ -1,0 +1,21 @@
+name: Audit
+
+on:
+  push:
+    branches: [main]
+  schedule:
+    - cron: "0 6 * * 1"
+
+jobs:
+  deny:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+
+      - uses: ./.github/actions/setup-rust
+        with:
+          tools: cargo-deny
+          cache-key: audit
+          cache-target: "false"
+
+      - run: cargo deny check

@@ -1,0 +1,29 @@
+[package]
+name = "actix-testing"
+version = "0.3.0-alpha.1"
+authors = ["Nikolay Kim <fafhrd91@gmail.com>"]
+description = "Actix testing utils"
+keywords = ["network", "framework", "async", "futures"]
+homepage = "https://actix.rs"
+repository = "https://github.com/actix/actix-net.git"
+documentation = "https://docs.rs/actix-testing/"
+categories = ["network-programming", "asynchronous"]
+license = "MIT/Apache-2.0"
+edition = "2018"
+workspace = ".."
+
+[lib]
+name = "actix_testing"
+path = "src/lib.rs"
+
+[dependencies]
+actix-rt = "1.0.0-alpha.1"
+actix-server = "0.8.0-alpha.1"
+actix-server-config = "0.3.0-alpha.1"
+actix-service = "1.0.0-alpha.1"
+
+log = "0.4"
+net2 = "0.2"
+futures = "0.3.1"
+tokio = "0.2.0-alpha.6"
+tokio-net = { version = "0.2.0-alpha.6" }

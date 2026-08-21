@@ -1,0 +1,1 @@
+/usr/bin/cc  -fPIC -O3 -DNDEBUG   -shared -Wl,-soname,libbash_execve_redirector.so -o libbash_execve_redirector.so CMakeFiles/bash_execve_redirector.dir/engines/bash-execve-redirector.c.o  -L/home/ska/local/lib -ldl -Wl,-rpath,/home/ska/local/lib 

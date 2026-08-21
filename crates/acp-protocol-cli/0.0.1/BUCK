@@ -1,0 +1,11 @@
+load("@buckal//:wrapper.bzl", "rust_library")
+
+rust_library(
+    name = "acp_protocol_cli",
+    srcs = glob(["**/*.rs"]),
+    crate = "acp_protocol_cli",
+    crate_root = "src/lib.rs",
+    edition = "2021",
+
+    visibility = ["PUBLIC"],
+)

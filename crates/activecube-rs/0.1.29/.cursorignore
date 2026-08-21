@@ -1,0 +1,26 @@
+# Build
+/target/
+*.so
+*.dylib
+*.dll
+
+# Environment & secrets
+.env
+.env.*
+
+# Lock files
+Cargo.lock
+
+# Logs & coverage
+*.log
+coverage/
+*.profraw
+*.profdata
+
+# IDE / OS
+.idea/
+.vscode/
+.DS_Store
+Thumbs.db
+*.swp
+*~

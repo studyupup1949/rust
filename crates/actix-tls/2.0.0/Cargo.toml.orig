@@ -1,0 +1,53 @@
+[package]
+name = "actix-tls"
+version = "2.0.0"
+authors = ["Nikolay Kim <fafhrd91@gmail.com>"]
+description = "TLS acceptor services for Actix ecosystem."
+keywords = ["network", "framework", "async", "tls", "ssl"]
+homepage = "https://actix.rs"
+repository = "https://github.com/actix/actix-net.git"
+documentation = "https://docs.rs/actix-tls/"
+categories = ["network-programming", "asynchronous"]
+license = "MIT OR Apache-2.0"
+edition = "2018"
+
+[package.metadata.docs.rs]
+features = ["openssl", "rustls", "nativetls"]
+
+[lib]
+name = "actix_tls"
+path = "src/lib.rs"
+
+[features]
+default = []
+
+# openssl
+openssl = ["open-ssl", "tokio-openssl"]
+
+# rustls
+rustls = ["rust-tls", "webpki", "webpki-roots", "tokio-rustls"]
+
+# nativetls
+nativetls = ["native-tls", "tokio-tls"]
+
+[dependencies]
+actix-service = "1.0.0"
+actix-codec = "0.3.0"
+actix-utils = "2.0.0"
+
+futures-util = { version = "0.3.4", default-features = false }
+
+# openssl
+open-ssl = { package = "openssl", version = "0.10", optional = true }
+tokio-openssl = { version = "0.4.0", optional = true }
+
+# rustls
+rust-tls = { package = "rustls", version = "0.18.0", optional = true }
+webpki = { version = "0.21", optional = true }
+webpki-roots = { version = "0.20", optional = true }
+tokio-rustls = { version = "0.14.0", optional = true }
+
+# native-tls
+native-tls = { version = "0.2", optional = true }
+tokio-tls = { version = "0.3", optional = true }
+

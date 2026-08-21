@@ -1,0 +1,191 @@
+{
+  "generated_at": "2025-10-03 19:49:45",
+  "enums": [
+    {
+      "name": "AccountAuthOperationType",
+      "variants": [
+        "unknown",
+        "enable",
+        "disable",
+        "addauthority",
+        "removeauthority"
+      ]
+    },
+    {
+      "name": "AccountType",
+      "variants": [
+        "unknown",
+        "anchorLedger",
+        "identity",
+        "tokenIssuer",
+        "tokenAccount",
+        "liteTokenAccount",
+        "blockLedger",
+        "keyPage",
+        "keyBook",
+        "dataAccount",
+        "liteDataAccount",
+        "unknownSigner",
+        "systemLedger",
+        "liteIdentity",
+        "syntheticLedger"
+      ]
+    },
+    {
+      "name": "AllowedTransactionBit",
+      "variants": [
+        "updatekeypage",
+        "updateaccountauth"
+      ]
+    },
+    {
+      "name": "BookType",
+      "variants": [
+        "normal",
+        "validator",
+        "operator"
+      ]
+    },
+    {
+      "name": "DataEntryType",
+      "variants": [
+        "unknown",
+        "factom",
+        "accumulate",
+        "doublehash"
+      ]
+    },
+    {
+      "name": "ExecutorVersion",
+      "variants": [
+        "v1",
+        "v1SignatureAnchoring",
+        "v1DoubleHashEntries",
+        "v1Halt",
+        "v2",
+        "v2Baikonur",
+        "v2Vandenberg",
+        "v2Jiuquan",
+        "vNext"
+      ]
+    },
+    {
+      "name": "KeyPageOperationType",
+      "variants": [
+        "unknown",
+        "update",
+        "remove",
+        "add",
+        "setthreshold",
+        "updateallowed",
+        "setrejectthreshold",
+        "setresponsethreshold"
+      ]
+    },
+    {
+      "name": "NetworkMaintenanceOperationType",
+      "variants": [
+        "unknown",
+        "pendingtransactiongc"
+      ]
+    },
+    {
+      "name": "ObjectType",
+      "variants": [
+        "unknown",
+        "account",
+        "transaction"
+      ]
+    },
+    {
+      "name": "PartitionType",
+      "variants": [
+        "directory",
+        "blockValidator",
+        "blockSummary",
+        "bootstrap"
+      ]
+    },
+    {
+      "name": "SignatureType",
+      "variants": [
+        "unknown",
+        "legacyED25519",
+        "ed25519",
+        "rcd1",
+        "receipt",
+        "synthetic",
+        "set",
+        "remote",
+        "btc",
+        "btclegacy",
+        "eth",
+        "delegated",
+        "internal",
+        "authority",
+        "rsasha256",
+        "ecdsasha256",
+        "typeddata"
+      ]
+    },
+    {
+      "name": "TransactionMax",
+      "variants": [
+        "user",
+        "synthetic",
+        "system"
+      ]
+    },
+    {
+      "name": "TransactionType",
+      "variants": [
+        "unknown",
+        "createIdentity",
+        "createTokenAccount",
+        "sendTokens",
+        "createDataAccount",
+        "writeData",
+        "writeDataTo",
+        "acmeFaucet",
+        "createToken",
+        "issueTokens",
+        "burnTokens",
+        "createLiteTokenAccount",
+        "createKeyPage",
+        "createKeyBook",
+        "addCredits",
+        "updateKeyPage",
+        "lockAccount",
+        "burnCredits",
+        "transferCredits",
+        "updateAccountAuth",
+        "updateKey",
+        "networkMaintenance",
+        "activateProtocolVersion",
+        "signPending",
+        "syntheticCreateIdentity",
+        "syntheticWriteData",
+        "syntheticDepositTokens",
+        "syntheticDepositCredits",
+        "syntheticBurnTokens",
+        "syntheticForwardTransaction",
+        "systemGenesis",
+        "directoryAnchor",
+        "blockValidatorAnchor",
+        "systemWriteData"
+      ]
+    },
+    {
+      "name": "VoteType",
+      "variants": [
+        "accept",
+        "reject",
+        "abstain",
+        "suggest"
+      ]
+    }
+  ],
+  "counts": {
+    "enums": 14
+  }
+}

@@ -1,0 +1,19 @@
+load("@buckal//:wrapper.bzl", "rust_library")
+
+rust_library(
+    name = "accel",
+    srcs = glob(["**/*.rs"]),
+    crate = "accel",
+    crate_root = "src/lib.rs",
+    edition = "2015",
+
+    visibility = ["PUBLIC"],
+    deps = [
+        "//third-party/rust/crates/cuda-sys/0.1.0:cuda_sys",
+        "//third-party/rust/crates/glob/0.2.11:glob",
+        "//third-party/rust/crates/procedurals/0.2.3:procedurals",
+        "//third-party/rust/crates/serde/1.0.229:serde",
+        "//third-party/rust/crates/serde_derive/1.0.229:serde_derive",
+        "//third-party/rust/crates/toml/0.4.10:toml",
+    ],
+)

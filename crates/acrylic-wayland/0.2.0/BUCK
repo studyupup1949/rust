@@ -1,0 +1,18 @@
+load("@buckal//:wrapper.bzl", "rust_library")
+
+rust_library(
+    name = "acrylic_wayland",
+    srcs = glob(["**/*.rs"]),
+    crate = "acrylic_wayland",
+    crate_root = "src/lib.rs",
+    edition = "2021",
+
+    visibility = ["PUBLIC"],
+    deps = [
+        "//third-party/rust/crates/acrylic/0.2.4:acrylic",
+        "//third-party/rust/crates/memmap/0.7.0:memmap",
+        "//third-party/rust/crates/tempfile/3.27.0:tempfile",
+        "//third-party/rust/crates/wayland-client/0.29.5:wayland_client",
+        "//third-party/rust/crates/wayland-protocols/0.29.5:wayland_protocols",
+    ],
+)

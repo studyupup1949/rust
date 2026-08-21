@@ -1,0 +1,61 @@
+[package]
+name = "acdc-parser"
+description = "`AsciiDoc` parser using PEG grammars"
+version = "0.6.0"
+edition.workspace = true
+rust-version = "1.85"
+license = "MIT OR Apache-2.0"
+repository = "https://github.com/nlopes/acdc"
+documentation = "https://docs.rs/acdc-parser"
+keywords = ["asciidoc", "parser", "markup"]
+categories = ["parsing", "text-processing"]
+
+[features]
+default = ["pre-spec-subs"]
+network = ["dep:ureq"]
+setext = []  # Enable Setext-style (underlined) header parsing
+# Asciidoctor-compatible subs= attribute. Experimental - may be removed when AsciiDoc spec finalizes.
+# See: https://gitlab.eclipse.org/eclipse/asciidoc-lang/asciidoc-lang/-/issues/16
+pre-spec-subs = []
+
+[dependencies]
+csv = "1.4"
+encoding_rs = "0.8"
+evalexpr = "13"
+peg = "0.8"
+rustc-hash.workspace = true
+serde.workspace = true
+serde_json.workspace = true
+tracing.workspace = true
+thiserror.workspace = true
+url = "2.5"
+# Network support for remote includes (optional - saves ~8s compile time when disabled)
+ureq = { version = "3.1", optional = true }
+
+[dev-dependencies]
+criterion = { version = "0.8", features = ["html_reports"] }
+crossterm = "0.29"
+pretty_assertions.workspace = true
+proptest = "1.9"
+rstest.workspace = true
+tracing-test.workspace = true
+
+[[bench]]
+name = "parser_bench"
+harness = false
+
+[lints.rust]
+unsafe_code = "forbid"
+
+[lints.clippy]
+# Defensive programming
+wildcard_enum_match_arm = "deny"
+indexing_slicing = "deny"
+fallible_impl_from = "deny"
+unwrap_used = "deny"
+expect_used = "deny"
+panic = "deny"
+pedantic = "deny"
+unreachable = "deny"
+todo = "deny"
+unimplemented = "deny"

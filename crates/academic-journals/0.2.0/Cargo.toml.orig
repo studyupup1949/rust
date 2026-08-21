@@ -1,0 +1,41 @@
+[package]
+name = "academic-journals"
+version.workspace = true
+edition.workspace = true
+description = "A library for managing journal abbreviations and full names"
+license.workspace = true
+repository.workspace = true
+authors.workspace = true
+rust-version.workspace = true
+readme = "README.md"
+keywords = ["journals", "abbreviations", "academic", "bibliography", "citation"]
+categories = ["science", "text-processing"]
+
+[dependencies]
+rkyv = "0.8"
+
+[build-dependencies]
+csv = "1.4.0"
+serde = { version = "1.0.228", features = ["serde_derive"], default-features = false }
+anyhow = "1.0.101"
+rkyv = "0.8"
+
+[features]
+default = ["dotless", "online"]
+dot = []
+dotless = []
+online = []
+
+[package.metadata.docs.rs]
+features = ["dotless"]
+no-default-features = true
+
+[lints.rust]
+unsafe_code = "forbid"
+missing_docs = "warn"
+
+[lints.clippy]
+all = "warn"
+pedantic = "warn"
+nursery = "warn"
+cargo = "warn"

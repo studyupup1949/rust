@@ -1,0 +1,35 @@
+[package]
+name = "actix-web-socket-io"
+version = "0.1.3"
+edition = "2021"
+authors = [
+  "Gentean <cf361610910@gmail.com>"
+]
+description = "Pactix-web-socket-io server side"
+keywords = ["socketio", "actix-web", "actix-web-socket-io", "socketio-server"]
+license = "BSD-3-Clause OR MIT OR Apache-2.0"
+repository = "https://github.com/gentean/actix-web-socket-io"
+readme = "README.md"
+categories = ["web-programming::websocket"]
+
+[dependencies]
+actix-web = "4"
+async-trait = "0.1"
+crossbeam = { version = "0.8" }
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
+actix-rt = "2.9.0"
+tokio =  { version = "1.36.0", features = ["fs", "rt-multi-thread", "macros"] }
+actix = "0.13.3"
+actix-web-actors = "4.3.0"
+uuid = { version = "1.7.0", features = ["v4", "fast-rng", "macro-diagnostics"]}
+log = "0.4"
+num_enum = { version = "0.7" }
+
+[dev-dependencies]
+
+[workspace]
+members = [
+    ".",
+    "examples/*"
+]

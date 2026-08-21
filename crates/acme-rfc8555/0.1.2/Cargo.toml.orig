@@ -1,0 +1,57 @@
+[package]
+name = "acme-rfc8555"
+version = "0.1.2"
+description = "Provision certificates from ACME providers"
+authors = [
+  "Martin Algesten <martin@algesten.se>",
+  "kpcyrd <git@rxv.cc>",
+  "Rob Ede <robjtede@icloud.com>",
+]
+categories = ["web-programming", "api-bindings"]
+keywords = ["acme", "certificate", "tls", "letsencrypt", "lets-encrypt"]
+repository = "https://github.com/x52dev/acme-rfc8555"
+license = "MIT"
+edition = "2021"
+rust-version = "1.72"
+
+[features]
+default = ["reqwest/rustls-tls-webpki-roots"]
+
+[package.metadata.docs.rs]
+all-features = true
+rustdoc-args = ["--cfg", "docsrs"]
+
+[lib]
+name = "acme"
+
+[dependencies]
+base64 = "0.22"
+der = { version = "0.7", features = ["std", "time"] }
+ecdsa = { version = "0.16", features = ["signing", "verifying"] }
+eyre = "0.6"
+log = "0.4"
+p256 = { version = "0.13", features = ["pkcs8", "ecdsa-core"] }
+parking_lot = "0.12"
+pem = { package = "pem-rfc7468", version = "0.7" }
+pkcs8 = "0.10"
+rand = "0.8"
+reqwest = { version = "0.12", default-features = false, features = ["json"] }
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+sha2 = { version = "0.10.6", features = ["oid"] }
+time = "0.3"
+tokio = { version = "1.24.2", features = ["time"] }
+x509-cert = { version = "0.2.4", features = ["pem", "builder"] }
+zeroize = "1"
+
+[dev-dependencies]
+actix-files = "0.6"
+actix-web = "4"
+color-eyre = "0.6"
+env_logger = "0.11"
+actix-http = "3.5"
+actix-server = "2"
+rcgen = "0.13"
+regex = "1.4"
+rustls = "0.23"
+tokio = { version = "1.24.2", features = ["full"] }

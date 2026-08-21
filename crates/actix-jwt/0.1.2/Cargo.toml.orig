@@ -1,0 +1,54 @@
+[package]
+name = "actix-jwt"
+version = "0.1.2"
+edition = "2024"
+rust-version = "1.93"
+description = "Full-featured JWT authentication middleware for actix-web: login, logout, refresh, token rotation, cookie management, RSA/HMAC, RBAC authorizer, pluggable token store"
+license = "MIT"
+repository = "https://github.com/LdDl/actix-jwt"
+homepage = "https://github.com/LdDl/actix-jwt"
+documentation = "https://docs.rs/actix-jwt"
+readme = "README.md"
+keywords = ["actix-web", "jwt", "authentication", "middleware", "authorization"]
+categories = ["web-programming", "authentication"]
+authors = ["Dimitriy Lopanov  <sexykdi@gmail.com>"]
+exclude = ["testdata/", "benches/", ".github/"]
+
+[dependencies]
+actix-web = "4.13.0"
+actix-rt = "2.11.0"
+actix-service = "2.0.3"
+serde = { version = "1.0.228", features = ["derive"] }
+serde_json = "1.0.149"
+jsonwebtoken = "9.3.1"
+chrono = { version = "0.4.44", features = ["serde"] }
+rand = "0.8.5"
+base64 = "0.21.7"
+tokio = { version = "1.50.0", features = ["sync", "time"] }
+tracing = "0.1.44"
+async-trait = "0.1.89"
+rsa = { version = "0.9.10", features = ["pem"] }
+pkcs8 = { version = "0.10.2", features = ["encryption", "pem"] }
+futures-util = "0.3.32"
+pem = "3.0.6"
+
+# Optional Redis support
+redis = { version = "0.27.6", features = ["tokio-comp", "connection-manager"], optional = true }
+
+[dev-dependencies]
+actix-rt = "2.11.0"
+actix-test = "0.1.5"
+actix-http = "3.12.0"
+tokio = { version = "1.50.0", features = ["full"] }
+reqwest = { version = "0.12.28", features = ["cookies", "json"] }
+testcontainers = "0.23.3"
+testcontainers-modules = { version = "0.11.6", features = ["redis"] }
+criterion = { version = "0.5.1", features = ["html_reports"] }
+
+[[bench]]
+name = "memory_bench"
+harness = false
+
+[features]
+default = []
+redis-store = ["redis"]

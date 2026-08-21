@@ -1,0 +1,3 @@
+101 acl chown path="/home/\*"
+    audit 2
+    0 deny

@@ -1,0 +1,17 @@
+load("@buckal//:wrapper.bzl", "rust_binary")
+
+rust_binary(
+    name = "ac_qu_ai_nt",
+    srcs = glob(["**/*.rs"]),
+    crate = "ac_qu_ai_nt",
+    crate_root = "src/main.rs",
+    edition = "2021",
+    features = ["default"],
+
+    visibility = ["PUBLIC"],
+    deps = [
+        "//third-party/rust/crates/clap/4.6.6:clap",
+        "//third-party/rust/crates/dirs-next/2.0.0:dirs_next",
+        "//third-party/rust/crates/tracing-subscriber/0.3.23:tracing_subscriber",
+    ],
+)

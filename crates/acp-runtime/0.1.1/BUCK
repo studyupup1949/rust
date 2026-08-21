@@ -1,0 +1,33 @@
+load("@buckal//:wrapper.bzl", "rust_library")
+
+rust_library(
+    name = "acp_runtime",
+    srcs = glob(["**/*.rs"]),
+    crate = "acp_runtime",
+    crate_root = "src/lib.rs",
+    edition = "2024",
+
+    visibility = ["PUBLIC"],
+    deps = [
+        "//third-party/rust/crates/aes-gcm/0.10.3:aes_gcm",
+        "//third-party/rust/crates/base64/0.22.1:base64",
+        "//third-party/rust/crates/chrono/0.4.45:chrono",
+        "//third-party/rust/crates/ed25519-dalek/2.2.0:ed25519_dalek",
+        "//third-party/rust/crates/hex/0.4.3:hex",
+        "//third-party/rust/crates/hkdf/0.12.4:hkdf",
+        "//third-party/rust/crates/lapin/2.5.5:lapin",
+        "//third-party/rust/crates/rand/0.8.7:rand",
+        "//third-party/rust/crates/regex/1.13.1:regex",
+        "//third-party/rust/crates/reqwest/0.12.28:reqwest",
+        "//third-party/rust/crates/rumqttc/0.25.1:rumqttc",
+        "//third-party/rust/crates/rustls-pemfile/2.2.0:rustls_pemfile",
+        "//third-party/rust/crates/serde/1.0.229:serde",
+        "//third-party/rust/crates/serde_json/1.0.151:serde_json",
+        "//third-party/rust/crates/sha2/0.10.9:sha2",
+        "//third-party/rust/crates/thiserror/2.0.20:thiserror",
+        "//third-party/rust/crates/tokio/1.53.1:tokio",
+        "//third-party/rust/crates/url/2.5.8:url",
+        "//third-party/rust/crates/uuid/1.24.0:uuid",
+        "//third-party/rust/crates/x25519-dalek/2.0.1:x25519_dalek",
+    ],
+)

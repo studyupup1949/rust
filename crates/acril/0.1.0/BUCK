@@ -1,0 +1,17 @@
+load("@buckal//:wrapper.bzl", "rust_library")
+
+rust_library(
+    name = "acril",
+    srcs = glob(["**/*.rs"]),
+    crate = "acril",
+    crate_root = "src/lib.rs",
+    edition = "2021",
+    features = ["default"],
+
+    visibility = ["PUBLIC"],
+    deps = [
+        "//third-party/rust/crates/futures/0.3.34:futures",
+        "//third-party/rust/crates/pin-project/1.1.13:pin_project",
+        "//third-party/rust/crates/tracing/0.1.44:tracing",
+    ],
+)

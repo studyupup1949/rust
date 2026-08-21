@@ -1,0 +1,210 @@
+{
+  "generated_at": "2025-10-03T20:47:50.054543",
+  "signatures": [
+    {
+      "name": "LegacyED25519Signature",
+      "wire": "legacyED25519",
+      "fields": [
+        "Timestamp",
+        "PublicKey",
+        "Signature",
+        "Signer",
+        "SignerVersion",
+        "Vote",
+        "TransactionHash"
+      ]
+    },
+    {
+      "name": "RCD1Signature",
+      "wire": "rcd1",
+      "fields": [
+        "PublicKey",
+        "Signature",
+        "Signer",
+        "SignerVersion",
+        "Timestamp",
+        "Vote",
+        "TransactionHash",
+        "Memo",
+        "Data"
+      ]
+    },
+    {
+      "name": "ED25519Signature",
+      "wire": "ed25519",
+      "fields": [
+        "PublicKey",
+        "Signature",
+        "Signer",
+        "SignerVersion",
+        "Timestamp",
+        "Vote",
+        "TransactionHash",
+        "Memo",
+        "Data"
+      ]
+    },
+    {
+      "name": "BTCSignature",
+      "wire": "btc",
+      "fields": [
+        "PublicKey",
+        "Signature",
+        "Signer",
+        "SignerVersion",
+        "Timestamp",
+        "Vote",
+        "TransactionHash",
+        "Memo",
+        "Data"
+      ]
+    },
+    {
+      "name": "BTCLegacySignature",
+      "wire": "btcLegacy",
+      "fields": [
+        "PublicKey",
+        "Signature",
+        "Signer",
+        "SignerVersion",
+        "Timestamp",
+        "Vote",
+        "TransactionHash",
+        "Memo",
+        "Data"
+      ]
+    },
+    {
+      "name": "ETHSignature",
+      "wire": "eth",
+      "fields": [
+        "PublicKey",
+        "Signature",
+        "Signer",
+        "SignerVersion",
+        "Timestamp",
+        "Vote",
+        "TransactionHash",
+        "Memo",
+        "Data"
+      ]
+    },
+    {
+      "name": "RsaSha256Signature",
+      "wire": "rsaSha256",
+      "fields": [
+        "PublicKey",
+        "Signature",
+        "Signer",
+        "SignerVersion",
+        "Timestamp",
+        "Vote",
+        "TransactionHash",
+        "Memo",
+        "Data"
+      ]
+    },
+    {
+      "name": "EcdsaSha256Signature",
+      "wire": "ecdsaSha256",
+      "fields": [
+        "PublicKey",
+        "Signature",
+        "Signer",
+        "SignerVersion",
+        "Timestamp",
+        "Vote",
+        "TransactionHash",
+        "Memo",
+        "Data"
+      ]
+    },
+    {
+      "name": "TypedDataSignature",
+      "wire": "typedData",
+      "fields": [
+        "PublicKey",
+        "Signature",
+        "Signer",
+        "SignerVersion",
+        "Timestamp",
+        "Vote",
+        "TransactionHash",
+        "Memo",
+        "Data",
+        "ChainID"
+      ]
+    },
+    {
+      "name": "ReceiptSignature",
+      "wire": "receipt",
+      "fields": [
+        "SourceNetwork",
+        "Proof",
+        "TransactionHash"
+      ]
+    },
+    {
+      "name": "PartitionSignature",
+      "wire": "partition",
+      "fields": [
+        "SourceNetwork",
+        "DestinationNetwork",
+        "SequenceNumber",
+        "TransactionHash"
+      ]
+    },
+    {
+      "name": "SignatureSet",
+      "wire": "signatureSet",
+      "fields": [
+        "Vote",
+        "Signer",
+        "TransactionHash",
+        "Signatures",
+        "Authority"
+      ]
+    },
+    {
+      "name": "RemoteSignature",
+      "wire": "remote",
+      "fields": [
+        "Destination",
+        "Signature",
+        "Cause"
+      ]
+    },
+    {
+      "name": "DelegatedSignature",
+      "wire": "delegated",
+      "fields": [
+        "Signature",
+        "Delegator"
+      ]
+    },
+    {
+      "name": "InternalSignature",
+      "wire": "internal",
+      "fields": [
+        "Cause",
+        "TransactionHash"
+      ]
+    },
+    {
+      "name": "AuthoritySignature",
+      "wire": "authority",
+      "fields": [
+        "Origin",
+        "Authority",
+        "Vote",
+        "TxID",
+        "Cause",
+        "Delegator",
+        "Memo"
+      ]
+    }
+  ],
+  "counts": {
+    "signatures": 16
+  }
+}

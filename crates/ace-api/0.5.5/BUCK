@@ -1,0 +1,24 @@
+load("@buckal//:wrapper.bzl", "rust_library")
+
+rust_library(
+    name = "aced",
+    srcs = glob(["**/*.rs"]),
+    crate = "aced",
+    crate_root = "src/lib.rs",
+    edition = "2024",
+    features = ["default"],
+
+    visibility = ["PUBLIC"],
+    deps = [
+        "//third-party/rust/crates/ace-can/0.5.5:ace_can",
+        "//third-party/rust/crates/ace-client/0.5.5:ace_client",
+        "//third-party/rust/crates/ace-core/0.5.5:ace_core",
+        "//third-party/rust/crates/ace-doip/0.5.5:ace_doip",
+        "//third-party/rust/crates/ace-gateway/0.5.5:ace_gateway",
+        "//third-party/rust/crates/ace-macros/0.5.5:ace_macros",
+        "//third-party/rust/crates/ace-proto/0.5.5:ace_proto",
+        "//third-party/rust/crates/ace-server/0.5.5:ace_server",
+        "//third-party/rust/crates/ace-sim/0.5.5:ace_sim",
+        "//third-party/rust/crates/ace-uds/0.5.5:ace_uds",
+    ],
+)

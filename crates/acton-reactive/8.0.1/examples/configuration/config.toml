@@ -1,0 +1,81 @@
+# Acton Reactive Configuration File
+# This file demonstrates all available configuration options
+# Copy this file to your XDG config directory: ~/.config/acton/config.toml
+
+[timeouts]
+# Timeout for actor shutdown in milliseconds
+actor_shutdown = 10000
+
+# Timeout for system-wide shutdown in milliseconds
+system_shutdown = 30000
+
+# Maximum wait before flushing read-only handlers in milliseconds
+read_only_handler_flush = 10
+
+[limits]
+# Maximum concurrent read-only handlers before forced flush
+concurrent_handlers_high_water_mark = 100
+
+# Default MPSC channel size for actor message inbox
+actor_inbox_capacity = 255
+
+# Dummy channel size for closed/default MessageAddress/ActorHandle
+dummy_channel_size = 1
+
+[defaults]
+# Default actor name when none provided
+actor_name = "actor"
+
+# Default root Ern identifier for actors
+root_ern = "default"
+
+[tracing]
+# Debug tracing level
+debug = "debug"
+
+# Trace tracing level
+trace = "trace"
+
+# Info tracing level
+info = "info"
+
+[paths]
+# Log directory location
+logs = "~/.local/share/acton/logs"
+
+# Cache directory location
+cache = "~/.cache/acton"
+
+# Data directory location
+data = "~/.local/share/acton"
+
+# Configuration directory location
+config = "~/.config/acton"
+
+[behavior]
+# Enable tracing output
+enable_tracing = true
+
+# Enable metrics collection
+enable_metrics = false
+
+# Example customizations for different use cases:
+#
+# For production systems:
+# [timeouts]
+# actor_shutdown = 5000
+# system_shutdown = 15000
+#
+# [limits]
+# actor_inbox_capacity = 512
+# concurrent_handlers_high_water_mark = 50
+#
+# [tracing]
+# debug = "info"
+# trace = "warn"
+# info = "info"
+#
+# For development:
+# [behavior]
+# enable_tracing = true
+# enable_metrics = true

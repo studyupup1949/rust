@@ -1,0 +1,32 @@
+---
+title: ACE SDK Core (Rust)
+description: Rust client library for the ACE API
+template: splash
+hero:
+  tagline: Rust client for Agentic Context Engineering
+  actions:
+    - text: Getting Started
+      link: /ace-sdk/rust/core/guide/getting-started/
+      icon: right-arrow
+      variant: primary
+    - text: API Reference
+      link: /ace-sdk/rust/core/api/types/
+      variant: minimal
+---
+
+import { Card, CardGrid } from '@astrojs/starlight/components';
+
+<CardGrid stagger>
+  <Card title="reqwest HTTP Client" icon="rocket">
+    Built on reqwest with tokio for async HTTP operations.
+  </Card>
+  <Card title="Device Code Auth" icon="approve-check">
+    RFC 8628 device code flow with automatic token refresh.
+  </Card>
+  <Card title="SQLite Caching" icon="seti:db">
+    3-tier caching: RAM, SQLite, Server for fast pattern access.
+  </Card>
+  <Card title="serde Serialization" icon="seti:json">
+    Type-safe JSON with serde derive macros.
+  </Card>
+</CardGrid>

@@ -1,0 +1,30 @@
+[package]
+name = "actix-protobuf"
+version = "0.12.0"
+authors = [
+    "kingxsp <jin.hb.zh@outlook.com>",
+    "Yuki Okushi <huyuumi.dev@gmail.com>",
+]
+description = "Protobuf payload extractor for Actix Web"
+keywords = ["actix", "web", "protobuf", "protocol", "rpc"]
+repository.workspace = true
+homepage.workspace = true
+license.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+
+[package.metadata.docs.rs]
+all-features = true
+
+[dependencies]
+actix-web = { version = "4", default-features = false }
+derive_more = { version = "2", features = ["display"] }
+futures-util = { version = "0.3.17", default-features = false, features = ["std"] }
+prost = { version = "0.14", default-features = false }
+
+[dev-dependencies]
+actix-web = { version = "4", default-features = false, features = ["macros"] }
+prost = { version = "0.14", default-features = false, features = ["derive"] }
+
+[lints]
+workspace = true

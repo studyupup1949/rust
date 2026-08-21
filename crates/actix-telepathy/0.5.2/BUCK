@@ -1,0 +1,34 @@
+load("@buckal//:wrapper.bzl", "rust_library")
+
+rust_library(
+    name = "actix_telepathy",
+    srcs = glob(["**/*.rs"]),
+    crate = "actix_telepathy",
+    crate_root = "src/lib.rs",
+    edition = "2018",
+    features = ["default"],
+
+    visibility = ["PUBLIC"],
+    deps = [
+        "//third-party/rust/crates/actix-broker/0.4.4:actix_broker",
+        "//third-party/rust/crates/actix/0.13.0:actix",
+        "//third-party/rust/crates/byteorder/1.5.0:byteorder",
+        "//third-party/rust/crates/bytes/1.12.1:bytes",
+        "//third-party/rust/crates/derive_more/0.99.20:derive_more",
+        "//third-party/rust/crates/env_logger/0.9.3:env_logger",
+        "//third-party/rust/crates/flexbuffers/2.0.0:flexbuffers",
+        "//third-party/rust/crates/futures/0.3.34:futures",
+        "//third-party/rust/crates/log/0.4.33:log",
+        "//third-party/rust/crates/once_cell/1.21.4:once_cell",
+        "//third-party/rust/crates/parking_lot/0.12.5:parking_lot",
+        "//third-party/rust/crates/rand/0.8.7:rand",
+        "//third-party/rust/crates/serde/1.0.229:serde",
+        "//third-party/rust/crates/serde_derive/1.0.229:serde_derive",
+        "//third-party/rust/crates/tokio-stream/0.1.19:tokio_stream",
+        "//third-party/rust/crates/tokio-util/0.7.19:tokio_util",
+        "//third-party/rust/crates/tokio/1.53.1:tokio",
+        "//third-party/rust/crates/trust-dns-proto/0.21.2:trust_dns_proto",
+        "//third-party/rust/crates/trust-dns-resolver/0.21.2:trust_dns_resolver",
+        "//third-party/rust/crates/uuid/1.24.0:uuid",
+    ],
+)

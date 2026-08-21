@@ -1,0 +1,21 @@
+load("@buckal//:wrapper.bzl", "rust_library")
+
+rust_library(
+    name = "actix_prost",
+    srcs = glob(["**/*.rs"]),
+    crate = "actix_prost",
+    crate_root = "src/lib.rs",
+    edition = "2021",
+
+    visibility = ["PUBLIC"],
+    deps = [
+        "//third-party/rust/crates/actix-http/3.13.3:actix_http",
+        "//third-party/rust/crates/actix-web/4.14.1:actix_web",
+        "//third-party/rust/crates/http/1.5.0:http",
+        "//third-party/rust/crates/prost/0.13.5:prost",
+        "//third-party/rust/crates/serde/1.0.229:serde",
+        "//third-party/rust/crates/serde_json/1.0.151:serde_json",
+        "//third-party/rust/crates/serde_with/3.22.0:serde_with",
+        "//third-party/rust/crates/tonic/0.12.3:tonic",
+    ],
+)

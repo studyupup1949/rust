@@ -1,0 +1,21 @@
+[package]
+name = "activitypub"
+description = "ActivityPub in Rust"
+version = "0.2.0"
+license = "GPL-3.0"
+authors = ["asonix <asonix@asonix.dog>"]
+repository = "https://git.asonix.dog/Aardwolf/activitypub.git"
+readme = "README.md"
+keywords = ["activitystreams", "activitypub"]
+edition = "2018"
+
+[dependencies]
+activitystreams-derive = "0.2"
+activitystreams-traits = "0.2"
+activitystreams-types = "0.3"
+serde = "1.0"
+serde_derive = "1.0"
+serde_json = "1.0"
+
+[dev-dependencies]
+anyhow = "1.0"

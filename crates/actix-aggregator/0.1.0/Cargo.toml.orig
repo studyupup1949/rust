@@ -1,0 +1,14 @@
+[package]
+authors     = ["Cheng JIANG <jiang.cheng@vip.163.com>"]
+description = "actix aggregator"
+edition     = "2018"
+keywords    = ["actix", "aggregator"]
+license     = "MIT"
+name        = "actix-aggregator"
+repository  = "https://github.com/GopherJ/actix-aggregator"
+version     = "0.1.0"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+actix = "0.10.0"

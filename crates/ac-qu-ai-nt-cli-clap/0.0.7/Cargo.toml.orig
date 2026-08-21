@@ -1,0 +1,21 @@
+[package]
+name = "ac-qu-ai-nt-cli-clap"
+description = "A CLI (written with clap) for ac-qu-ai-nt"
+version = "0.0.7"
+edition = "2021"
+rust-version = "1.76"
+
+authors = { workspace = true }
+license = { workspace = true }
+repository = { workspace = true }
+
+[package.metadata.binstall]
+pkg-url = "{ repo }/releases/download/{ name }-v{ version }/{ name }-{ target }{ archive-suffix }"
+
+[features]
+default = ["tracing"]
+tracing = ["dep:tracing"]
+
+[dependencies]
+clap = { workspace = true, features = ["derive", "env"] }
+tracing = { workspace = true, optional = true }

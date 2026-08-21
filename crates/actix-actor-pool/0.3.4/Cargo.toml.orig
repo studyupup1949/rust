@@ -1,0 +1,13 @@
+[package]
+name = "actix-actor-pool"
+version = "0.3.4"
+edition = "2024"
+license = "MIT"
+description = "Simple implementation of Pool for Actix actors"
+
+
+[dependencies]
+actix = "0.13.5"
+
+[dev-dependencies]
+uuid = { version = "1.17.0", features = ["v4", "rng"] }

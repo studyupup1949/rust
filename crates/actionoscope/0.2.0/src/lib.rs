@@ -1,0 +1,253 @@
+use log::{debug, error, info, warn};
+use serde::{Deserialize, Serialize};
+use std::io::{BufRead, BufReader};
+use std::process::Command;
+use std::{collections, thread};
+
+mod github;
+
+use github::metadata::get_git_repo_vars;
+
+#[derive(Debug, Serialize, Deserialize)]
+pub struct Workflow {
+    pub name: String,
+    pub on: Trigger,
+    pub jobs: collections::HashMap<String, Job>,
+    pub env: Option<collections::HashMap<String, String>>,
+}
+
+impl Workflow {
+    pub fn get_job(&self, job_name: &str) -> Option<&Job> {
+        self.jobs.get(job_name)
+    }
+
+    pub fn from_yaml(yaml_data: &str) -> Result<Self, serde_yaml::Error> {
+        serde_yaml::from_str(yaml_data)
+    }
+}
+
+#[derive(Debug, Serialize, Deserialize)]
+pub struct Trigger {
+    pub push: Option<Push>,
+    pub pull_request: Option<serde_yaml::Value>, // Using Value for unstructured data
+}
+
+#[derive(Debug, Serialize, Deserialize)]
+pub struct Push {
+    pub branches: Option<Vec<String>>,
+    pub tags: Option<Vec<String>>,
+    pub paths: Option<Vec<String>>,
+}
+
+#[derive(Debug, Serialize, Deserialize)]
+pub struct Job {
+    #[serde(rename = "runs-on")]
+    pub runs_on: String,
+    pub steps: Vec<Step>,
+}
+
+impl Job {
+    pub fn get_step(&self, id_or_name: &str) -> Option<&Step> {
+        self.steps.iter().find(|step| {
+            step.name.as_deref() == Some(id_or_name) || step.id.as_deref() == Some(id_or_name)
+        })
+    }
+    pub fn get_all_steps_since(
+        &self,
+        start_step_id_or_name: Option<&str>,
+        end_step_id_or_name: Option<&str>,
+    ) -> Vec<&Step> {
+        let mut steps = Vec::new();
+        let mut found = false;
+        for step in &self.steps {
+            if start_step_id_or_name.is_none()
+                || step.name.as_deref() == start_step_id_or_name
+                || step.id.as_deref() == start_step_id_or_name
+            {
+                found = true;
+            }
+
+            if found {
+                steps.push(step);
+            }
+            if end_step_id_or_name.is_some()
+                && (step.name.as_deref() == end_step_id_or_name
+                    || step.id.as_deref() == end_step_id_or_name)
+            {
+                break;
+            }
+        }
+        steps
+    }
+}
+
+#[derive(Debug, Serialize, Deserialize)]
+pub struct Step {
+    pub name: Option<String>,
+    pub id: Option<String>,
+    pub uses: Option<String>,
+    pub shell: Option<String>,
+    #[serde(rename = "working-directory")]
+    pub working_directory: Option<String>,
+    pub run: Option<String>,
+}
+
+impl Step {
+    pub fn get_name_or_id(&self) -> &str {
+        self.name
+            .as_deref()
+            .unwrap_or(self.id.as_deref().unwrap_or("unknown"))
+    }
+
+    pub fn get_id(&self) -> &str {
+        self.id.as_deref().unwrap_or("unknown")
+    }
+
+    pub fn get_name(&self) -> &str {
+        self.name.as_deref().unwrap_or("unknown")
+    }
+
+    fn replace_env_vars(
+        command: &str,
+        env_vars: Option<collections::HashMap<String, String>>,
+        secret_vars: Option<collections::HashMap<String, String>>,
+        git_vars: Option<collections::HashMap<String, String>>,
+    ) -> String {
+        let mut result = command.to_string();
+
+        if let Some(env_vars) = env_vars {
+            let re = regex::Regex::new(r"\$\{\{\s*env\.(\w+)\s*\}\}").unwrap();
+            result = re
+                .replace_all(&result, |caps: &regex::Captures| {
+                    env_vars
+                        .get(&caps[1])
+                        .cloned()
+                        .or_else(|| std::env::var(&caps[1]).ok())
+                        .unwrap_or_else(|| "".to_string())
+                })
+                .to_string();
+        }
+
+        if let Some(secret_vars) = secret_vars {
+            let re = regex::Regex::new(r"\$\{\{\s*secrets\.(\w+)\s*\}\}").unwrap();
+            result = re
+                .replace_all(&result, |caps: &regex::Captures| {
+                    secret_vars
+                        .get(&caps[1])
+                        .cloned()
+                        .unwrap_or_else(|| "".to_string())
+                })
+                .to_string();
+        }
+
+        if let Some(git_vars) = git_vars {
+            let re = regex::Regex::new(r"\$\{\{\s*github\.(\w+)\s*\}\}").unwrap();
+            result = re
+                .replace_all(&result, |caps: &regex::Captures| {
+                    git_vars
+                        .get(&caps[1])
+                        .cloned()
+                        .unwrap_or_else(|| "".to_string())
+                })
+                .to_string();
+        }
+
+        result
+    }
+
+    pub fn run_cmd(
+        &self,
+        env_vars: Option<collections::HashMap<String, String>>,
+        secret_vars: Option<collections::HashMap<String, String>>,
+    ) -> Result<(), Box<dyn std::error::Error>> {
+        let step_id = self.get_name_or_id();
+        if self.run.is_none() {
+            if self.uses.is_none() {
+                let err = format!("No run command found for step id/name '{step_id}'");
+                error!(
+                    "{}; Step details are:\nname: {}\nid: {}\nuses: {}\nshell: {}",
+                    err,
+                    self.name.as_deref().unwrap_or("NA"),
+                    self.id.as_deref().unwrap_or("NA"),
+                    self.uses.as_deref().unwrap_or("NA"),
+                    self.shell.as_deref().unwrap_or("NA")
+                );
+                return Err(err.into());
+            } else {
+                warn!(
+                    "Currently, 'uses' is not supported. Skipping step '{}'",
+                    step_id
+                );
+                return Ok(());
+            }
+        }
+
+        let git_vars = match get_git_repo_vars() {
+            Ok(vars) => Some(vars),
+            Err(e) => {
+                debug!("failed to extract git metadata: {}", e);
+                None
+            }
+        };
+
+        let command = self.run.as_deref().unwrap();
+        let command = Self::replace_env_vars(command, env_vars, secret_vars, git_vars)
+            .trim()
+            .to_string();
+
+        let shell = self.shell.as_deref().unwrap_or("bash");
+        let original_dir = std::env::current_dir()?;
+
+        if self.working_directory.is_some() {
+            info!(
+                "Changing working directory to: {}/{}",
+                original_dir.display(),
+                self.working_directory.as_deref().unwrap()
+            );
+            std::env::set_current_dir(self.working_directory.as_deref().unwrap())?;
+        }
+
+        info!("Running step name/id '{step_id}', using {shell} shell, with command: \n{command}\n");
+
+        let mut child = Command::new(shell)
+            .arg("-c")
+            .arg(command)
+            .stdout(std::process::Stdio::piped())
+            .stderr(std::process::Stdio::piped())
+            .spawn()?;
+
+        let stdout = child.stdout.take().unwrap();
+        let stderr = child.stderr.take().unwrap();
+
+        let stdout_thread = thread::spawn(move || {
+            let stdout_reader = BufReader::new(stdout);
+            for line in stdout_reader.lines() {
+                let line = line.unwrap();
+                println!("[stdout]: {line}");
+            }
+        });
+
+        let stderr_thread = thread::spawn(move || {
+            let stderr_reader = BufReader::new(stderr);
+            for line in stderr_reader.lines() {
+                let line = line.unwrap();
+                println!("[stdout]: {line}");
+            }
+        });
+
+        stdout_thread.join().unwrap();
+        stderr_thread.join().unwrap();
+
+        let status = child.wait()?;
+        std::env::set_current_dir(original_dir)?;
+
+        if status.success() {
+            info!("Step '{step_id}' was executed successfully");
+            Ok(())
+        } else {
+            let err = format!("Step '{step_id}' failed with status: {status}");
+            error!("{}", err);
+            Err(err.into())
+        }
+    }
+}

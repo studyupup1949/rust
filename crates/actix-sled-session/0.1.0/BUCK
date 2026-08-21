@@ -1,0 +1,29 @@
+load("@buckal//:wrapper.bzl", "rust_library")
+
+rust_library(
+    name = "actix_sled_session",
+    srcs = glob(["**/*.rs"]),
+    crate = "actix_sled_session",
+    crate_root = "src/lib.rs",
+    edition = "2018",
+
+    visibility = ["PUBLIC"],
+    deps = [
+        "//third-party/rust/crates/actix-session/0.2.0:actix_session",
+        "//third-party/rust/crates/actix-sled-cache/0.1.0:actix_sled_cache",
+        "//third-party/rust/crates/actix-web/1.0.9:actix_web",
+        "//third-party/rust/crates/actix/0.8.3:actix",
+        "//third-party/rust/crates/chrono/0.4.45:chrono",
+        "//third-party/rust/crates/failure/0.1.8:failure",
+        "//third-party/rust/crates/futures/0.1.31:futures",
+        "//third-party/rust/crates/log/0.4.33:log",
+        "//third-party/rust/crates/rand/0.7.3:rand",
+        "//third-party/rust/crates/serde/1.0.229:serde",
+        "//third-party/rust/crates/serde_derive/1.0.229:serde_derive",
+        "//third-party/rust/crates/serde_json/1.0.151:serde_json",
+        "//third-party/rust/crates/sled-extensions/0.1.3:sled_extensions",
+        "//third-party/rust/crates/sled/0.28.0:sled",
+        "//third-party/rust/crates/time/0.1.45:time",
+        "//third-party/rust/crates/uuid/0.7.4:uuid",
+    ],
+)

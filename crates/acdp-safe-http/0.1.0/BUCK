@@ -1,0 +1,15 @@
+load("@buckal//:wrapper.bzl", "rust_library")
+
+rust_library(
+    name = "acdp_safe_http",
+    srcs = glob(["**/*.rs"]),
+    crate = "acdp_safe_http",
+    crate_root = "src/lib.rs",
+    edition = "2021",
+
+    visibility = ["PUBLIC"],
+    deps = [
+        "//third-party/rust/crates/acdp-primitives/0.1.1:acdp_primitives",
+        "//third-party/rust/crates/url/2.5.8:url",
+    ],
+)

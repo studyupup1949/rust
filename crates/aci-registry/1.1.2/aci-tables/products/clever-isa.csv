@@ -1,0 +1,7 @@
+id,internal-name,public-name,registrant
+1,clever-emu-root,Clever-ISA Emulator ACI Root Bridge,Clever-ISA Project <cleverisa@lcdev.xyz>
+2,clever-emu-ahci,Clever-ISA Emulator AHCI Host Controller,Clever-ISA Project <cleverisa@lcdev.xyz>
+3,clever-emu-framebuffer,Clever-ISA Emulator Windowed Framebuffer,Clever-ISA Project <cleverisa@lcdev.xyz>
+4,clever-emu-wgl,Clever-ISA Emulator WebGL Graphics Host,Clever-ISA Project <cleverisa@lcdev.xyz>
+5,clever-href-root,Clever-ISA Hardware Reference ACI Root Bridge,Clever-ISA Project <cleverisa@lcdev.xyz>
+6,clever-hrefep-root,Clever-ISA Hardware Reference (Enhanced Platform) ACI Root Bridge, Clever-ISA Project <cleverisa@lcdev.xyz>

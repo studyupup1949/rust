@@ -1,0 +1,34 @@
+[package]
+name = "actix-storage-redis"
+version = "0.3.0"
+
+authors = ["Pouya M. B. <pooyamb@gmail.com>"]
+categories = ["asynchronous", "caching", "web-programming::http-server"]
+description = "An implementation of actix-storage based on redis-rs"
+documentation = "https://docs.rs/actix-storage-redis"
+edition = "2018"
+keywords = ["actix", "storage", "web", "async", "redis"]
+license = "MIT OR Apache-2.0"
+readme = "README.md"
+repository = "https://github.com/pooyamb/actix-storage/"
+
+[dependencies]
+actix = {version = "0.13", default-features = false}
+actix-storage = {version = "0.3.0", features = ["with-serde"]}
+async-trait = "0.1"
+redis = {version = "0.22", default-features = false, features = [
+  "connection-manager",
+  "tokio-comp",
+]}
+thiserror = "1"
+
+[dev-dependencies]
+actix-storage = {version = "0.3.0", features = ["all", "tests"]}
+actix-web = "4.0.0"
+rand = "0.8"
+serde = "1"
+
+[features]
+tls = ["redis/tokio-native-tls-comp"]
+# Uses no key prefix for actix-storage's global scope, at the cost of 1 string comparation on every operation
+v01-compat = []

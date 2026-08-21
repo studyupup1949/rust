@@ -1,0 +1,16 @@
+[package]
+name = "acroform"
+version.workspace = true
+authors = ["acroform-rs contributors"]
+repository = "https://github.com/nibsbin/acroform-rs"
+readme = "../README.md"
+keywords = ["pdf", "acroform", "form"]
+license = "MIT"
+documentation = "https://docs.rs/acroform"
+edition.workspace = true
+description = "High-level PDF form manipulation library"
+
+[dependencies]
+acroform-pdf = { workspace = true }
+
+[dev-dependencies]

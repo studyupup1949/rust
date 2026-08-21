@@ -1,0 +1,6 @@
+{
+  "git": {
+    "sha1": "ecf3c3a3440a337a86a3523d28ac048ce4ac19e1"
+  },
+  "path_in_vcs": "crates/actix-jwt-session"
+}

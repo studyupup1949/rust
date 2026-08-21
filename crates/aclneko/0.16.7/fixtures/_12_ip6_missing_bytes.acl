@@ -1,0 +1,6 @@
+ip_group LOCALNET fd00::-fdff:ffff:ffff:ffff:ffff:ffff:ffff
+
+3011 acl inet_dgram_send
+    audit 4
+    10 allow ip=@LOCALNET
+    20 deny

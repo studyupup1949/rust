@@ -1,0 +1,26 @@
+[package]
+name = "actix-jwt-auth-middleware-derive"
+version = "0.2.0"
+edition = "2021"
+authors = ["Michael van Straten"]
+documentation = "https://docs.rs/actix-jwt-auth-middleware-derive/"
+keywords = ["utility", "actix-web", "derive"]
+categories = ["Authentication", "Cryptography"]
+readme = "readme.md"
+description = "This crate provides a derive macro for the actix-web::FromRequest trait"
+license = "MIT OR Apache-2.0"
+
+[dependencies]
+# writing and parsing rust AST
+quote = "1.0.10"
+syn = { version = "2", features = ["extra-traits"] }
+
+# help with generating generic impls
+derive-elves = "0.1"
+
+[dev-dependencies]
+actix-web = {version = "4", default-features = false}
+
+[lib]
+path = "src/lib.rs"
+proc-macro = true

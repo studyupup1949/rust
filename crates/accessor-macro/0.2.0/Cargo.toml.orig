@@ -1,0 +1,28 @@
+[package]
+name = "accessor-macro"
+version = "0.2.0"
+edition = "2021"
+authors = ["mengyou1024 <mengyou1024@126.com>"]
+description = "This library provides a derive macro for generating accessor methods with optional value range checks in Rust structs"
+license = "MIT"
+repository = "https://github.com/mengyou1024/accessor-macro.git"
+keywords = ["macro", "getters", "setters", "input-check"]
+
+[lib]
+proc-macro = true
+
+[dependencies]
+syn = { version = "1.0", features = ["full"] }
+quote = "1.0"
+
+[features]
+default = []
+debug_panic = []
+
+
+[[example]]
+name = "basic_usage"
+path = "examples/basic_usage.rs"
+
+[dev-dependencies]
+uintx = "0.1"

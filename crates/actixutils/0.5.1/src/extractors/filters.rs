@@ -1,0 +1,43 @@
+use actix_web::{
+    Error, FromRequest, HttpMessage, HttpRequest, dev::Payload, error::ErrorBadRequest, web,
+};
+use futures_util::future::LocalBoxFuture;
+use std::collections::HashMap;
+use std::ops::{Deref, DerefMut};
+
+#[derive(Debug, Clone, Default)]
+pub struct Filters(pub HashMap<String, String>);
+
+impl Deref for Filters {
+    type Target = HashMap<String, String>;
+
+    fn deref(&self) -> &Self::Target {
+        &self.0
+    }
+}
+
+impl DerefMut for Filters {
+    fn deref_mut(&mut self) -> &mut Self::Target {
+        &mut self.0
+    }
+}
+
+impl FromRequest for Filters {
+    type Error = Error;
+    type Future = LocalBoxFuture<'static, Result<Self, Self::Error>>;
+
+    fn from_request(req: &HttpRequest, payload: &mut Payload) -> Self::Future {
+        // Prefer the Filters already constructed by middleware.
+        if let Some(filters) = req.extensions().get::<Filters>() {
+            return Box::pin(std::future::ready(Ok(filters.clone())));
+        }
+
+        // Otherwise parse the query string directly.
+        let fut = web::Query::<HashMap<String, String>>::from_request(req, payload);
+
+        Box::pin(async move {
+            let query = fut.await.map_err(ErrorBadRequest)?;
+            Ok(Filters(query.into_inner()))
+        })
+    }
+}

@@ -1,0 +1,6 @@
+{
+  "git": {
+    "sha1": "c3fa00e0b8121a81bb62f8e5ac51a869acf33135"
+  },
+  "path_in_vcs": "tools/protoc-gen/rust"
+}

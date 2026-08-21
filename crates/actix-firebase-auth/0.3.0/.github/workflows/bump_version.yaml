@@ -1,0 +1,49 @@
+name: Bump Version
+on:
+  workflow_call:
+    inputs:
+      crate-version:
+        type: string
+        required: true
+  workflow_dispatch:
+    inputs:
+      crate-version:
+        description: "Bump version: (e.g. -> 3.1.4-alpha+159)"
+        required: true
+        type: string
+permissions:
+  contents: write
+env:
+  GPG_PRIVATE_KEY: ${{ secrets.GPG_PRIVATE_KEY }}
+  GPG_PRIVATE_KEY_PASSPHRASE: ${{ secrets.GPG_PRIVATE_KEY_PASSPHRASE }}
+jobs:
+  bump-version:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Fetch Repository
+        uses: actions/checkout@v4
+      - name: Install stable toolchain
+        uses: actions-rust-lang/setup-rust-toolchain@v1
+      - uses: actions/checkout@v4
+      - run: git pull
+      - name: Install cargo-bump
+        uses: taiki-e/install-action@v2
+        with:
+          tool: cargo-bump
+      - name: Run cargo bump
+        run: cargo bump ${{ inputs.crate-version }}
+      - name: "Import GPG key"
+        id: import-gpg
+        uses: crazy-max/ghaction-import-gpg@v6
+        with:
+          gpg_private_key: ${{ env.GPG_PRIVATE_KEY }}
+          passphrase: ${{ env.GPG_PRIVATE_KEY_PASSPHRASE }}
+          git_user_signingkey: true
+          git_commit_gpgsign: true
+      - name: "Commit and push changes"
+        uses: stefanzweifel/git-auto-commit-action@v5
+        with:
+          commit_author: "${{ steps.import-gpg.outputs.name }} <${{ steps.import-gpg.outputs.email }}>"
+          commit_user_name: ${{ steps.import-gpg.outputs.name }}
+          commit_user_email: ${{ steps.import-gpg.outputs.email }}
+          commit_message: "build: bump version to ${{ inputs.crate-version }}"

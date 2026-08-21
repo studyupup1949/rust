@@ -1,0 +1,27 @@
+[package]
+name = "actio"
+version = "0.2.0"
+authors = ["Adrian Skulimowski"]
+description = "Library for long‑running IO bound async tasks that optionally produce a feedback updates, support cancellation, and eventually resolve to a terminal outcome."
+license = "MIT/Apache-2.0"
+edition = "2024"
+repository = "https://github.com/skullim/actio"
+categories = ["asynchronous", "rust-patterns", "science::robotics"]
+
+exclude = [".github/", "docs/"]
+
+[dependencies]
+futures = "0.3.31"
+thiserror = "2.0.18"
+tokio = { version = "1.49.0", features = ["sync", "macros"] }
+tracing = "0.1.44"
+
+[dev-dependencies]
+mockall = "0.14.0"
+anyhow = "1.0.100"
+tokio = { version = "1.49.0", features = [
+    "sync",
+    "time",
+    "macros",
+    "test-util",
+] }

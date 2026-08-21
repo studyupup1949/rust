@@ -1,0 +1,23 @@
+[package]
+name = "actix-web-multipart-file"
+version = "0.1.0"
+authors = ["Sunrin SHIMURA (keen) <3han5chou7@gmail.com>"]
+description = "save multipart's files into temporary files"
+readme = "README.md"
+keywords = ["http", "web", "actix", "multipart"]
+repository = "https://github.com/KeenS/actix-web-multipart-file"
+documentation = "https://docs.rs/actix-web-multipart-file"
+categories = ["network-programming", "asynchronous",
+              "web-programming::http-server"]
+license = "MIT/Apache-2.0"
+exclude = [".gitignore"]
+
+
+[dependencies]
+actix-web = "0.7.6"
+futures = "0.1.24"
+bytes = "0.4.10"
+tempfile = "3.0.3"
+log = "0.4.5"
+failure = "0.1.2"
+mime = "0.3.9"

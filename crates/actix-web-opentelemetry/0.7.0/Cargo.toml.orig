@@ -1,0 +1,28 @@
+[package]
+name = "actix-web-opentelemetry"
+version = "0.7.0"
+authors = ["Julian Tescher <julian@outtherelabs.com>"]
+description = "OpenTelemetry integration for Actix Web apps"
+homepage = "https://github.com/OutThereLabs/actix-web-opentelemetry"
+repository = "https://github.com/OutThereLabs/actix-web-opentelemetry"
+readme = "README.md"
+categories = ["api-bindings"]
+keywords = ["actix", "actix-web", "opentelemetry", "jaeger", "prometheus"]
+license = "MIT"
+edition = "2018"
+
+[features]
+metrics = ["opentelemetry/metrics", "opentelemetry-prometheus", "prometheus"]
+
+[dependencies]
+actix-http = { version = "2.0", features = ["compress"] }
+actix-web = { version = "3.0", default-features = false, features = ["compress"] }
+futures = "0.3"
+opentelemetry = { version = "0.9", default-features = false, features = ["trace", "metrics", "tokio"] }
+opentelemetry-prometheus = { version = "0.2", optional = true }
+opentelemetry-semantic-conventions = "0.1"
+prometheus = { version = "0.10", default-features = false, optional = true }
+serde = "1.0"
+
+[dev-dependencies]
+opentelemetry-jaeger = { version = "0.8", features = ["tokio"] }

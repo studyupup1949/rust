@@ -1,0 +1,31 @@
+[package]
+authors = ["Mathieu Amiot <mathieu.amiot@yellowinnovation.fr>"]
+categories = [
+    "network-programming",
+    "web-programming",
+    "database",
+]
+description = "Actix actor for NATS Message Broker"
+documentation = "https://docs.rs/actix-nats"
+homepage = "https://github.com/YellowInnovation/actix-nats"
+include = [
+    "**/*.rs",
+    "Cargo.toml",
+]
+keywords = [
+    "actor",
+    "nats",
+    "actix",
+]
+license = "MIT/Apache-2.0"
+name = "actix-nats"
+readme = "README.md"
+repository = "https://github.com/YellowInnovation/actix-nats"
+version = "0.4.1"
+
+[dependencies]
+actix = "0.7"
+backoff = "0.1"
+futures = "0.1"
+log = "0.4"
+nitox = "0.1"

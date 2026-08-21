@@ -1,0 +1,7 @@
+1002 acl chgrp task.domain=@udom-session path!=@u-home
+    audit 2
+    0 allow path=@u-run
+    0 allow path=@k-shm
+    0 allow path=@k-tmp
+    0 allow path=@k-proc
+    1 deny path!=@u-home

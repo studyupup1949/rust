@@ -1,0 +1,26 @@
+[package]
+name = "act_rs_smol"
+version = "0.1.0"
+edition = "2024"
+license = "MIT OR Apache-2.0"
+description = "Act.rs smol is a minimal smol oriented actor framework."
+repository = "https://github.com/coruscateor/act_rs_smol"
+homepage = "https://coruscateor.com/projects/act-rs-smol"
+keywords = ["actor", "smol", "async", "message", "pipeline"]
+categories = ["asynchronous", "concurrency"]
+authors = ["Paul Saunders"]
+
+[dependencies]
+
+act_rs = "0.4.0"
+
+#act_rs = { path="../act_rs" } #, features = ["async-trait"] } #Do not remove
+
+smol = "2.0.2"
+
+#[features]
+
+
+#[package.metadata.docs.rs]
+#all-features = true
+#rustdoc-args = ["--cfg", "docsrs"]

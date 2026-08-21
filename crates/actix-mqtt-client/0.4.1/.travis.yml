@@ -1,0 +1,11 @@
+language: rust
+rust:
+  - stable
+os:
+  - linux
+  - osx
+  - windows
+matrix:
+  fast_finish: true
+script:
+  - cargo build

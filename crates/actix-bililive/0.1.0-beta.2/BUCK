@@ -1,0 +1,18 @@
+load("@buckal//:wrapper.bzl", "rust_library")
+
+rust_library(
+    name = "actix_bililive",
+    srcs = glob(["**/*.rs"]),
+    crate = "actix_bililive",
+    crate_root = "src/lib.rs",
+    edition = "2021",
+
+    visibility = ["PUBLIC"],
+    deps = [
+        "//third-party/rust/crates/actix-codec/0.4.2:actix_codec",
+        "//third-party/rust/crates/bytes/1.12.1:bytes",
+        "//third-party/rust/crates/futures/0.3.34:futures",
+        "//third-party/rust/crates/log/0.4.33:log",
+        "//third-party/rust/crates/serde/1.0.229:serde",
+    ],
+)

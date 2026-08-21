@@ -1,0 +1,20 @@
+load("@buckal//:wrapper.bzl", "rust_library")
+
+rust_library(
+    name = "actix_web_static_files",
+    srcs = glob(["**/*.rs"]),
+    crate = "actix_web_static_files",
+    crate_root = "src/lib.rs",
+    edition = "2018",
+    features = ["default"],
+
+    visibility = ["PUBLIC"],
+    deps = [
+        "//third-party/rust/crates/actix-service/1.0.6:actix_service",
+        "//third-party/rust/crates/actix-web/3.3.3:actix_web",
+        "//third-party/rust/crates/derive_more/0.99.20:derive_more",
+        "//third-party/rust/crates/futures/0.3.34:futures",
+        "//third-party/rust/crates/mime_guess/2.0.5:mime_guess",
+        "//third-party/rust/crates/path-slash/0.1.5:path_slash",
+    ],
+)

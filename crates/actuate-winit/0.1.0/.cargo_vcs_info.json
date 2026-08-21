@@ -1,0 +1,6 @@
+{
+  "git": {
+    "sha1": "4da5a5713f12d4159376f27963a8e14ce8ce67eb"
+  },
+  "path_in_vcs": "crates/actuate-winit"
+}

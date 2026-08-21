@@ -1,0 +1,6 @@
+{
+  "git": {
+    "sha1": "319e63432d6daee6c11f7d20787bbc55c09d7136"
+  },
+  "path_in_vcs": "crates/acme-validation-propagation"
+}

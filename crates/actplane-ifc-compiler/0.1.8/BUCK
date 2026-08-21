@@ -1,0 +1,15 @@
+load("@buckal//:wrapper.bzl", "rust_library")
+
+rust_library(
+    name = "actplane_ifc_compiler",
+    srcs = glob(["**/*.rs"]),
+    crate = "actplane_ifc_compiler",
+    crate_root = "src/lib.rs",
+    edition = "2024",
+
+    visibility = ["PUBLIC"],
+    deps = [
+        "//third-party/rust/crates/serde/1.0.229:serde",
+        "//third-party/rust/crates/serde_yaml/0.9.33:serde_yaml",
+    ],
+)

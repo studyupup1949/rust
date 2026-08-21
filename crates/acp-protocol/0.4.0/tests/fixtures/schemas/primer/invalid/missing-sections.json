@@ -1,0 +1,5 @@
+{
+  "$schema": "https://acp-protocol.dev/schemas/v1/primer.schema.json",
+  "version": "invalid-version-format",
+  "sections": []
+}

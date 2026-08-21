@@ -1,0 +1,76 @@
+[package]
+name = "actix-web"
+version = "0.2.1"
+authors = ["Nikolay Kim <fafhrd91@gmail.com>"]
+description = "Actix web framework"
+readme = "README.md"
+keywords = ["actor", "http", "web"]
+homepage = "https://github.com/actix/actix-web"
+repository = "https://github.com/actix/actix-web.git"
+documentation = "https://docs.rs/actix-web/"
+categories = ["network-programming", "asynchronous"]
+license = "Apache-2.0"
+exclude = [".gitignore", ".travis.yml", ".cargo/config", "appveyor.yml"]
+build = "build.rs"
+
+[badges]
+travis-ci = { repository = "actix/actix-web", branch = "master" }
+appveyor = { repository = "fafhrd91/actix-web-hdy9d" }
+codecov = { repository = "actix/actix-web", branch = "master", service = "github" }
+
+[lib]
+name = "actix_web"
+path = "src/lib.rs"
+
+[features]
+default = []
+
+# tls
+tls = ["native-tls", "tokio-tls"]
+
+# http2 = ["h2"]
+
+[dependencies]
+log = "0.3"
+time = "0.1"
+http = "0.1"
+httparse = "0.1"
+http-range = "0.1"
+mime = "0.3"
+mime_guess = "1.8"
+cookie = { version="0.10", features=["percent-encode"] }
+regex = "0.2"
+sha1 = "0.2"
+url = "1.5"
+percent-encoding = "1.0"
+
+# tokio
+bytes = "0.4"
+futures = "0.1"
+tokio-io = "0.1"
+tokio-core = "0.1"
+# h2 = { git = 'https://github.com/carllerche/h2', optional = true }
+
+# tls
+native-tls = { version="0.1", optional = true }
+tokio-tls = { version="0.1", optional = true }
+
+[dependencies.actix]
+version = ">=0.3.1"
+#path = "../actix"
+#git = "https://github.com/actix/actix.git"
+default-features = false
+features = []
+
+[dev-dependencies]
+env_logger = "0.4"
+reqwest = "0.8"
+skeptic = "0.13"
+
+[build-dependencies]
+skeptic = "0.13"
+
+[profile.release]
+lto = true
+opt-level = 3
+debug = true

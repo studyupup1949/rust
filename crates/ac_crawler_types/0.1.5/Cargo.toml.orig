@@ -1,0 +1,15 @@
+[package]
+name = "ac_crawler_types"
+version.workspace = true
+edition.workspace = true
+authors = ["beckerinj"]
+description = "normalized types for the anti capital public data crawlers"
+license = "MIT"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+serde.workspace = true
+bson.workspace = true
+strum.workspace = true
+strum_macros.workspace = true

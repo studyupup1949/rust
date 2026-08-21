@@ -1,0 +1,33 @@
+load("@buckal//:wrapper.bzl", "rust_binary")
+
+rust_binary(
+    name = "acp_ws_bridge",
+    srcs = glob(["**/*.rs"]),
+    crate = "acp_ws_bridge",
+    crate_root = "src/main.rs",
+    edition = "2021",
+
+    visibility = ["PUBLIC"],
+    deps = [
+        "//third-party/rust/crates/anyhow/1.0.104:anyhow",
+        "//third-party/rust/crates/axum/0.7.9:axum",
+        "//third-party/rust/crates/chrono/0.4.45:chrono",
+        "//third-party/rust/crates/clap/4.6.6:clap",
+        "//third-party/rust/crates/dirs/6.0.0:dirs",
+        "//third-party/rust/crates/futures-util/0.3.34:futures_util",
+        "//third-party/rust/crates/hyper-util/0.1.20:hyper_util",
+        "//third-party/rust/crates/hyper/1.11.0:hyper",
+        "//third-party/rust/crates/native-tls/0.2.18:native_tls",
+        "//third-party/rust/crates/rcgen/0.13.2:rcgen",
+        "//third-party/rust/crates/rusqlite/0.32.1:rusqlite",
+        "//third-party/rust/crates/serde/1.0.229:serde",
+        "//third-party/rust/crates/serde_json/1.0.151:serde_json",
+        "//third-party/rust/crates/tokio-native-tls/0.3.1:tokio_native_tls",
+        "//third-party/rust/crates/tokio-tungstenite/0.24.0:tokio_tungstenite",
+        "//third-party/rust/crates/tokio/1.53.1:tokio",
+        "//third-party/rust/crates/tower-http/0.5.2:tower_http",
+        "//third-party/rust/crates/tower/0.5.3:tower",
+        "//third-party/rust/crates/tracing-subscriber/0.3.23:tracing_subscriber",
+        "//third-party/rust/crates/tracing/0.1.44:tracing",
+    ],
+)

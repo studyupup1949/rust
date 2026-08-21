@@ -1,0 +1,69 @@
+[package]
+name = "actix-server"
+version = "0.4.0"
+authors = ["Nikolay Kim <fafhrd91@gmail.com>"]
+description = "Actix server - General purpose tcp server"
+keywords = ["network", "framework", "async", "futures"]
+homepage = "https://actix.rs"
+repository = "https://github.com/actix/actix-net.git"
+documentation = "https://docs.rs/actix-server/"
+categories = ["network-programming", "asynchronous"]
+license = "MIT/Apache-2.0"
+exclude = [".gitignore", ".travis.yml", ".cargo/config", "appveyor.yml"]
+edition = "2018"
+workspace = ".."
+
+[package.metadata.docs.rs]
+features = ["ssl", "tls", "rust-tls"]
+
+[lib]
+name = "actix_server"
+path = "src/lib.rs"
+
+[features]
+default = []
+
+# tls
+tls = ["native-tls"]
+
+# openssl
+ssl = ["openssl", "tokio-openssl"]
+
+# rustls
+rust-tls = ["rustls", "tokio-rustls", "webpki", "webpki-roots"]
+
+[dependencies]
+actix-rt = "0.2.1"
+actix-service = "0.3.4"
+actix-server-config = "0.1.0"
+
+log = "0.4"
+num_cpus = "1.0"
+
+mio = "^0.6.13"
+net2 = "0.2"
+futures = "0.1"
+slab = "0.4"
+tokio-io = "0.1"
+tokio-tcp = "0.1"
+tokio-timer = "0.2.8"
+tokio-reactor = "0.1"
+tokio-signal = "0.2"
+
+# native-tls
+native-tls = { version="0.2", optional = true }
+
+# openssl
+openssl = { version="0.10", optional = true }
+tokio-openssl = { version="0.3", optional = true }
+
+#rustls
+rustls = { version = "^0.15", optional = true }
+tokio-rustls = { version = "^0.9", optional = true }
+webpki = { version = "0.19", optional = true }
+webpki-roots = { version = "0.16", optional = true }
+
+[dev-dependencies]
+bytes = "0.4"
+actix-codec = "0.1.0"
+env_logger = "0.6"

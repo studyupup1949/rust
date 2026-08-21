@@ -1,0 +1,68 @@
+[package]
+name = "activityforge"
+version = "0.1.0-pre-alpha"
+edition = "2024"
+description = "ActivityForge federated git forges over ActivityPub"
+authors = ["ActivityForge Authors"]
+keywords = ["activitypub", "activitystreams", "federation", "fediverse", "forgefed"]
+license = "AGPL-3.0-or-later"
+repository = "https://codeberg.org/activitypub-rs/activityforge"
+documentation = "https://docs.rs/activityforge/"
+
+[dependencies.activitystreams-vocabulary]
+version = "0.5.0"
+#path = "../activitystreams-vocabulary"
+
+[dependencies.base64]
+package = "base64ct"
+version = "1.8.3"
+features = ["alloc"]
+
+[dependencies.log]
+version = "0.4"
+
+[dependencies.env_logger]
+version = "0.11.8"
+
+[dependencies.paste]
+version = "1.0.15"
+
+[dependencies.argon2]
+version = "0.5"
+
+[dependencies.chacha20]
+package = "chacha20poly1305"
+version = "0.10"
+
+[dependencies.sha3]
+version = "0.10"
+
+[dependencies.rand]
+version = "0.10.0"
+
+[dependencies.serde]
+version = "1.0.228"
+features = ["derive"]
+
+[dependencies.serde_json]
+version = "1.0.149"
+features = ["preserve_order"]
+
+[dependencies.sqlx]
+version = "0.8"
+features = ["chrono", "json", "macros", "migrate", "postgres", "runtime-tokio", "uuid"]
+
+[dependencies.tokio]
+version = "1.50"
+features = ["macros"]
+
+[dependencies.zeroize]
+version = "1.8.2"
+features = ["derive"]
+
+[dependencies.uuid]
+version = "1.22.0"
+
+[features]
+e2e-tests = []
+ci = []

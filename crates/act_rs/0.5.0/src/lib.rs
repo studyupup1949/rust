@@ -1,0 +1,143 @@
+#![doc = include_str!("../README.md")]
+
+#![cfg_attr(docsrs, feature(doc_cfg))]
+
+mod actor_state;
+
+pub use actor_state::*;
+
+//feature="doc"
+
+//#[cfg(feature="std")] //, doc))]
+//#[doc = "std"]
+//#[doc(cfg(feature="std"))]
+//#[cfg(any(feature="std", doc))]
+#[cfg(feature="std")]
+pub mod std;
+
+mod actor_state_builder;
+
+pub use actor_state_builder::*;
+
+mod result_handling;
+
+pub use result_handling::*;
+
+mod mac_task_actors;
+
+pub use mac_task_actors::*;
+
+mod actor_flow;
+
+pub use actor_flow::*;
+
+mod actor_state_flow;
+
+pub use actor_state_flow::*;
+
+mod actor_state_flexible;
+
+pub use actor_state_flexible::*;
+
+#[cfg(feature = "async-trait")]
+mod async_panic_handler;
+
+#[cfg(feature = "async-trait")]
+pub use async_panic_handler::*;
+
+//Disabled
+
+/*
+#[cfg(test)]
+mod tests {
+
+    struct IntTest
+    {
+
+        number: i32
+
+    }
+
+    impl IntTest
+    {
+
+        fn new() -> Self
+        {
+
+            Self
+            {
+
+                number: 0
+
+            }
+
+        }
+
+        pub fn increment(&mut self) -> i32
+        {
+
+            self.number = self.number + 1;
+
+            self.number
+
+        }
+
+        pub fn decrement(&mut self) -> i32
+        {
+
+            self.number = self.number - 1;
+
+            self.number
+
+        }
+
+        pub fn plus(&mut self, val: i32) -> i32
+        {
+
+            self.number = self.number + val;
+
+            self.number
+
+        }
+
+        pub fn minus(&mut self, val: i32) -> i32
+        {
+
+            self.number = self.number - val;
+
+            self.number
+
+        }
+
+    }
+
+    //Workers
+
+    struct IntTestIncrement
+    {
+    }
+
+    impl IntTestIncrement
+    {
+
+        pub fn new() -> Self
+        {
+
+            Self
+            {
+            }
+
+        }
+
+    }
+
+    //#[test]
+    #[cfg(feature="tokio")]
+    #[tokio::test(flavor = "multi_thread", worker_threads = 4)]
+    async fn it_works() {
+
+    }
+
+
+}
+*/

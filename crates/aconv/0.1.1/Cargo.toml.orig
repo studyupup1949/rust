@@ -1,0 +1,34 @@
+[package]
+name = "aconv"
+version = "0.1.1"
+edition = "2018"
+authors = ["kena0ki"]
+license = "MIT OR Apache-2.0"
+description = "Converts texts from the auto-detected encoding to UTF-8 or a specified encoding"
+repository = "https://github.com/kena0ki/aconv"
+keywords = ["encoding", "unicode", "i18n", "CJK", "iconv"]
+categories = ["encoding", "text-processing", "internationalization", "command-line-utilities"]
+readme = "README.md"
+exclude = [
+  "test_data/",
+  "tests/",
+  "output/",
+]
+
+[dependencies]
+chardetng = "0.1.14"
+encoding_rs = { version = "0.8.28", features = ["fast-legacy-encode"] }
+structopt = "0.3.23"
+exitcode = "1.1.2"
+transcoding_rs = { version = "0.1.0", path = "transcoding_rs" }
+
+[dev-dependencies]
+assert_cmd = "2.0.2"
+walkdir = "2"
+insta = "1.8.0"
+
+[workspace]
+members = [
+  "transcoding_rs",
+]
+

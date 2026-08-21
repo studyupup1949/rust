@@ -1,0 +1,5 @@
+0 acl modify_policy
+    audit 0
+    1 deny task.uid!=0
+    1 deny task.euid!=0
+    10000 deny

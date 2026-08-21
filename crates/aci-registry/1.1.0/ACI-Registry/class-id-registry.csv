@@ -1,0 +1,11 @@
+id,internal-name,public-name,subclass-registry-owner,registrant,registrar
+0,unclassified,Unclassified Devices,Clever-ISA Project & AbleCorp, -,Clever-ISA Project <cleverisa@lcdev.xyz>
+1,mass-storage,Mass Storage Devices,Clever-ISA Project & AbleCorp, -,Clever-ISA Project <cleverisa@lcdev.xyz>
+2,network,Network Devices,Clever-ISA Project & AbleCorp, -,Clever-ISA Project <cleverisa@lcdev.xyz>
+3,memory,Memory,Clever-ISA Project & AbleCorp, -,Clever-ISA Project <cleverisa@lcdev.xyz>
+4,bridge,ACI Bridges,Clever-ISA Project & AbleCorp, -,Clever-ISA Project <cleverisa@lcdev.xyz>
+5,audio,Audio Devices,Clever-ISA Project & AbleCorp, -,Clever-ISA Project <cleverisa@lcdev.xyz>
+6,graphics,Graphics Devices,Clever-ISA Project & AbleCorp, -,Clever-ISA Project <cleverisa@lcdev.xyz>
+8000,test-devices,Test Devices,Clever-ISA Project <cleverisa@lcdev.xyz>,Connor Horman <chorman@lcdev.xyz>,Clever-ISA Project <cleverisa@lcdev.xyz>
+8001,clever-gpu,Clever-GPU Interface,Clever-ISA Project <cleverisa@lcdev.xyz>,Connor Horman <chorman@lcdev.xyz>,Clever-ISA Project <cleverisa@lcdev.xyz>
+FFFF,unknown,Unknown Device,Clever-ISA Project & AbleCorp, -,Clever-ISA Project <cleverisa@lcdev.xyz>

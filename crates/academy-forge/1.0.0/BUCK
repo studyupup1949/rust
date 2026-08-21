@@ -1,0 +1,21 @@
+load("@buckal//:wrapper.bzl", "rust_library")
+
+rust_library(
+    name = "academy_forge",
+    srcs = glob(["**/*.rs"]),
+    crate = "academy_forge",
+    crate_root = "src/lib.rs",
+    edition = "2024",
+
+    visibility = ["PUBLIC"],
+    deps = [
+        "//third-party/rust/crates/nexcore-error/0.1.0:nexcore_error",
+        "//third-party/rust/crates/nexcore-fs/0.1.1:nexcore_fs",
+        "//third-party/rust/crates/quote/1.0.47:quote",
+        "//third-party/rust/crates/regex/1.13.1:regex",
+        "//third-party/rust/crates/serde/1.0.229:serde",
+        "//third-party/rust/crates/serde_json/1.0.151:serde_json",
+        "//third-party/rust/crates/syn/2.0.119:syn",
+        "//third-party/rust/crates/toml/0.8.23:toml",
+    ],
+)

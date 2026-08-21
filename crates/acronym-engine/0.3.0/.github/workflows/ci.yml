@@ -1,0 +1,53 @@
+name: CI
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    types: [ opened, edited, synchronize ]
+
+jobs:
+  test:
+    name: Rust ${{ matrix.toolchain }}
+    runs-on: ubuntu-latest
+
+    strategy:
+      fail-fast: false
+      matrix:
+        toolchain: [ stable ]
+
+    steps:
+      - name: clone ${{ github.repository }}
+        uses: actions/checkout@v6
+
+      - name: setup Rust ${{ matrix.toolchain }}
+        uses: dtolnay/rust-toolchain@master
+        with:
+          toolchain: ${{ matrix.toolchain }}
+          components: rustfmt, clippy
+
+      - name: cache cargo
+        uses: Swatinem/rust-cache@v2
+
+      # The embedding model is fetched at build time; cache it across runs so we
+      # don't re-download on every CI build (keyed on the model version pin).
+      - name: cache embedding model
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/ae
+          key: ae-model-${{ hashFiles('build.rs') }}
+
+      - name: fmt
+        run: cargo fmt --check
+
+      # Lint + test in external-model mode (still static ORT) — fast, small.
+      - name: clippy
+        run: cargo clippy --all-targets --no-default-features --features ort-download -- -D warnings
+
+      - name: test
+        run: cargo test --no-default-features --features ort-download
+
+      # Prove the single self-contained binary (model bundled in) compiles.
+      # bundled-model is opt-in now that the default loads the model externally.
+      - name: release build (bundled model)
+        run: cargo build --release --features bundled-model

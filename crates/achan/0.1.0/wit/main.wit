@@ -1,0 +1,34 @@
+package konall:achan;
+
+interface value {
+    enum value-ty {
+        null,
+        boolean,
+        number,
+        %string,
+        %list,
+        map
+    }
+    
+    resource value {
+        ty: func() -> value-ty;
+        
+        null: static func() -> value;
+        boolean: static func(v: bool) -> value;
+        number: static func(v: float64) -> value;
+        %string: static func(v: string) -> value;
+        %list: static func(v: list<value>) -> value;
+        map: static func(v: list<tuple<string, value>>) -> value;
+        
+        as-null: func() -> option<result>;
+        as-boolean: func() -> option<bool>;
+        as-number: func() ->  option<float64>;
+        as-string: func() -> option<string>;
+        as-list: func() -> option<list<value>>;
+        as-map: func() -> option<list<tuple<string, value>>>;
+    }
+}
+
+world achan {
+    export value;
+}

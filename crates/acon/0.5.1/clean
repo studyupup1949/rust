@@ -1,0 +1,8 @@
+#! /bin/bash -e
+
+if [ -f 'lorem ipsum' ]; then
+	rm 'lorem ipsum'
+fi
+if [ -d target ]; then
+	rm -r target/
+fi

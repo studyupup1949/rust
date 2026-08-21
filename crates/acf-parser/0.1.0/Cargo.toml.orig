@@ -1,0 +1,18 @@
+[package]
+name = "acf-parser"
+authors = ["Dawson Moore"]
+description = "A simple ACF parser, targeted at reading Valve configuration files"
+license-file = "LICENSE"
+homepage = "https://github.com/DMoore12/acf-parser"
+repository = "https://github.com/DMoore12/acf-parser"
+version = "0.1.0"
+edition = "2021"
+readme = "README.md"
+keywords = ["steam", "parser", "acf", "valve", "configuration"]
+categories = ["parser-implementations", "game-development", "config"]
+exclude = [
+    "acfs/*",
+]
+
+[dependencies]
+chumsky = "0.11.1"

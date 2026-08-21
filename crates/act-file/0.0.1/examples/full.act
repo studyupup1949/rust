@@ -1,0 +1,25 @@
+# rule templates
+!bundle_js = |> cat %f | node_modules/.bin/terser -c > %o |>
+!bundle_css = |> cat %f | node_modules/.bin/csso -o %o |>
+
+# env variables 
+export RUST_BACKTRACE := "1"
+
+# variables
+files := src/**/*.js
+
+# rules
+label: {{files}} |> !bundle_js |> dist/app.js
+: foreach src/**/*.c |> gcc -c %f -o %o |> %g.o
+
+# just like commands ?
+greet:
+    echo "hello world"
+
+node-example:
+    #!/usr/bin/env node
+    console.log('Hello from node.js!')
+
+python-example:
+    #!/usr/bin/env python3
+    print('Hello from python!')

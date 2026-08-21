@@ -1,0 +1,14 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="card-grid">
+    {% for res in resources %}
+    <a href="{{ res.path_list }}" class="card">
+        <div class="card-icon">{{ res.icon }}</div>
+        <div>
+            <div style="font-weight: 600;">{{ res.plural_name }}</div>
+            <div style="font-size: 0.875rem; color: var(--text-light);">Manage {{ res.name }}</div>
+        </div>
+    </a>
+    {% endfor %}
+</div>
+{% endblock %}

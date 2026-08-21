@@ -1,0 +1,14 @@
+load("@buckal//:wrapper.bzl", "rust_library")
+
+rust_library(
+    name = "accelerate_sparse",
+    srcs = glob(["**/*.rs"]),
+    crate = "accelerate_sparse",
+    crate_root = "src/lib.rs",
+    edition = "2024",
+
+    visibility = ["PUBLIC"],
+    deps = [
+        "//third-party/rust/crates/accelerate-sparse-sys/0.1.0:accelerate_sparse_sys",
+    ],
+)

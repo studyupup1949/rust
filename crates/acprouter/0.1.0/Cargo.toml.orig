@@ -1,0 +1,15 @@
+[package]
+name = "acprouter"
+version = "0.1.0"
+edition = "2021"
+license = "Apache-2.0"
+description = "Rust implementation of ACP routing and dispatch primitives for agent runtimes and transport boundaries."
+homepage = "https://github.com/vcoderun/acpkit"
+repository = "https://github.com/vcoderun/acpkit"
+documentation = "https://github.com/vcoderun/acpkit"
+readme = "README.md"
+keywords = ["acp", "agents", "router", "dispatch", "protocol"]
+categories = ["network-programming"]
+
+[lib]
+path = "src/lib.rs"

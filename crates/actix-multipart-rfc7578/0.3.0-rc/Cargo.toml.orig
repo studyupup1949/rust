@@ -1,0 +1,26 @@
+[package]
+name                      = "actix-multipart-rfc7578"
+description               = "An implementation of multipart/form-data (RFC7578) for Actix"
+authors                   = ["Ferris Tseng <ferristseng@fastmail.fm>"]
+documentation             = "https://docs.rs/actix-multipart-rfc7578"
+repository                = "https://github.com/ferristseng/rust-multipart-rfc7578"
+keywords                  = ["actix", "multipart", "form", "http"]
+categories                = ["asynchronous", "web-programming"]
+version                   = "0.3.0-rc"
+readme                    = "../README.md"
+license                   = "MIT OR Apache-2.0"
+edition                   = "2018"
+
+[badges]
+travis-ci                 = { repository = "ferristseng/rust-multipart-rfc7578" }
+maintenance               = { status = "passively-maintained" }
+
+[dependencies]
+actix-web                 = "2.0.0-rc"
+actix-http                = "1.0"
+bytes                     = "0.5"
+common-multipart-rfc7578  = { path = "../common", version = "0.2.0-rc" }
+futures                   = "0.3"
+
+[dev-dependencies]
+actix-rt                  = "1.0"

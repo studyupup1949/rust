@@ -1,0 +1,20 @@
+[package]
+name = "actix-friendly-json-extractor"
+version = "0.1.0"
+edition = "2024"
+authors = ["Leo Durstmüller <ldurstmueller@gmail.com>"]
+description = "A friendly JSON extractor for actix-web with detailed error messages using serde_path_to_error"
+license = "MIT OR Apache-2.0"
+repository = "https://github.com/Selion05/actix_friendly_json_extractor"
+keywords = ["actix", "actix-web", "json", "extractor", "serde"]
+categories = ["web-programming"]
+
+[dependencies]
+actix-web = "4"
+serde = "1.0"
+serde_json = "1.0"
+serde_path_to_error = "0.1"
+futures-util = "0.3"
+
+[dev-dependencies]
+actix-rt = "2"

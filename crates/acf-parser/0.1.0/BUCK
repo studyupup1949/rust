@@ -1,0 +1,14 @@
+load("@buckal//:wrapper.bzl", "rust_library")
+
+rust_library(
+    name = "acf_parser",
+    srcs = glob(["**/*.rs"]),
+    crate = "acf_parser",
+    crate_root = "src/lib.rs",
+    edition = "2021",
+
+    visibility = ["PUBLIC"],
+    deps = [
+        "//third-party/rust/crates/chumsky/0.11.2:chumsky",
+    ],
+)

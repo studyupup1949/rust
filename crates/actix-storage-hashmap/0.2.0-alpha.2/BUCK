@@ -1,0 +1,17 @@
+load("@buckal//:wrapper.bzl", "rust_library")
+
+rust_library(
+    name = "actix_storage_hashmap",
+    srcs = glob(["**/*.rs"]),
+    crate = "actix_storage_hashmap",
+    crate_root = "src/lib.rs",
+    edition = "2018",
+
+    visibility = ["PUBLIC"],
+    deps = [
+        "//third-party/rust/crates/actix/0.10.0:actix",
+        "//third-party/rust/crates/async-trait/0.1.92:async_trait",
+        "//third-party/rust/crates/log/0.4.33:log",
+        "//third-party/rust/crates/thiserror/1.0.69:thiserror",
+    ],
+)

@@ -1,0 +1,14 @@
+load("@buckal//:wrapper.bzl", "rust_library")
+
+rust_library(
+    name = "actix_mock_helper",
+    srcs = glob(["**/*.rs"]),
+    crate = "actix_mock_helper",
+    crate_root = "src/lib.rs",
+    edition = "2018",
+
+    visibility = ["PUBLIC"],
+    deps = [
+        "//third-party/rust/crates/actix/0.9.0:actix",
+    ],
+)

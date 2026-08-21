@@ -1,0 +1,34 @@
+[package]
+name = "ac-qu-ai-nt"
+description = "A WIP project using AI to break down a user's query, acquire the knowledge to answer it, then transfer those insights to the user"
+version = "0.0.10"
+edition = "2021"
+rust-version = "1.76"
+
+authors = { workspace = true }
+license = { workspace = true }
+repository = { workspace = true }
+
+[features]
+default = ["cli-clap", "gui-eframe", "tui-ratatui", "tracing"]
+
+cli-clap = ["dep:ac-qu-ai-nt-cli-clap"]
+gui-eframe = ["dep:ac-qu-ai-nt-gui-eframe"]
+tui-ratatui = ["dep:ac-qu-ai-nt-tui-ratatui"]
+
+tracing = [
+    "dep:tracing-subscriber",
+    "ac-qu-ai-nt-cli-clap?/tracing",
+    "ac-qu-ai-nt-gui-eframe?/tracing",
+    "ac-qu-ai-nt-tui-ratatui?/tracing",
+]
+
+[dependencies]
+ac-qu-ai-nt-cli-clap = { version = "0.0.6", path = "../cli-clap", optional = true }
+ac-qu-ai-nt-gui-eframe = { version = "0.0.3", path = "../gui-eframe", optional = true }
+ac-qu-ai-nt-tui-ratatui = { version = "0.0.3", path = "../tui-ratatui", optional = true }
+
+clap = { workspace = true, features = ["derive", "env"] }
+dirs-next = "2.0.0"
+
+tracing-subscriber = { version = "0.3.18", optional = true }

@@ -1,0 +1,12 @@
+[package]
+name = "acid64"
+version = "0.1.0"
+edition = "2024"
+description = "A simple base64 decoder"
+license = "MIT"
+repository = "https://github.com/coffeefreak101/acid64"
+readme = "README.md"
+
+[dependencies]
+base64 = "0.22.1"
+clap = { version = "4.5.47", features = ["derive"] }

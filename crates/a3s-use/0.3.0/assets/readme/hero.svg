@@ -1,0 +1,100 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="520" viewBox="0 0 1200 520" role="img" aria-labelledby="title desc">
+  <title id="title">A3S Use — AI Native Package Manager</title>
+  <desc id="desc">One install resolves an exact versioned cognitive package graph whose Tool, MCP, OKF, A3S Flow, Skill, and UI contributions publish through one recoverable cutover, with a3s-flow as the only workflow engine.</desc>
+
+  <defs>
+    <linearGradient id="background" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#0d1118"/>
+      <stop offset="1" stop-color="#07090d"/>
+    </linearGradient>
+    <linearGradient id="rule" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0" stop-color="#f0b65b"/>
+      <stop offset="1" stop-color="#f0b65b" stop-opacity="0.12"/>
+    </linearGradient>
+    <marker id="arrow" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M1 1 9 5 1 9" fill="none" stroke="#7d8796" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+    </marker>
+  </defs>
+
+  <rect width="1200" height="520" rx="26" fill="url(#background)"/>
+  <rect x="1" y="1" width="1198" height="518" rx="25" fill="none" stroke="#252c37"/>
+
+  <g transform="translate(54 42)">
+    <rect width="46" height="46" rx="10" fill="#f0b65b"/>
+    <path d="m11 33 11-20h3.6L37 33h-6.2l-1.9-3.7H18.2L16.3 33Zm10-9.3h5.2l-2.6-5Z" fill="#080b10"/>
+    <text x="64" y="22" fill="#f4f7fb" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" font-size="22" font-weight="750" letter-spacing="3">A3S USE</text>
+    <text x="64" y="45" fill="#929dad" font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, monospace" font-size="16" letter-spacing="1.3">AI NATIVE PACKAGE MANAGER</text>
+  </g>
+
+  <g transform="translate(805 44)" font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, monospace" font-size="16">
+    <circle cx="8" cy="8" r="5" fill="#55dda2"/>
+    <text x="24" y="14" fill="#c7cfda">LINUX + MACOS</text>
+    <circle cx="214" cy="8" r="5" fill="#f0b65b"/>
+    <text x="230" y="14" fill="#c7cfda">WINDOWS PREVIEW</text>
+  </g>
+
+  <g transform="translate(54 150)">
+    <text fill="#f4f7fb" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" font-size="58" font-weight="780" letter-spacing="-2">ONE INSTALL.</text>
+    <text x="376" fill="#f0b65b" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" font-size="58" font-weight="780" letter-spacing="-2">EXACT VERSION GRAPH.</text>
+    <text y="62" fill="#f4f7fb" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" font-size="58" font-weight="780" letter-spacing="-2">SIX SURFACES. ONE CUTOVER.</text>
+    <rect y="85" width="1092" height="2" fill="url(#rule)"/>
+    <text y="118" fill="#aeb7c4" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" font-size="20">
+      Resolve once, install dependencies forward, publish atomically, and remove safely in reverse.
+    </text>
+  </g>
+
+  <g id="package-proof" transform="translate(54 294)">
+    <rect width="1092" height="152" rx="18" fill="#0c1016" stroke="#3a424f" stroke-width="1.5"/>
+    <rect width="252" height="152" rx="18" fill="#111721"/>
+    <path d="M252 0v152" stroke="#3a424f" stroke-width="1.5"/>
+    <text x="24" y="34" fill="#f0b65b" font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, monospace" font-size="15" font-weight="700" letter-spacing="1.1">LOCKED PACKAGE GRAPH</text>
+    <text x="24" y="70" fill="#f4f7fb" font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, monospace" font-size="20" font-weight="700">acme/cognitive</text>
+    <text x="24" y="99" fill="#929dad" font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, monospace" font-size="16">@2.0.0 · 3 packages</text>
+    <text x="24" y="129" fill="#55dda2" font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, monospace" font-size="16">SHA-256 VERIFIED</text>
+
+    <g id="dependency-rails" fill="none" stroke="#7d8796" stroke-width="1.7" marker-end="url(#arrow)">
+      <path d="M400 42 C500 42 528 68 606 68"/>
+      <path d="M400 110 C500 110 528 82 606 78"/>
+      <path d="M544 110 C572 110 582 91 606 86"/>
+      <path d="M748 76 H790"/>
+      <path d="M932 76 H966"/>
+    </g>
+
+    <g id="tool" transform="translate(282 16)">
+      <rect width="118" height="52" rx="10" fill="#5794ff" fill-opacity="0.12" stroke="#5794ff"/>
+      <text x="59" y="34" text-anchor="middle" fill="#9bc1ff" font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, monospace" font-size="20" font-weight="700">TOOL</text>
+    </g>
+    <g id="mcp" transform="translate(282 84)">
+      <rect width="118" height="52" rx="10" fill="#55dda2" fill-opacity="0.1" stroke="#55dda2"/>
+      <text x="59" y="34" text-anchor="middle" fill="#8ce9bd" font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, monospace" font-size="20" font-weight="700">MCP</text>
+    </g>
+    <g id="okf" transform="translate(426 84)">
+      <rect width="118" height="52" rx="10" fill="#f0b65b" fill-opacity="0.1" stroke="#f0b65b"/>
+      <text x="59" y="34" text-anchor="middle" fill="#f1cd91" font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, monospace" font-size="20" font-weight="700">OKF</text>
+    </g>
+    <g id="flow" transform="translate(606 50)">
+      <rect width="142" height="52" rx="10" fill="#b982ff" fill-opacity="0.12" stroke="#b982ff" stroke-width="1.5"/>
+      <text x="71" y="34" text-anchor="middle" fill="#d5b5ff" font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, monospace" font-size="18" font-weight="700">A3S FLOW</text>
+    </g>
+    <g id="skill" transform="translate(790 50)">
+      <rect width="142" height="52" rx="10" fill="#f0b65b" fill-opacity="0.12" stroke="#f0b65b" stroke-width="1.5"/>
+      <text x="71" y="34" text-anchor="middle" fill="#f5d49d" font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, monospace" font-size="20" font-weight="700">SKILL</text>
+    </g>
+    <g id="ui" transform="translate(966 50)">
+      <rect width="92" height="52" rx="10" fill="#f4f7fb" fill-opacity="0.06" stroke="#aab4c2"/>
+      <text x="46" y="34" text-anchor="middle" fill="#e4e9f0" font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, monospace" font-size="20" font-weight="700">UI</text>
+    </g>
+  </g>
+
+  <g transform="translate(54 484)" font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, monospace" font-size="18" font-weight="650">
+    <text fill="#55dda2">RESOLVE</text>
+    <text x="91" fill="#677181">→</text>
+    <text x="122" fill="#cbd3de">LOCK EXACT VERSIONS</text>
+    <text x="349" fill="#677181">→</text>
+    <text x="380" fill="#f0b65b">INSTALL FORWARD</text>
+    <text x="588" fill="#4c5665">|</text>
+    <text x="622" fill="#f0b65b">PUBLISH ONCE</text>
+    <text x="778" fill="#677181">→</text>
+    <text x="809" fill="#cbd3de">REMOVE REVERSE</text>
+  </g>
+</svg>

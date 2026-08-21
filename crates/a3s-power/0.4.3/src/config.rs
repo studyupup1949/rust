@@ -1,0 +1,3246 @@
+use std::collections::HashMap;
+use std::fmt::Display;
+use std::path::PathBuf;
+use std::str::FromStr;
+
+use serde::{Deserialize, Serialize};
+
+use crate::dirs;
+use crate::error::{PowerError, Result};
+
+/// Attestation policy mode for TEE deployments.
+#[derive(Debug, Clone, Copy, Default, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "kebab-case")]
+pub enum TeePolicyMode {
+    /// Development mode permits simulated TEE evidence and skipped production checks.
+    Development,
+    /// Strict mode requires hardware TEE evidence, launch measurement pins, and
+    /// pinned local model integrity policy.
+    #[default]
+    Strict,
+    /// Strict mode plus NVIDIA GPU confidential-computing evidence binding.
+    GpuConfidential,
+}
+
+/// Source used to produce NVIDIA GPU confidential-computing evidence.
+#[derive(Debug, Clone, Copy, Default, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "kebab-case")]
+pub enum GpuAttestationSource {
+    /// Consume configured raw evidence/verdict bytes from file or hex fields.
+    #[default]
+    Configured,
+    /// Invoke NVIDIA's `nvattest` CLI to collect evidence and request an NRAS
+    /// verdict for each attestation request.
+    NvattestCli,
+    /// Send configured GPU evidence directly to the NVIDIA NRAS REST API.
+    NrasRest,
+}
+
+impl Display for GpuAttestationSource {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self {
+            Self::Configured => write!(f, "configured"),
+            Self::NvattestCli => write!(f, "nvattest-cli"),
+            Self::NrasRest => write!(f, "nras-rest"),
+        }
+    }
+}
+
+impl FromStr for GpuAttestationSource {
+    type Err = String;
+
+    fn from_str(s: &str) -> std::result::Result<Self, Self::Err> {
+        match s.trim().to_ascii_lowercase().as_str() {
+            "configured" | "static" | "file" | "hex" => Ok(Self::Configured),
+            "nvattest-cli" | "nvattest" | "nvidia-nvattest-cli" => Ok(Self::NvattestCli),
+            "nras-rest" | "nvidia-nras-rest" | "nras" => Ok(Self::NrasRest),
+            other => Err(format!(
+                "unknown GPU attestation source '{other}', expected configured, nvattest-cli, or nras-rest"
+            )),
+        }
+    }
+}
+
+impl Display for TeePolicyMode {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self {
+            Self::Development => write!(f, "development"),
+            Self::Strict => write!(f, "strict"),
+            Self::GpuConfidential => write!(f, "gpu-confidential"),
+        }
+    }
+}
+
+impl FromStr for TeePolicyMode {
+    type Err = String;
+
+    fn from_str(s: &str) -> std::result::Result<Self, Self::Err> {
+        match s.trim().to_ascii_lowercase().as_str() {
+            "development" | "dev" => Ok(Self::Development),
+            "strict" | "production" | "prod" => Ok(Self::Strict),
+            "gpu-confidential" | "gpu_confidential" | "gpu-confidential-computing" => {
+                Ok(Self::GpuConfidential)
+            }
+            other => Err(format!(
+                "unknown TEE policy mode '{other}', expected development, strict, or gpu-confidential"
+            )),
+        }
+    }
+}
+
+/// GPU acceleration settings.
+#[derive(Debug, Clone, Default, Serialize, Deserialize)]
+pub struct GpuConfig {
+    /// Number of layers to offload to GPU. 0 = CPU only, -1 = all layers.
+    #[serde(default)]
+    pub gpu_layers: i32,
+
+    /// Index of the primary GPU to use (default: 0).
+    #[serde(default)]
+    pub main_gpu: i32,
+
+    /// Proportion of work to distribute across multiple GPUs.
+    /// Each value is a float representing the fraction of work for that GPU.
+    /// Example: `[0.5, 0.5]` splits evenly across 2 GPUs.
+    /// Empty means use a single GPU (default behavior).
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub tensor_split: Vec<f32>,
+}
+
+fn default_gpu_attestation_provider() -> String {
+    "nvidia-nras".to_string()
+}
+
+fn default_nvattest_path() -> PathBuf {
+    PathBuf::from("nvattest")
+}
+
+fn default_nvattest_verifier() -> String {
+    "remote".to_string()
+}
+
+fn default_nvattest_gpu_evidence_source() -> String {
+    "nvml".to_string()
+}
+
+fn default_nvattest_timeout_secs() -> u64 {
+    30
+}
+
+fn default_proxy_effective_prompt_digest_path() -> String {
+    "/v1/chat/effective-prompt-digest".to_string()
+}
+
+fn default_nras_claims_version() -> String {
+    "3.0".to_string()
+}
+
+fn default_nras_timeout_secs() -> u64 {
+    30
+}
+
+/// NVIDIA GPU confidential-computing attestation evidence settings.
+///
+/// Power can consume evidence/verdict bytes produced by an external NVIDIA GPU
+/// CC verifier, or invoke NVIDIA's `nvattest` CLI to collect live evidence and
+/// request an NRAS verdict. In both modes, Power hashes the raw evidence and
+/// verdict bytes and binds those digests into CPU TEE attestation claims.
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct GpuAttestationConfig {
+    /// Evidence source used by `gpu-confidential` mode.
+    #[serde(default)]
+    pub source: GpuAttestationSource,
+
+    /// Evidence provider label emitted in the attestation claim.
+    #[serde(default = "default_gpu_attestation_provider")]
+    pub provider: String,
+
+    /// Raw GPU CC evidence bytes, hex-encoded. Mutually exclusive with
+    /// `evidence_path`.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub evidence_hex: Option<String>,
+
+    /// Path to raw GPU CC evidence bytes. Mutually exclusive with
+    /// `evidence_hex`.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub evidence_path: Option<PathBuf>,
+
+    /// Raw NVIDIA NRAS verdict bytes, hex-encoded. Mutually exclusive with
+    /// `verdict_path`.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub verdict_hex: Option<String>,
+
+    /// Path to raw NVIDIA NRAS verdict bytes. Mutually exclusive with
+    /// `verdict_hex`.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub verdict_path: Option<PathBuf>,
+
+    /// Path to NVIDIA's `nvattest` CLI when `source = "nvattest-cli"`.
+    #[serde(default = "default_nvattest_path")]
+    pub nvattest_path: PathBuf,
+
+    /// `nvattest attest --verifier` value. Production deployments should use
+    /// `remote` so NRAS signs/verifies the GPU evidence.
+    #[serde(default = "default_nvattest_verifier")]
+    pub nvattest_verifier: String,
+
+    /// Live GPU evidence source passed to `nvattest collect-evidence`.
+    /// `nvml` is the Confidential Computing path for H100-class GPUs.
+    #[serde(default = "default_nvattest_gpu_evidence_source")]
+    pub nvattest_gpu_evidence_source: String,
+
+    /// Required by `nvattest` only for `corelib` evidence sources.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub nvattest_gpu_architecture: Option<String>,
+
+    /// Optional NRAS service URL for `nvattest attest --nras-url`.
+    /// When `source = "nras-rest"`, this may be either the API root or the full
+    /// `/v4/attest/gpu` endpoint. Defaults to NVIDIA's public NRAS endpoint.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub nras_url: Option<String>,
+
+    /// GPU architecture passed to NVIDIA NRAS REST requests.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub nras_gpu_architecture: Option<String>,
+
+    /// NVIDIA NRAS REST claims version. Supported by NRAS v4: `2.0` and `3.0`.
+    #[serde(default = "default_nras_claims_version")]
+    pub nras_claims_version: String,
+
+    /// Environment variable containing an optional bearer token for NRAS REST.
+    /// Must be a portable ASCII name: `[A-Za-z_][A-Za-z0-9_]*`.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub nras_bearer_token_env: Option<String>,
+
+    /// Maximum time allowed for each NRAS REST request.
+    #[serde(default = "default_nras_timeout_secs")]
+    pub nras_timeout_secs: u64,
+
+    /// Optional RIM service URL for `nvattest attest --rim-url`.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub rim_url: Option<String>,
+
+    /// Optional OCSP service URL for `nvattest attest --ocsp-url`.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub ocsp_url: Option<String>,
+
+    /// Optional relying-party policy file for `nvattest attest`.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub relying_party_policy_path: Option<PathBuf>,
+
+    /// Maximum time allowed for each `nvattest` command.
+    #[serde(default = "default_nvattest_timeout_secs")]
+    pub nvattest_timeout_secs: u64,
+}
+
+impl Default for GpuAttestationConfig {
+    fn default() -> Self {
+        Self {
+            source: GpuAttestationSource::default(),
+            provider: default_gpu_attestation_provider(),
+            evidence_hex: None,
+            evidence_path: None,
+            verdict_hex: None,
+            verdict_path: None,
+            nvattest_path: default_nvattest_path(),
+            nvattest_verifier: default_nvattest_verifier(),
+            nvattest_gpu_evidence_source: default_nvattest_gpu_evidence_source(),
+            nvattest_gpu_architecture: None,
+            nras_url: None,
+            nras_gpu_architecture: None,
+            nras_claims_version: default_nras_claims_version(),
+            nras_bearer_token_env: None,
+            nras_timeout_secs: default_nras_timeout_secs(),
+            rim_url: None,
+            ocsp_url: None,
+            relying_party_policy_path: None,
+            nvattest_timeout_secs: default_nvattest_timeout_secs(),
+        }
+    }
+}
+
+impl GpuAttestationConfig {
+    pub fn evidence_configured(&self) -> bool {
+        self.evidence_hex.is_some() || self.evidence_path.is_some()
+    }
+
+    pub fn verdict_configured(&self) -> bool {
+        self.verdict_hex.is_some() || self.verdict_path.is_some()
+    }
+}
+
+/// User-configurable settings for the Power server.
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct PowerConfig {
+    /// Host address for the HTTP server (default: 127.0.0.1)
+    #[serde(default = "default_host")]
+    pub host: String,
+
+    /// Port for the HTTP server (default: 11434)
+    #[serde(default = "default_port")]
+    pub port: u16,
+
+    /// Base directory for model storage
+    #[serde(default = "dirs::power_home")]
+    pub data_dir: PathBuf,
+
+    /// Maximum number of models to keep loaded in memory
+    #[serde(default = "default_max_loaded_models")]
+    pub max_loaded_models: usize,
+
+    /// GPU acceleration settings
+    #[serde(default)]
+    pub gpu: GpuConfig,
+
+    /// NVIDIA GPU confidential-computing evidence binding settings.
+    #[serde(default)]
+    pub gpu_attestation: GpuAttestationConfig,
+
+    /// Speculative-decoding mode for the picolm backend: "off", "prompt-lookup",
+    /// or "ngram-context" (DSpark-like self-speculation). Default: "prompt-lookup".
+    #[serde(default = "default_spec_mode")]
+    pub spec_mode: String,
+
+    /// Default model keep-alive duration (e.g. "5m", "1h", "0", "-1").
+    /// "0" = unload immediately after request, "-1" = never unload.
+    /// Default: "5m".
+    #[serde(default = "default_keep_alive")]
+    pub keep_alive: String,
+
+    /// Lock model weights in memory to prevent swapping (default: false).
+    #[serde(default)]
+    pub use_mlock: bool,
+
+    /// Number of threads for generation (default: auto-detect).
+    #[serde(default)]
+    pub num_thread: Option<u32>,
+
+    /// Enable flash attention globally (default: false).
+    #[serde(default)]
+    pub flash_attention: bool,
+
+    /// Number of parallel request slots (concurrent inference). Default: 1.
+    #[serde(default = "default_num_parallel")]
+    pub num_parallel: usize,
+
+    /// Enable TEE mode: model integrity verification, log redaction,
+    /// memory zeroing after inference (default: false).
+    #[serde(default)]
+    pub tee_mode: bool,
+
+    /// Attestation policy mode. Defaults to strict so `tee_mode = true` fails
+    /// closed unless development mode is explicitly requested.
+    #[serde(default)]
+    pub tee_policy_mode: TeePolicyMode,
+
+    /// Redact inference content from logs (default: true when tee_mode is enabled).
+    #[serde(default)]
+    pub redact_logs: bool,
+
+    /// Expected SHA-256 hashes for model integrity verification.
+    /// Key: model name, Value: expected SHA-256 hash.
+    /// Only checked when tee_mode is enabled.
+    #[serde(default, skip_serializing_if = "HashMap::is_empty")]
+    pub model_hashes: HashMap<String, String>,
+
+    /// Source of the AES-256-GCM key for encrypted model loading.
+    /// If set, models with `.enc` extension are decrypted at load time.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub model_key_source: Option<crate::tee::encrypted_model::KeySource>,
+
+    /// Port for the TLS (HTTPS) server. When set, a TLS server is started
+    /// alongside the plain HTTP server. Requires the `tls` feature.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub tls_port: Option<u16>,
+
+    /// Additional Subject Alternative Names for the TLS certificate.
+    /// Each entry is a DNS name (e.g. "myserver.internal") or IP address (e.g. "10.0.0.1").
+    /// "localhost" and 127.0.0.1 are always included.
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub tls_sans: Vec<String>,
+
+    /// Embed a TEE attestation report in the TLS certificate (RA-TLS).
+    /// Requires `tls_port` to be set and `tee_mode` to be enabled.
+    #[serde(default)]
+    pub ra_tls: bool,
+
+    /// Vsock port for guest-host communication inside a3s-box MicroVMs.
+    /// When set, a vsock server is started alongside the plain HTTP server.
+    /// Requires the `vsock` feature and Linux with AF_VSOCK kernel support.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub vsock_port: Option<u32>,
+
+    /// API keys for authentication. When non-empty, all /v1/* endpoints
+    /// require a valid `Authorization: Bearer <key>` header.
+    /// Keys are SHA-256 hashes of the actual tokens for secure storage.
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub api_keys: Vec<String>,
+
+    // --- TEE Policy ---
+    /// Allowed TEE types. Default: all types allowed.
+    /// Set to ["sev-snp", "tdx"] to reject simulated TEE in production.
+    /// Overridden by A3S_POWER_TEE_STRICT=1 (removes "simulated").
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub allowed_tee_types: Vec<String>,
+
+    /// Expected 48-byte launch measurements per TEE type (hex-encoded).
+    /// Strict and GPU-confidential policy require a pin for the detected TEE
+    /// type. Keys use canonical TEE names such as "sev-snp" or "tdx".
+    #[serde(default, skip_serializing_if = "HashMap::is_empty")]
+    pub expected_measurements: HashMap<String, String>,
+
+    // --- Audit Logging ---
+    /// Enable structured audit logging. Default: false.
+    #[serde(default)]
+    pub audit_log: bool,
+
+    /// Path to audit log file. Default: $A3S_POWER_HOME/audit.jsonl.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub audit_log_path: Option<std::path::PathBuf>,
+
+    /// Encrypt audit log entries at rest with AES-256-GCM. Default: false.
+    ///
+    /// When enabled, each log line is encrypted with a fresh nonce and written
+    /// as `<nonce_hex>.<base64_ciphertext>`. Requires `audit_key_source` to be set.
+    #[serde(default)]
+    pub audit_log_encrypt: bool,
+
+    /// Key source for audit log encryption. Required when `audit_log_encrypt` is true.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub audit_key_source: Option<crate::tee::encrypted_model::KeySource>,
+
+    // --- Model Signing ---
+    /// Ed25519 **verifying** (public) key for model signature verification (hex-encoded, 32 bytes).
+    /// Despite the field name, this is the public key used to *verify* signatures — not a private
+    /// signing key. When set, all models must have a corresponding `.sig` file.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub model_signing_key: Option<String>,
+
+    // --- Key Provider ---
+    /// Key provider type. "static" (default) uses model_key_source.
+    /// "rotating" uses key_rotation_sources for zero-downtime key rotation.
+    #[serde(default = "default_key_provider")]
+    pub key_provider: String,
+
+    /// For the rotating key provider: list of key sources in rotation order.
+    /// The first source is active initially; rotate_key() advances to the next.
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub key_rotation_sources: Vec<crate::tee::encrypted_model::KeySource>,
+
+    // --- In-Memory Decryption ---
+    /// Decrypt encrypted models entirely in RAM (mlock) instead of writing a temp file.
+    ///
+    /// Backends must explicitly support locked in-memory plaintext loading.
+    /// Unsupported backends fail closed before load.
+    #[serde(default)]
+    pub in_memory_decrypt: bool,
+
+    /// Decrypt encrypted models through a chunked plaintext access primitive.
+    ///
+    /// Backends must explicitly support layer-streaming decrypted plaintext
+    /// loading. Unsupported backends fail closed before load.
+    #[serde(default)]
+    pub streaming_decrypt: bool,
+
+    // --- Token Metrics Side-Channel Mitigation ---
+    /// Round token counts in responses to the nearest 10.
+    /// Prevents exact token-count side-channel inference. Default: false.
+    #[serde(default)]
+    pub suppress_token_metrics: bool,
+
+    // --- Rate Limiting ---
+    /// Max requests per second for /v1/* endpoints. 0 = unlimited (default).
+    #[serde(default)]
+    pub rate_limit_rps: u64,
+
+    /// Max concurrent requests for /v1/* endpoints. 0 = unlimited (default).
+    #[serde(default)]
+    pub max_concurrent_requests: u64,
+
+    /// Remote models proxied to upstream OpenAI-compatible servers (vLLM, TGI,
+    /// SGLang, ...). Maps served model name → upstream base URL (e.g.
+    /// `"llama-70b" = "http://vllm:8000"`). Power fronts these with its routing,
+    /// auth, rate-limit and log-redaction layers. Proxied inference runs on the
+    /// upstream (outside any TEE) — no hardware attestation covers its content.
+    #[serde(default)]
+    pub proxy_upstreams: HashMap<String, String>,
+
+    /// Ask proxy upstreams for the exact rendered chat prompt digest before
+    /// inference, using `proxy_effective_prompt_digest_path`.
+    #[serde(default)]
+    pub proxy_effective_prompt_digest: bool,
+
+    /// Require proxy upstreams to provide an effective prompt digest. When true,
+    /// missing/unsupported upstream digest endpoints fail the request closed.
+    #[serde(default)]
+    pub proxy_effective_prompt_digest_required: bool,
+
+    /// Upstream endpoint path for proxy effective prompt digest requests.
+    #[serde(default = "default_proxy_effective_prompt_digest_path")]
+    pub proxy_effective_prompt_digest_path: String,
+
+    // --- Timing Side-Channel Mitigation ---
+    /// Minimum response time in milliseconds for all inference requests.
+    ///
+    /// When set, responses are padded to at least this duration by delaying
+    /// the first token. A ±20% jitter is applied to prevent statistical
+    /// timing attacks. Default: None (disabled).
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub timing_padding_ms: Option<u64>,
+}
+
+fn default_key_provider() -> String {
+    "static".to_string()
+}
+
+fn default_keep_alive() -> String {
+    "5m".to_string()
+}
+
+fn default_spec_mode() -> String {
+    "prompt-lookup".to_string()
+}
+
+fn is_valid_spec_mode(value: &str) -> bool {
+    matches!(
+        value.trim().to_ascii_lowercase().as_str(),
+        "off"
+            | "none"
+            | "false"
+            | "prompt-lookup"
+            | "prompt_lookup"
+            | "lookup"
+            | "true"
+            | "ngram-context"
+            | "ngram_context"
+            | "context"
+            | "dspark"
+    )
+}
+
+fn validate_model_signing_key(value: &str) -> std::result::Result<(), String> {
+    if value.len() != 64 {
+        return Err(format!(
+            "model_signing_key must be a 64-character hex-encoded Ed25519 public key (32 bytes), got {} characters",
+            value.len()
+        ));
+    }
+
+    let bytes = hex::decode(value).map_err(|e| {
+        format!("model_signing_key must be hex-encoded Ed25519 public key bytes: {e}")
+    })?;
+    let key_bytes: [u8; 32] = bytes.try_into().map_err(|bytes: Vec<u8>| {
+        format!(
+            "model_signing_key must decode to 32 bytes, got {} bytes",
+            bytes.len()
+        )
+    })?;
+    ed25519_dalek::VerifyingKey::from_bytes(&key_bytes)
+        .map_err(|e| format!("model_signing_key is not a valid Ed25519 public key: {e}"))?;
+    Ok(())
+}
+
+fn default_num_parallel() -> usize {
+    1
+}
+
+/// Parse a keep-alive duration string into a `std::time::Duration`.
+///
+/// Supported formats:
+/// - `"5m"` → 5 minutes
+/// - `"1h"` → 1 hour
+/// - `"30s"` → 30 seconds
+/// - `"0"` → Duration::ZERO (unload immediately)
+/// - `"-1"` → Duration::MAX (never unload)
+pub fn parse_keep_alive(s: &str) -> std::result::Result<std::time::Duration, String> {
+    parse_keep_alive_duration(s).ok_or_else(|| {
+        format!(
+            "invalid keep_alive '{}'; expected a duration such as \"5m\", \"1h\", \"30s\", raw seconds, \"0\", or \"-1\"",
+            s
+        )
+    })
+}
+
+fn parse_keep_alive_duration(s: &str) -> Option<std::time::Duration> {
+    let s = s.trim();
+    if s == "0" {
+        return Some(std::time::Duration::ZERO);
+    }
+    if s == "-1" {
+        return Some(std::time::Duration::MAX);
+    }
+
+    if let Some(num_str) = s.strip_suffix('s') {
+        if let Ok(n) = num_str.parse::<u64>() {
+            return Some(std::time::Duration::from_secs(n));
+        }
+    }
+    if let Some(num_str) = s.strip_suffix('m') {
+        if let Ok(n) = num_str.parse::<u64>() {
+            return n.checked_mul(60).map(std::time::Duration::from_secs);
+        }
+    }
+    if let Some(num_str) = s.strip_suffix('h') {
+        if let Ok(n) = num_str.parse::<u64>() {
+            return n.checked_mul(3600).map(std::time::Duration::from_secs);
+        }
+    }
+
+    // Fallback: try to parse as raw seconds
+    if let Ok(n) = s.parse::<u64>() {
+        return Some(std::time::Duration::from_secs(n));
+    }
+
+    None
+}
+
+fn parse_required_env_override<T>(name: &str, value: &str) -> Result<T>
+where
+    T: FromStr,
+    T::Err: Display,
+{
+    value.trim().parse::<T>().map_err(|e| {
+        PowerError::Config(format!(
+            "invalid environment override {name}={value:?}: {e}"
+        ))
+    })
+}
+
+fn parse_required_bool_env_override(name: &str, value: &str) -> Result<bool> {
+    match value.trim().to_ascii_lowercase().as_str() {
+        "1" | "true" | "yes" | "on" => Ok(true),
+        "0" | "false" | "no" | "off" => Ok(false),
+        _ => Err(PowerError::Config(format!(
+            "invalid boolean environment override {name}={value:?}; expected true/false, 1/0, yes/no, or on/off"
+        ))),
+    }
+}
+
+fn default_host() -> String {
+    "127.0.0.1".to_string()
+}
+
+fn default_port() -> u16 {
+    11434
+}
+
+fn default_max_loaded_models() -> usize {
+    1
+}
+
+impl Default for PowerConfig {
+    fn default() -> Self {
+        Self {
+            host: default_host(),
+            port: default_port(),
+            data_dir: dirs::power_home(),
+            max_loaded_models: default_max_loaded_models(),
+            gpu: GpuConfig::default(),
+            gpu_attestation: GpuAttestationConfig::default(),
+            spec_mode: default_spec_mode(),
+            keep_alive: default_keep_alive(),
+            use_mlock: false,
+            num_thread: None,
+            flash_attention: false,
+            num_parallel: default_num_parallel(),
+            tee_mode: false,
+            tee_policy_mode: TeePolicyMode::default(),
+            redact_logs: false,
+            model_hashes: HashMap::new(),
+            model_key_source: None,
+            tls_port: None,
+            tls_sans: Vec::new(),
+            ra_tls: false,
+            vsock_port: None,
+            api_keys: Vec::new(),
+            allowed_tee_types: Vec::new(),
+            expected_measurements: HashMap::new(),
+            audit_log: false,
+            audit_log_path: None,
+            audit_log_encrypt: false,
+            audit_key_source: None,
+            model_signing_key: None,
+            key_provider: default_key_provider(),
+            key_rotation_sources: Vec::new(),
+            in_memory_decrypt: false,
+            streaming_decrypt: false,
+            suppress_token_metrics: false,
+            rate_limit_rps: 0,
+            max_concurrent_requests: 0,
+            proxy_upstreams: HashMap::new(),
+            proxy_effective_prompt_digest: false,
+            proxy_effective_prompt_digest_required: false,
+            proxy_effective_prompt_digest_path: default_proxy_effective_prompt_digest_path(),
+            timing_padding_ms: None,
+        }
+    }
+}
+
+impl PowerConfig {
+    /// Load configuration from a specific file path (HCL format).
+    ///
+    /// After loading from file, applies `A3S_POWER_*` environment variable overrides.
+    pub fn load_from(path: &str) -> Result<Self> {
+        let path = std::path::Path::new(path);
+        let content = std::fs::read_to_string(path).map_err(|e| {
+            crate::error::PowerError::Config(format!(
+                "Failed to read config file {}: {}",
+                path.display(),
+                e
+            ))
+        })?;
+        let mut config: Self = hcl::from_str(&content).map_err(|e| {
+            crate::error::PowerError::HclDe(format!(
+                "Failed to parse HCL config {}: {}",
+                path.display(),
+                e
+            ))
+        })?;
+        config.apply_env_overrides()?;
+        config.validate()?;
+        Ok(config)
+    }
+
+    /// Load configuration from the default config file path (HCL format).
+    /// Returns default config if the file does not exist.
+    ///
+    /// After loading from file, applies `A3S_POWER_*` environment variable overrides.
+    pub fn load() -> Result<Self> {
+        let path = dirs::config_path();
+        let mut config = if path.exists() {
+            let content = std::fs::read_to_string(&path).map_err(|e| {
+                crate::error::PowerError::Config(format!(
+                    "Failed to read config file {}: {}",
+                    path.display(),
+                    e
+                ))
+            })?;
+            hcl::from_str(&content).map_err(|e| {
+                crate::error::PowerError::HclDe(format!(
+                    "Failed to parse HCL config {}: {}",
+                    path.display(),
+                    e
+                ))
+            })?
+        } else {
+            Self::default()
+        };
+
+        config.apply_env_overrides()?;
+        config.validate()?;
+        Ok(config)
+    }
+
+    /// Validate fatal policy settings and emit warnings for soft misconfiguration patterns.
+    ///
+    /// Some legacy operational warnings remain non-fatal, but policy-bearing
+    /// settings that would otherwise be silently ignored return an error.
+    pub fn validate(&self) -> Result<()> {
+        if !is_valid_spec_mode(&self.spec_mode) {
+            return Err(PowerError::Config(format!(
+                "unsupported spec_mode '{}'; expected one of: off, prompt-lookup, ngram-context",
+                self.spec_mode
+            )));
+        }
+
+        parse_keep_alive(&self.keep_alive).map_err(PowerError::Config)?;
+
+        if let Some(ref key) = self.model_signing_key {
+            validate_model_signing_key(key).map_err(PowerError::Config)?;
+        }
+
+        if self.ra_tls {
+            if self.tls_port.is_none() {
+                return Err(PowerError::Config(
+                    "ra_tls = true requires tls_port so the RA-TLS listener is started".to_string(),
+                ));
+            }
+            if !self.tee_mode {
+                return Err(PowerError::Config(
+                    "ra_tls = true requires tee_mode = true so the TLS certificate contains attestation"
+                        .to_string(),
+                ));
+            }
+        }
+
+        #[cfg(not(feature = "tls"))]
+        if self.tls_port.is_some() {
+            return Err(PowerError::Config(
+                "tls_port requires building a3s-power with the tls feature enabled".to_string(),
+            ));
+        }
+
+        #[cfg(feature = "tls")]
+        for san in &self.tls_sans {
+            crate::tee::cert::validate_tls_san(san)?;
+        }
+
+        match self.key_provider.as_str() {
+            "static" => {}
+            "rotating" => {
+                if self.key_rotation_sources.is_empty() {
+                    return Err(PowerError::Config(
+                        "key_provider = \"rotating\" requires at least one key_rotation_sources entry"
+                            .to_string(),
+                    ));
+                }
+            }
+            other => {
+                return Err(PowerError::Config(format!(
+                    "unsupported key_provider '{other}'; expected one of: static, rotating"
+                )));
+            }
+        }
+
+        if self.audit_log_encrypt && self.audit_key_source.is_none() {
+            return Err(PowerError::Config(
+                "audit_log_encrypt = true requires audit_key_source to encrypt audit entries"
+                    .to_string(),
+            ));
+        }
+
+        if self.in_memory_decrypt {
+            tracing::warn!(
+                "in_memory_decrypt = true requires a backend that explicitly supports locked \
+                 in-memory plaintext loading. Unsupported backends fail closed before load."
+            );
+        }
+
+        if self.streaming_decrypt {
+            tracing::warn!(
+                "streaming_decrypt = true requires a backend that explicitly supports \
+                 layer-streaming decrypted plaintext loading. Unsupported backends fail closed \
+                 before load."
+            );
+            #[cfg(not(feature = "picolm"))]
+            tracing::warn!(
+                "streaming_decrypt = true but the picolm feature is not enabled. \
+                 The current GGUF streaming-decrypt backend path requires --features picolm."
+            );
+        }
+
+        if self.gpu_attestation.evidence_hex.is_some()
+            && self.gpu_attestation.evidence_path.is_some()
+        {
+            return Err(PowerError::Config(
+                "gpu_attestation.evidence_hex and gpu_attestation.evidence_path are mutually exclusive"
+                    .to_string(),
+            ));
+        }
+
+        if self.gpu_attestation.verdict_hex.is_some() && self.gpu_attestation.verdict_path.is_some()
+        {
+            return Err(PowerError::Config(
+                "gpu_attestation.verdict_hex and gpu_attestation.verdict_path are mutually exclusive"
+                    .to_string(),
+            ));
+        }
+
+        if self.gpu_attestation.source == GpuAttestationSource::NvattestCli
+            && self.gpu_attestation.nvattest_timeout_secs == 0
+        {
+            return Err(PowerError::Config(
+                "gpu_attestation.nvattest_timeout_secs must be greater than zero".to_string(),
+            ));
+        }
+
+        if self.gpu_attestation.source == GpuAttestationSource::NvattestCli {
+            let verifier = self
+                .gpu_attestation
+                .nvattest_verifier
+                .trim()
+                .to_ascii_lowercase();
+            if !matches!(verifier.as_str(), "local" | "remote") {
+                return Err(PowerError::Config(format!(
+                    "gpu_attestation.nvattest_verifier must be \"remote\" or \"local\", got {:?}",
+                    self.gpu_attestation.nvattest_verifier
+                )));
+            }
+
+            let evidence_source = self
+                .gpu_attestation
+                .nvattest_gpu_evidence_source
+                .trim()
+                .to_ascii_lowercase();
+            if !matches!(evidence_source.as_str(), "nvml" | "corelib") {
+                return Err(PowerError::Config(format!(
+                    "gpu_attestation.nvattest_gpu_evidence_source must be \"nvml\" or \"corelib\", got {:?}",
+                    self.gpu_attestation.nvattest_gpu_evidence_source
+                )));
+            }
+            if evidence_source == "corelib"
+                && self.gpu_attestation.nvattest_gpu_architecture.is_none()
+            {
+                return Err(PowerError::Config(
+                    "gpu_attestation.nvattest_gpu_architecture is required when nvattest_gpu_evidence_source = \"corelib\"".to_string(),
+                ));
+            }
+        }
+
+        if self.gpu_attestation.source == GpuAttestationSource::NrasRest {
+            if !self.gpu_attestation.evidence_configured() {
+                return Err(PowerError::Config(
+                    "gpu_attestation.source = \"nras-rest\" requires evidence_hex or evidence_path"
+                        .to_string(),
+                ));
+            }
+            if self.gpu_attestation.verdict_configured() {
+                return Err(PowerError::Config(
+                    "gpu_attestation.source = \"nras-rest\" obtains the verdict from NRAS; verdict_hex/verdict_path must not be configured".to_string(),
+                ));
+            }
+            let architecture = self
+                .gpu_attestation
+                .nras_gpu_architecture
+                .as_deref()
+                .map(str::trim)
+                .filter(|s| !s.is_empty())
+                .ok_or_else(|| {
+                    PowerError::Config(
+                        "gpu_attestation.nras_gpu_architecture is required when source = \"nras-rest\""
+                            .to_string(),
+                    )
+                })?
+                .to_ascii_uppercase();
+            if !matches!(architecture.as_str(), "HOPPER" | "BLACKWELL") {
+                return Err(PowerError::Config(format!(
+                    "gpu_attestation.nras_gpu_architecture must be \"HOPPER\" or \"BLACKWELL\", got {:?}",
+                    self.gpu_attestation.nras_gpu_architecture
+                )));
+            }
+            if !matches!(
+                self.gpu_attestation.nras_claims_version.trim(),
+                "2.0" | "3.0"
+            ) {
+                return Err(PowerError::Config(format!(
+                    "gpu_attestation.nras_claims_version must be \"2.0\" or \"3.0\", got {:?}",
+                    self.gpu_attestation.nras_claims_version
+                )));
+            }
+            if self.gpu_attestation.nras_timeout_secs == 0 {
+                return Err(PowerError::Config(
+                    "gpu_attestation.nras_timeout_secs must be greater than zero".to_string(),
+                ));
+            }
+        }
+
+        Ok(())
+    }
+
+    /// Apply `A3S_POWER_*` environment variable overrides.
+    fn apply_env_overrides(&mut self) -> Result<()> {
+        if let Ok(host) = std::env::var("A3S_POWER_HOST") {
+            self.host = host;
+        }
+
+        if let Ok(port_str) = std::env::var("A3S_POWER_PORT") {
+            self.port = parse_required_env_override::<u16>("A3S_POWER_PORT", &port_str)?;
+        }
+
+        if let Ok(data_dir) = std::env::var("A3S_POWER_DATA_DIR") {
+            self.data_dir = PathBuf::from(data_dir);
+        }
+
+        if let Ok(max_str) = std::env::var("A3S_POWER_MAX_MODELS") {
+            self.max_loaded_models =
+                parse_required_env_override::<usize>("A3S_POWER_MAX_MODELS", &max_str)?;
+        }
+
+        if let Ok(keep_alive) = std::env::var("A3S_POWER_KEEP_ALIVE") {
+            self.keep_alive = keep_alive;
+        }
+
+        if let Ok(spec_mode) = std::env::var("A3S_POWER_SPEC_MODE") {
+            self.spec_mode = spec_mode;
+        }
+
+        if let Ok(gpu_str) = std::env::var("A3S_POWER_GPU_LAYERS") {
+            self.gpu.gpu_layers =
+                parse_required_env_override::<i32>("A3S_POWER_GPU_LAYERS", &gpu_str)?;
+        }
+
+        if let Ok(provider) = std::env::var("A3S_POWER_GPU_ATTESTATION_PROVIDER") {
+            self.gpu_attestation.provider = provider;
+        }
+
+        if let Ok(source) = std::env::var("A3S_POWER_GPU_ATTESTATION_SOURCE") {
+            self.gpu_attestation.source = parse_required_env_override::<GpuAttestationSource>(
+                "A3S_POWER_GPU_ATTESTATION_SOURCE",
+                &source,
+            )?;
+        }
+
+        if let Ok(evidence_hex) = std::env::var("A3S_POWER_GPU_ATTESTATION_EVIDENCE_HEX") {
+            self.gpu_attestation.evidence_hex = Some(evidence_hex);
+            self.gpu_attestation.evidence_path = None;
+        }
+
+        if let Ok(evidence_path) = std::env::var("A3S_POWER_GPU_ATTESTATION_EVIDENCE_PATH") {
+            self.gpu_attestation.evidence_path = Some(PathBuf::from(evidence_path));
+            self.gpu_attestation.evidence_hex = None;
+        }
+
+        if let Ok(verdict_hex) = std::env::var("A3S_POWER_GPU_ATTESTATION_VERDICT_HEX") {
+            self.gpu_attestation.verdict_hex = Some(verdict_hex);
+            self.gpu_attestation.verdict_path = None;
+        }
+
+        if let Ok(verdict_path) = std::env::var("A3S_POWER_GPU_ATTESTATION_VERDICT_PATH") {
+            self.gpu_attestation.verdict_path = Some(PathBuf::from(verdict_path));
+            self.gpu_attestation.verdict_hex = None;
+        }
+
+        if let Ok(path) = std::env::var("A3S_POWER_GPU_ATTESTATION_NVATTEST_PATH") {
+            self.gpu_attestation.nvattest_path = PathBuf::from(path);
+        }
+
+        if let Ok(verifier) = std::env::var("A3S_POWER_GPU_ATTESTATION_NVATTEST_VERIFIER") {
+            self.gpu_attestation.nvattest_verifier = verifier;
+        }
+
+        if let Ok(source) = std::env::var("A3S_POWER_GPU_ATTESTATION_NVATTEST_GPU_EVIDENCE_SOURCE")
+        {
+            self.gpu_attestation.nvattest_gpu_evidence_source = source;
+        }
+
+        if let Ok(architecture) =
+            std::env::var("A3S_POWER_GPU_ATTESTATION_NVATTEST_GPU_ARCHITECTURE")
+        {
+            self.gpu_attestation.nvattest_gpu_architecture = Some(architecture);
+        }
+
+        if let Ok(url) = std::env::var("A3S_POWER_GPU_ATTESTATION_NRAS_URL") {
+            self.gpu_attestation.nras_url = Some(url);
+        }
+
+        if let Ok(architecture) = std::env::var("A3S_POWER_GPU_ATTESTATION_NRAS_GPU_ARCHITECTURE") {
+            self.gpu_attestation.nras_gpu_architecture = Some(architecture);
+        }
+
+        if let Ok(claims_version) = std::env::var("A3S_POWER_GPU_ATTESTATION_NRAS_CLAIMS_VERSION") {
+            self.gpu_attestation.nras_claims_version = claims_version;
+        }
+
+        if let Ok(token_env) = std::env::var("A3S_POWER_GPU_ATTESTATION_NRAS_BEARER_TOKEN_ENV") {
+            self.gpu_attestation.nras_bearer_token_env = Some(token_env);
+        }
+
+        if let Ok(timeout) = std::env::var("A3S_POWER_GPU_ATTESTATION_NRAS_TIMEOUT_SECS") {
+            self.gpu_attestation.nras_timeout_secs = parse_required_env_override::<u64>(
+                "A3S_POWER_GPU_ATTESTATION_NRAS_TIMEOUT_SECS",
+                &timeout,
+            )?;
+        }
+
+        if let Ok(url) = std::env::var("A3S_POWER_GPU_ATTESTATION_RIM_URL") {
+            self.gpu_attestation.rim_url = Some(url);
+        }
+
+        if let Ok(url) = std::env::var("A3S_POWER_GPU_ATTESTATION_OCSP_URL") {
+            self.gpu_attestation.ocsp_url = Some(url);
+        }
+
+        if let Ok(path) = std::env::var("A3S_POWER_GPU_ATTESTATION_RELYING_PARTY_POLICY_PATH") {
+            self.gpu_attestation.relying_party_policy_path = Some(PathBuf::from(path));
+        }
+
+        if let Ok(timeout) = std::env::var("A3S_POWER_GPU_ATTESTATION_NVATTEST_TIMEOUT_SECS") {
+            self.gpu_attestation.nvattest_timeout_secs = parse_required_env_override::<u64>(
+                "A3S_POWER_GPU_ATTESTATION_NVATTEST_TIMEOUT_SECS",
+                &timeout,
+            )?;
+        }
+
+        if let Ok(tee_str) = std::env::var("A3S_POWER_TEE_MODE") {
+            self.tee_mode = parse_required_bool_env_override("A3S_POWER_TEE_MODE", &tee_str)?;
+        }
+
+        if let Ok(policy_mode) = std::env::var("A3S_POWER_TEE_POLICY_MODE") {
+            self.tee_policy_mode = parse_required_env_override::<TeePolicyMode>(
+                "A3S_POWER_TEE_POLICY_MODE",
+                &policy_mode,
+            )?;
+        }
+
+        if let Ok(redact_str) = std::env::var("A3S_POWER_REDACT_LOGS") {
+            self.redact_logs =
+                parse_required_bool_env_override("A3S_POWER_REDACT_LOGS", &redact_str)?;
+        }
+
+        // When TEE mode is enabled, default redact_logs to true unless explicitly disabled
+        if self.tee_mode && std::env::var("A3S_POWER_REDACT_LOGS").is_err() && !self.redact_logs {
+            self.redact_logs = true;
+        }
+
+        if let Ok(tls_port_str) = std::env::var("A3S_POWER_TLS_PORT") {
+            self.tls_port = Some(parse_required_env_override::<u16>(
+                "A3S_POWER_TLS_PORT",
+                &tls_port_str,
+            )?);
+        }
+
+        if let Ok(ra_tls_str) = std::env::var("A3S_POWER_RA_TLS") {
+            self.ra_tls = parse_required_bool_env_override("A3S_POWER_RA_TLS", &ra_tls_str)?;
+        }
+
+        if let Ok(vsock_str) = std::env::var("A3S_POWER_VSOCK_PORT") {
+            self.vsock_port = Some(parse_required_env_override::<u32>(
+                "A3S_POWER_VSOCK_PORT",
+                &vsock_str,
+            )?);
+        }
+
+        if let Ok(keys_str) = std::env::var("A3S_POWER_API_KEYS") {
+            let keys: Vec<String> = keys_str
+                .split(',')
+                .map(|s| s.trim().to_string())
+                .filter(|s| !s.is_empty())
+                .collect();
+            if !keys.is_empty() {
+                self.api_keys = keys;
+            }
+        }
+
+        // A3S_POWER_TEE_STRICT=1 removes "simulated" from allowed TEE types
+        if std::env::var("A3S_POWER_TEE_STRICT").as_deref() == Ok("1") {
+            self.tee_policy_mode = TeePolicyMode::Strict;
+            if self.allowed_tee_types.is_empty() {
+                // Default to all hardware types when strict mode is enabled
+                self.allowed_tee_types = vec!["sev-snp".to_string(), "tdx".to_string()];
+            } else {
+                self.allowed_tee_types.retain(|t| t != "simulated");
+            }
+        }
+
+        if let Ok(audit_log) = std::env::var("A3S_POWER_AUDIT_LOG") {
+            self.audit_log = parse_required_bool_env_override("A3S_POWER_AUDIT_LOG", &audit_log)?;
+        }
+
+        if let Ok(enabled) = std::env::var("A3S_POWER_PROXY_EFFECTIVE_PROMPT_DIGEST") {
+            self.proxy_effective_prompt_digest = parse_required_bool_env_override(
+                "A3S_POWER_PROXY_EFFECTIVE_PROMPT_DIGEST",
+                &enabled,
+            )?;
+        }
+
+        if let Ok(required) = std::env::var("A3S_POWER_PROXY_EFFECTIVE_PROMPT_DIGEST_REQUIRED") {
+            self.proxy_effective_prompt_digest_required = parse_required_bool_env_override(
+                "A3S_POWER_PROXY_EFFECTIVE_PROMPT_DIGEST_REQUIRED",
+                &required,
+            )?;
+        }
+
+        if let Ok(path) = std::env::var("A3S_POWER_PROXY_EFFECTIVE_PROMPT_DIGEST_PATH") {
+            self.proxy_effective_prompt_digest_path = path;
+        }
+
+        Ok(())
+    }
+
+    /// Save the current configuration to the default config file path (HCL format).
+    pub fn save(&self) -> Result<()> {
+        let path = dirs::config_path();
+        if let Some(parent) = path.parent() {
+            std::fs::create_dir_all(parent)?;
+        }
+        let content = self.to_hcl();
+        std::fs::write(&path, content)?;
+        Ok(())
+    }
+
+    /// Serialize the config to HCL format.
+    pub fn to_hcl(&self) -> String {
+        let mut out = String::new();
+        out.push_str(&format!("host = \"{}\"\n", self.host));
+        out.push_str(&format!("port = {}\n", self.port));
+        out.push_str(&format!("data_dir = \"{}\"\n", self.data_dir.display()));
+        out.push_str(&format!("max_loaded_models = {}\n", self.max_loaded_models));
+        out.push_str(&format!("keep_alive = \"{}\"\n", self.keep_alive));
+        out.push_str(&format!("spec_mode = \"{}\"\n", self.spec_mode));
+        out.push_str(&format!("use_mlock = {}\n", self.use_mlock));
+        if let Some(nt) = self.num_thread {
+            out.push_str(&format!("num_thread = {}\n", nt));
+        }
+        out.push_str(&format!("flash_attention = {}\n", self.flash_attention));
+        out.push_str(&format!("num_parallel = {}\n", self.num_parallel));
+        out.push_str(&format!("tee_mode = {}\n", self.tee_mode));
+        out.push_str(&format!("tee_policy_mode = \"{}\"\n", self.tee_policy_mode));
+        out.push_str(&format!("redact_logs = {}\n", self.redact_logs));
+
+        // GPU block
+        out.push_str("\ngpu {\n");
+        out.push_str(&format!("  gpu_layers = {}\n", self.gpu.gpu_layers));
+        out.push_str(&format!("  main_gpu = {}\n", self.gpu.main_gpu));
+        if !self.gpu.tensor_split.is_empty() {
+            let splits: Vec<String> = self
+                .gpu
+                .tensor_split
+                .iter()
+                .map(|v| v.to_string())
+                .collect();
+            out.push_str(&format!("  tensor_split = [{}]\n", splits.join(", ")));
+        }
+        out.push_str("}\n");
+
+        // GPU confidential-computing evidence binding
+        if self.gpu_attestation.evidence_configured()
+            || self.gpu_attestation.verdict_configured()
+            || self.gpu_attestation.provider != default_gpu_attestation_provider()
+            || self.gpu_attestation.source != GpuAttestationSource::Configured
+        {
+            out.push_str("\ngpu_attestation {\n");
+            out.push_str(&format!("  source = \"{}\"\n", self.gpu_attestation.source));
+            out.push_str(&format!(
+                "  provider = \"{}\"\n",
+                self.gpu_attestation.provider
+            ));
+            if let Some(ref evidence_hex) = self.gpu_attestation.evidence_hex {
+                out.push_str(&format!("  evidence_hex = \"{}\"\n", evidence_hex));
+            }
+            if let Some(ref evidence_path) = self.gpu_attestation.evidence_path {
+                out.push_str(&format!(
+                    "  evidence_path = \"{}\"\n",
+                    evidence_path.display()
+                ));
+            }
+            if let Some(ref verdict_hex) = self.gpu_attestation.verdict_hex {
+                out.push_str(&format!("  verdict_hex = \"{}\"\n", verdict_hex));
+            }
+            if let Some(ref verdict_path) = self.gpu_attestation.verdict_path {
+                out.push_str(&format!(
+                    "  verdict_path = \"{}\"\n",
+                    verdict_path.display()
+                ));
+            }
+            if matches!(
+                self.gpu_attestation.source,
+                GpuAttestationSource::NvattestCli | GpuAttestationSource::NrasRest
+            ) {
+                if let Some(ref url) = self.gpu_attestation.nras_url {
+                    out.push_str(&format!("  nras_url = \"{}\"\n", url));
+                }
+            }
+            if self.gpu_attestation.source == GpuAttestationSource::NvattestCli {
+                out.push_str(&format!(
+                    "  nvattest_path = \"{}\"\n",
+                    self.gpu_attestation.nvattest_path.display()
+                ));
+                out.push_str(&format!(
+                    "  nvattest_verifier = \"{}\"\n",
+                    self.gpu_attestation.nvattest_verifier
+                ));
+                out.push_str(&format!(
+                    "  nvattest_gpu_evidence_source = \"{}\"\n",
+                    self.gpu_attestation.nvattest_gpu_evidence_source
+                ));
+                if let Some(ref architecture) = self.gpu_attestation.nvattest_gpu_architecture {
+                    out.push_str(&format!(
+                        "  nvattest_gpu_architecture = \"{}\"\n",
+                        architecture
+                    ));
+                }
+                if let Some(ref url) = self.gpu_attestation.rim_url {
+                    out.push_str(&format!("  rim_url = \"{}\"\n", url));
+                }
+                if let Some(ref url) = self.gpu_attestation.ocsp_url {
+                    out.push_str(&format!("  ocsp_url = \"{}\"\n", url));
+                }
+                if let Some(ref path) = self.gpu_attestation.relying_party_policy_path {
+                    out.push_str(&format!(
+                        "  relying_party_policy_path = \"{}\"\n",
+                        path.display()
+                    ));
+                }
+                out.push_str(&format!(
+                    "  nvattest_timeout_secs = {}\n",
+                    self.gpu_attestation.nvattest_timeout_secs
+                ));
+            }
+            if self.gpu_attestation.source == GpuAttestationSource::NrasRest {
+                if let Some(ref architecture) = self.gpu_attestation.nras_gpu_architecture {
+                    out.push_str(&format!("  nras_gpu_architecture = \"{}\"\n", architecture));
+                }
+                out.push_str(&format!(
+                    "  nras_claims_version = \"{}\"\n",
+                    self.gpu_attestation.nras_claims_version
+                ));
+                if let Some(ref token_env) = self.gpu_attestation.nras_bearer_token_env {
+                    out.push_str(&format!("  nras_bearer_token_env = \"{}\"\n", token_env));
+                }
+                out.push_str(&format!(
+                    "  nras_timeout_secs = {}\n",
+                    self.gpu_attestation.nras_timeout_secs
+                ));
+            }
+            out.push_str("}\n");
+        }
+
+        // Model hashes
+        if !self.model_hashes.is_empty() {
+            out.push_str("\nmodel_hashes = {\n");
+            for (name, hash) in &self.model_hashes {
+                out.push_str(&format!("  \"{}\" = \"{}\"\n", name, hash));
+            }
+            out.push_str("}\n");
+        }
+
+        // TLS settings
+        if let Some(tls_port) = self.tls_port {
+            out.push_str(&format!("tls_port = {}\n", tls_port));
+        }
+        if self.ra_tls {
+            out.push_str(&format!("ra_tls = {}\n", self.ra_tls));
+        }
+
+        // Vsock transport
+        if let Some(vsock_port) = self.vsock_port {
+            out.push_str(&format!("vsock_port = {}\n", vsock_port));
+        }
+
+        // API keys
+        if !self.api_keys.is_empty() {
+            let keys: Vec<String> = self.api_keys.iter().map(|k| format!("\"{}\"", k)).collect();
+            out.push_str(&format!("api_keys = [{}]\n", keys.join(", ")));
+        }
+
+        // TEE policy
+        if !self.allowed_tee_types.is_empty() {
+            let types: Vec<String> = self
+                .allowed_tee_types
+                .iter()
+                .map(|t| format!("\"{}\"", t))
+                .collect();
+            out.push_str(&format!("allowed_tee_types = [{}]\n", types.join(", ")));
+        }
+        if !self.expected_measurements.is_empty() {
+            out.push_str("expected_measurements = {\n");
+            for (k, v) in &self.expected_measurements {
+                out.push_str(&format!("  {} = \"{}\"\n", k, v));
+            }
+            out.push_str("}\n");
+        }
+
+        // Audit logging
+        if self.audit_log {
+            out.push_str("audit_log = true\n");
+        }
+        if let Some(ref path) = self.audit_log_path {
+            out.push_str(&format!("audit_log_path = \"{}\"\n", path.display()));
+        }
+
+        // Model signing
+        if let Some(ref key) = self.model_signing_key {
+            out.push_str(&format!("model_signing_key = \"{}\"\n", key));
+        }
+
+        // Key provider
+        if self.key_provider != "static" {
+            out.push_str(&format!("key_provider = \"{}\"\n", self.key_provider));
+        }
+
+        // Rate limiting
+        if self.rate_limit_rps > 0 {
+            out.push_str(&format!("rate_limit_rps = {}\n", self.rate_limit_rps));
+        }
+        if self.max_concurrent_requests > 0 {
+            out.push_str(&format!(
+                "max_concurrent_requests = {}\n",
+                self.max_concurrent_requests
+            ));
+        }
+        if !self.proxy_upstreams.is_empty() {
+            out.push_str("proxy_upstreams = {\n");
+            for (name, upstream) in &self.proxy_upstreams {
+                out.push_str(&format!("  \"{}\" = \"{}\"\n", name, upstream));
+            }
+            out.push_str("}\n");
+        }
+        if self.proxy_effective_prompt_digest {
+            out.push_str("proxy_effective_prompt_digest = true\n");
+        }
+        if self.proxy_effective_prompt_digest_required {
+            out.push_str("proxy_effective_prompt_digest_required = true\n");
+        }
+        if self.proxy_effective_prompt_digest_path != default_proxy_effective_prompt_digest_path() {
+            out.push_str(&format!(
+                "proxy_effective_prompt_digest_path = \"{}\"\n",
+                self.proxy_effective_prompt_digest_path
+            ));
+        }
+
+        // TEE in-memory decryption / token metrics
+        if self.in_memory_decrypt {
+            out.push_str("in_memory_decrypt = true\n");
+        }
+        if self.streaming_decrypt {
+            out.push_str("streaming_decrypt = true\n");
+        }
+        if self.suppress_token_metrics {
+            out.push_str("suppress_token_metrics = true\n");
+        }
+
+        out
+    }
+
+    /// Returns the server bind address string (e.g., "127.0.0.1:11434").
+    pub fn bind_address(&self) -> String {
+        format!("{}:{}", self.host, self.port)
+    }
+
+    /// Return true when production attestation checks must fail closed.
+    pub fn strict_attestation(&self) -> bool {
+        matches!(
+            self.tee_policy_mode,
+            TeePolicyMode::Strict | TeePolicyMode::GpuConfidential
+        )
+    }
+
+    /// Return the effective TEE type allowlist for the configured policy.
+    pub fn effective_allowed_tee_types(&self) -> Vec<String> {
+        if !self.allowed_tee_types.is_empty() {
+            if self.strict_attestation() {
+                return self
+                    .allowed_tee_types
+                    .iter()
+                    .filter(|tee_type| tee_type.as_str() != "simulated")
+                    .cloned()
+                    .collect();
+            }
+            return self.allowed_tee_types.clone();
+        }
+
+        if self.strict_attestation() {
+            return vec!["sev-snp".to_string(), "tdx".to_string()];
+        }
+
+        Vec::new()
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use serial_test::serial;
+
+    fn valid_model_signing_key_hex() -> String {
+        let signing_key = ed25519_dalek::SigningKey::from_bytes(&[7; 32]);
+        hex::encode(signing_key.verifying_key().to_bytes())
+    }
+
+    #[test]
+    fn test_default_config() {
+        let config = PowerConfig::default();
+        assert_eq!(config.host, "127.0.0.1");
+        assert_eq!(config.port, 11434);
+        assert_eq!(config.max_loaded_models, 1);
+        assert!(!config.tee_mode);
+        assert_eq!(config.tee_policy_mode, TeePolicyMode::Strict);
+        assert!(!config.redact_logs);
+        assert!(config.model_hashes.is_empty());
+    }
+
+    #[test]
+    fn test_bind_address() {
+        let config = PowerConfig::default();
+        assert_eq!(config.bind_address(), "127.0.0.1:11434");
+    }
+
+    #[test]
+    fn test_config_deserialize_hcl() {
+        let hcl_str = r#"
+            host = "0.0.0.0"
+            port = 8080
+            max_loaded_models = 3
+        "#;
+        let config: PowerConfig = hcl::from_str(hcl_str).unwrap();
+        assert_eq!(config.host, "0.0.0.0");
+        assert_eq!(config.port, 8080);
+        assert_eq!(config.max_loaded_models, 3);
+    }
+
+    #[test]
+    fn test_config_serialize_hcl() {
+        let config = PowerConfig::default();
+        let serialized = config.to_hcl();
+        assert!(serialized.contains("host"));
+        assert!(serialized.contains("port"));
+        assert!(serialized.contains("gpu {"));
+    }
+
+    #[test]
+    #[serial]
+    fn test_config_roundtrip() {
+        let dir = tempfile::tempdir().unwrap();
+        std::env::set_var("A3S_POWER_HOME", dir.path());
+
+        let config = PowerConfig {
+            host: "0.0.0.0".to_string(),
+            port: 9999,
+            data_dir: dir.path().to_path_buf(),
+            max_loaded_models: 5,
+            gpu: GpuConfig::default(),
+            gpu_attestation: GpuAttestationConfig::default(),
+            spec_mode: "prompt-lookup".to_string(),
+            keep_alive: "5m".to_string(),
+            use_mlock: false,
+            num_thread: None,
+            flash_attention: false,
+            num_parallel: 4,
+            tee_mode: true,
+            tee_policy_mode: TeePolicyMode::Development,
+            redact_logs: true,
+            model_hashes: HashMap::new(),
+            model_key_source: None,
+            tls_port: None,
+            tls_sans: Vec::new(),
+            ra_tls: false,
+            vsock_port: None,
+            api_keys: Vec::new(),
+            allowed_tee_types: Vec::new(),
+            expected_measurements: HashMap::new(),
+            audit_log: false,
+            audit_log_path: None,
+            audit_log_encrypt: false,
+            audit_key_source: None,
+            model_signing_key: None,
+            key_provider: "static".to_string(),
+            key_rotation_sources: Vec::new(),
+            in_memory_decrypt: false,
+            streaming_decrypt: false,
+            suppress_token_metrics: false,
+            rate_limit_rps: 0,
+            max_concurrent_requests: 0,
+            proxy_upstreams: HashMap::new(),
+            proxy_effective_prompt_digest: false,
+            proxy_effective_prompt_digest_required: false,
+            proxy_effective_prompt_digest_path: default_proxy_effective_prompt_digest_path(),
+            timing_padding_ms: None,
+        };
+        config.save().unwrap();
+
+        let loaded = PowerConfig::load().unwrap();
+        assert_eq!(loaded.host, "0.0.0.0");
+        assert_eq!(loaded.port, 9999);
+        assert_eq!(loaded.max_loaded_models, 5);
+        assert_eq!(loaded.num_parallel, 4);
+        assert!(loaded.tee_mode);
+        assert!(loaded.redact_logs);
+
+        std::env::remove_var("A3S_POWER_HOME");
+    }
+
+    #[test]
+    fn test_gpu_config_defaults() {
+        let config = PowerConfig::default();
+        assert_eq!(config.gpu.gpu_layers, 0);
+        assert_eq!(config.gpu.main_gpu, 0);
+    }
+
+    #[test]
+    fn test_gpu_config_deserialize_hcl() {
+        let hcl_str = r#"
+            host = "127.0.0.1"
+            port = 11434
+
+            gpu {
+                gpu_layers = -1
+                main_gpu = 1
+            }
+        "#;
+        let config: PowerConfig = hcl::from_str(hcl_str).unwrap();
+        assert_eq!(config.gpu.gpu_layers, -1);
+        assert_eq!(config.gpu.main_gpu, 1);
+    }
+
+    #[test]
+    fn test_gpu_config_missing_uses_defaults() {
+        let hcl_str = r#"
+            host = "127.0.0.1"
+            port = 11434
+        "#;
+        let config: PowerConfig = hcl::from_str(hcl_str).unwrap();
+        assert_eq!(config.gpu.gpu_layers, 0);
+        assert_eq!(config.gpu.main_gpu, 0);
+    }
+
+    #[test]
+    fn test_gpu_attestation_config_defaults() {
+        let config = PowerConfig::default();
+        assert_eq!(
+            config.gpu_attestation.source,
+            GpuAttestationSource::Configured
+        );
+        assert_eq!(config.gpu_attestation.provider, "nvidia-nras");
+        assert_eq!(
+            config.gpu_attestation.nvattest_path,
+            PathBuf::from("nvattest")
+        );
+        assert_eq!(config.gpu_attestation.nvattest_verifier, "remote");
+        assert_eq!(config.gpu_attestation.nvattest_gpu_evidence_source, "nvml");
+        assert_eq!(config.gpu_attestation.nvattest_timeout_secs, 30);
+        assert_eq!(config.gpu_attestation.nras_claims_version, "3.0");
+        assert_eq!(config.gpu_attestation.nras_timeout_secs, 30);
+        assert!(!config.gpu_attestation.evidence_configured());
+        assert!(!config.gpu_attestation.verdict_configured());
+    }
+
+    #[test]
+    fn test_gpu_attestation_config_deserialize_hcl() {
+        let hcl_str = r#"
+            gpu_attestation {
+                source = "configured"
+                provider = "nvidia-nras"
+                evidence_path = "/run/a3s/gpu.evidence"
+                verdict_path = "/run/a3s/nras.verdict"
+            }
+        "#;
+        let config: PowerConfig = hcl::from_str(hcl_str).unwrap();
+        assert_eq!(
+            config.gpu_attestation.source,
+            GpuAttestationSource::Configured
+        );
+        assert_eq!(config.gpu_attestation.provider, "nvidia-nras");
+        assert_eq!(
+            config.gpu_attestation.evidence_path,
+            Some(PathBuf::from("/run/a3s/gpu.evidence"))
+        );
+        assert_eq!(
+            config.gpu_attestation.verdict_path,
+            Some(PathBuf::from("/run/a3s/nras.verdict"))
+        );
+    }
+
+    #[test]
+    fn test_gpu_attestation_config_serialization() {
+        let config = PowerConfig {
+            gpu_attestation: GpuAttestationConfig {
+                evidence_hex: Some("0011".to_string()),
+                verdict_hex: Some("2233".to_string()),
+                ..Default::default()
+            },
+            ..Default::default()
+        };
+        let serialized = config.to_hcl();
+        assert!(serialized.contains("gpu_attestation {"));
+        assert!(serialized.contains("evidence_hex = \"0011\""));
+        assert!(serialized.contains("verdict_hex = \"2233\""));
+    }
+
+    #[test]
+    fn test_gpu_attestation_nvattest_cli_deserialize_hcl() {
+        let hcl_str = r#"
+            gpu_attestation {
+                source = "nvattest-cli"
+                provider = "nvidia-nras"
+                nvattest_path = "/usr/local/bin/nvattest"
+                nvattest_verifier = "remote"
+                nvattest_gpu_evidence_source = "nvml"
+                nras_url = "https://nras.attestation.nvidia.com"
+                nvattest_timeout_secs = 45
+            }
+        "#;
+        let config: PowerConfig = hcl::from_str(hcl_str).unwrap();
+        assert_eq!(
+            config.gpu_attestation.source,
+            GpuAttestationSource::NvattestCli
+        );
+        assert_eq!(
+            config.gpu_attestation.nvattest_path,
+            PathBuf::from("/usr/local/bin/nvattest")
+        );
+        assert_eq!(config.gpu_attestation.nvattest_verifier, "remote");
+        assert_eq!(
+            config.gpu_attestation.nras_url.as_deref(),
+            Some("https://nras.attestation.nvidia.com")
+        );
+        assert_eq!(config.gpu_attestation.nvattest_timeout_secs, 45);
+    }
+
+    #[test]
+    fn test_gpu_attestation_nvattest_cli_serialization() {
+        let config = PowerConfig {
+            gpu_attestation: GpuAttestationConfig {
+                source: GpuAttestationSource::NvattestCli,
+                nras_url: Some("https://nras.attestation.nvidia.com".to_string()),
+                ..Default::default()
+            },
+            ..Default::default()
+        };
+        let serialized = config.to_hcl();
+        assert!(serialized.contains("source = \"nvattest-cli\""));
+        assert!(serialized.contains("nvattest_path = \"nvattest\""));
+        assert!(serialized.contains("nvattest_verifier = \"remote\""));
+        assert!(serialized.contains("nras_url = \"https://nras.attestation.nvidia.com\""));
+    }
+
+    #[test]
+    fn test_gpu_attestation_nras_rest_deserialize_hcl() {
+        let hcl_str = r#"
+            gpu_attestation {
+                source = "nras-rest"
+                provider = "nvidia-nras"
+                evidence_path = "/run/a3s/gpu-evidence.json"
+                nras_url = "https://nras.attestation.nvidia.com"
+                nras_gpu_architecture = "HOPPER"
+                nras_claims_version = "3.0"
+                nras_bearer_token_env = "NRAS_TOKEN"
+                nras_timeout_secs = 45
+            }
+        "#;
+        let config: PowerConfig = hcl::from_str(hcl_str).unwrap();
+        assert_eq!(
+            config.gpu_attestation.source,
+            GpuAttestationSource::NrasRest
+        );
+        assert_eq!(
+            config.gpu_attestation.evidence_path,
+            Some(PathBuf::from("/run/a3s/gpu-evidence.json"))
+        );
+        assert_eq!(
+            config.gpu_attestation.nras_gpu_architecture.as_deref(),
+            Some("HOPPER")
+        );
+        assert_eq!(config.gpu_attestation.nras_claims_version, "3.0");
+        assert_eq!(
+            config.gpu_attestation.nras_bearer_token_env.as_deref(),
+            Some("NRAS_TOKEN")
+        );
+        assert_eq!(config.gpu_attestation.nras_timeout_secs, 45);
+    }
+
+    #[test]
+    fn test_gpu_attestation_nras_rest_serialization() {
+        let config = PowerConfig {
+            gpu_attestation: GpuAttestationConfig {
+                source: GpuAttestationSource::NrasRest,
+                evidence_hex: Some("0011".to_string()),
+                nras_url: Some("https://nras.attestation.nvidia.com".to_string()),
+                nras_gpu_architecture: Some("HOPPER".to_string()),
+                nras_bearer_token_env: Some("NRAS_TOKEN".to_string()),
+                ..Default::default()
+            },
+            ..Default::default()
+        };
+        let serialized = config.to_hcl();
+        assert!(serialized.contains("source = \"nras-rest\""));
+        assert!(serialized.contains("evidence_hex = \"0011\""));
+        assert!(serialized.contains("nras_url = \"https://nras.attestation.nvidia.com\""));
+        assert!(serialized.contains("nras_gpu_architecture = \"HOPPER\""));
+        assert!(serialized.contains("nras_claims_version = \"3.0\""));
+        assert!(serialized.contains("nras_bearer_token_env = \"NRAS_TOKEN\""));
+        assert!(serialized.contains("nras_timeout_secs = 30"));
+    }
+
+    #[test]
+    fn test_proxy_effective_prompt_digest_defaults() {
+        let config = PowerConfig::default();
+        assert!(!config.proxy_effective_prompt_digest);
+        assert!(!config.proxy_effective_prompt_digest_required);
+        assert_eq!(
+            config.proxy_effective_prompt_digest_path,
+            "/v1/chat/effective-prompt-digest"
+        );
+    }
+
+    #[test]
+    fn test_proxy_effective_prompt_digest_deserialize_hcl() {
+        let hcl_str = r#"
+            proxy_upstreams = {
+                "llama-70b" = "http://vllm:8000"
+            }
+            proxy_effective_prompt_digest = true
+            proxy_effective_prompt_digest_required = true
+            proxy_effective_prompt_digest_path = "/v1/rendered-prompt-digest"
+        "#;
+        let config: PowerConfig = hcl::from_str(hcl_str).unwrap();
+        assert_eq!(
+            config.proxy_upstreams.get("llama-70b").map(String::as_str),
+            Some("http://vllm:8000")
+        );
+        assert!(config.proxy_effective_prompt_digest);
+        assert!(config.proxy_effective_prompt_digest_required);
+        assert_eq!(
+            config.proxy_effective_prompt_digest_path,
+            "/v1/rendered-prompt-digest"
+        );
+    }
+
+    #[test]
+    fn test_proxy_effective_prompt_digest_serialization() {
+        let mut proxy_upstreams = HashMap::new();
+        proxy_upstreams.insert("llama-70b".to_string(), "http://vllm:8000".to_string());
+        let config = PowerConfig {
+            proxy_upstreams,
+            proxy_effective_prompt_digest: true,
+            proxy_effective_prompt_digest_required: true,
+            proxy_effective_prompt_digest_path: "/v1/rendered-prompt-digest".to_string(),
+            ..Default::default()
+        };
+        let serialized = config.to_hcl();
+        assert!(serialized.contains("proxy_upstreams = {"));
+        assert!(serialized.contains("\"llama-70b\" = \"http://vllm:8000\""));
+        assert!(serialized.contains("proxy_effective_prompt_digest = true"));
+        assert!(serialized.contains("proxy_effective_prompt_digest_required = true"));
+        assert!(serialized
+            .contains("proxy_effective_prompt_digest_path = \"/v1/rendered-prompt-digest\""));
+    }
+
+    #[test]
+    fn test_default_keep_alive() {
+        let config = PowerConfig::default();
+        assert_eq!(config.keep_alive, "5m");
+    }
+
+    #[test]
+    fn test_parse_keep_alive_minutes() {
+        assert_eq!(
+            parse_keep_alive("5m").unwrap(),
+            std::time::Duration::from_secs(300)
+        );
+    }
+
+    #[test]
+    fn test_parse_keep_alive_hours() {
+        assert_eq!(
+            parse_keep_alive("1h").unwrap(),
+            std::time::Duration::from_secs(3600)
+        );
+    }
+
+    #[test]
+    fn test_parse_keep_alive_seconds() {
+        assert_eq!(
+            parse_keep_alive("30s").unwrap(),
+            std::time::Duration::from_secs(30)
+        );
+    }
+
+    #[test]
+    fn test_parse_keep_alive_zero() {
+        assert_eq!(parse_keep_alive("0").unwrap(), std::time::Duration::ZERO);
+    }
+
+    #[test]
+    fn test_parse_keep_alive_never() {
+        assert_eq!(parse_keep_alive("-1").unwrap(), std::time::Duration::MAX);
+    }
+
+    #[test]
+    fn test_parse_keep_alive_raw_number() {
+        assert_eq!(
+            parse_keep_alive("120").unwrap(),
+            std::time::Duration::from_secs(120)
+        );
+    }
+
+    #[test]
+    fn test_parse_keep_alive_invalid_returns_error() {
+        let err = parse_keep_alive("abc").unwrap_err();
+        assert!(err.contains("invalid keep_alive"));
+    }
+
+    #[test]
+    fn test_parse_keep_alive_overflow_returns_error() {
+        let err = parse_keep_alive("18446744073709551615m").unwrap_err();
+        assert!(err.contains("invalid keep_alive"));
+
+        let err = parse_keep_alive("18446744073709551615h").unwrap_err();
+        assert!(err.contains("invalid keep_alive"));
+    }
+
+    // ---------------------------------------------------------------
+    // Environment variable override tests
+    // ---------------------------------------------------------------
+
+    #[test]
+    #[serial]
+    fn test_env_a3s_power_host() {
+        std::env::set_var("A3S_POWER_HOST", "0.0.0.0");
+        let mut config = PowerConfig::default();
+        config.apply_env_overrides().unwrap();
+        assert_eq!(config.host, "0.0.0.0");
+        std::env::remove_var("A3S_POWER_HOST");
+    }
+
+    #[test]
+    #[serial]
+    fn test_env_a3s_power_port() {
+        std::env::set_var("A3S_POWER_PORT", "8080");
+        let mut config = PowerConfig::default();
+        config.apply_env_overrides().unwrap();
+        assert_eq!(config.port, 8080);
+        std::env::remove_var("A3S_POWER_PORT");
+    }
+
+    #[test]
+    #[serial]
+    fn test_env_a3s_power_port_invalid_rejected() {
+        std::env::set_var("A3S_POWER_PORT", "not-a-port");
+        let mut config = PowerConfig::default();
+        let err = config.apply_env_overrides().unwrap_err();
+        std::env::remove_var("A3S_POWER_PORT");
+
+        assert!(err.to_string().contains("A3S_POWER_PORT"));
+    }
+
+    #[test]
+    #[serial]
+    fn test_env_a3s_power_data_dir() {
+        std::env::set_var("A3S_POWER_DATA_DIR", "/tmp/my-models");
+        let mut config = PowerConfig::default();
+        config.apply_env_overrides().unwrap();
+        assert_eq!(config.data_dir, PathBuf::from("/tmp/my-models"));
+        std::env::remove_var("A3S_POWER_DATA_DIR");
+    }
+
+    #[test]
+    #[serial]
+    fn test_env_a3s_power_max_models() {
+        std::env::set_var("A3S_POWER_MAX_MODELS", "4");
+        let mut config = PowerConfig::default();
+        config.apply_env_overrides().unwrap();
+        assert_eq!(config.max_loaded_models, 4);
+        std::env::remove_var("A3S_POWER_MAX_MODELS");
+    }
+
+    #[test]
+    #[serial]
+    fn test_env_a3s_power_max_models_invalid_rejected() {
+        std::env::set_var("A3S_POWER_MAX_MODELS", "not-a-number");
+        let mut config = PowerConfig::default();
+        let err = config.apply_env_overrides().unwrap_err();
+        std::env::remove_var("A3S_POWER_MAX_MODELS");
+
+        assert!(err.to_string().contains("A3S_POWER_MAX_MODELS"));
+    }
+
+    #[test]
+    #[serial]
+    fn test_env_a3s_power_keep_alive() {
+        std::env::set_var("A3S_POWER_KEEP_ALIVE", "10m");
+        let mut config = PowerConfig::default();
+        config.apply_env_overrides().unwrap();
+        assert_eq!(config.keep_alive, "10m");
+        std::env::remove_var("A3S_POWER_KEEP_ALIVE");
+    }
+
+    #[test]
+    #[serial]
+    fn test_env_a3s_power_gpu_layers() {
+        std::env::set_var("A3S_POWER_GPU_LAYERS", "-1");
+        let mut config = PowerConfig::default();
+        config.apply_env_overrides().unwrap();
+        assert_eq!(config.gpu.gpu_layers, -1);
+        std::env::remove_var("A3S_POWER_GPU_LAYERS");
+    }
+
+    #[test]
+    #[serial]
+    fn test_env_a3s_power_gpu_layers_invalid_rejected() {
+        std::env::set_var("A3S_POWER_GPU_LAYERS", "abc");
+        let mut config = PowerConfig::default();
+        let err = config.apply_env_overrides().unwrap_err();
+        std::env::remove_var("A3S_POWER_GPU_LAYERS");
+
+        assert!(err.to_string().contains("A3S_POWER_GPU_LAYERS"));
+    }
+
+    #[test]
+    #[serial]
+    fn test_env_a3s_power_gpu_attestation_paths() {
+        std::env::set_var("A3S_POWER_GPU_ATTESTATION_PROVIDER", "nvidia-nras");
+        std::env::set_var("A3S_POWER_GPU_ATTESTATION_SOURCE", "configured");
+        std::env::set_var(
+            "A3S_POWER_GPU_ATTESTATION_EVIDENCE_PATH",
+            "/tmp/gpu.evidence",
+        );
+        std::env::set_var(
+            "A3S_POWER_GPU_ATTESTATION_VERDICT_PATH",
+            "/tmp/nras.verdict",
+        );
+        let mut config = PowerConfig::default();
+        config.apply_env_overrides().unwrap();
+        assert_eq!(
+            config.gpu_attestation.source,
+            GpuAttestationSource::Configured
+        );
+        assert_eq!(config.gpu_attestation.provider, "nvidia-nras");
+        assert_eq!(
+            config.gpu_attestation.evidence_path,
+            Some(PathBuf::from("/tmp/gpu.evidence"))
+        );
+        assert_eq!(
+            config.gpu_attestation.verdict_path,
+            Some(PathBuf::from("/tmp/nras.verdict"))
+        );
+        std::env::remove_var("A3S_POWER_GPU_ATTESTATION_PROVIDER");
+        std::env::remove_var("A3S_POWER_GPU_ATTESTATION_SOURCE");
+        std::env::remove_var("A3S_POWER_GPU_ATTESTATION_EVIDENCE_PATH");
+        std::env::remove_var("A3S_POWER_GPU_ATTESTATION_VERDICT_PATH");
+    }
+
+    #[test]
+    #[serial]
+    fn test_env_a3s_power_gpu_attestation_nvattest_cli() {
+        std::env::set_var("A3S_POWER_GPU_ATTESTATION_SOURCE", "nvattest-cli");
+        std::env::set_var("A3S_POWER_GPU_ATTESTATION_NVATTEST_PATH", "/opt/nvattest");
+        std::env::set_var("A3S_POWER_GPU_ATTESTATION_NVATTEST_VERIFIER", "remote");
+        std::env::set_var(
+            "A3S_POWER_GPU_ATTESTATION_NVATTEST_GPU_EVIDENCE_SOURCE",
+            "nvml",
+        );
+        std::env::set_var(
+            "A3S_POWER_GPU_ATTESTATION_NRAS_URL",
+            "https://nras.attestation.nvidia.com",
+        );
+        std::env::set_var("A3S_POWER_GPU_ATTESTATION_NVATTEST_TIMEOUT_SECS", "45");
+        let mut config = PowerConfig::default();
+        config.apply_env_overrides().unwrap();
+        assert_eq!(
+            config.gpu_attestation.source,
+            GpuAttestationSource::NvattestCli
+        );
+        assert_eq!(
+            config.gpu_attestation.nvattest_path,
+            PathBuf::from("/opt/nvattest")
+        );
+        assert_eq!(config.gpu_attestation.nvattest_verifier, "remote");
+        assert_eq!(
+            config.gpu_attestation.nras_url.as_deref(),
+            Some("https://nras.attestation.nvidia.com")
+        );
+        assert_eq!(config.gpu_attestation.nvattest_timeout_secs, 45);
+        std::env::remove_var("A3S_POWER_GPU_ATTESTATION_SOURCE");
+        std::env::remove_var("A3S_POWER_GPU_ATTESTATION_NVATTEST_PATH");
+        std::env::remove_var("A3S_POWER_GPU_ATTESTATION_NVATTEST_VERIFIER");
+        std::env::remove_var("A3S_POWER_GPU_ATTESTATION_NVATTEST_GPU_EVIDENCE_SOURCE");
+        std::env::remove_var("A3S_POWER_GPU_ATTESTATION_NRAS_URL");
+        std::env::remove_var("A3S_POWER_GPU_ATTESTATION_NVATTEST_TIMEOUT_SECS");
+    }
+
+    #[test]
+    #[serial]
+    fn test_env_a3s_power_gpu_attestation_nvattest_timeout_invalid_rejected() {
+        std::env::set_var("A3S_POWER_GPU_ATTESTATION_NVATTEST_TIMEOUT_SECS", "soon");
+        let mut config = PowerConfig::default();
+        let err = config.apply_env_overrides().unwrap_err();
+        std::env::remove_var("A3S_POWER_GPU_ATTESTATION_NVATTEST_TIMEOUT_SECS");
+
+        assert!(err
+            .to_string()
+            .contains("A3S_POWER_GPU_ATTESTATION_NVATTEST_TIMEOUT_SECS"));
+    }
+
+    #[test]
+    #[serial]
+    fn test_env_a3s_power_gpu_attestation_nras_rest() {
+        std::env::set_var("A3S_POWER_GPU_ATTESTATION_SOURCE", "nras-rest");
+        std::env::set_var(
+            "A3S_POWER_GPU_ATTESTATION_EVIDENCE_PATH",
+            "/tmp/gpu-evidence.json",
+        );
+        std::env::set_var(
+            "A3S_POWER_GPU_ATTESTATION_NRAS_URL",
+            "https://nras.attestation.nvidia.com",
+        );
+        std::env::set_var(
+            "A3S_POWER_GPU_ATTESTATION_NRAS_GPU_ARCHITECTURE",
+            "BLACKWELL",
+        );
+        std::env::set_var("A3S_POWER_GPU_ATTESTATION_NRAS_CLAIMS_VERSION", "3.0");
+        std::env::set_var(
+            "A3S_POWER_GPU_ATTESTATION_NRAS_BEARER_TOKEN_ENV",
+            "NRAS_TOKEN",
+        );
+        std::env::set_var("A3S_POWER_GPU_ATTESTATION_NRAS_TIMEOUT_SECS", "45");
+        let mut config = PowerConfig::default();
+        config.apply_env_overrides().unwrap();
+        assert_eq!(
+            config.gpu_attestation.source,
+            GpuAttestationSource::NrasRest
+        );
+        assert_eq!(
+            config.gpu_attestation.evidence_path,
+            Some(PathBuf::from("/tmp/gpu-evidence.json"))
+        );
+        assert_eq!(
+            config.gpu_attestation.nras_url.as_deref(),
+            Some("https://nras.attestation.nvidia.com")
+        );
+        assert_eq!(
+            config.gpu_attestation.nras_gpu_architecture.as_deref(),
+            Some("BLACKWELL")
+        );
+        assert_eq!(config.gpu_attestation.nras_claims_version, "3.0");
+        assert_eq!(
+            config.gpu_attestation.nras_bearer_token_env.as_deref(),
+            Some("NRAS_TOKEN")
+        );
+        assert_eq!(config.gpu_attestation.nras_timeout_secs, 45);
+        std::env::remove_var("A3S_POWER_GPU_ATTESTATION_SOURCE");
+        std::env::remove_var("A3S_POWER_GPU_ATTESTATION_EVIDENCE_PATH");
+        std::env::remove_var("A3S_POWER_GPU_ATTESTATION_NRAS_URL");
+        std::env::remove_var("A3S_POWER_GPU_ATTESTATION_NRAS_GPU_ARCHITECTURE");
+        std::env::remove_var("A3S_POWER_GPU_ATTESTATION_NRAS_CLAIMS_VERSION");
+        std::env::remove_var("A3S_POWER_GPU_ATTESTATION_NRAS_BEARER_TOKEN_ENV");
+        std::env::remove_var("A3S_POWER_GPU_ATTESTATION_NRAS_TIMEOUT_SECS");
+    }
+
+    #[test]
+    #[serial]
+    fn test_env_a3s_power_gpu_attestation_nras_timeout_invalid_rejected() {
+        std::env::set_var("A3S_POWER_GPU_ATTESTATION_NRAS_TIMEOUT_SECS", "eventually");
+        let mut config = PowerConfig::default();
+        let err = config.apply_env_overrides().unwrap_err();
+        std::env::remove_var("A3S_POWER_GPU_ATTESTATION_NRAS_TIMEOUT_SECS");
+
+        assert!(err
+            .to_string()
+            .contains("A3S_POWER_GPU_ATTESTATION_NRAS_TIMEOUT_SECS"));
+    }
+
+    #[test]
+    #[serial]
+    fn test_env_a3s_power_proxy_effective_prompt_digest() {
+        std::env::set_var("A3S_POWER_PROXY_EFFECTIVE_PROMPT_DIGEST", "true");
+        std::env::set_var("A3S_POWER_PROXY_EFFECTIVE_PROMPT_DIGEST_REQUIRED", "1");
+        std::env::set_var(
+            "A3S_POWER_PROXY_EFFECTIVE_PROMPT_DIGEST_PATH",
+            "/v1/rendered-prompt-digest",
+        );
+        let mut config = PowerConfig::default();
+        config.apply_env_overrides().unwrap();
+        assert!(config.proxy_effective_prompt_digest);
+        assert!(config.proxy_effective_prompt_digest_required);
+        assert_eq!(
+            config.proxy_effective_prompt_digest_path,
+            "/v1/rendered-prompt-digest"
+        );
+        std::env::remove_var("A3S_POWER_PROXY_EFFECTIVE_PROMPT_DIGEST");
+        std::env::remove_var("A3S_POWER_PROXY_EFFECTIVE_PROMPT_DIGEST_REQUIRED");
+        std::env::remove_var("A3S_POWER_PROXY_EFFECTIVE_PROMPT_DIGEST_PATH");
+    }
+
+    #[test]
+    #[serial]
+    fn test_env_a3s_power_tee_mode() {
+        std::env::set_var("A3S_POWER_TEE_MODE", "true");
+        let mut config = PowerConfig::default();
+        config.apply_env_overrides().unwrap();
+        assert!(config.tee_mode);
+        assert!(config.redact_logs); // auto-enabled when tee_mode
+        std::env::remove_var("A3S_POWER_TEE_MODE");
+    }
+
+    #[test]
+    #[serial]
+    fn test_env_a3s_power_tee_mode_false_overrides_true() {
+        std::env::set_var("A3S_POWER_TEE_MODE", "false");
+        let mut config = PowerConfig {
+            tee_mode: true,
+            ..Default::default()
+        };
+        config.apply_env_overrides().unwrap();
+        assert!(!config.tee_mode);
+        std::env::remove_var("A3S_POWER_TEE_MODE");
+    }
+
+    #[test]
+    #[serial]
+    fn test_env_a3s_power_redact_logs() {
+        std::env::set_var("A3S_POWER_REDACT_LOGS", "1");
+        let mut config = PowerConfig::default();
+        config.apply_env_overrides().unwrap();
+        assert!(config.redact_logs);
+        std::env::remove_var("A3S_POWER_REDACT_LOGS");
+    }
+
+    #[test]
+    #[serial]
+    fn test_env_a3s_power_redact_logs_false_overrides_true() {
+        std::env::set_var("A3S_POWER_REDACT_LOGS", "0");
+        let mut config = PowerConfig {
+            redact_logs: true,
+            ..Default::default()
+        };
+        config.apply_env_overrides().unwrap();
+        assert!(!config.redact_logs);
+        std::env::remove_var("A3S_POWER_REDACT_LOGS");
+    }
+
+    #[test]
+    fn test_config_new_fields_defaults() {
+        let config = PowerConfig::default();
+        assert!(!config.use_mlock);
+        assert!(config.num_thread.is_none());
+        assert!(!config.flash_attention);
+        assert_eq!(config.num_parallel, 1);
+    }
+
+    #[test]
+    fn test_config_tee_fields_from_hcl() {
+        let hcl_str = r#"
+            tee_mode = true
+            tee_policy_mode = "development"
+            redact_logs = true
+
+            model_hashes = {
+                "llama3" = "sha256:abc123"
+            }
+        "#;
+        let config: PowerConfig = hcl::from_str(hcl_str).unwrap();
+        assert!(config.tee_mode);
+        assert_eq!(config.tee_policy_mode, TeePolicyMode::Development);
+        assert!(config.redact_logs);
+        assert_eq!(
+            config.model_hashes.get("llama3"),
+            Some(&"sha256:abc123".to_string())
+        );
+    }
+
+    #[test]
+    fn test_gpu_config_tensor_split_default_empty() {
+        let config = GpuConfig::default();
+        assert!(config.tensor_split.is_empty());
+    }
+
+    #[test]
+    fn test_gpu_config_tensor_split_from_hcl() {
+        let hcl_str = r#"
+            host = "127.0.0.1"
+            port = 11434
+
+            gpu {
+                gpu_layers = -1
+                tensor_split = [0.5, 0.5]
+            }
+        "#;
+        let config: PowerConfig = hcl::from_str(hcl_str).unwrap();
+        assert_eq!(config.gpu.tensor_split, vec![0.5, 0.5]);
+    }
+
+    #[test]
+    fn test_gpu_config_tensor_split_serialization_skips_empty() {
+        let config = PowerConfig::default();
+        let serialized = config.to_hcl();
+        assert!(!serialized.contains("tensor_split"));
+    }
+
+    #[test]
+    fn test_config_hcl_invalid() {
+        let result: std::result::Result<PowerConfig, _> = hcl::from_str("{{{{ invalid");
+        assert!(result.is_err());
+    }
+
+    #[test]
+    fn test_tls_port_defaults_to_none() {
+        let config = PowerConfig::default();
+        assert!(config.tls_port.is_none());
+    }
+
+    #[test]
+    fn test_ra_tls_defaults_to_false() {
+        let config = PowerConfig::default();
+        assert!(!config.ra_tls);
+    }
+
+    #[test]
+    fn test_tls_port_from_hcl() {
+        let hcl_str = r#"tls_port = 8443"#;
+        let config: PowerConfig = hcl::from_str(hcl_str).unwrap();
+        assert_eq!(config.tls_port, Some(8443));
+    }
+
+    #[test]
+    fn test_ra_tls_from_hcl() {
+        let hcl_str = r#"ra_tls = true"#;
+        let config: PowerConfig = hcl::from_str(hcl_str).unwrap();
+        assert!(config.ra_tls);
+    }
+
+    #[test]
+    fn test_tls_port_not_serialized_when_none() {
+        let config = PowerConfig::default();
+        let serialized = config.to_hcl();
+        assert!(!serialized.contains("tls_port"));
+    }
+
+    #[test]
+    fn test_ra_tls_not_serialized_when_false() {
+        let config = PowerConfig::default();
+        let serialized = config.to_hcl();
+        assert!(!serialized.contains("ra_tls"));
+    }
+
+    #[test]
+    fn test_tls_port_serialized_when_set() {
+        let config = PowerConfig {
+            tls_port: Some(8443),
+            ..Default::default()
+        };
+        let serialized = config.to_hcl();
+        assert!(serialized.contains("tls_port = 8443"));
+    }
+
+    #[test]
+    fn test_ra_tls_serialized_when_true() {
+        let config = PowerConfig {
+            ra_tls: true,
+            ..Default::default()
+        };
+        let serialized = config.to_hcl();
+        assert!(serialized.contains("ra_tls = true"));
+    }
+
+    #[test]
+    #[serial]
+    fn test_env_a3s_power_tls_port() {
+        std::env::set_var("A3S_POWER_TLS_PORT", "8443");
+        let mut config = PowerConfig::default();
+        config.apply_env_overrides().unwrap();
+        assert_eq!(config.tls_port, Some(8443));
+        std::env::remove_var("A3S_POWER_TLS_PORT");
+    }
+
+    #[test]
+    #[serial]
+    fn test_env_a3s_power_ra_tls() {
+        std::env::set_var("A3S_POWER_RA_TLS", "true");
+        let mut config = PowerConfig::default();
+        config.apply_env_overrides().unwrap();
+        assert!(config.ra_tls);
+        std::env::remove_var("A3S_POWER_RA_TLS");
+    }
+
+    #[test]
+    #[serial]
+    fn test_env_a3s_power_ra_tls_false_overrides_true() {
+        std::env::set_var("A3S_POWER_RA_TLS", "no");
+        let mut config = PowerConfig {
+            ra_tls: true,
+            ..Default::default()
+        };
+        config.apply_env_overrides().unwrap();
+        assert!(!config.ra_tls);
+        std::env::remove_var("A3S_POWER_RA_TLS");
+    }
+
+    #[test]
+    #[serial]
+    fn test_env_a3s_power_tls_port_invalid_rejected() {
+        std::env::set_var("A3S_POWER_TLS_PORT", "not-a-port");
+        let mut config = PowerConfig::default();
+        let err = config.apply_env_overrides().unwrap_err();
+        std::env::remove_var("A3S_POWER_TLS_PORT");
+
+        assert!(err.to_string().contains("A3S_POWER_TLS_PORT"));
+    }
+
+    #[test]
+    fn test_vsock_port_defaults_to_none() {
+        let config = PowerConfig::default();
+        assert!(config.vsock_port.is_none());
+    }
+
+    #[test]
+    fn test_vsock_port_from_hcl() {
+        let hcl_str = r#"vsock_port = 11434"#;
+        let config: PowerConfig = hcl::from_str(hcl_str).unwrap();
+        assert_eq!(config.vsock_port, Some(11434));
+    }
+
+    #[test]
+    fn test_vsock_port_not_serialized_when_none() {
+        let config = PowerConfig::default();
+        let serialized = config.to_hcl();
+        assert!(!serialized.contains("vsock_port"));
+    }
+
+    #[test]
+    fn test_vsock_port_serialized_when_set() {
+        let config = PowerConfig {
+            vsock_port: Some(11434),
+            ..Default::default()
+        };
+        let serialized = config.to_hcl();
+        assert!(serialized.contains("vsock_port = 11434"));
+    }
+
+    #[test]
+    #[serial]
+    fn test_env_a3s_power_vsock_port() {
+        std::env::set_var("A3S_POWER_VSOCK_PORT", "11434");
+        let mut config = PowerConfig::default();
+        config.apply_env_overrides().unwrap();
+        assert_eq!(config.vsock_port, Some(11434));
+        std::env::remove_var("A3S_POWER_VSOCK_PORT");
+    }
+
+    #[test]
+    #[serial]
+    fn test_env_a3s_power_vsock_port_invalid_rejected() {
+        std::env::set_var("A3S_POWER_VSOCK_PORT", "not-a-port");
+        let mut config = PowerConfig::default();
+        let err = config.apply_env_overrides().unwrap_err();
+        std::env::remove_var("A3S_POWER_VSOCK_PORT");
+
+        assert!(err.to_string().contains("A3S_POWER_VSOCK_PORT"));
+    }
+
+    #[test]
+    #[serial]
+    fn test_load_config_hcl_file() {
+        let dir = tempfile::tempdir().unwrap();
+        std::env::set_var("A3S_POWER_HOME", dir.path());
+
+        let hcl_path = dir.path().join("config.hcl");
+        std::fs::write(
+            &hcl_path,
+            r#"
+                host = "0.0.0.0"
+                port = 9090
+                max_loaded_models = 2
+            "#,
+        )
+        .unwrap();
+
+        let config = PowerConfig::load().unwrap();
+        assert_eq!(config.host, "0.0.0.0");
+        assert_eq!(config.port, 9090);
+        assert_eq!(config.max_loaded_models, 2);
+
+        std::env::remove_var("A3S_POWER_HOME");
+    }
+
+    #[test]
+    fn test_api_keys_defaults_to_empty() {
+        let config = PowerConfig::default();
+        assert!(config.api_keys.is_empty());
+    }
+
+    #[test]
+    fn test_api_keys_from_hcl() {
+        let hcl_str = r#"api_keys = ["sha256hash1", "sha256hash2"]"#;
+        let config: PowerConfig = hcl::from_str(hcl_str).unwrap();
+        assert_eq!(config.api_keys, vec!["sha256hash1", "sha256hash2"]);
+    }
+
+    #[test]
+    fn test_api_keys_not_serialized_when_empty() {
+        let config = PowerConfig::default();
+        let serialized = config.to_hcl();
+        assert!(!serialized.contains("api_keys"));
+    }
+
+    #[test]
+    fn test_api_keys_serialized_when_set() {
+        let config = PowerConfig {
+            api_keys: vec!["key1".to_string(), "key2".to_string()],
+            ..Default::default()
+        };
+        let serialized = config.to_hcl();
+        assert!(serialized.contains("api_keys"));
+        assert!(serialized.contains("key1"));
+        assert!(serialized.contains("key2"));
+    }
+
+    #[test]
+    #[serial]
+    fn test_env_a3s_power_api_keys() {
+        std::env::set_var("A3S_POWER_API_KEYS", "key_a,key_b,key_c");
+        let mut config = PowerConfig::default();
+        config.apply_env_overrides().unwrap();
+        assert_eq!(config.api_keys, vec!["key_a", "key_b", "key_c"]);
+        std::env::remove_var("A3S_POWER_API_KEYS");
+    }
+
+    #[test]
+    #[serial]
+    fn test_env_a3s_power_api_keys_trims_whitespace() {
+        std::env::set_var("A3S_POWER_API_KEYS", " key_a , key_b ");
+        let mut config = PowerConfig::default();
+        config.apply_env_overrides().unwrap();
+        assert_eq!(config.api_keys, vec!["key_a", "key_b"]);
+        std::env::remove_var("A3S_POWER_API_KEYS");
+    }
+
+    #[test]
+    #[serial]
+    fn test_env_a3s_power_api_keys_empty_ignored() {
+        std::env::set_var("A3S_POWER_API_KEYS", "");
+        let mut config = PowerConfig::default();
+        config.apply_env_overrides().unwrap();
+        assert!(config.api_keys.is_empty());
+        std::env::remove_var("A3S_POWER_API_KEYS");
+    }
+
+    #[test]
+    fn test_allowed_tee_types_defaults_to_empty() {
+        let config = PowerConfig::default();
+        assert!(config.allowed_tee_types.is_empty());
+    }
+
+    #[test]
+    fn test_allowed_tee_types_from_hcl() {
+        let hcl_str = r#"allowed_tee_types = ["sev-snp", "tdx"]"#;
+        let config: PowerConfig = hcl::from_str(hcl_str).unwrap();
+        assert_eq!(config.allowed_tee_types, vec!["sev-snp", "tdx"]);
+    }
+
+    #[test]
+    fn test_expected_measurements_from_hcl() {
+        let hcl_str = r#"
+expected_measurements = {
+  "sev-snp" = "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+}
+"#;
+        let config: PowerConfig = hcl::from_str(hcl_str).unwrap();
+
+        assert_eq!(
+            config.expected_measurements.get("sev-snp").map(String::as_str),
+            Some("aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa")
+        );
+    }
+
+    #[test]
+    fn test_tee_policy_mode_from_hcl() {
+        let config: PowerConfig = hcl::from_str(r#"tee_policy_mode = "gpu-confidential""#).unwrap();
+        assert_eq!(config.tee_policy_mode, TeePolicyMode::GpuConfidential);
+        assert!(config.strict_attestation());
+    }
+
+    #[test]
+    fn test_effective_allowed_tee_types_strict_defaults_to_hardware() {
+        let config = PowerConfig::default();
+        assert_eq!(
+            config.effective_allowed_tee_types(),
+            vec!["sev-snp".to_string(), "tdx".to_string()]
+        );
+    }
+
+    #[test]
+    fn test_effective_allowed_tee_types_development_remains_permissive() {
+        let config = PowerConfig {
+            tee_policy_mode: TeePolicyMode::Development,
+            ..Default::default()
+        };
+        assert!(config.effective_allowed_tee_types().is_empty());
+    }
+
+    #[test]
+    fn test_effective_allowed_tee_types_strict_filters_simulated() {
+        let config = PowerConfig {
+            allowed_tee_types: vec![
+                "sev-snp".to_string(),
+                "simulated".to_string(),
+                "tdx".to_string(),
+            ],
+            ..Default::default()
+        };
+        assert_eq!(
+            config.effective_allowed_tee_types(),
+            vec!["sev-snp".to_string(), "tdx".to_string()]
+        );
+    }
+
+    #[test]
+    #[serial]
+    fn test_env_a3s_power_tee_policy_mode() {
+        std::env::set_var("A3S_POWER_TEE_POLICY_MODE", "gpu-confidential");
+        let mut config = PowerConfig::default();
+        config.apply_env_overrides().unwrap();
+        assert_eq!(config.tee_policy_mode, TeePolicyMode::GpuConfidential);
+        std::env::remove_var("A3S_POWER_TEE_POLICY_MODE");
+    }
+
+    #[test]
+    #[serial]
+    fn test_tee_strict_env_removes_simulated() {
+        std::env::set_var("A3S_POWER_TEE_STRICT", "1");
+        let mut config = PowerConfig {
+            allowed_tee_types: vec![
+                "sev-snp".to_string(),
+                "simulated".to_string(),
+                "tdx".to_string(),
+            ],
+            ..Default::default()
+        };
+        config.apply_env_overrides().unwrap();
+        assert!(!config.allowed_tee_types.contains(&"simulated".to_string()));
+        assert!(config.allowed_tee_types.contains(&"sev-snp".to_string()));
+        std::env::remove_var("A3S_POWER_TEE_STRICT");
+    }
+
+    #[test]
+    #[serial]
+    fn test_tee_strict_env_sets_hardware_defaults_when_empty() {
+        std::env::set_var("A3S_POWER_TEE_STRICT", "1");
+        let mut config = PowerConfig::default();
+        config.apply_env_overrides().unwrap();
+        assert!(config.allowed_tee_types.contains(&"sev-snp".to_string()));
+        assert!(config.allowed_tee_types.contains(&"tdx".to_string()));
+        assert!(!config.allowed_tee_types.contains(&"simulated".to_string()));
+        std::env::remove_var("A3S_POWER_TEE_STRICT");
+    }
+
+    #[test]
+    fn test_audit_log_defaults_to_false() {
+        let config = PowerConfig::default();
+        assert!(!config.audit_log);
+    }
+
+    #[test]
+    #[serial]
+    fn test_audit_log_env_override() {
+        std::env::set_var("A3S_POWER_AUDIT_LOG", "1");
+        let mut config = PowerConfig::default();
+        config.apply_env_overrides().unwrap();
+        assert!(config.audit_log);
+        std::env::remove_var("A3S_POWER_AUDIT_LOG");
+    }
+
+    #[test]
+    #[serial]
+    fn test_audit_log_env_false_overrides_true() {
+        std::env::set_var("A3S_POWER_AUDIT_LOG", "false");
+        let mut config = PowerConfig {
+            audit_log: true,
+            ..Default::default()
+        };
+        config.apply_env_overrides().unwrap();
+        assert!(!config.audit_log);
+        std::env::remove_var("A3S_POWER_AUDIT_LOG");
+    }
+
+    #[test]
+    fn test_model_signing_key_defaults_to_none() {
+        let config = PowerConfig::default();
+        assert!(config.model_signing_key.is_none());
+    }
+
+    #[test]
+    fn test_model_signing_key_from_hcl() {
+        let hcl_str = r#"model_signing_key = "aabbccdd""#;
+        let config: PowerConfig = hcl::from_str(hcl_str).unwrap();
+        assert_eq!(config.model_signing_key.as_deref(), Some("aabbccdd"));
+    }
+
+    #[test]
+    fn test_to_hcl_includes_policy_fields_when_set() {
+        let mut measurements = HashMap::new();
+        measurements.insert("sev-snp".to_string(), "deadbeef".to_string());
+        let config = PowerConfig {
+            allowed_tee_types: vec!["sev-snp".to_string()],
+            expected_measurements: measurements,
+            audit_log: true,
+            model_signing_key: Some(valid_model_signing_key_hex()),
+            ..Default::default()
+        };
+        let hcl = config.to_hcl();
+        assert!(hcl.contains("allowed_tee_types"));
+        assert!(hcl.contains("sev-snp"));
+        assert!(hcl.contains("expected_measurements"));
+        assert!(hcl.contains("deadbeef"));
+        assert!(hcl.contains("audit_log = true"));
+        assert!(hcl.contains("model_signing_key"));
+    }
+
+    #[test]
+    fn test_tls_sans_defaults_to_empty() {
+        let config = PowerConfig::default();
+        assert!(config.tls_sans.is_empty());
+    }
+
+    #[test]
+    fn test_tls_sans_from_hcl() {
+        let hcl_str = r#"tls_sans = ["myserver.internal", "10.0.0.1"]"#;
+        let config: PowerConfig = hcl::from_str(hcl_str).unwrap();
+        assert_eq!(config.tls_sans, vec!["myserver.internal", "10.0.0.1"]);
+    }
+
+    #[cfg(feature = "tls")]
+    #[test]
+    fn test_validate_accepts_valid_tls_sans() {
+        let config = PowerConfig {
+            tls_sans: vec![
+                "myserver.internal".to_string(),
+                "*.example.com".to_string(),
+                "10.0.0.1".to_string(),
+                "::1".to_string(),
+            ],
+            ..Default::default()
+        };
+
+        config.validate().unwrap();
+    }
+
+    #[cfg(feature = "tls")]
+    #[test]
+    fn test_validate_rejects_invalid_tls_san() {
+        let config = PowerConfig {
+            tls_sans: vec!["not a valid san !!!".to_string()],
+            ..Default::default()
+        };
+
+        let err = config.validate().unwrap_err();
+        assert!(err.to_string().contains("tls_sans"));
+    }
+
+    // --- validate() tests ---
+
+    #[test]
+    fn test_validate_default_config_no_warnings() {
+        // Default config is valid — validate() should not panic
+        let config = PowerConfig::default();
+        config.validate().unwrap(); // must not panic
+    }
+
+    #[test]
+    fn test_validate_keep_alive_valid_formats() {
+        // All valid formats should pass without warnings
+        for ka in &["0", "-1", "5m", "1h", "30s", "300"] {
+            let config = PowerConfig {
+                keep_alive: ka.to_string(),
+                ..Default::default()
+            };
+            config.validate().unwrap(); // must not panic
+        }
+    }
+
+    #[test]
+    fn test_validate_rejects_invalid_keep_alive() {
+        let config = PowerConfig {
+            keep_alive: "later".to_string(),
+            ..Default::default()
+        };
+
+        let err = config.validate().unwrap_err();
+        assert!(err.to_string().contains("invalid keep_alive"));
+    }
+
+    #[test]
+    fn test_validate_keep_alive_overflow_returns_error() {
+        let config = PowerConfig {
+            keep_alive: "18446744073709551615h".to_string(),
+            ..Default::default()
+        };
+
+        let err = config.validate().unwrap_err();
+        assert!(err.to_string().contains("invalid keep_alive"));
+    }
+
+    #[test]
+    fn test_validate_model_signing_key_valid_hex() {
+        let config = PowerConfig {
+            model_signing_key: Some(valid_model_signing_key_hex()),
+            ..Default::default()
+        };
+        config.validate().unwrap(); // must not panic
+    }
+
+    #[test]
+    fn test_validate_rejects_model_signing_key_wrong_length() {
+        let config = PowerConfig {
+            model_signing_key: Some("deadbeef".repeat(4)),
+            ..Default::default()
+        };
+
+        let err = config.validate().unwrap_err();
+        assert!(err.to_string().contains("model_signing_key"));
+    }
+
+    #[test]
+    fn test_validate_rejects_model_signing_key_non_hex() {
+        let config = PowerConfig {
+            model_signing_key: Some("z".repeat(64)),
+            ..Default::default()
+        };
+
+        let err = config.validate().unwrap_err();
+        assert!(err.to_string().contains("model_signing_key"));
+    }
+
+    #[test]
+    fn test_validate_rejects_ra_tls_without_tls_port() {
+        let config = PowerConfig {
+            ra_tls: true,
+            tee_mode: true,
+            tls_port: None,
+            ..Default::default()
+        };
+
+        let err = config.validate().unwrap_err();
+        assert!(err.to_string().contains("tls_port"));
+    }
+
+    #[test]
+    fn test_validate_rejects_ra_tls_without_tee_mode() {
+        let config = PowerConfig {
+            ra_tls: true,
+            tls_port: Some(11435),
+            ..Default::default()
+        };
+
+        let err = config.validate().unwrap_err();
+        assert!(err.to_string().contains("tee_mode"));
+    }
+
+    #[cfg(not(feature = "tls"))]
+    #[test]
+    fn test_validate_rejects_tls_port_without_tls_feature() {
+        let config = PowerConfig {
+            tls_port: Some(11435),
+            ..Default::default()
+        };
+
+        let err = config.validate().unwrap_err();
+        assert!(err.to_string().contains("tls feature"));
+    }
+
+    #[cfg(feature = "tls")]
+    #[test]
+    fn test_validate_ra_tls_with_tls_port_and_tee_mode_is_valid() {
+        let config = PowerConfig {
+            ra_tls: true,
+            tee_mode: true,
+            tls_port: Some(11435),
+            ..Default::default()
+        };
+        config.validate().unwrap();
+    }
+
+    #[test]
+    fn test_validate_rejects_rotating_provider_empty_sources() {
+        let config = PowerConfig {
+            key_provider: "rotating".to_string(),
+            key_rotation_sources: vec![],
+            ..Default::default()
+        };
+
+        let err = config.validate().unwrap_err();
+        assert!(err.to_string().contains("key_rotation_sources"));
+    }
+
+    #[test]
+    fn test_validate_rotating_provider_with_sources_is_valid() {
+        let config = PowerConfig {
+            key_provider: "rotating".to_string(),
+            key_rotation_sources: vec![crate::tee::encrypted_model::KeySource::Env(
+                "TEST_MODEL_KEY".to_string(),
+            )],
+            ..Default::default()
+        };
+
+        config.validate().unwrap();
+    }
+
+    #[test]
+    fn test_validate_rejects_unknown_key_provider() {
+        let config = PowerConfig {
+            key_provider: "vault-ish".to_string(),
+            ..Default::default()
+        };
+
+        let err = config.validate().unwrap_err();
+        assert!(err.to_string().contains("key_provider"));
+    }
+
+    #[test]
+    fn test_validate_rejects_ambiguous_gpu_evidence_sources() {
+        let config = PowerConfig {
+            gpu_attestation: GpuAttestationConfig {
+                evidence_hex: Some("00".to_string()),
+                evidence_path: Some(PathBuf::from("/run/a3s/gpu.evidence")),
+                ..Default::default()
+            },
+            ..Default::default()
+        };
+
+        let err = config.validate().unwrap_err();
+        assert!(err.to_string().contains("mutually exclusive"));
+    }
+
+    #[test]
+    fn test_validate_rejects_ambiguous_gpu_verdict_sources() {
+        let config = PowerConfig {
+            gpu_attestation: GpuAttestationConfig {
+                evidence_hex: Some("00".to_string()),
+                verdict_hex: Some("11".to_string()),
+                verdict_path: Some(PathBuf::from("/run/a3s/nras.verdict")),
+                ..Default::default()
+            },
+            ..Default::default()
+        };
+
+        let err = config.validate().unwrap_err();
+        assert!(err.to_string().contains("mutually exclusive"));
+    }
+
+    #[test]
+    fn test_validate_rejects_nvattest_zero_timeout() {
+        let config = PowerConfig {
+            gpu_attestation: GpuAttestationConfig {
+                source: GpuAttestationSource::NvattestCli,
+                nvattest_timeout_secs: 0,
+                ..Default::default()
+            },
+            ..Default::default()
+        };
+
+        let err = config.validate().unwrap_err();
+        assert!(err.to_string().contains("nvattest_timeout_secs"));
+    }
+
+    #[test]
+    fn test_validate_rejects_invalid_nvattest_verifier() {
+        let config = PowerConfig {
+            gpu_attestation: GpuAttestationConfig {
+                source: GpuAttestationSource::NvattestCli,
+                nvattest_verifier: "maybe".to_string(),
+                ..Default::default()
+            },
+            ..Default::default()
+        };
+
+        let err = config.validate().unwrap_err();
+        assert!(err.to_string().contains("nvattest_verifier"));
+    }
+
+    #[test]
+    fn test_validate_rejects_invalid_nvattest_gpu_evidence_source() {
+        let config = PowerConfig {
+            gpu_attestation: GpuAttestationConfig {
+                source: GpuAttestationSource::NvattestCli,
+                nvattest_gpu_evidence_source: "driver".to_string(),
+                ..Default::default()
+            },
+            ..Default::default()
+        };
+
+        let err = config.validate().unwrap_err();
+        assert!(err.to_string().contains("nvattest_gpu_evidence_source"));
+    }
+
+    #[test]
+    fn test_validate_rejects_corelib_nvattest_without_architecture() {
+        let config = PowerConfig {
+            gpu_attestation: GpuAttestationConfig {
+                source: GpuAttestationSource::NvattestCli,
+                nvattest_gpu_evidence_source: "corelib".to_string(),
+                nvattest_gpu_architecture: None,
+                ..Default::default()
+            },
+            ..Default::default()
+        };
+
+        let err = config.validate().unwrap_err();
+        assert!(err.to_string().contains("nvattest_gpu_architecture"));
+    }
+
+    #[test]
+    fn test_validate_accepts_corelib_nvattest_with_architecture() {
+        let config = PowerConfig {
+            gpu_attestation: GpuAttestationConfig {
+                source: GpuAttestationSource::NvattestCli,
+                nvattest_gpu_evidence_source: "corelib".to_string(),
+                nvattest_gpu_architecture: Some("HOPPER".to_string()),
+                ..Default::default()
+            },
+            ..Default::default()
+        };
+
+        config.validate().unwrap();
+    }
+
+    fn nras_rest_config() -> PowerConfig {
+        PowerConfig {
+            gpu_attestation: GpuAttestationConfig {
+                source: GpuAttestationSource::NrasRest,
+                evidence_hex: Some(hex::encode(br#"{"evidence":"ZXZpZGVuY2U"}"#)),
+                nras_gpu_architecture: Some("HOPPER".to_string()),
+                ..Default::default()
+            },
+            ..Default::default()
+        }
+    }
+
+    #[test]
+    fn test_validate_rejects_nras_rest_without_evidence() {
+        let config = PowerConfig {
+            gpu_attestation: GpuAttestationConfig {
+                source: GpuAttestationSource::NrasRest,
+                nras_gpu_architecture: Some("HOPPER".to_string()),
+                ..Default::default()
+            },
+            ..Default::default()
+        };
+
+        let err = config.validate().unwrap_err();
+        assert!(err.to_string().contains("evidence"));
+    }
+
+    #[test]
+    fn test_validate_rejects_nras_rest_with_configured_verdict() {
+        let mut config = nras_rest_config();
+        config.gpu_attestation.verdict_hex = Some("00".to_string());
+
+        let err = config.validate().unwrap_err();
+        assert!(err.to_string().contains("verdict"));
+    }
+
+    #[test]
+    fn test_validate_rejects_nras_rest_without_architecture() {
+        let mut config = nras_rest_config();
+        config.gpu_attestation.nras_gpu_architecture = None;
+
+        let err = config.validate().unwrap_err();
+        assert!(err.to_string().contains("nras_gpu_architecture"));
+    }
+
+    #[test]
+    fn test_validate_rejects_nras_rest_invalid_architecture() {
+        let mut config = nras_rest_config();
+        config.gpu_attestation.nras_gpu_architecture = Some("ADA".to_string());
+
+        let err = config.validate().unwrap_err();
+        assert!(err.to_string().contains("nras_gpu_architecture"));
+    }
+
+    #[test]
+    fn test_validate_rejects_nras_rest_invalid_claims_version() {
+        let mut config = nras_rest_config();
+        config.gpu_attestation.nras_claims_version = "4.0".to_string();
+
+        let err = config.validate().unwrap_err();
+        assert!(err.to_string().contains("nras_claims_version"));
+    }
+
+    #[test]
+    fn test_validate_rejects_nras_rest_zero_timeout() {
+        let mut config = nras_rest_config();
+        config.gpu_attestation.nras_timeout_secs = 0;
+
+        let err = config.validate().unwrap_err();
+        assert!(err.to_string().contains("nras_timeout_secs"));
+    }
+
+    #[test]
+    fn test_validate_accepts_valid_nras_rest_config() {
+        let config = nras_rest_config();
+
+        config.validate().unwrap();
+    }
+
+    #[test]
+    fn test_validate_rejects_audit_encrypt_without_key_source() {
+        let config = PowerConfig {
+            audit_log_encrypt: true,
+            audit_key_source: None,
+            ..Default::default()
+        };
+
+        let err = config.validate().unwrap_err();
+        assert!(err.to_string().contains("audit_key_source"));
+    }
+
+    #[test]
+    fn test_validate_audit_encrypt_with_key_source() {
+        let config = PowerConfig {
+            audit_log_encrypt: true,
+            audit_key_source: Some(crate::tee::encrypted_model::KeySource::Env(
+                "TEST_KEY".to_string(),
+            )),
+            ..Default::default()
+        };
+        config.validate().unwrap(); // must not panic, no warning
+    }
+
+    #[test]
+    fn test_validate_streaming_decrypt() {
+        let config = PowerConfig {
+            streaming_decrypt: true,
+            ..Default::default()
+        };
+        config.validate().unwrap(); // must not panic; warning may be emitted if picolm not enabled
+    }
+
+    #[test]
+    fn test_validate_rejects_unknown_spec_mode() {
+        let config = PowerConfig {
+            spec_mode: "warp-speed".to_string(),
+            ..Default::default()
+        };
+
+        let err = config.validate().unwrap_err();
+        assert!(err.to_string().contains("unsupported spec_mode"));
+    }
+
+    #[test]
+    #[serial]
+    fn test_load_from_rejects_unknown_spec_mode() {
+        std::env::remove_var("A3S_POWER_SPEC_MODE");
+        let dir = tempfile::tempdir().unwrap();
+        let hcl_path = dir.path().join("config.hcl");
+        std::fs::write(&hcl_path, r#"spec_mode = "warp-speed""#).unwrap();
+
+        let err = PowerConfig::load_from(hcl_path.to_str().unwrap()).unwrap_err();
+        assert!(err.to_string().contains("unsupported spec_mode"));
+    }
+
+    #[test]
+    #[serial]
+    fn test_load_from_rejects_invalid_keep_alive() {
+        std::env::remove_var("A3S_POWER_KEEP_ALIVE");
+        let dir = tempfile::tempdir().unwrap();
+        let hcl_path = dir.path().join("config.hcl");
+        std::fs::write(&hcl_path, r#"keep_alive = "eventually""#).unwrap();
+
+        let err = PowerConfig::load_from(hcl_path.to_str().unwrap()).unwrap_err();
+        assert!(err.to_string().contains("invalid keep_alive"));
+    }
+
+    #[test]
+    #[serial]
+    fn test_load_from_rejects_invalid_env_keep_alive() {
+        let dir = tempfile::tempdir().unwrap();
+        let hcl_path = dir.path().join("config.hcl");
+        std::fs::write(&hcl_path, "").unwrap();
+        std::env::set_var("A3S_POWER_KEEP_ALIVE", "eventually");
+
+        let err = PowerConfig::load_from(hcl_path.to_str().unwrap()).unwrap_err();
+        std::env::remove_var("A3S_POWER_KEEP_ALIVE");
+
+        assert!(err.to_string().contains("invalid keep_alive"));
+    }
+
+    #[test]
+    #[serial]
+    fn test_load_from_rejects_invalid_model_signing_key() {
+        let dir = tempfile::tempdir().unwrap();
+        let hcl_path = dir.path().join("config.hcl");
+        std::fs::write(&hcl_path, r#"model_signing_key = "not-a-public-key""#).unwrap();
+
+        let err = PowerConfig::load_from(hcl_path.to_str().unwrap()).unwrap_err();
+
+        assert!(err.to_string().contains("model_signing_key"));
+    }
+
+    #[test]
+    #[serial]
+    fn test_load_from_rejects_invalid_env_tee_policy_mode() {
+        let dir = tempfile::tempdir().unwrap();
+        let hcl_path = dir.path().join("config.hcl");
+        std::fs::write(&hcl_path, "").unwrap();
+        std::env::set_var("A3S_POWER_TEE_POLICY_MODE", "gpu-conf");
+
+        let err = PowerConfig::load_from(hcl_path.to_str().unwrap()).unwrap_err();
+        std::env::remove_var("A3S_POWER_TEE_POLICY_MODE");
+
+        assert!(err.to_string().contains("A3S_POWER_TEE_POLICY_MODE"));
+    }
+
+    #[test]
+    #[serial]
+    fn test_load_from_rejects_invalid_env_gpu_attestation_source() {
+        let dir = tempfile::tempdir().unwrap();
+        let hcl_path = dir.path().join("config.hcl");
+        std::fs::write(&hcl_path, "").unwrap();
+        std::env::set_var("A3S_POWER_GPU_ATTESTATION_SOURCE", "sdk-maybe");
+
+        let err = PowerConfig::load_from(hcl_path.to_str().unwrap()).unwrap_err();
+        std::env::remove_var("A3S_POWER_GPU_ATTESTATION_SOURCE");
+
+        assert!(err.to_string().contains("A3S_POWER_GPU_ATTESTATION_SOURCE"));
+    }
+
+    #[test]
+    #[serial]
+    fn test_load_from_rejects_invalid_env_tee_mode() {
+        let dir = tempfile::tempdir().unwrap();
+        let hcl_path = dir.path().join("config.hcl");
+        std::fs::write(&hcl_path, "").unwrap();
+        std::env::set_var("A3S_POWER_TEE_MODE", "definitely");
+
+        let err = PowerConfig::load_from(hcl_path.to_str().unwrap()).unwrap_err();
+        std::env::remove_var("A3S_POWER_TEE_MODE");
+
+        assert!(err.to_string().contains("A3S_POWER_TEE_MODE"));
+    }
+
+    #[test]
+    #[serial]
+    fn test_load_from_rejects_invalid_env_redact_logs() {
+        let dir = tempfile::tempdir().unwrap();
+        let hcl_path = dir.path().join("config.hcl");
+        std::fs::write(&hcl_path, "").unwrap();
+        std::env::set_var("A3S_POWER_REDACT_LOGS", "sometimes");
+
+        let err = PowerConfig::load_from(hcl_path.to_str().unwrap()).unwrap_err();
+        std::env::remove_var("A3S_POWER_REDACT_LOGS");
+
+        assert!(err.to_string().contains("A3S_POWER_REDACT_LOGS"));
+    }
+
+    #[test]
+    #[serial]
+    fn test_load_from_rejects_invalid_env_proxy_effective_prompt_digest() {
+        let dir = tempfile::tempdir().unwrap();
+        let hcl_path = dir.path().join("config.hcl");
+        std::fs::write(&hcl_path, "").unwrap();
+        std::env::set_var("A3S_POWER_PROXY_EFFECTIVE_PROMPT_DIGEST", "enabled-ish");
+
+        let err = PowerConfig::load_from(hcl_path.to_str().unwrap()).unwrap_err();
+        std::env::remove_var("A3S_POWER_PROXY_EFFECTIVE_PROMPT_DIGEST");
+
+        assert!(err
+            .to_string()
+            .contains("A3S_POWER_PROXY_EFFECTIVE_PROMPT_DIGEST"));
+    }
+
+    #[test]
+    #[serial]
+    fn test_load_from_rejects_invalid_env_proxy_effective_prompt_digest_required() {
+        let dir = tempfile::tempdir().unwrap();
+        let hcl_path = dir.path().join("config.hcl");
+        std::fs::write(&hcl_path, "").unwrap();
+        std::env::set_var(
+            "A3S_POWER_PROXY_EFFECTIVE_PROMPT_DIGEST_REQUIRED",
+            "required-ish",
+        );
+
+        let err = PowerConfig::load_from(hcl_path.to_str().unwrap()).unwrap_err();
+        std::env::remove_var("A3S_POWER_PROXY_EFFECTIVE_PROMPT_DIGEST_REQUIRED");
+
+        assert!(err
+            .to_string()
+            .contains("A3S_POWER_PROXY_EFFECTIVE_PROMPT_DIGEST_REQUIRED"));
+    }
+
+    #[test]
+    #[serial]
+    fn test_load_from_rejects_invalid_env_ra_tls() {
+        let dir = tempfile::tempdir().unwrap();
+        let hcl_path = dir.path().join("config.hcl");
+        std::fs::write(&hcl_path, "").unwrap();
+        std::env::set_var("A3S_POWER_RA_TLS", "maybe");
+
+        let err = PowerConfig::load_from(hcl_path.to_str().unwrap()).unwrap_err();
+        std::env::remove_var("A3S_POWER_RA_TLS");
+
+        assert!(err.to_string().contains("A3S_POWER_RA_TLS"));
+    }
+
+    #[test]
+    #[serial]
+    fn test_load_from_rejects_invalid_env_audit_log() {
+        let dir = tempfile::tempdir().unwrap();
+        let hcl_path = dir.path().join("config.hcl");
+        std::fs::write(&hcl_path, "").unwrap();
+        std::env::set_var("A3S_POWER_AUDIT_LOG", "audit-ish");
+
+        let err = PowerConfig::load_from(hcl_path.to_str().unwrap()).unwrap_err();
+        std::env::remove_var("A3S_POWER_AUDIT_LOG");
+
+        assert!(err.to_string().contains("A3S_POWER_AUDIT_LOG"));
+    }
+}

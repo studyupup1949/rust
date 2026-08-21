@@ -1,0 +1,21 @@
+load("@buckal//:wrapper.bzl", "rust_library")
+
+rust_library(
+    name = "a3s_tui",
+    srcs = glob(["**/*.rs"]),
+    crate = "a3s_tui",
+    crate_root = "src/lib.rs",
+    edition = "2021",
+
+    visibility = ["PUBLIC"],
+    deps = [
+        "//third-party/rust/crates/comrak/0.36.0:comrak",
+        "//third-party/rust/crates/crossterm/0.28.1:crossterm",
+        "//third-party/rust/crates/futures-util/0.3.34:futures_util",
+        "//third-party/rust/crates/similar/2.7.0:similar",
+        "//third-party/rust/crates/syntect/5.3.0:syntect",
+        "//third-party/rust/crates/taffy/0.7.7:taffy",
+        "//third-party/rust/crates/tokio/1.53.1:tokio",
+        "//third-party/rust/crates/unicode-width/0.2.2:unicode_width",
+    ],
+)

@@ -1,0 +1,97 @@
+[package]
+name = "a3s-box-runtime"
+version.workspace = true
+edition.workspace = true
+authors.workspace = true
+license.workspace = true
+repository.workspace = true
+description = "MicroVM runtime engine — VM lifecycle, OCI images, attestation, networking"
+
+[lib]
+name = "a3s_box_runtime"
+path = "src/lib.rs"
+
+[features]
+default = ["pool", "scale", "compose", "operator", "build"]
+pool = []
+scale = []
+compose = []
+operator = []
+build = []
+
+[dependencies]
+a3s-box-core = { version = "0.8", path = "../core" }
+a3s-transport = { workspace = true }
+libkrun-sys = { version = "0.1", path = "../deps/libkrun-sys", package = "a3s-libkrun-sys" }
+
+# Async runtime
+tokio = { workspace = true }
+async-trait = { workspace = true }
+
+# Serialization
+serde = { workspace = true }
+serde_json = { workspace = true }
+
+# Error handling
+thiserror = { workspace = true }
+
+# Logging
+tracing = { workspace = true }
+
+# Cryptography
+sha2 = { workspace = true }
+hex = { workspace = true }
+
+# TEE attestation verification
+p256 = { workspace = true }
+p384 = { workspace = true }
+ecdsa = { workspace = true }
+x509-cert = { workspace = true }
+der = { workspace = true }
+spki = { workspace = true }
+
+# RA-TLS (Remote Attestation TLS)
+rcgen = { workspace = true }
+rustls = { workspace = true }
+tokio-rustls = { workspace = true }
+rustls-pki-types = { workspace = true }
+
+# Sealed storage
+ring = { workspace = true }
+base64 = { workspace = true }
+
+# HTTP client
+reqwest = { workspace = true }
+
+# Time
+chrono = { workspace = true }
+
+# UUID
+uuid = { workspace = true }
+
+# Concurrency
+parking_lot = { workspace = true }
+dashmap = { workspace = true }
+
+# System
+libc = { workspace = true }
+sysinfo = { workspace = true }
+dirs = { workspace = true }
+
+# OCI image support
+oci-spec = "0.6"
+oci-distribution = { workspace = true }
+tar = "0.4"
+flate2 = "1.0"
+bzip2 = "0.5"
+xz2 = "0.1"
+
+# Build support
+tempfile = { workspace = true }
+
+# Metrics
+prometheus = { workspace = true }
+
+[dev-dependencies]
+rand = { workspace = true }
+tempfile = { workspace = true }

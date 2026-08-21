@@ -1,0 +1,210 @@
+#![allow(clippy::items_after_test_module)]
+//! # A3S Gateway
+//!
+//! An AI Native Traffic Layer for standalone and A3S Cloud-managed deployments.
+//!
+//! ## Architecture
+//!
+//! ```text
+//! Agent Profile → Skill Catalog → Native CLI
+//! Entrypoint    → Router        → Middleware → Service → Backend
+//! ```
+//!
+//! ## Core Features
+//!
+//! - **Multi-protocol**: HTTP/HTTPS, WebSocket, SSE/Streaming, TCP
+//! - **Coding agents**: Native CLI profiles, exact argument passthrough, standard Skills
+//! - **Dynamic Routing**: Traefik-style rule engine (`Host()`, `PathPrefix()`, `Headers()`)
+//! - **Load Balancing**: Round-robin, weighted, least-connections
+//! - **Middleware Pipeline**: Built-in ACL policies plus typed Rust extensions
+//! - **Health Checks**: Active HTTP probes with automatic backend removal
+//! - **Hot Reload**: File-watch based ACL configuration reload without restart
+//!
+//! ## Quick Start
+//!
+//! ```rust,ignore
+//! use a3s_gateway::{Gateway, config::GatewayConfig};
+//!
+//! #[tokio::main]
+//! async fn main() -> a3s_gateway::Result<()> {
+//!     let config = GatewayConfig::from_file("gateway.acl").await?;
+//!     let gateway = Gateway::new(config)?;
+//!     gateway.start().await?;
+//!     gateway.wait_for_shutdown().await;
+//!     Ok(())
+//! }
+//! ```
+
+pub mod agent;
+pub mod config;
+pub(crate) mod entrypoint;
+pub mod error;
+pub mod gateway;
+pub(crate) mod inference;
+pub mod managed_snapshot;
+pub mod middleware;
+mod node_api;
+pub(crate) mod observability;
+pub mod provider;
+pub(crate) mod proxy;
+pub(crate) mod response_body;
+#[doc(hidden)]
+pub mod router;
+pub(crate) mod scaling;
+pub(crate) mod service;
+pub(crate) mod usage;
+#[cfg(feature = "wire")]
+pub mod wire;
+
+// Re-export main types
+pub use error::{GatewayError, Result};
+pub use gateway::Gateway;
+pub use middleware::{Middleware, MiddlewareRegistry, RequestContext};
+pub use provider::discovery::{DiscoveredService, DiscoveryProvider, ServiceMetadata};
+pub use usage::{UsageSpoolCursor, UsageSpoolStatus};
+
+use serde::{Deserialize, Serialize};
+
+/// Gateway runtime state
+#[non_exhaustive]
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize, Default)]
+pub enum GatewayState {
+    /// Gateway has been created but not yet started
+    #[default]
+    Created,
+    /// Gateway is initializing listeners and loading configuration
+    Starting,
+    /// Gateway is actively accepting and proxying requests
+    Running,
+    /// Gateway is reloading configuration without downtime
+    Reloading,
+    /// Gateway is draining connections and shutting down
+    Stopping,
+    /// Gateway has fully stopped
+    Stopped,
+}
+
+impl std::fmt::Display for GatewayState {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self {
+            Self::Created => write!(f, "created"),
+            Self::Starting => write!(f, "starting"),
+            Self::Running => write!(f, "running"),
+            Self::Reloading => write!(f, "reloading"),
+            Self::Stopping => write!(f, "stopping"),
+            Self::Stopped => write!(f, "stopped"),
+        }
+    }
+}
+
+/// Gateway health status snapshot
+#[non_exhaustive]
+#[derive(Debug, Clone, Default, Serialize, Deserialize)]
+pub struct HealthStatus {
+    /// Current gateway state
+    pub state: GatewayState,
+    /// Process-level desired-state authority.
+    #[serde(default)]
+    pub mode: config::OperatingMode,
+    /// Stable logical identity when the managed snapshot protocol is enabled.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub gateway_id: Option<uuid::Uuid>,
+    /// Uptime in seconds since gateway started
+    pub uptime_secs: u64,
+    /// Number of active connections
+    pub active_connections: usize,
+    /// Total requests handled since start
+    pub total_requests: u64,
+    /// Node-local durable usage spool state when explicitly configured.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub usage_spool: Option<UsageSpoolStatus>,
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_gateway_state_default() {
+        let state = GatewayState::default();
+        assert_eq!(state, GatewayState::Created);
+    }
+
+    #[test]
+    fn test_gateway_state_display() {
+        assert_eq!(GatewayState::Created.to_string(), "created");
+        assert_eq!(GatewayState::Starting.to_string(), "starting");
+        assert_eq!(GatewayState::Running.to_string(), "running");
+        assert_eq!(GatewayState::Reloading.to_string(), "reloading");
+        assert_eq!(GatewayState::Stopping.to_string(), "stopping");
+        assert_eq!(GatewayState::Stopped.to_string(), "stopped");
+    }
+
+    #[test]
+    fn test_gateway_state_equality() {
+        assert_eq!(GatewayState::Running, GatewayState::Running);
+        assert_ne!(GatewayState::Running, GatewayState::Stopped);
+    }
+
+    #[test]
+    fn test_gateway_state_serialization() {
+        let state = GatewayState::Running;
+        let json = serde_json::to_string(&state).unwrap();
+        let parsed: GatewayState = serde_json::from_str(&json).unwrap();
+        assert_eq!(parsed, GatewayState::Running);
+    }
+
+    #[test]
+    fn test_health_status_default() {
+        let health = HealthStatus::default();
+        assert_eq!(health.state, GatewayState::Created);
+        assert_eq!(health.mode, config::OperatingMode::Standalone);
+        assert_eq!(health.gateway_id, None);
+        assert_eq!(health.uptime_secs, 0);
+        assert_eq!(health.active_connections, 0);
+        assert_eq!(health.total_requests, 0);
+        assert_eq!(health.usage_spool, None);
+    }
+
+    #[test]
+    fn test_health_status_serialization() {
+        let gateway_id = uuid::Uuid::new_v4();
+        let health = HealthStatus {
+            state: GatewayState::Running,
+            mode: config::OperatingMode::CloudManaged,
+            gateway_id: Some(gateway_id),
+            uptime_secs: 3600,
+            active_connections: 42,
+            total_requests: 10000,
+            usage_spool: None,
+        };
+        let json = serde_json::to_string(&health).unwrap();
+        let parsed: HealthStatus = serde_json::from_str(&json).unwrap();
+        assert_eq!(parsed.state, GatewayState::Running);
+        assert_eq!(parsed.mode, config::OperatingMode::CloudManaged);
+        assert_eq!(parsed.gateway_id, Some(gateway_id));
+        assert_eq!(
+            serde_json::from_str::<serde_json::Value>(&json).unwrap()["mode"],
+            "cloud-managed"
+        );
+        assert_eq!(parsed.uptime_secs, 3600);
+        assert_eq!(parsed.active_connections, 42);
+        assert_eq!(parsed.total_requests, 10000);
+    }
+
+    #[test]
+    fn test_health_status_clone() {
+        let health = HealthStatus {
+            state: GatewayState::Running,
+            mode: config::OperatingMode::Standalone,
+            gateway_id: None,
+            uptime_secs: 100,
+            active_connections: 5,
+            total_requests: 500,
+            usage_spool: None,
+        };
+        let cloned = health.clone();
+        assert_eq!(cloned.state, health.state);
+        assert_eq!(cloned.uptime_secs, health.uptime_secs);
+    }
+}

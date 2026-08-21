@@ -1,0 +1,24 @@
+load("@buckal//:wrapper.bzl", "rust_library")
+
+rust_library(
+    name = "a3s_updater",
+    srcs = glob(["**/*.rs"]),
+    crate = "a3s_updater",
+    crate_root = "src/lib.rs",
+    edition = "2021",
+
+    visibility = ["PUBLIC"],
+    deps = [
+        "//third-party/rust/crates/anyhow/1.0.104:anyhow",
+        "//third-party/rust/crates/flate2/1.1.9:flate2",
+        "//third-party/rust/crates/reqwest/0.12.28:reqwest",
+        "//third-party/rust/crates/semver/1.0.28:semver",
+        "//third-party/rust/crates/serde/1.0.229:serde",
+        "//third-party/rust/crates/serde_json/1.0.151:serde_json",
+        "//third-party/rust/crates/sha2/0.10.9:sha2",
+        "//third-party/rust/crates/tar/0.4.46:tar",
+        "//third-party/rust/crates/tempfile/3.27.0:tempfile",
+        "//third-party/rust/crates/tokio/1.53.1:tokio",
+        "//third-party/rust/crates/zip/2.4.2:zip",
+    ],
+)

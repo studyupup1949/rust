@@ -1,0 +1,134 @@
+pub mod activity_block;
+pub mod alert;
+pub mod badge;
+pub mod breadcrumb;
+pub mod checklist;
+pub mod chip_strip;
+pub mod choice_prompt;
+pub mod confirm;
+pub mod connector_block;
+pub mod cursor_line;
+pub mod data_table;
+pub mod detail_panel;
+pub mod diff_view;
+pub mod divider;
+pub mod gutter_block;
+pub mod help_panel;
+pub mod inline_action;
+pub mod input_border;
+pub mod key_value;
+pub mod level_slider;
+pub mod list;
+pub mod log_view;
+pub mod menu_panel;
+pub mod meter;
+pub mod metric_trend;
+pub mod modal;
+pub mod mode_line;
+pub mod multi_select;
+pub mod output_block;
+pub mod panel_frame;
+pub mod paragraph;
+pub mod preview_panel;
+pub mod progress;
+pub mod prompt_line;
+pub mod scrollbar;
+pub mod section_header;
+pub mod select;
+pub mod session_status;
+pub mod shimmer_text;
+pub mod side_note_panel;
+pub mod sparkline;
+pub mod spinner;
+pub mod split_pane;
+pub mod status_bar;
+pub mod subagent_tracker;
+pub mod tabbed_menu_panel;
+pub mod table;
+pub mod tabs;
+pub mod task_queue;
+pub mod text_input;
+pub mod text_overlay;
+pub mod textarea;
+pub mod timeline;
+pub mod toast;
+pub mod tool_log_view;
+pub mod tool_status_line;
+pub mod tree;
+pub mod tree_picker;
+pub mod viewport;
+pub mod welcome_banner;
+pub mod wrapped_prefix_block;
+
+fn relative_mouse_row(row: u16, y_offset: u16) -> Option<usize> {
+    row.checked_sub(y_offset).map(usize::from)
+}
+
+fn relative_mouse_column(column: u16, x_offset: u16) -> Option<usize> {
+    column.checked_sub(x_offset).map(usize::from)
+}
+
+pub use activity_block::ActivityBlock;
+pub use alert::{Alert, AlertKind};
+pub use badge::Badge;
+pub use breadcrumb::Breadcrumb;
+pub use checklist::{Checklist, ChecklistItem, ChecklistStatus};
+pub use chip_strip::{Chip, ChipStrip};
+pub use choice_prompt::{ChoicePrompt, ChoicePromptItem, ChoicePromptMsg};
+pub use confirm::{Confirm, ConfirmMsg};
+pub use connector_block::{ConnectorBlock, ConnectorRow};
+pub use cursor_line::CursorLine;
+pub use data_table::{CellAlign, DataColumn, DataRow, DataTable, DataTableMsg};
+pub use detail_panel::{DetailPanel, DetailRow, DetailRowKind};
+pub use diff_view::{DiffLine, DiffLineKind, DiffView};
+pub use divider::{divider, divider_line, divider_line_with, divider_with};
+pub use gutter_block::GutterBlock;
+pub use help_panel::{HelpPanel, HelpRow, HelpSection};
+pub use inline_action::InlineAction;
+pub use input_border::InputBorder;
+pub use key_value::KeyValue;
+pub use level_slider::{LevelSlider, LevelSliderMsg, SliderLevel};
+pub use list::List;
+pub use log_view::{LogView, LogViewState};
+pub use menu_panel::{MenuItem, MenuPanel, MenuPanelMsg};
+pub use meter::Meter;
+pub use metric_trend::MetricTrend;
+pub use modal::Modal;
+pub use mode_line::ModeLine;
+pub use multi_select::{MultiSelect, MultiSelectMsg};
+pub use output_block::{OutputBlock, OutputStatus};
+pub use panel_frame::{PanelFrame, PanelFrameBorder};
+pub use paragraph::{Paragraph, TextAlign};
+pub use preview_panel::{PreviewItem, PreviewPanel, PreviewPanelMsg};
+pub use progress::Progress;
+pub use prompt_line::PromptLine;
+pub use scrollbar::Scrollbar;
+pub use section_header::SectionHeader;
+pub use select::{Select, SelectMsg};
+pub use session_status::{SessionStatus, SessionStatusChip};
+pub use shimmer_text::ShimmerText;
+pub use side_note_panel::SideNotePanel;
+pub use sparkline::Sparkline;
+pub use spinner::Spinner;
+pub use split_pane::SplitPane;
+pub use status_bar::StatusBar;
+pub use subagent_tracker::{SubagentRow, SubagentTracker};
+pub use tabbed_menu_panel::{TabbedMenuItem, TabbedMenuPanel, TabbedMenuPanelMsg, TabbedMenuTab};
+pub use table::Table;
+pub use tabs::{TabSegment, Tabs, TabsMsg};
+pub use task_queue::{QueuedTask, TaskQueue};
+pub use text_input::TextInput;
+pub use text_overlay::{TextOverlay, TextOverlayPosition};
+pub use textarea::Textarea;
+pub use timeline::{Timeline, TimelineItem, TimelineRow};
+pub use toast::{Toast, ToastKind, ToastManager};
+pub use tool_log_view::{ToolLogRecord, ToolLogStatus, ToolLogView};
+pub use tool_status_line::ToolStatusLine;
+pub use tree::{Tree, TreeNode};
+pub use tree_picker::{TreePicker, TreePickerItem, TreePickerItemKind, TreePickerMsg};
+pub use viewport::{
+    highlight_selection, highlight_selection_range, selected_text, selected_text_range,
+    SelectionRange, TextSelection, Viewport, ViewportMsg,
+};
+pub use welcome_banner::WelcomeBanner;
+pub use wrapped_prefix_block::WrappedPrefixBlock;

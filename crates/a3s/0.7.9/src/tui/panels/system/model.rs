@@ -1,0 +1,945 @@
+//! `/model` picker (with account tabs) + `/effort` rebuild logic + overlays.
+
+use super::super::*;
+use super::login::{claude_models, has_local_login, AuthProvider};
+use crate::config::{
+    save_model_selection_preference, ModelSelectionPreference, ModelSelectionSource,
+};
+use a3s_tui::components::{TabbedMenuItem, TabbedMenuPanel, TabbedMenuPanelMsg, TabbedMenuTab};
+use a3s_tui::event::MouseEvent;
+
+/// A tab in the `/model` picker: config models, or a signed-in account's models.
+struct ModelTab {
+    label: &'static str,
+    color: Color,
+    models: Vec<String>,
+    provider: Option<AuthProvider>, // None = config.acl
+    os_gateway: bool,               // the OS unified AI gateway tab
+}
+
+fn selected_model_location(tabs: &[ModelTab], current: Option<&str>) -> (usize, usize) {
+    let current = current.map(crate::claude::canonical_model_name);
+    current
+        .as_deref()
+        .and_then(|current| {
+            tabs.iter().enumerate().find_map(|(tab_idx, tab)| {
+                tab.models
+                    .iter()
+                    .position(|model| model == current)
+                    .map(|model_idx| (tab_idx, model_idx))
+            })
+        })
+        .unwrap_or((0, 0))
+}
+
+// Per-source accents, tuned to the DESIGN.md brand palette.
+const A3S_COLOR: Color = ACCENT;
+const CLAUDE_COLOR: Color = TN_ORANGE;
+const CODEX_COLOR: Color = TN_CYAN;
+
+fn planning_mode_for_run(
+    ultracode: bool,
+    goal_active: bool,
+) -> Option<a3s_code_core::PlanningMode> {
+    if goal_active {
+        Some(a3s_code_core::PlanningMode::Enabled)
+    } else if ultracode {
+        Some(a3s_code_core::PlanningMode::Auto)
+    } else {
+        None
+    }
+}
+
+fn model_menu_max_rows(height: usize) -> usize {
+    height.saturating_sub(8).clamp(3, 12)
+}
+
+fn model_menu_height(tabs: &[ModelTab], active_tab: usize, max_items: usize) -> usize {
+    if tabs.is_empty() {
+        return 0;
+    }
+    let active_tab = active_tab.min(tabs.len() - 1);
+    let active_items = tabs[active_tab].models.len();
+    let header_rows = 1 + usize::from(tabs.len() > 1) + 1;
+    let item_rows = active_items.max(1).min(max_items);
+    header_rows + item_rows + 1
+}
+
+fn model_menu_panel(
+    tabs: &[ModelTab],
+    active_tab: usize,
+    selected: usize,
+    current_model: Option<&str>,
+    max_items: usize,
+) -> TabbedMenuPanel {
+    let active_tab = active_tab.min(tabs.len().saturating_sub(1));
+    if tabs.is_empty() {
+        return TabbedMenuPanel::new(Vec::new());
+    }
+    let panel_tabs = tabs
+        .iter()
+        .map(|tab| {
+            let items = tab
+                .models
+                .iter()
+                .map(|model| {
+                    let prefix = if Some(model.as_str()) == current_model {
+                        "●"
+                    } else {
+                        " "
+                    };
+                    TabbedMenuItem::new(model.clone()).prefix(prefix)
+                })
+                .collect::<Vec<_>>();
+            TabbedMenuTab::new(tab.label, tab.color)
+                .items(items)
+                .empty_text("(no models)")
+        })
+        .collect::<Vec<_>>();
+
+    TabbedMenuPanel::new(panel_tabs)
+        .title("Select model")
+        .hint("↑/↓ model · ←/→ account · Enter · Esc")
+        .active_tab(active_tab)
+        .selected(selected)
+        .max_items(max_items)
+        .indent(2)
+        .hint_color(TN_GRAY)
+        .text_color(TN_GRAY)
+        .muted_color(TN_GRAY)
+        .selected_colors(Color::BrightWhite, ACCENT)
+}
+
+fn model_menu_lines(
+    tabs: &[ModelTab],
+    active_tab: usize,
+    selected: usize,
+    current_model: Option<&str>,
+    width: usize,
+    max_items: usize,
+) -> Vec<String> {
+    if tabs.is_empty() {
+        return Vec::new();
+    }
+    let height = model_menu_height(tabs, active_tab, max_items);
+    model_menu_panel(tabs, active_tab, selected, current_model, max_items)
+        .view(width.min(u16::MAX as usize) as u16, height)
+        .lines()
+        .map(str::to_string)
+        .collect()
+}
+
+fn model_menu_overlay_y_offset(screen_height: usize, row_count: usize) -> u16 {
+    screen_height
+        .saturating_sub(5)
+        .saturating_sub(row_count)
+        .min(u16::MAX as usize) as u16
+}
+
+fn should_fetch_os_gateway_models(
+    active_tab: Option<&ModelTab>,
+    gateway_models: Option<&[String]>,
+    loading: bool,
+    signed_in: bool,
+) -> bool {
+    active_tab.is_some_and(|tab| tab.os_gateway)
+        && signed_in
+        && !loading
+        && gateway_models.is_none_or(|models| models.is_empty())
+}
+
+impl App {
+    /// Tabs: a3s-code always; Claude Code / Codex appear when that local login
+    /// is detected.
+    fn model_tabs(&self) -> Vec<ModelTab> {
+        let mut tabs = vec![ModelTab {
+            label: "a3s-code",
+            color: A3S_COLOR,
+            models: self.models.clone(),
+            provider: None,
+            os_gateway: false,
+        }];
+        if has_local_login(AuthProvider::Claude) {
+            tabs.push(ModelTab {
+                label: "Claude Code",
+                color: CLAUDE_COLOR,
+                models: claude_models(), // from ~/.claude.json
+                provider: Some(AuthProvider::Claude),
+                os_gateway: false,
+            });
+        }
+        if has_local_login(AuthProvider::Codex) {
+            tabs.push(ModelTab {
+                label: "Codex",
+                color: CODEX_COLOR,
+                models: crate::codex::codex_models(), // from ~/.codex/models_cache.json
+                provider: Some(AuthProvider::Codex),
+                os_gateway: false,
+            });
+        }
+        // Signed in to OS → offer its unified AI gateway (gateway-managed:
+        // we send the OS token + a model id; the gateway holds provider keys).
+        if self.os_session.is_some() {
+            let models = match &self.os_gateway_models {
+                Some(m) if !m.is_empty() => m.clone(),
+                // Empty: distinguish a fetch failure from a genuinely empty gateway.
+                Some(_) => vec![if self.os_gateway_error.is_some() {
+                    "(gateway unreachable)".to_string()
+                } else {
+                    "(no models configured)".to_string()
+                }],
+                None => vec!["(loading…)".to_string()],
+            };
+            tabs.push(ModelTab {
+                label: "OS Gateway",
+                color: TN_CYAN,
+                models,
+                provider: None,
+                os_gateway: true,
+            });
+        }
+        tabs
+    }
+
+    /// Open the /model picker on the current model + matching tab.
+    pub(crate) fn open_model_menu(&mut self) {
+        let tabs = self.model_tabs();
+        if tabs.iter().all(|t| t.models.is_empty()) {
+            self.push_line(
+                &Style::new()
+                    .fg(TN_RED)
+                    .render("  no models configured in config.acl"),
+            );
+            return;
+        }
+        let (tab, idx) = selected_model_location(&tabs, self.model.as_deref());
+        self.model_tab = tab;
+        self.model_menu = Some(idx);
+    }
+
+    pub(crate) fn maybe_fetch_active_os_gateway_models(&mut self) -> Option<Cmd<Msg>> {
+        let tabs = self.model_tabs();
+        let active_tab = self.model_tab.min(tabs.len().saturating_sub(1));
+        if !should_fetch_os_gateway_models(
+            tabs.get(active_tab),
+            self.os_gateway_models.as_deref(),
+            self.os_gateway_models_loading,
+            self.os_session.is_some(),
+        ) {
+            return None;
+        }
+        let session = self.os_session.clone()?;
+
+        self.os_gateway_models_loading = true;
+        self.os_gateway_models = None;
+        self.os_gateway_error = None;
+
+        let addr = session.address.clone();
+        let token = session.access_token.clone();
+        let login_at_ms = session.login_at_ms;
+        Some(cmd::cmd(move || async move {
+            Msg::OsGatewayModels {
+                login_at_ms,
+                result: crate::a3s_os::fetch_gateway_models(&addr, &token).await,
+            }
+        }))
+    }
+
+    pub(crate) fn clamp_open_model_menu_selection(&mut self) {
+        let Some(sel) = self.model_menu else {
+            return;
+        };
+        let tabs = self.model_tabs();
+        if tabs.is_empty() {
+            return;
+        }
+        self.model_tab = self.model_tab.min(tabs.len() - 1);
+        let last = tabs[self.model_tab].models.len().saturating_sub(1);
+        self.model_menu = Some(sel.min(last));
+    }
+
+    /// Keys while the /model panel is open: ↑/↓ select, ←/→/Tab switch tab,
+    /// Enter activate (config model, or sign in with the tab's account), Esc.
+    pub(crate) fn handle_model_key(&mut self, key: &KeyEvent) -> Option<Option<Cmd<Msg>>> {
+        let sel = self.model_menu?;
+        let tabs = self.model_tabs();
+        let tab_count = tabs.len().max(1);
+        let t = self.model_tab.min(tab_count - 1);
+        let last = tabs[t].models.len().saturating_sub(1);
+        match key.code {
+            KeyCode::Up => {
+                self.model_menu = Some(sel.saturating_sub(1));
+                Some(None)
+            }
+            KeyCode::Down => {
+                self.model_menu = Some((sel + 1).min(last));
+                Some(None)
+            }
+            KeyCode::Left => {
+                self.model_tab = t.saturating_sub(1);
+                self.model_menu = Some(0);
+                Some(self.maybe_fetch_active_os_gateway_models())
+            }
+            KeyCode::Right | KeyCode::Tab => {
+                self.model_tab = (t + 1).min(tab_count - 1);
+                self.model_menu = Some(0);
+                Some(self.maybe_fetch_active_os_gateway_models())
+            }
+            KeyCode::Enter => Some(self.activate_model_menu_item(&tabs[t], sel.min(last))),
+            KeyCode::Esc => {
+                self.model_menu = None;
+                Some(None)
+            }
+            _ => None,
+        }
+    }
+
+    pub(crate) fn handle_model_mouse(&mut self, mouse: &MouseEvent) -> Option<Cmd<Msg>> {
+        let sel = self.model_menu?;
+        let tabs = self.model_tabs();
+        if tabs.is_empty() {
+            return None;
+        }
+        let active_tab = self.model_tab.min(tabs.len() - 1);
+        let max_rows = model_menu_max_rows(self.height as usize);
+        let selected = sel.min(tabs[active_tab].models.len().saturating_sub(1));
+        let width = (self.width as usize).min(u16::MAX as usize);
+        let height = model_menu_height(&tabs, active_tab, max_rows);
+        let mut panel =
+            model_menu_panel(&tabs, active_tab, selected, self.model.as_deref(), max_rows);
+        let row_count = panel.view(width as u16, height).lines().count();
+        if row_count == 0 {
+            return None;
+        }
+        panel.set_y_offset(model_menu_overlay_y_offset(self.height as usize, row_count));
+
+        match panel.handle_mouse(mouse) {
+            Some(TabbedMenuPanelMsg::TabChanged(tab)) => {
+                self.model_tab = tab.min(tabs.len() - 1);
+                self.model_menu = Some(0);
+                self.maybe_fetch_active_os_gateway_models()
+            }
+            Some(TabbedMenuPanelMsg::Selected { tab, item }) => {
+                if let Some(tab) = tabs.get(tab) {
+                    return self.activate_model_menu_item(tab, item);
+                }
+                None
+            }
+            Some(TabbedMenuPanelMsg::Cancelled) | None => None,
+        }
+    }
+
+    fn activate_model_menu_item(&mut self, tab: &ModelTab, item: usize) -> Option<Cmd<Msg>> {
+        let model = tab.models.get(item).cloned();
+        self.model_menu = None;
+        if tab.os_gateway {
+            if let Some(model) = model {
+                return self.use_os_gateway(&model);
+            }
+            return None;
+        }
+        match tab.provider {
+            None => {
+                if let Some(model) = model {
+                    return self.switch_model(&model);
+                }
+            }
+            Some(AuthProvider::Claude) => {
+                if let Some(model) = model {
+                    return self.sign_in_claude(&model);
+                }
+            }
+            Some(AuthProvider::Codex) => {
+                if let Some(model) = model {
+                    return self.sign_in_codex(&model);
+                }
+            }
+        }
+        None
+    }
+
+    fn active_context_limit_for(&self, model: &str) -> u32 {
+        ctx_limit_for_model(&self.model_ctx, model)
+    }
+
+    pub(crate) fn commit_model_switch(
+        &mut self,
+        session: AgentSession,
+        llm_client: Arc<dyn a3s_code_core::llm::LlmClient>,
+        model: String,
+        source: ModelSelectionSource,
+    ) {
+        self.replace_session(session, llm_client);
+        let preference = ModelSelectionPreference {
+            source,
+            model: model.clone(),
+        };
+        self.model = Some(model);
+        // The next LLM round will report the new prompt fill for the new model.
+        // Until then, do not show the previous model's prompt/token counters as
+        // if they belonged to this context window.
+        self.last_prompt_tokens = 0;
+        self.auto_compact = crate::compact::auto_compact::AutoCompactController::new(
+            crate::config::auto_compact_threshold(),
+            self.context_limit,
+        );
+        self.rebuild_model_context();
+        self.ctx_warned_tier = 0;
+        self.output_tokens = 0;
+        if let Err(error) = save_model_selection_preference(&preference) {
+            self.push_line(&Style::new().fg(TN_YELLOW).render(&format!(
+                "  model switched, but preference was not saved: {error}"
+            )));
+        }
+    }
+
+    /// Sign in with the local Claude Code login and switch to one of its models
+    /// by injecting the Claude account client (OAuth Bearer auth).
+    fn sign_in_claude(&mut self, model: &str) -> Option<Cmd<Msg>> {
+        let model = crate::claude::canonical_model_name(model);
+        if self.state != State::Idle {
+            self.push_line(
+                &Style::new()
+                    .fg(TN_YELLOW)
+                    .render("  finish the current turn before switching models"),
+            );
+            return None;
+        }
+        match crate::claude::ClaudeClient::from_claude_login(&model) {
+            Ok(client) => {
+                let prev_override = self.llm_override.clone();
+                let prev_ctx = self.context_limit;
+                self.llm_override = Some(Arc::new(client));
+                // Build the replacement session with the new model's context policy.
+                self.context_limit = self.active_context_limit_for(&model);
+                self.begin_session_rebuild(
+                    PendingSessionChange::ModelSwitch {
+                        model: model.clone(),
+                        source: ModelSelectionSource::Claude,
+                        success_message: format!("  ⇄ Claude Code · {model}"),
+                        failure_prefix: "failed to switch",
+                        previous_override: prev_override,
+                        previous_context_limit: prev_ctx,
+                    },
+                    SessionRebuildTarget::Replace {
+                        current: Arc::clone(&self.session),
+                    },
+                    Some(&model),
+                )
+            }
+            Err(error) => {
+                self.push_line(
+                    &Style::new()
+                        .fg(TN_RED)
+                        .render(&format!("  Claude Code sign-in failed: {error}")),
+                );
+                None
+            }
+        }
+    }
+
+    /// Sign in with the local Codex login and switch to one of its models by
+    /// injecting the custom Codex client (talks to the ChatGPT backend).
+    fn sign_in_codex(&mut self, model: &str) -> Option<Cmd<Msg>> {
+        if self.state != State::Idle {
+            self.push_line(
+                &Style::new()
+                    .fg(TN_YELLOW)
+                    .render("  finish the current turn before switching models"),
+            );
+            return None;
+        }
+        match crate::codex::CodexClient::from_codex_login(model, &self.session_id) {
+            Ok(client) => {
+                let prev_override = self.llm_override.clone();
+                let prev_ctx = self.context_limit;
+                self.llm_override = Some(Arc::new(client));
+                self.context_limit = self.active_context_limit_for(model);
+                self.begin_session_rebuild(
+                    PendingSessionChange::ModelSwitch {
+                        model: model.to_string(),
+                        source: ModelSelectionSource::Codex,
+                        success_message: format!("  ⇄ Codex · {model}"),
+                        failure_prefix: "failed to switch",
+                        previous_override: prev_override,
+                        previous_context_limit: prev_ctx,
+                    },
+                    SessionRebuildTarget::Replace {
+                        current: Arc::clone(&self.session),
+                    },
+                    Some(model),
+                )
+            }
+            Err(e) => {
+                self.push_line(
+                    &Style::new()
+                        .fg(TN_RED)
+                        .render(&format!("  Codex sign-in failed: {e}")),
+                );
+                None
+            }
+        }
+    }
+
+    /// Route the agent's LLM through the OS **unified AI gateway**: an
+    /// OpenAI-compatible client at the OS authenticated LLM proxy, authed with
+    /// the OS Bearer token (the gateway is "gateway-managed" — it holds the real
+    /// provider keys). `model` is a gateway model id.
+    fn use_os_gateway(&mut self, model: &str) -> Option<Cmd<Msg>> {
+        if model.starts_with('(') {
+            // A placeholder row. Surface loading, the precise failure reason, or
+            // the genuinely-unconfigured gateway state.
+            let reason = if self.os_gateway_models_loading || model.contains("loading") {
+                "model list is still loading — try again in a moment".to_string()
+            } else {
+                self.os_gateway_error.clone().unwrap_or_else(|| {
+                    "no models configured — set up the unified AI gateway on OS, then reopen the OS Gateway tab"
+                        .to_string()
+                })
+            };
+            self.push_line(
+                &Style::new()
+                    .fg(TN_YELLOW)
+                    .render(&format!("  OS gateway unavailable: {reason}")),
+            );
+            return None;
+        }
+        if self.state != State::Idle {
+            self.push_line(
+                &Style::new()
+                    .fg(TN_YELLOW)
+                    .render("  finish the current turn before switching models"),
+            );
+            return None;
+        }
+        let session = self.os_session.clone()?;
+        let prev_override = self.llm_override.clone();
+        let prev_ctx = self.context_limit;
+        self.llm_override = Some(os_gateway_llm_override(&session, model));
+        self.context_limit = self.active_context_limit_for(model);
+        self.begin_session_rebuild(
+            PendingSessionChange::ModelSwitch {
+                model: model.to_string(),
+                source: ModelSelectionSource::OsGateway,
+                success_message: format!("  ⇄ OS Gateway · {model}"),
+                failure_prefix: "failed to switch",
+                previous_override: prev_override,
+                previous_context_limit: prev_ctx,
+            },
+            SessionRebuildTarget::Replace {
+                current: Arc::clone(&self.session),
+            },
+            Some(model),
+        )
+    }
+
+    fn current_prompt_slots(&self) -> Option<SystemPromptSlots> {
+        let mut extra_parts = Vec::new();
+        if let Some(instructions) = &self.instructions {
+            extra_parts.push(instructions.clone());
+        }
+        if let Some(session) = &self.os_session {
+            extra_parts.push(os_platform_guide(&session.address));
+        }
+        let extra = (!extra_parts.is_empty()).then(|| extra_parts.join("\n\n"));
+        let guideline = EFFORT_LEVELS[self.effort].guideline;
+        if extra.is_none() && guideline.is_none() {
+            return None;
+        }
+
+        let mut slots = SystemPromptSlots::default();
+        if let Some(extra) = extra {
+            slots = slots.with_extra(extra);
+        }
+        if let Some(guideline) = guideline {
+            slots = slots.with_guidelines(guideline);
+        }
+        Some(slots)
+    }
+
+    /// Switch the active model by resuming the session under it (history kept).
+    /// Base session options carrying the current effort. `ultracode` adds a
+    /// planning + goal tracking + a wider tool-round budget so a turn plans,
+    /// then fans independent work out to visible parallel subagents.
+    pub(crate) fn effort_session_opts_for(
+        &self,
+        thinking: bool,
+        session_id: &str,
+    ) -> SessionOptions {
+        let budget = budget_plan_for_effort_index(
+            self.effort,
+            Some(self.context_limit),
+            BudgetWorkload::Interactive,
+        );
+        let mut opts = with_recent_workspace_context(
+            tui_session_options(self.confirmation.clone())
+                .with_session_store(self.store.clone())
+                .with_session_id(session_id)
+                .with_workspace_backend(self.workspace_services.clone())
+                // Includes the login-gated OS `a3s-os-capabilities` skill.
+                .with_skill_dirs(self.skill_dirs())
+                .with_auto_save(true)
+                // Core owns in-turn rolling compaction and uses the selected
+                // model's actual context window. The TUI timeline remains the
+                // durable cross-turn transcript source.
+                .with_auto_compact(true)
+                .with_max_context_tokens(self.context_limit as usize)
+                .with_auto_compact_threshold(self.auto_compact.threshold() as f32)
+                .with_memory(self.memory_store.clone())
+                // Parallel fan-out available in every mode (not just ultracode).
+                .with_max_parallel_tasks(budget.max_parallel_tasks)
+                .with_auto_delegation_enabled(true)
+                .with_auto_parallel_delegation(true)
+                // Pin manual delegation on so `parallel_task`/`task` stay registered
+                // even if config.acl disables them — else ultracode's fan-out calls
+                // an unregistered tool ("Unknown tool: parallel_task").
+                .with_manual_delegation_enabled(true)
+                // Tool-round budget scales with effort (low 120 … max 500,
+                // ultracode 600) — the old flat ~50 default cut real multi-step
+                // work (and parallel subagents) short.
+                .with_max_tool_rounds(budget.max_tool_rounds)
+                // Auto-continuation also scales: higher effort re-prompts more
+                // times to finish before giving up (low 2 … max/ultra 8).
+                .with_max_continuation_turns(budget.max_continuation_turns),
+            &self.workspace_manifest,
+        );
+        let ultra = self.effort == ULTRACODE;
+        if let Some(slots) = self.current_prompt_slots() {
+            opts = opts.with_prompt_slots(slots);
+        }
+        // Extended thinking is Anthropic-only; only request it when asked.
+        if thinking {
+            opts = opts.with_thinking_budget(budget.thinking_budget);
+        }
+        if let Some(planning_mode) = planning_mode_for_run(ultra, self.goal_run.is_some()) {
+            // Dynamic-workflow mode: planning is message-gated (Auto), so a turn
+            // plans + fans out only when the core's pre-analysis judges the task to
+            // warrant it — a trivial "hi" stays a direct answer. `Enabled` forced a
+            // plan every turn, which is what made ultracode explore on a greeting.
+            // An active `/goal` is the deliberate exception: every iteration is
+            // forced through planning so GoalExtracted/Progress/Achieved form a
+            // reliable host completion gate. Once it closes, this returns to Auto.
+            opts = opts
+                .with_planning_mode(planning_mode)
+                .with_goal_tracking(true);
+        }
+        // Signed in via a /model account tab → route through that account client.
+        if let Some(client) = &self.llm_override {
+            opts = opts.with_llm_client(client.clone());
+        }
+        opts
+    }
+
+    /// Ephemeral `/btw` session options. The side thread sees the same model,
+    /// effort guidance, skills and workspace context, but it has no session
+    /// store, session id, memory extraction, planning or delegation. Its full
+    /// conversation therefore never enters the main timeline or durable store.
+    pub(crate) fn btw_session_opts(
+        &self,
+        confirmation: a3s_code_core::hitl::ConfirmationPolicy,
+    ) -> SessionOptions {
+        let budget = budget_plan_for_effort_index(
+            self.effort,
+            Some(self.context_limit),
+            BudgetWorkload::Interactive,
+        );
+        let mut opts = with_recent_workspace_context(
+            tui_session_options(confirmation)
+                .with_session_store(Arc::new(a3s_code_core::store::MemorySessionStore::new()))
+                .with_workspace_backend(self.workspace_services.clone())
+                .with_skill_dirs(self.skill_dirs())
+                .with_auto_save(false)
+                .with_auto_compact(true)
+                .with_max_context_tokens(self.context_limit as usize)
+                .with_auto_compact_threshold(self.auto_compact.threshold() as f32)
+                .with_planning_mode(a3s_code_core::PlanningMode::Disabled)
+                .with_goal_tracking(false)
+                .with_memory(Arc::new(a3s_memory::InMemoryStore::new()))
+                .with_auto_delegation_enabled(false)
+                .with_auto_parallel_delegation(false)
+                .with_manual_delegation_enabled(false)
+                .with_max_parallel_tasks(1)
+                .with_max_tool_rounds(budget.max_tool_rounds.clamp(4, 16))
+                .with_max_continuation_turns(1)
+                .with_llm_client(self.llm_client.clone()),
+            &self.workspace_manifest,
+        );
+        if let Some(model) = &self.model {
+            opts = opts.with_model(model);
+        }
+        if let Some(slots) = self.current_prompt_slots() {
+            opts = opts.with_prompt_slots(slots);
+        }
+        opts
+    }
+
+    pub(crate) fn switch_model(&mut self, model: &str) -> Option<Cmd<Msg>> {
+        if self.state != State::Idle {
+            self.push_line(
+                &Style::new()
+                    .fg(TN_YELLOW)
+                    .render("  finish the current turn before switching models"),
+            );
+            return None;
+        }
+        // Build the replacement session with the new model's context policy.
+        let prev_override = self.llm_override.clone();
+        let prev_ctx = self.context_limit;
+        self.llm_override = None;
+        self.context_limit = self.active_context_limit_for(model);
+        self.begin_session_rebuild(
+            PendingSessionChange::ModelSwitch {
+                model: model.to_string(),
+                source: ModelSelectionSource::Config,
+                success_message: format!("  ⇄ switched to {model}"),
+                failure_prefix: "failed to switch model",
+                previous_override: prev_override,
+                previous_context_limit: prev_ctx,
+            },
+            SessionRebuildTarget::Replace {
+                current: Arc::clone(&self.session),
+            },
+            Some(model),
+        )
+    }
+
+    /// Apply a selected effort by rebuilding the session (keeps model + history).
+    pub(crate) fn apply_effort(&mut self, selected: usize) -> Option<Cmd<Msg>> {
+        if self.state != State::Idle {
+            self.push_line(
+                &Style::new()
+                    .fg(TN_YELLOW)
+                    .render("  finish the current turn before changing effort"),
+            );
+            return None;
+        }
+        let previous_effort = self.effort;
+        self.effort = selected.min(EFFORT_LEVELS.len().saturating_sub(1));
+        let model = self.model.clone();
+        self.begin_session_rebuild(
+            PendingSessionChange::ApplyEffort { previous_effort },
+            SessionRebuildTarget::Replace {
+                current: Arc::clone(&self.session),
+            },
+            model.as_deref(),
+        )
+    }
+
+    pub(crate) fn finish_effort_application(&mut self, thinking_dropped: bool) {
+        if self.effort == ULTRACODE {
+            // Unattended fan-out: auto-approve so subagents run freely.
+            self.mode = Mode::Auto;
+            self.gradient_until = Some(Instant::now());
+            self.gradient_frame = 0;
+            self.push_line(&Style::new().fg(ACCENT).bold().render(
+                "  ◆ ultracode — planning a dynamic workflow + parallel subagents (auto-approve on)",
+            ));
+        } else if thinking_dropped {
+            // No extended-thinking budget on this model. Above/below the
+            // medium baseline a depth guideline still applies (effort is not a
+            // no-op); at medium only the tool-round budget differs.
+            let note = if EFFORT_LEVELS[self.effort].guideline.is_some() {
+                "depth via reasoning guidance; no extended-thinking on this model"
+            } else {
+                "balanced baseline; no extended-thinking on this model"
+            };
+            self.push_line(&Style::new().fg(TN_GREEN).render(&format!(
+                "  ◇ effort: {} ({note})",
+                EFFORT_LEVELS[self.effort].label
+            )));
+        } else {
+            self.push_line(
+                &Style::new()
+                    .fg(TN_GREEN)
+                    .render(&format!("  ◇ effort: {}", EFFORT_LEVELS[self.effort].label)),
+            );
+        }
+    }
+
+    pub(crate) fn overlay_model_menu(&self, composed: String) -> String {
+        let Some(sel) = self.model_menu else {
+            return composed;
+        };
+        let tabs = self.model_tabs();
+        if tabs.is_empty() {
+            return composed;
+        }
+        let t = self.model_tab.min(tabs.len() - 1);
+        let width = self.width as usize;
+        // Scroll a window around the selection so a pick past row 12 stays visible
+        // and reachable (the list used to render a fixed first-12 only).
+        let max_rows = model_menu_max_rows(self.height as usize);
+        let sel = sel.min(tabs[t].models.len().saturating_sub(1));
+        let menu = model_menu_lines(&tabs, t, sel, self.model.as_deref(), width, max_rows);
+        self.overlay_list(composed, &menu)
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn goal_run_forces_planning_then_restores_ultracode_auto() {
+        assert_eq!(
+            planning_mode_for_run(true, true),
+            Some(a3s_code_core::PlanningMode::Enabled)
+        );
+        assert_eq!(
+            planning_mode_for_run(true, false),
+            Some(a3s_code_core::PlanningMode::Auto)
+        );
+        assert_eq!(planning_mode_for_run(false, false), None);
+    }
+
+    #[test]
+    fn selected_model_location_finds_account_tab_model() {
+        let tabs = vec![
+            ModelTab {
+                label: "a3s-code",
+                color: A3S_COLOR,
+                models: vec!["openai/gpt-5".into()],
+                provider: None,
+                os_gateway: false,
+            },
+            ModelTab {
+                label: "Claude Code",
+                color: CLAUDE_COLOR,
+                models: vec!["claude-sonnet-4".into()],
+                provider: Some(AuthProvider::Claude),
+                os_gateway: false,
+            },
+        ];
+
+        assert_eq!(
+            selected_model_location(&tabs, Some("claude-sonnet-4")),
+            (1, 0)
+        );
+        assert_eq!(
+            selected_model_location(&tabs, Some("claude-sonnet-4[1m]")),
+            (1, 0)
+        );
+        assert_eq!(selected_model_location(&tabs, Some("missing")), (0, 0));
+    }
+
+    #[test]
+    fn os_gateway_models_fetch_only_when_gateway_tab_is_active() {
+        let config_tab = ModelTab {
+            label: "a3s-code",
+            color: A3S_COLOR,
+            models: vec!["openai/gpt-5".into()],
+            provider: None,
+            os_gateway: false,
+        };
+        let gateway_tab = ModelTab {
+            label: "OS Gateway",
+            color: TN_CYAN,
+            models: vec!["(loading…)".into()],
+            provider: None,
+            os_gateway: true,
+        };
+        let cached = vec!["gpt-5.1".to_string()];
+
+        assert!(!should_fetch_os_gateway_models(
+            Some(&config_tab),
+            None,
+            false,
+            true
+        ));
+        assert!(!should_fetch_os_gateway_models(
+            Some(&gateway_tab),
+            None,
+            false,
+            false
+        ));
+        assert!(!should_fetch_os_gateway_models(
+            Some(&gateway_tab),
+            None,
+            true,
+            true
+        ));
+        assert!(!should_fetch_os_gateway_models(
+            Some(&gateway_tab),
+            Some(&cached),
+            false,
+            true
+        ));
+        assert!(should_fetch_os_gateway_models(
+            Some(&gateway_tab),
+            None,
+            false,
+            true
+        ));
+        assert!(should_fetch_os_gateway_models(
+            Some(&gateway_tab),
+            Some(&[]),
+            false,
+            true
+        ));
+    }
+
+    #[test]
+    fn model_menu_lines_are_width_bounded_with_styles() {
+        let lines = model_menu_lines(
+            &[ModelTab {
+                label: "Codex",
+                color: CODEX_COLOR,
+                models: vec![
+                    "openai-compatible/provider/model-name-with-a-very-long-context-window".into(),
+                    "gpt-5-codex".into(),
+                ],
+                provider: Some(AuthProvider::Codex),
+                os_gateway: false,
+            }],
+            0,
+            0,
+            Some("openai-compatible/provider/model-name-with-a-very-long-context-window"),
+            36,
+            3,
+        );
+
+        for line in lines {
+            assert!(
+                a3s_tui::style::visible_len(&line) <= 36,
+                "{}",
+                a3s_tui::style::strip_ansi(&line)
+            );
+        }
+    }
+
+    #[test]
+    fn model_menu_panel_handles_tab_mouse_with_overlay_offset() {
+        use a3s_tui::event::{MouseButton, MouseEventKind};
+
+        let tabs = vec![
+            ModelTab {
+                label: "a3s-code",
+                color: A3S_COLOR,
+                models: vec!["openai/gpt-5".into()],
+                provider: None,
+                os_gateway: false,
+            },
+            ModelTab {
+                label: "Claude Code",
+                color: CLAUDE_COLOR,
+                models: vec!["claude-sonnet-4".into()],
+                provider: Some(AuthProvider::Claude),
+                os_gateway: false,
+            },
+        ];
+        let max_rows = model_menu_max_rows(24);
+        let row_count = model_menu_lines(&tabs, 0, 0, None, 48, max_rows).len();
+        let y_offset = model_menu_overlay_y_offset(24, row_count);
+        let mut panel = model_menu_panel(&tabs, 0, 0, None, max_rows);
+        panel.set_y_offset(y_offset);
+
+        let msg = panel.handle_mouse(&MouseEvent {
+            kind: MouseEventKind::Down(MouseButton::Left),
+            column: 15,
+            row: y_offset + 1,
+            modifiers: a3s_tui::KeyModifiers::NONE,
+        });
+
+        assert_eq!(msg, Some(TabbedMenuPanelMsg::TabChanged(1)));
+    }
+}

@@ -1,0 +1,42 @@
+[package]
+name = "a3s-flow"
+version = "0.10.12"
+edition = "2021"
+authors = ["A3S Lab"]
+license = "MIT"
+description = "Durable workflow engine and Rust SDK for A3S"
+repository = "https://github.com/A3S-Lab/Flow"
+documentation = "https://docs.rs/a3s-flow"
+readme = "README.md"
+keywords = ["workflow", "durable", "event-sourcing", "async", "sdk"]
+categories = ["asynchronous", "development-tools"]
+
+[lib]
+name = "a3s_flow"
+path = "src/lib.rs"
+
+[features]
+default = ["native-ts"]
+native-ts = []
+a3s-event = ["dep:a3s-event"]
+boot = ["dep:a3s-boot"]
+sqlite = ["dep:a3s-orm", "a3s-orm/sqlite"]
+postgres = ["dep:a3s-orm", "a3s-orm/postgres"]
+
+[dependencies]
+a3s-boot = { version = "0.1.3", optional = true, default-features = false, features = ["queue"] }
+a3s-event = { version = "0.3", optional = true, default-features = false }
+a3s-orm = { version = "0.2.0", optional = true, default-features = false }
+async-trait = "0.1"
+chrono = { version = "0.4", features = ["serde"] }
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+sha2 = "0.10"
+thiserror = "1"
+tracing = "0.1"
+uuid = { version = "1", features = ["serde", "v4"] }
+tokio = { version = "1", features = ["fs", "io-util", "macros", "process", "rt", "sync", "time"] }
+
+[dev-dependencies]
+tokio = { version = "1", features = ["macros", "rt", "sync", "time"] }
+tempfile = "3"

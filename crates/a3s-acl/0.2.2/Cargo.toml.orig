@@ -1,0 +1,9 @@
+[package]
+name = "a3s-acl"
+version = "0.2.2"
+edition = "2021"
+description = "Parser and generator for the A3S Agent Configuration Language"
+license = "MIT"
+repository = "https://github.com/A3S-Lab/ACL"
+
+[dependencies]

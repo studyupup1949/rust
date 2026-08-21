@@ -1,0 +1,58 @@
+[package]
+name = "a3s-tui"
+version = "0.1.14"
+edition = "2021"
+authors = ["A3S Lab"]
+license = "MIT"
+description = "TEA (The Elm Architecture) framework for terminal user interfaces"
+repository = "https://github.com/A3S-Lab/TUI"
+documentation = "https://docs.rs/a3s-tui"
+readme = "README.md"
+keywords = ["tui", "terminal", "elm-architecture", "tea", "async"]
+categories = ["command-line-interface", "asynchronous"]
+
+[lib]
+name = "a3s_tui"
+path = "src/lib.rs"
+
+[features]
+default = ["markdown", "syntax-highlighting"]
+full = ["markdown", "syntax-highlighting"]
+markdown = ["dep:comrak"]
+syntax-highlighting = ["markdown", "dep:syntect"]
+
+[dependencies]
+crossterm = { version = "0.28", features = ["event-stream"] }
+tokio = { version = "1", features = ["sync", "time", "rt", "macros"] }
+futures-util = "0.3"
+unicode-segmentation = "1.13"
+unicode-width = "0.2"
+comrak = { version = "0.36", default-features = false, optional = true }
+syntect = { version = "5", default-features = false, features = ["default-syntaxes", "default-themes", "regex-onig"], optional = true }
+taffy = "0.7"
+similar = "2"
+
+[dev-dependencies]
+tokio = { version = "1", features = ["full"] }
+insta = "1.40"
+criterion = "0.5"
+
+[[bench]]
+name = "rendering"
+harness = false
+required-features = ["markdown"]
+
+[[test]]
+name = "terminal_integration"
+required-features = ["markdown"]
+
+[[example]]
+name = "counter"
+
+[[example]]
+name = "chat"
+required-features = ["markdown"]
+
+[[example]]
+name = "markdown"
+required-features = ["markdown"]

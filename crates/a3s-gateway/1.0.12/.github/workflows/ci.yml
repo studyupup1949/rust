@@ -1,0 +1,155 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+env:
+  CARGO_TERM_COLOR: always
+  # Treat all warnings as errors — no silent issues
+  RUSTFLAGS: "-D warnings"
+
+jobs:
+  check:
+    name: Lint
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          components: clippy, rustfmt
+
+      - uses: Swatinem/rust-cache@v2
+
+      - name: Check formatting
+        run: cargo fmt --all -- --check
+
+      - name: Clippy (default features)
+        run: cargo clippy --locked --lib --bins --tests -- -D warnings
+
+      - name: Clippy (all features)
+        run: cargo clippy --locked --all-features --lib --bins --tests -- -D warnings
+
+  test:
+    name: Test
+    runs-on: ubuntu-latest
+    needs: check
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: dtolnay/rust-toolchain@stable
+
+      - uses: Swatinem/rust-cache@v2
+
+      - name: Build (default features)
+        run: cargo build --locked --lib --bins
+
+      - name: Build (all features)
+        run: cargo build --locked --all-features --lib --bins
+
+      - name: Test (default features)
+        run: |
+          set -euo pipefail
+          output=$(cargo test --locked --lib --bins --tests 2>&1)
+          echo "$output"
+
+          # Refuse silent zero-test passes
+          if ! echo "$output" | grep -q "test result: ok"; then
+            echo "::error::No 'test result: ok' found. Tests may not have run."
+            exit 1
+          fi
+
+          # Verify tests actually executed (not all 0)
+          total_passed=$(echo "$output" | grep -oE '[0-9]+ passed' | awk '{s+=$1} END {print s+0}')
+          if [ "$total_passed" -eq 0 ]; then
+            echo "::error::Zero tests passed. Refusing silent success."
+            exit 1
+          fi
+
+          echo "Default feature tests passed ($total_passed tests)."
+
+      - name: Test (all features)
+        run: |
+          set -euo pipefail
+          output=$(cargo test --locked --all-features --lib --bins --tests 2>&1)
+          echo "$output"
+
+          if ! echo "$output" | grep -q "test result: ok"; then
+            echo "::error::No 'test result: ok' found. Tests may not have run."
+            exit 1
+          fi
+
+          total_passed=$(echo "$output" | grep -oE '[0-9]+ passed' | awk '{s+=$1} END {print s+0}')
+          if [ "$total_passed" -eq 0 ]; then
+            echo "::error::Zero tests passed. Refusing silent success."
+            exit 1
+          fi
+
+          echo "All-features tests passed ($total_passed tests)."
+
+  build-release:
+    name: Release Build
+    runs-on: ubuntu-latest
+    needs: test
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: dtolnay/rust-toolchain@stable
+
+      - uses: Swatinem/rust-cache@v2
+
+      - name: Build release binary
+        run: cargo build --locked --release --all-features
+
+  msrv:
+    name: MSRV Check
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: dtolnay/rust-toolchain@1.88
+
+      - uses: Swatinem/rust-cache@v2
+
+      - name: Check MSRV (1.88)
+        run: cargo check --locked --all-features
+
+  bench-check:
+    name: Benchmark Compile
+    runs-on: ubuntu-latest
+    needs: check
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: dtolnay/rust-toolchain@stable
+
+      - uses: Swatinem/rust-cache@v2
+
+      - name: Compile benchmarks (no run)
+        run: cargo bench --locked --no-run --all-features
+
+  doc-check:
+    name: Documentation
+    runs-on: ubuntu-latest
+    needs: check
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: dtolnay/rust-toolchain@stable
+
+      - uses: Swatinem/rust-cache@v2
+
+      - name: Build docs (fail on warnings)
+        env:
+          RUSTDOCFLAGS: "-D warnings"
+        run: cargo doc --locked --all-features --no-deps

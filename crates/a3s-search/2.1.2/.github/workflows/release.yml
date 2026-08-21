@@ -1,0 +1,351 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - "v*"
+
+# Prevent duplicate runs
+concurrency:
+  group: release-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: write
+
+env:
+  CARGO_TERM_COLOR: always
+
+jobs:
+  # ───────────────────────────────────────────────
+  # Gate: CI checks
+  # ───────────────────────────────────────────────
+  ci:
+    name: CI
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Validate release tag and package version
+        run: |
+          VERSION="${GITHUB_REF_NAME#v}"
+          PACKAGE_VERSION=$(sed -n 's/^version = "\(.*\)"/\1/p' Cargo.toml | head -1)
+          if [ "$PACKAGE_VERSION" != "$VERSION" ]; then
+            echo "Tag version ($VERSION) does not match Cargo.toml version ($PACKAGE_VERSION)" >&2
+            exit 1
+          fi
+
+      - name: Setup Rust
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          components: rustfmt, clippy
+
+      - uses: Swatinem/rust-cache@v2
+
+      - name: Wait for the independently published Browser crate
+        shell: bash
+        run: |
+          set -euo pipefail
+          version=$(python3 - <<'PY'
+          import pathlib
+          import tomllib
+
+          manifest = tomllib.loads(pathlib.Path("Cargo.toml").read_text())
+          requirement = manifest["dependencies"]["a3s-use-browser"]["version"]
+          if not requirement.startswith("=") or len(requirement) == 1:
+              raise SystemExit(
+                  "a3s-use-browser must use an exact '=x.y.z' release version"
+              )
+          print(requirement[1:])
+          PY
+          )
+          for attempt in $(seq 1 30); do
+            if curl --retry 3 --retry-all-errors --retry-delay 2 -fsSL \
+              -A "a3s-search-release-check/1.0" \
+              "https://crates.io/api/v1/crates/a3s-use-browser/${version}" >/dev/null; then
+              echo "a3s-use-browser ${version} is available"
+              exit 0
+            fi
+            echo "Waiting for a3s-use-browser ${version} on crates.io (${attempt}/30)"
+            sleep 10
+          done
+          echo "a3s-use-browser ${version} must be published before A3S Search" >&2
+          exit 1
+
+      - name: Format check
+        run: cargo fmt -- --check
+
+      - name: Clippy
+        run: |
+          cargo clippy --all-targets --no-default-features --locked -- -D warnings
+          cargo clippy --all-targets --all-features --locked -- -D warnings
+
+      - name: Tests
+        run: |
+          cargo test --no-default-features --locked
+          cargo test --all-features --locked
+
+      - name: Rustdoc
+        env:
+          RUSTDOCFLAGS: -D warnings
+        run: cargo doc --no-deps --all-features --locked
+
+      - name: Release archive contract
+        run: scripts/test-release-package.sh
+
+      - name: Package verification
+        run: cargo package --locked
+
+  # ───────────────────────────────────────────────
+  # Build CLI binary for 4 platforms
+  # ───────────────────────────────────────────────
+  build-cli:
+    name: Build / ${{ matrix.name }}
+    needs: ci
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - target: aarch64-apple-darwin
+            os: macos-latest
+            name: darwin-arm64
+          - target: x86_64-apple-darwin
+            os: macos-latest
+            name: darwin-x86_64
+          - target: x86_64-unknown-linux-gnu
+            os: ubuntu-latest
+            name: linux-x86_64
+          - target: aarch64-unknown-linux-gnu
+            os: ubuntu-latest
+            name: linux-arm64
+            cross: true
+
+    runs-on: ${{ matrix.os }}
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Rust
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: ${{ matrix.target }}
+
+      - uses: Swatinem/rust-cache@v2
+
+      - name: Install cross toolchain
+        if: matrix.cross
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y gcc-aarch64-linux-gnu g++-aarch64-linux-gnu
+          echo "CARGO_TARGET_AARCH64_UNKNOWN_LINUX_GNU_LINKER=aarch64-linux-gnu-gcc" >> $GITHUB_ENV
+
+      - name: Build
+        run: cargo build --release --locked --target ${{ matrix.target }}
+
+      - name: Strip & Package
+        shell: bash
+        run: |
+          BINARY="target/${{ matrix.target }}/release/a3s-search"
+          STRIP=${STRIP_CMD:-strip}
+          $STRIP "$BINARY" 2>/dev/null || true
+
+          VERSION="${GITHUB_REF_NAME#v}"
+          ARCHIVE="a3s-search-${VERSION}-${{ matrix.name }}.tar.gz"
+          scripts/package-release.sh "$BINARY" "$ARCHIVE"
+          echo "ARCHIVE=$ARCHIVE" >> $GITHUB_ENV
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: cli-${{ matrix.name }}
+          path: ${{ env.ARCHIVE }}
+
+  # ───────────────────────────────────────────────
+  # Publish core crate to crates.io
+  # ───────────────────────────────────────────────
+  publish-crate:
+    name: Publish Crate
+    needs: ci
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Rust
+        uses: dtolnay/rust-toolchain@stable
+
+      - uses: Swatinem/rust-cache@v2
+
+      - name: Publish
+        env:
+          CARGO_REGISTRY_TOKEN: ${{ secrets.CARGO_TOKEN }}
+        run: |
+          VERSION="${GITHUB_REF_NAME#v}"
+          if curl --retry 5 --retry-all-errors --retry-delay 5 -fsSL \
+            -A "a3s-search-release-check/1.0" \
+            "https://crates.io/api/v1/crates/a3s-search/${VERSION}" >/dev/null; then
+            echo "a3s-search ${VERSION} is already published on crates.io; skipping cargo publish."
+            exit 0
+          fi
+          cargo publish --locked
+
+  # ───────────────────────────────────────────────
+  # Create GitHub Release with CLI binaries
+  # ───────────────────────────────────────────────
+  github-release:
+    name: GitHub Release
+    needs: [publish-crate, build-cli]
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Download artifacts
+        uses: actions/download-artifact@v4
+        with:
+          pattern: cli-*
+          path: artifacts
+          merge-multiple: true
+
+      - name: Generate checksums
+        run: |
+          cd artifacts
+          sha256sum *.tar.gz > checksums.txt
+          cat checksums.txt
+
+      - name: Extract version
+        id: version
+        run: echo "version=${GITHUB_REF_NAME#v}" >> "$GITHUB_OUTPUT"
+
+      - name: Generate release notes
+        id: notes
+        run: |
+          PREV_TAG=$(git tag --sort=-v:refname | grep '^v' | head -2 | tail -1)
+          if [ -z "$PREV_TAG" ]; then
+            NOTES="Initial release"
+          else
+            NOTES=$(git log "${PREV_TAG}..HEAD" --oneline --no-merges --pretty=format:"- %s" | head -50)
+          fi
+          echo "$NOTES" > /tmp/release-notes.md
+
+      - name: Create release
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          if gh release view "$GITHUB_REF_NAME" >/dev/null 2>&1; then
+            gh release edit "$GITHUB_REF_NAME" \
+              --title "$GITHUB_REF_NAME" \
+              --notes-file /tmp/release-notes.md \
+              --draft=false \
+              --prerelease=false \
+              --verify-tag
+            gh release upload "$GITHUB_REF_NAME" \
+              artifacts/*.tar.gz artifacts/checksums.txt \
+              --clobber
+          else
+            gh release create "$GITHUB_REF_NAME" \
+              --title "$GITHUB_REF_NAME" \
+              --notes-file /tmp/release-notes.md \
+              --verify-tag \
+              artifacts/*.tar.gz artifacts/checksums.txt
+          fi
+
+  # ───────────────────────────────────────────────
+  # Update Homebrew formula
+  # ───────────────────────────────────────────────
+  update-homebrew:
+    name: Homebrew
+    needs: github-release
+    runs-on: ubuntu-latest
+    steps:
+      - name: Download artifacts
+        uses: actions/download-artifact@v4
+        with:
+          pattern: cli-*
+          path: artifacts
+          merge-multiple: true
+
+      - name: Compute checksums
+        id: sha
+        run: |
+          VERSION="${GITHUB_REF_NAME#v}"
+          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+          for platform in darwin-arm64 darwin-x86_64 linux-arm64 linux-x86_64; do
+            FILE="artifacts/a3s-search-${VERSION}-${platform}.tar.gz"
+            if [ -f "$FILE" ]; then
+              HASH=$(sha256sum "$FILE" | awk '{print $1}')
+              KEY=$(echo "$platform" | tr '-' '_')
+              echo "${KEY}=$HASH" >> "$GITHUB_OUTPUT"
+            fi
+          done
+
+      - name: Checkout homebrew-tap
+        uses: actions/checkout@v4
+        with:
+          repository: A3S-Lab/homebrew-tap
+          token: ${{ secrets.HOMEBREW_TAP_TOKEN }}
+          path: homebrew-tap
+
+      - name: Update formula
+        run: |
+          VERSION="${{ steps.sha.outputs.version }}"
+          SHA_DARWIN_ARM64="${{ steps.sha.outputs.darwin_arm64 }}"
+          SHA_DARWIN_X86_64="${{ steps.sha.outputs.darwin_x86_64 }}"
+          SHA_LINUX_ARM64="${{ steps.sha.outputs.linux_arm64 }}"
+          SHA_LINUX_X86_64="${{ steps.sha.outputs.linux_x86_64 }}"
+
+          cat > homebrew-tap/Formula/a3s-search.rb << EOF
+          class A3sSearch < Formula
+            desc "Extensible web search CLI with native AnySearch and Tavily providers"
+            homepage "https://github.com/A3S-Lab/Search"
+            version "${VERSION}"
+            license "MIT"
+
+            on_macos do
+              on_arm do
+                url "https://github.com/A3S-Lab/Search/releases/download/v${VERSION}/a3s-search-${VERSION}-darwin-arm64.tar.gz"
+                sha256 "${SHA_DARWIN_ARM64}"
+              end
+              on_intel do
+                url "https://github.com/A3S-Lab/Search/releases/download/v${VERSION}/a3s-search-${VERSION}-darwin-x86_64.tar.gz"
+                sha256 "${SHA_DARWIN_X86_64}"
+              end
+            end
+
+            on_linux do
+              on_arm do
+                url "https://github.com/A3S-Lab/Search/releases/download/v${VERSION}/a3s-search-${VERSION}-linux-arm64.tar.gz"
+                sha256 "${SHA_LINUX_ARM64}"
+              end
+              on_intel do
+                url "https://github.com/A3S-Lab/Search/releases/download/v${VERSION}/a3s-search-${VERSION}-linux-x86_64.tar.gz"
+                sha256 "${SHA_LINUX_X86_64}"
+              end
+            end
+
+            def install
+              bin.install "a3s-search"
+              (pkgshare/"skills").install "skills/a3s-search"
+            end
+
+            test do
+              assert_match "a3s-search", shell_output("#{bin}/a3s-search --version")
+              assert_path_exists pkgshare/"skills/a3s-search/SKILL.md"
+              assert_path_exists pkgshare/"skills/a3s-search/agents/openai.yaml"
+            end
+          end
+          EOF
+
+      - name: Commit and push
+        working-directory: homebrew-tap
+        env:
+          VERSION: ${{ steps.sha.outputs.version }}
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add Formula/a3s-search.rb
+          git diff --cached --quiet && echo "No changes" && exit 0
+          git commit -m "a3s-search: update to ${VERSION}"
+          git push

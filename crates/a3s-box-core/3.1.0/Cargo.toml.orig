@@ -1,0 +1,36 @@
+[package]
+name = "a3s-box-core"
+version.workspace = true
+edition.workspace = true
+authors.workspace = true
+license.workspace = true
+repository.workspace = true
+description = "Core types, config, and error handling for A3S Box MicroVM runtime"
+
+[dependencies]
+a3s-acl = { workspace = true }
+a3s-transport = { workspace = true }
+async-trait = { workspace = true }
+tokio = { workspace = true }
+serde = { workspace = true }
+serde_json = { workspace = true }
+serde_yaml = { workspace = true }
+thiserror = { workspace = true }
+tracing = { workspace = true }
+chrono = { workspace = true }
+dirs = { workspace = true }
+flate2 = "1.0"
+base64 = { workspace = true }
+
+[target.'cfg(windows)'.dependencies]
+windows-sys = { version = "0.48", features = [
+    "Win32_Foundation",
+    "Win32_Storage_FileSystem",
+] }
+
+[lib]
+name = "a3s_box_core"
+path = "src/lib.rs"
+
+[dev-dependencies]
+tempfile = { workspace = true }

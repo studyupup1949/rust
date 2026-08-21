@@ -1,0 +1,1572 @@
+//! Layout preparation — rootfs building, caching, TEE config, binary discovery.
+
+use std::path::{Path, PathBuf};
+
+use crate::cache::RootfsCache;
+use crate::oci::OciRootfsBuilder;
+use crate::vmm::TeeInstanceConfig;
+use a3s_box_core::config::TeeConfig;
+use a3s_box_core::error::{BoxError, Result};
+
+use super::{BoxLayout, VmManager};
+
+pub(crate) fn runtime_socket_dir(home_dir: &Path, box_id: &str) -> PathBuf {
+    #[cfg(all(unix, target_os = "macos"))]
+    {
+        let _ = home_dir;
+        PathBuf::from("/private/tmp")
+            .join("a3s-box-sockets")
+            .join(box_id)
+    }
+
+    #[cfg(all(unix, not(target_os = "macos")))]
+    {
+        let _ = home_dir;
+        PathBuf::from("/tmp").join("a3s-box-sockets").join(box_id)
+    }
+
+    #[cfg(not(unix))]
+    {
+        home_dir.join("boxes").join(box_id).join("sockets")
+    }
+}
+
+fn registry_auth_for_image(home_dir: &Path, reference: &str) -> Result<crate::oci::RegistryAuth> {
+    let parsed = crate::oci::ImageReference::parse(reference)?;
+    Ok(crate::oci::RegistryAuth::from_credential_store_at(
+        home_dir,
+        &parsed.registry,
+    ))
+}
+
+pub(crate) fn persistent_rootfs_generation_exists(box_dir: &Path) -> Result<bool> {
+    for directory in [box_dir.join("rootfs"), box_dir.join("upper")] {
+        match std::fs::read_dir(&directory) {
+            Ok(mut entries) => {
+                if entries.next().is_some() {
+                    return Ok(true);
+                }
+            }
+            Err(error) if error.kind() == std::io::ErrorKind::NotFound => {}
+            Err(error) => {
+                return Err(BoxError::BuildError(format!(
+                    "Failed to inspect persistent rootfs state {}: {error}",
+                    directory.display()
+                )));
+            }
+        }
+    }
+
+    #[cfg(target_os = "macos")]
+    if box_dir.join("rootfs-apfs-v2.sparseimage").is_file() {
+        return Ok(true);
+    }
+
+    Ok(false)
+}
+
+fn validate_image_health_support(
+    health_check: Option<&crate::oci::OciHealthCheck>,
+    healthcheck_disabled: bool,
+) -> Result<()> {
+    #[cfg(windows)]
+    if !healthcheck_disabled && health_check.is_some_and(crate::oci::OciHealthCheck::is_enabled) {
+        return Err(BoxError::ConfigError(
+            "container health checks are not supported on Windows; disable the image health check explicitly to start this box"
+                .to_string(),
+        ));
+    }
+
+    #[cfg(not(windows))]
+    let _ = (health_check, healthcheck_disabled);
+
+    Ok(())
+}
+
+impl VmManager {
+    pub(crate) async fn prepare_layout(&self) -> Result<BoxLayout> {
+        // Create box-specific directories
+        let box_dir = self.home_dir.join("boxes").join(&self.box_id);
+        let socket_dir = self.socket_dir();
+        let logs_dir = box_dir.join("logs");
+
+        std::fs::create_dir_all(&socket_dir).map_err(|e| BoxError::BoxBootError {
+            message: format!("Failed to create socket directory: {}", e),
+            hint: None,
+        })?;
+
+        #[cfg(windows)]
+        super::windows_stop::clear(&socket_dir).map_err(|error| BoxError::BoxBootError {
+            message: format!(
+                "Failed to clear stale Windows stop request in {}: {error}",
+                socket_dir.display()
+            ),
+            hint: None,
+        })?;
+
+        std::fs::create_dir_all(&logs_dir).map_err(|e| BoxError::BoxBootError {
+            message: format!("Failed to create logs directory: {}", e),
+            hint: None,
+        })?;
+
+        // Resolve workspace path: empty config means use a per-box directory so the
+        // host CWD is never accidentally exposed to the guest.
+        let workspace_path = if self.config.workspace.as_os_str().is_empty() {
+            box_dir.join("workspace")
+        } else {
+            PathBuf::from(&self.config.workspace)
+        };
+        if !workspace_path.exists() {
+            std::fs::create_dir_all(&workspace_path).map_err(|e| BoxError::BoxBootError {
+                message: format!("Failed to create workspace directory: {}", e),
+                hint: None,
+            })?;
+        }
+        // Canonicalize to absolute path (libkrun requires absolute paths for virtiofs)
+        let workspace_path = workspace_path
+            .canonicalize()
+            .map_err(|e| BoxError::BoxBootError {
+                message: format!(
+                    "Failed to resolve workspace path {}: {}",
+                    workspace_path.display(),
+                    e
+                ),
+                hint: None,
+            })?;
+
+        // Snapshot restore (copy-on-write): `snapshot restore` writes a
+        // `.snapshot-lower` marker pointing at the snapshot's pristine stored
+        // rootfs. Mount it as a read-only overlay lower with a fresh per-box
+        // upper, so the box's writes are copy-on-write, the snapshot stays
+        // shared and untouched across all forks, and nothing is copied. On a
+        // non-overlay host the CopyProvider falls back to a full copy (same
+        // result, slower). This mirrors the rootfs cache-hit path below.
+        if let Some(lower) = snapshot_lower_dir(&box_dir) {
+            if lower.is_dir() {
+                let oci_config = Some(crate::resolved_image::load_snapshot_oci_config(
+                    &lower,
+                    &self.config.image,
+                )?);
+                validate_image_health_support(
+                    oci_config
+                        .as_ref()
+                        .and_then(|config| config.health_check.as_ref()),
+                    self.healthcheck_disabled,
+                )?;
+                tracing::info!(
+                    lower = %lower.display(),
+                    "Restoring snapshot via copy-on-write overlay lower"
+                );
+                let rootfs_path = self.rootfs_provider.prepare(&box_dir, &lower)?;
+                // Refresh the guest init on the merged view (the write lands in
+                // the per-box upper, never mutating the shared lower) in case the
+                // snapshot carries an older binary than the current runtime.
+                if let Ok(guest_init_path) = Self::find_guest_init() {
+                    if let Err(e) = OciRootfsBuilder::new(&rootfs_path)
+                        .with_guest_init(guest_init_path)
+                        .install_guest_init_only()
+                    {
+                        tracing::warn!(error = %e, "Failed to refresh guest init on restored overlay");
+                    }
+                }
+                if let Some(config) = oci_config.as_ref() {
+                    crate::resolved_image::persist_resolved_image_config(&box_dir, config)?;
+                }
+                let tee_instance_config = self.generate_tee_config(&box_dir)?;
+                return Ok(BoxLayout {
+                    rootfs_path,
+                    exec_socket_path: socket_dir.join("exec.sock"),
+                    pty_socket_path: socket_dir.join("pty.sock"),
+                    attest_socket_path: socket_dir.join("attest.sock"),
+                    port_forward_socket_path: socket_dir.join("portfwd.sock"),
+                    workspace_path,
+                    console_output: Some(logs_dir.join("console.log")),
+                    oci_config,
+                    prefer_image_rootfs_metadata: false,
+                    tee_instance_config,
+                });
+            }
+            tracing::warn!(
+                lower = %lower.display(),
+                "`.snapshot-lower` points at a missing dir; falling through to image pull"
+            );
+        }
+
+        // Snapshot restore pre-populates `box_dir/rootfs` with a captured full
+        // root filesystem. Boot directly from it instead of rebuilding from the
+        // image, so the snapshot's filesystem state (including runtime changes)
+        // is preserved. Normal boxes never have `box_dir/rootfs` — the overlay
+        // provider materializes the rootfs at `merged` — so this path only
+        // affects restored boxes and cannot regress the normal boot path.
+        let prebuilt_rootfs = box_dir.join("rootfs");
+        // A restore marker is written by `snapshot restore` next to the copied
+        // rootfs; gating on it (not merely on `rootfs` existing) ensures this
+        // path can never be taken for a normal box that happens to have a
+        // leftover `rootfs` directory from a cache-miss build.
+        let restore_marker = box_dir.join(".snapshot-rootfs");
+        let prebuilt_is_populated = restore_marker.exists()
+            && std::fs::read_dir(&prebuilt_rootfs)
+                .map(|mut it| it.next().is_some())
+                .unwrap_or(false);
+        if prebuilt_is_populated {
+            let oci_config = crate::resolved_image::load_resolved_image_config(&box_dir)?
+                .map(crate::oci::OciImageConfig::from);
+            validate_image_health_support(
+                oci_config
+                    .as_ref()
+                    .and_then(|config| config.health_check.as_ref()),
+                self.healthcheck_disabled,
+            )?;
+            tracing::info!(
+                rootfs = %prebuilt_rootfs.display(),
+                "Booting from pre-populated rootfs (snapshot restore)"
+            );
+            // Refresh the guest init in case the snapshot carries an older binary
+            // than the current runtime.
+            if let Ok(guest_init_path) = Self::find_guest_init() {
+                if let Err(e) = OciRootfsBuilder::new(&prebuilt_rootfs)
+                    .with_guest_init(guest_init_path)
+                    .install_guest_init_only()
+                {
+                    tracing::warn!(error = %e, "Failed to refresh guest init on restored rootfs");
+                }
+            }
+            let tee_instance_config = self.generate_tee_config(&box_dir)?;
+            return Ok(BoxLayout {
+                rootfs_path: prebuilt_rootfs,
+                exec_socket_path: socket_dir.join("exec.sock"),
+                pty_socket_path: socket_dir.join("pty.sock"),
+                attest_socket_path: socket_dir.join("attest.sock"),
+                port_forward_socket_path: socket_dir.join("portfwd.sock"),
+                workspace_path,
+                console_output: Some(logs_dir.join("console.log")),
+                oci_config,
+                prefer_image_rootfs_metadata: false,
+                tee_instance_config,
+            });
+        }
+
+        // Pull OCI image from registry and extract at rootfs root.
+        // Extracting at root preserves absolute symlinks and dynamic linker paths.
+        let reference = &self.config.image;
+        let has_persistent_rootfs_generation =
+            self.config.persistent && persistent_rootfs_generation_exists(&box_dir)?;
+
+        // Snapshot-fork fast path: a restored guest reuses the already-cached rootfs.
+        // Skip the registry pull/resolution — a network round-trip that costs ~100ms
+        // even on a cache hit — and the guest-init refresh (the snapshot already has
+        // it). Falls through to the normal pull on a cache miss (rare for a fork of a
+        // just-run template). The restored guest's main is already running, so no
+        // image config (entrypoint/env) is needed.
+        #[cfg(unix)]
+        if super::is_restore_mode(&self.config) {
+            let cache_key = RootfsCache::compute_key(reference, &[], &[], &[]);
+            if let Some(cached_path) = self.try_rootfs_cache_path(&cache_key)? {
+                let rootfs_path = self.rootfs_provider.prepare(&box_dir, &cached_path)?;
+                // Record that this box holds `cache_key` as its overlay lower, so a
+                // concurrent box's cache prune won't evict it mid-mount (ENOENT).
+                self.mark_rootfs_cache_key(&box_dir, &cache_key);
+                let tee_instance_config = self.generate_tee_config(&box_dir)?;
+                return Ok(BoxLayout {
+                    rootfs_path,
+                    exec_socket_path: socket_dir.join("exec.sock"),
+                    pty_socket_path: socket_dir.join("pty.sock"),
+                    attest_socket_path: socket_dir.join("attest.sock"),
+                    port_forward_socket_path: socket_dir.join("portfwd.sock"),
+                    workspace_path,
+                    console_output: Some(logs_dir.join("console.log")),
+                    oci_config: None,
+                    prefer_image_rootfs_metadata: !has_persistent_rootfs_generation,
+                    tee_instance_config,
+                });
+            }
+        }
+
+        let images_dir = self.home_dir.join("images");
+        let store = crate::oci::ImageStore::new(&images_dir, crate::DEFAULT_IMAGE_CACHE_SIZE)?;
+        let auth = registry_auth_for_image(&self.home_dir, reference)?;
+        let mut puller = crate::oci::ImagePuller::new(std::sync::Arc::new(store), auth);
+        if let Some(ref m) = self.prom {
+            puller = puller.set_metrics(m.clone());
+        }
+        if let Some(ref f) = self.pull_progress_fn {
+            puller = puller.with_progress_fn(f.clone());
+        }
+
+        tracing::info!(reference = %reference, "Pulling OCI image from registry");
+
+        let oci_image = puller.pull(reference).await?;
+        validate_image_health_support(
+            oci_image.config().health_check.as_ref(),
+            self.healthcheck_disabled,
+        )?;
+
+        let image_path = oci_image.root_dir().to_path_buf();
+
+        // Try rootfs cache first — on hit, use the rootfs provider (overlay or copy)
+        let cache_key = RootfsCache::compute_key(reference, &[], &[], &[]);
+        let (rootfs_path, oci_config, prefer_image_rootfs_metadata) =
+            if let Some(cached_path) = self.try_rootfs_cache_path(&cache_key)? {
+                tracing::info!(
+                    cache_key = %&cache_key[..12],
+                    reference = %reference,
+                    provider = self.rootfs_provider.name(),
+                    "Rootfs cache hit"
+                );
+                if let Some(ref prom) = self.prom {
+                    prom.rootfs_cache_hits.inc();
+                }
+                let rootfs_path = self.rootfs_provider.prepare(&box_dir, &cached_path)?;
+                // Record that this box holds `cache_key` as its overlay lower, so a
+                // concurrent box's cache prune won't evict it mid-mount (ENOENT).
+                self.mark_rootfs_cache_key(&box_dir, &cache_key);
+
+                if let Ok(guest_init_path) = Self::find_guest_init() {
+                    tracing::info!(
+                        guest_init = %guest_init_path.display(),
+                        "Refreshing guest init on cached rootfs"
+                    );
+                    OciRootfsBuilder::new(&rootfs_path)
+                        .with_guest_init(guest_init_path)
+                        .install_guest_init_only()?;
+                }
+
+                let builder = OciRootfsBuilder::new(&rootfs_path).with_image(&image_path);
+                (
+                    rootfs_path,
+                    Some(builder.image_config()?),
+                    !has_persistent_rootfs_generation,
+                )
+            } else {
+                tracing::info!(
+                    image = %image_path.display(),
+                    "Building rootfs from pulled OCI image (cache miss)"
+                );
+                if let Some(ref prom) = self.prom {
+                    prom.rootfs_cache_misses.inc();
+                }
+
+                let rootfs_path = self.rootfs_provider.prepare_empty(&box_dir)?;
+                let rootfs_populated = std::fs::read_dir(&rootfs_path)
+                    .map(|mut entries| entries.next().is_some())
+                    .map_err(|error| {
+                        BoxError::BuildError(format!(
+                            "Failed to inspect rootfs {}: {error}",
+                            rootfs_path.display()
+                        ))
+                    })?;
+                let mut builder = OciRootfsBuilder::new(&rootfs_path).with_image(&image_path);
+
+                // A persistent copy/APFS provider already contains the prior
+                // terminal rootfs generation. Re-extracting the image would
+                // overwrite guest changes and fails on existing layer
+                // hardlinks. The image config remains immutable OCI metadata,
+                // so read it without rebuilding the filesystem.
+                if rootfs_populated {
+                    tracing::info!(
+                        rootfs = %rootfs_path.display(),
+                        "Reusing populated persistent rootfs"
+                    );
+                    let config = builder.image_config()?;
+                    (rootfs_path, Some(config), false)
+                } else {
+                    // Install guest init if available (runs as PID 1, mounts virtiofs shares,
+                    // then execs the container entrypoint)
+                    if let Ok(guest_init_path) = Self::find_guest_init() {
+                        tracing::info!(
+                            guest_init = %guest_init_path.display(),
+                            "Installing guest init"
+                        );
+                        builder = builder.with_guest_init(guest_init_path);
+                    } else {
+                        tracing::warn!(
+                            "Guest init binary not found; container entrypoint will run as PID 1"
+                        );
+                    }
+
+                    builder.build()?;
+                    let config = builder.image_config()?;
+
+                    // Store in cache for next time
+                    self.store_rootfs_cache(&cache_key, &rootfs_path, reference);
+
+                    (rootfs_path, Some(config), true)
+                }
+            };
+
+        if let Some(config) = oci_config.as_ref() {
+            crate::resolved_image::persist_resolved_image_config(&box_dir, config)?;
+        }
+
+        // Generate TEE configuration if enabled
+        let tee_instance_config = self.generate_tee_config(&box_dir)?;
+
+        Ok(BoxLayout {
+            rootfs_path,
+            exec_socket_path: socket_dir.join("exec.sock"),
+            pty_socket_path: socket_dir.join("pty.sock"),
+            attest_socket_path: socket_dir.join("attest.sock"),
+            port_forward_socket_path: socket_dir.join("portfwd.sock"),
+            workspace_path,
+            console_output: Some(logs_dir.join("console.log")),
+            oci_config,
+            prefer_image_rootfs_metadata,
+            tee_instance_config,
+        })
+    }
+
+    pub(crate) fn socket_dir(&self) -> PathBuf {
+        runtime_socket_dir(&self.home_dir, &self.box_id)
+    }
+
+    /// Try to get a cached rootfs and copy it to the target path.
+    ///
+    /// Returns `Some(target_path)` if cache hit, `None` if cache miss.
+    /// If caching is disabled in config, always returns `None`.
+    #[cfg(test)]
+    pub(crate) fn try_rootfs_cache(
+        &self,
+        cache_key: &str,
+        target_path: &Path,
+    ) -> Result<Option<PathBuf>> {
+        if !self.config.cache.enabled {
+            return Ok(None);
+        }
+
+        let cache_dir = self.resolve_cache_dir().join("rootfs");
+        let cache = match RootfsCache::new(&cache_dir) {
+            Ok(c) => c,
+            Err(e) => {
+                tracing::warn!(error = %e, "Failed to open rootfs cache, skipping");
+                return Ok(None);
+            }
+        };
+
+        match cache.get(cache_key)? {
+            Some(cached_path) => {
+                // Copy cached rootfs to target
+                crate::cache::layer_cache::copy_dir_recursive(&cached_path, target_path)?;
+                Ok(Some(target_path.to_path_buf()))
+            }
+            None => Ok(None),
+        }
+    }
+
+    /// Try to get the cached rootfs path without copying.
+    ///
+    /// Returns `Some(cached_path)` if cache hit, `None` if cache miss.
+    /// The caller is responsible for preparing the rootfs via `RootfsProvider`.
+    pub(crate) fn try_rootfs_cache_path(&self, cache_key: &str) -> Result<Option<PathBuf>> {
+        #[cfg(target_os = "macos")]
+        {
+            if !self.config.cache.enabled {
+                return Ok(None);
+            }
+            let image = self
+                .resolve_cache_dir()
+                .join("rootfs-apfs-v2")
+                .join(format!("{cache_key}.sparseimage"));
+            if image.is_file() {
+                // Cache pruning is LRU. Refresh both timestamps without changing
+                // sparse-image contents so frequently used images remain hot.
+                if let Ok(file) = std::fs::OpenOptions::new().write(true).open(&image) {
+                    let now = std::time::SystemTime::now();
+                    let times = std::fs::FileTimes::new()
+                        .set_accessed(now)
+                        .set_modified(now);
+                    let _ = file.set_times(times);
+                }
+                Ok(Some(image))
+            } else {
+                Ok(None)
+            }
+        }
+
+        #[cfg(not(target_os = "macos"))]
+        {
+            if !self.config.cache.enabled {
+                return Ok(None);
+            }
+
+            let cache_dir = self.resolve_cache_dir().join("rootfs");
+            let cache = match RootfsCache::new(&cache_dir) {
+                Ok(c) => c,
+                Err(e) => {
+                    tracing::warn!(error = %e, "Failed to open rootfs cache, skipping");
+                    return Ok(None);
+                }
+            };
+
+            cache.get(cache_key)
+        }
+    }
+
+    /// Store a built rootfs in the cache for future reuse.
+    ///
+    /// Errors are logged but not propagated — caching is best-effort.
+    pub(crate) fn store_rootfs_cache(
+        &self,
+        cache_key: &str,
+        rootfs_path: &Path,
+        description: &str,
+    ) {
+        #[cfg(target_os = "macos")]
+        {
+            use std::process::Command;
+
+            if !self.config.cache.enabled {
+                return;
+            }
+            let cache_dir = self.resolve_cache_dir().join("rootfs-apfs-v2");
+            if let Err(error) = std::fs::create_dir_all(&cache_dir) {
+                tracing::warn!(%error, "Failed to create APFS rootfs cache");
+                return;
+            }
+            let mountpoint = rootfs_path.parent().unwrap_or(rootfs_path);
+            let box_dir = mountpoint.parent().unwrap_or(mountpoint);
+            let source = box_dir.join("rootfs-apfs-v2.sparseimage");
+            let destination = cache_dir.join(format!("{cache_key}.sparseimage"));
+            let temporary = cache_dir.join(format!(".{cache_key}.tmp-{}", std::process::id()));
+
+            crate::rootfs::unmount_box_rootfs(rootfs_path);
+            let cloned = Command::new("cp")
+                .arg("-c")
+                .arg(&source)
+                .arg(&temporary)
+                .status()
+                .is_ok_and(|status| status.success());
+            if cloned {
+                if let Err(error) = std::fs::rename(&temporary, &destination) {
+                    tracing::warn!(%error, "Failed to publish APFS rootfs cache image");
+                } else {
+                    tracing::debug!(
+                        cache_key = %&cache_key[..cache_key.len().min(12)],
+                        %description,
+                        "Stored case-sensitive APFS rootfs cache"
+                    );
+                    if let Err(error) = prune_apfs_rootfs_cache(
+                        &cache_dir,
+                        self.config.cache.max_rootfs_entries,
+                        self.config.cache.max_cache_bytes,
+                        cache_key,
+                    ) {
+                        tracing::warn!(%error, "Failed to prune APFS rootfs cache");
+                    }
+                }
+            } else {
+                tracing::warn!(source = %source.display(), "Failed to clone APFS rootfs cache image");
+                let _ = std::fs::remove_file(&temporary);
+            }
+            if let Err(error) = self.rootfs_provider.prepare_empty(box_dir) {
+                tracing::warn!(%error, "Failed to remount rootfs after caching");
+            }
+        }
+
+        #[cfg(not(target_os = "macos"))]
+        {
+            if !self.config.cache.enabled {
+                return;
+            }
+
+            let cache_dir = self.resolve_cache_dir().join("rootfs");
+            let cache = match RootfsCache::new(&cache_dir) {
+                Ok(c) => c,
+                Err(e) => {
+                    tracing::warn!(error = %e, "Failed to open rootfs cache for storing");
+                    return;
+                }
+            };
+
+            match cache.put(cache_key, rootfs_path, description) {
+                Ok(_) => {
+                    tracing::debug!(
+                        cache_key = %&cache_key[..cache_key.len().min(12)],
+                        description = %description,
+                        "Stored rootfs in cache"
+                    );
+                    // Prune if needed — but never evict a cache entry that is in use as
+                    // a live overlay lower for a concurrent box (deleting the lowerdir
+                    // under its mount(2) is the same-image concurrency bug this guards).
+                    let protected = self.referenced_rootfs_cache_keys();
+                    if let Err(e) = cache.prune_protecting(
+                        self.config.cache.max_rootfs_entries,
+                        self.config.cache.max_cache_bytes,
+                        &protected,
+                    ) {
+                        tracing::warn!(error = %e, "Failed to prune rootfs cache");
+                    }
+                }
+                Err(e) => {
+                    tracing::warn!(error = %e, "Failed to store rootfs in cache");
+                }
+            }
+        }
+    }
+
+    /// Record which rootfs-cache key this box holds as its overlay lower, in a
+    /// `<box_dir>/.rootfs-cache-key` marker (mirror of the snapshot store's
+    /// `.snapshot-lower`). Read back by [`Self::referenced_rootfs_cache_keys`] so
+    /// the cache prune never evicts a live lower. Best-effort; removed with box_dir.
+    fn mark_rootfs_cache_key(&self, box_dir: &Path, cache_key: &str) {
+        let _ = std::fs::write(box_dir.join(".rootfs-cache-key"), cache_key);
+    }
+
+    /// Rootfs-cache keys currently in use as an overlay lower by some live box.
+    /// Boxes live under `<home>/boxes/<id>/`; a removed box's marker is gone with
+    /// its dir, so an evictable key is simply one no live box references.
+    #[cfg(not(target_os = "macos"))]
+    fn referenced_rootfs_cache_keys(&self) -> std::collections::HashSet<String> {
+        let mut set = std::collections::HashSet::new();
+        if let Ok(entries) = std::fs::read_dir(self.home_dir.join("boxes")) {
+            for entry in entries.flatten() {
+                if let Ok(k) = std::fs::read_to_string(entry.path().join(".rootfs-cache-key")) {
+                    set.insert(k.trim().to_string());
+                }
+            }
+        }
+        set
+    }
+
+    /// Resolve the cache directory from config or default.
+    pub(crate) fn resolve_cache_dir(&self) -> PathBuf {
+        self.config
+            .cache
+            .cache_dir
+            .clone()
+            .unwrap_or_else(|| self.home_dir.join("cache"))
+    }
+
+    /// Mount or expose a rootfs generation retained by a managed restart or
+    /// filesystem-only pause without pulling an image or starting a runtime.
+    pub(crate) fn prepare_preserved_rootfs(&self) -> Result<PathBuf> {
+        let box_dir = self.home_dir.join("boxes").join(&self.box_id);
+        let rootfs = box_dir.join("rootfs");
+        let populated_rootfs = std::fs::read_dir(&rootfs)
+            .map(|mut entries| entries.next().is_some())
+            .unwrap_or(false);
+        let lower = if populated_rootfs {
+            rootfs.clone()
+        } else if let Some(snapshot_lower) = snapshot_lower_dir(&box_dir) {
+            if !snapshot_lower.is_dir() {
+                return Err(BoxError::StateError(format!(
+                    "Retained snapshot lower is missing for {}: {}",
+                    self.box_id,
+                    snapshot_lower.display()
+                )));
+            }
+            snapshot_lower
+        } else if let Some(cache_key) = retained_rootfs_cache_key(&box_dir)? {
+            self.try_rootfs_cache_path(&cache_key)?.ok_or_else(|| {
+                BoxError::StateError(format!(
+                    "Retained rootfs cache entry {cache_key} is missing for {}",
+                    self.box_id
+                ))
+            })?
+        } else if let Some(cached) = self.try_rootfs_cache_path(&RootfsCache::compute_key(
+            &self.config.image,
+            &[],
+            &[],
+            &[],
+        ))? {
+            cached
+        } else {
+            #[cfg(target_os = "macos")]
+            if box_dir.join("rootfs-apfs-v2.sparseimage").is_file() {
+                return self.rootfs_provider.prepare(&box_dir, &rootfs);
+            }
+            return Err(BoxError::StateError(format!(
+                "Retained rootfs lower is missing for {}",
+                self.box_id
+            )));
+        };
+        self.rootfs_provider.prepare(&box_dir, &lower)
+    }
+
+    /// Unmount a rootfs exposed for a quiescent operation while keeping its
+    /// writable generation available for a later resume.
+    pub(crate) fn cleanup_preserved_rootfs(&self) -> Result<()> {
+        self.rootfs_provider
+            .cleanup(&self.home_dir.join("boxes").join(&self.box_id), true)
+    }
+
+    /// Generate TEE configuration file if TEE is enabled.
+    #[cfg(unix)]
+    pub(crate) fn generate_tee_config(&self, box_dir: &Path) -> Result<Option<TeeInstanceConfig>> {
+        match &self.config.tee {
+            TeeConfig::None => Ok(None),
+            TeeConfig::SevSnp {
+                workload_id,
+                generation,
+                simulate,
+            } => {
+                // In simulation mode, skip hardware check and TEE config
+                // (the guest will generate simulated reports via A3S_TEE_SIMULATE env)
+                if *simulate {
+                    tracing::warn!("TEE simulation mode: skipping hardware check and TEE config");
+                    return Ok(None);
+                }
+
+                // Verify hardware support
+                crate::tee::require_sev_snp_support()?;
+
+                // Generate TEE config JSON
+                let config = serde_json::json!({
+                    "workload_id": workload_id,
+                    "cpus": self.config.resources.vcpus,
+                    "ram_mib": self.config.resources.memory_mb,
+                    "tee": "snp",
+                    "tee_data": format!(r#"{{"gen":"{}"}}"#, generation.as_str()),
+                    "attestation_url": ""
+                });
+
+                let config_path = box_dir.join("tee-config.json");
+                std::fs::write(&config_path, serde_json::to_string_pretty(&config)?).map_err(
+                    |e| {
+                        BoxError::TeeConfig(format!(
+                            "Failed to write TEE config to {}: {}",
+                            config_path.display(),
+                            e
+                        ))
+                    },
+                )?;
+
+                tracing::info!(
+                    workload_id = %workload_id,
+                    generation = %generation.as_str(),
+                    config_path = %config_path.display(),
+                    "Generated TEE configuration"
+                );
+
+                Ok(Some(TeeInstanceConfig {
+                    config_path,
+                    tee_type: "snp".to_string(),
+                }))
+            }
+            TeeConfig::Tdx {
+                workload_id,
+                simulate,
+            } => {
+                if *simulate {
+                    tracing::warn!("TDX simulation mode: skipping hardware check and TEE config");
+                    return Ok(None);
+                }
+
+                // Intel TDX runtime support is not yet implemented.
+                // The config variant exists for forward compatibility, but we
+                // cannot boot a TDX VM today.
+                Err(BoxError::TeeConfig(format!(
+                    "Intel TDX is not yet supported at runtime (workload_id='{}'). \
+                     Use tee=sev-snp or tee=none.",
+                    workload_id
+                )))
+            }
+        }
+    }
+
+    /// Generate TEE configuration file if TEE is enabled.
+    #[cfg(windows)]
+    pub(crate) fn generate_tee_config(&self, _box_dir: &Path) -> Result<Option<TeeInstanceConfig>> {
+        match &self.config.tee {
+            TeeConfig::None => Ok(None),
+            _ => Err(BoxError::TeeConfig(
+                "TEE configuration is not supported on Windows".to_string(),
+            )),
+        }
+    }
+
+    /// Find the guest init binary in common locations.
+    ///
+    /// Searches in order:
+    /// 1. Same directory as current executable
+    /// 2. target/debug or target/release (for development)
+    /// 3. PATH
+    ///
+    /// The binary must be a Linux ELF executable since it runs inside the VM.
+    pub(crate) fn find_guest_init() -> Result<PathBuf> {
+        let mut candidates = Self::find_binary_candidates("a3s-box-guest-init");
+
+        // Prefer the cross-compiled musl-static build over any host build on
+        // ALL platforms. On a Linux x86_64 host, `cargo build --workspace`
+        // produces a glibc-dynamic `target/<profile>/a3s-box-guest-init` next to
+        // the exe; that build cannot run as PID 1 in a minimal guest rootfs, so
+        // the static musl build must win. (`is_linux_elf` also rejects the
+        // glibc build outright, but ranking musl first avoids relying on that.)
+        candidates.sort_by_key(|path| {
+            let path_str = path.to_string_lossy();
+            if path_str.contains("-unknown-linux-musl") {
+                0
+            } else {
+                1
+            }
+        });
+
+        for path in candidates {
+            if Self::is_linux_elf(&path) {
+                return Ok(path);
+            }
+            tracing::debug!(
+                path = %path.display(),
+                "Skipping guest init (not a Linux ELF binary)"
+            );
+        }
+
+        Err(BoxError::BoxBootError {
+            message: "Linux guest init binary not found".to_string(),
+            hint: Some(
+                "Cross-compile the static guest init for your guest arch, e.g.: \
+                 cargo build -p a3s-box-guest-init --release --target x86_64-unknown-linux-musl \
+                 (or aarch64-unknown-linux-musl). A glibc-dynamic host build is rejected because \
+                 it cannot run as PID 1 inside a minimal guest rootfs."
+                    .to_string(),
+            ),
+        })
+    }
+
+    /// Search common locations for a binary by name.
+    fn find_binary_candidates(name: &str) -> Vec<PathBuf> {
+        let mut candidates = Vec::new();
+
+        // Try same directory as current executable
+        if let Ok(exe_path) = std::env::current_exe() {
+            if let Some(exe_dir) = exe_path.parent() {
+                let path = exe_dir.join(name);
+                if path.exists() {
+                    candidates.push(path);
+                }
+
+                // Also search cross-compilation directories relative to the
+                // exe's target root. When the exe is at target/debug/a3s-box,
+                // cross-compiled guest binaries live at
+                // target/aarch64-unknown-linux-musl/{debug,release}/.
+                if let Some(target_root) = exe_dir.parent() {
+                    let cross_dirs = [
+                        "aarch64-unknown-linux-musl/debug",
+                        "aarch64-unknown-linux-musl/release",
+                        "x86_64-unknown-linux-musl/debug",
+                        "x86_64-unknown-linux-musl/release",
+                    ];
+                    for dir in &cross_dirs {
+                        let path = target_root.join(dir).join(name);
+                        if path.exists() {
+                            candidates.push(path);
+                        }
+                    }
+                }
+            }
+        }
+
+        // Try cross-compilation target directories relative to CWD (for development)
+        let target_dirs = [
+            "target/aarch64-unknown-linux-musl/debug",
+            "target/aarch64-unknown-linux-musl/release",
+            "target/x86_64-unknown-linux-musl/debug",
+            "target/x86_64-unknown-linux-musl/release",
+            "target/debug",
+            "target/release",
+        ];
+        for dir in &target_dirs {
+            let path = PathBuf::from(dir).join(name);
+            if path.exists() {
+                candidates.push(path);
+            }
+        }
+
+        // Try PATH
+        let home_bin = a3s_box_core::dirs_home().join("bin").join(name);
+        if home_bin.exists() {
+            candidates.push(home_bin);
+        }
+
+        // Try PATH
+        if let Ok(path_var) = std::env::var("PATH") {
+            for dir in std::env::split_paths(&path_var) {
+                let path = dir.join(name);
+                if path.exists() {
+                    candidates.push(path);
+                }
+            }
+        }
+
+        candidates
+    }
+
+    /// Check if a file is a Linux ELF binary suitable to run as guest PID 1.
+    ///
+    /// Beyond the ELF magic and OS/ABI check, this rejects *dynamically linked*
+    /// ELFs (those carrying a `PT_INTERP` program header). The guest init must
+    /// be a static binary: a glibc-dynamic build cannot resolve its loader/libc
+    /// inside a minimal (musl/Alpine/distroless) guest rootfs and would fail to
+    /// exec as PID 1. A musl static-PIE binary has no `PT_INTERP`, so it passes.
+    fn is_linux_elf(path: &std::path::Path) -> bool {
+        let Ok(data) = std::fs::read(path) else {
+            return false;
+        };
+        if data.len() < 64 || data[0..4] != [0x7f, b'E', b'L', b'F'] {
+            return false;
+        }
+        // EI_OSABI: 0x00 = System V / Linux, 0x03 = Linux.
+        if !matches!(data[7], 0x00 | 0x03) {
+            return false;
+        }
+
+        // Only parse program headers for the common ELF64 little-endian case
+        // (x86_64/aarch64). For other classes/endianness, accept on magic+ABI
+        // rather than risk a false negative on an exotic-but-valid target.
+        let is_elf64 = data[4] == 2;
+        let is_le = data[5] == 1;
+        if !is_elf64 || !is_le {
+            return true;
+        }
+
+        let u16_at = |off: usize| u16::from_le_bytes([data[off], data[off + 1]]);
+        let u64_at =
+            |off: usize| u64::from_le_bytes(data[off..off + 8].try_into().unwrap_or([0; 8]));
+        let e_phoff = u64_at(0x20) as usize; // program header table offset
+        let e_phentsize = u16_at(0x36) as usize;
+        let e_phnum = u16_at(0x38) as usize;
+        if e_phoff == 0 || e_phentsize < 4 {
+            return true; // no usable program headers → accept on magic+ABI
+        }
+
+        const PT_INTERP: u32 = 3;
+        for i in 0..e_phnum {
+            let ph = e_phoff + i * e_phentsize;
+            if ph + 4 > data.len() {
+                break;
+            }
+            let p_type = u32::from_le_bytes(data[ph..ph + 4].try_into().unwrap_or([0; 4]));
+            if p_type == PT_INTERP {
+                // Dynamically linked: unsafe as guest PID 1.
+                return false;
+            }
+        }
+        true
+    }
+}
+
+#[cfg(target_os = "macos")]
+fn prune_apfs_rootfs_cache(
+    cache_dir: &Path,
+    max_entries: usize,
+    max_allocated_bytes: u64,
+    protected_key: &str,
+) -> std::io::Result<()> {
+    use std::os::unix::fs::MetadataExt;
+
+    struct Entry {
+        path: PathBuf,
+        key: String,
+        modified: std::time::SystemTime,
+        allocated_bytes: u64,
+    }
+
+    let mut entries = Vec::new();
+    for item in std::fs::read_dir(cache_dir)? {
+        let item = item?;
+        let path = item.path();
+        let Some(name) = path.file_name().and_then(|name| name.to_str()) else {
+            continue;
+        };
+        let Some(key) = name.strip_suffix(".sparseimage") else {
+            continue;
+        };
+        if key.starts_with('.') || !item.file_type()?.is_file() {
+            continue;
+        }
+        let key = key.to_string();
+        let metadata = item.metadata()?;
+        entries.push(Entry {
+            path,
+            key,
+            modified: metadata.modified().unwrap_or(std::time::UNIX_EPOCH),
+            // `len()` is the sparse image's 64 GiB virtual capacity. `blocks()`
+            // reflects physical 512-byte blocks and is the bounded resource.
+            allocated_bytes: metadata.blocks().saturating_mul(512),
+        });
+    }
+
+    entries.sort_by_key(|entry| entry.modified);
+    let mut count = entries.len();
+    let mut allocated: u64 = entries.iter().map(|entry| entry.allocated_bytes).sum();
+    for entry in entries {
+        if count <= max_entries && allocated <= max_allocated_bytes {
+            break;
+        }
+        if entry.key == protected_key {
+            continue;
+        }
+        match std::fs::remove_file(&entry.path) {
+            Ok(()) => {
+                count = count.saturating_sub(1);
+                allocated = allocated.saturating_sub(entry.allocated_bytes);
+            }
+            Err(error) if error.kind() == std::io::ErrorKind::NotFound => {
+                count = count.saturating_sub(1);
+                allocated = allocated.saturating_sub(entry.allocated_bytes);
+            }
+            Err(error) => return Err(error),
+        }
+    }
+    Ok(())
+}
+
+/// Read the snapshot-restore copy-on-write overlay lower marker, if present and
+/// non-empty. `snapshot restore` writes the snapshot's stored rootfs path here;
+/// the runtime mounts it as a read-only overlay lower instead of copying the
+/// rootfs, so all forks share one pristine lower and each writes to its own upper.
+fn snapshot_lower_dir(box_dir: &Path) -> Option<PathBuf> {
+    let content = std::fs::read_to_string(box_dir.join(".snapshot-lower")).ok()?;
+    let trimmed = content.trim();
+    if trimmed.is_empty() {
+        None
+    } else {
+        Some(PathBuf::from(trimmed))
+    }
+}
+
+fn retained_rootfs_cache_key(box_dir: &Path) -> Result<Option<String>> {
+    let marker = box_dir.join(".rootfs-cache-key");
+    let value = match std::fs::read_to_string(&marker) {
+        Ok(value) => value,
+        Err(error) if error.kind() == std::io::ErrorKind::NotFound => return Ok(None),
+        Err(error) => {
+            return Err(BoxError::StateError(format!(
+                "Failed to read retained rootfs cache marker {}: {error}",
+                marker.display()
+            )))
+        }
+    };
+    let key = value.trim();
+    if key.len() != 64 || !key.bytes().all(|byte| byte.is_ascii_hexdigit()) {
+        return Err(BoxError::StateError(format!(
+            "Retained rootfs cache marker is invalid for {}",
+            box_dir.display()
+        )));
+    }
+    Ok(Some(key.to_ascii_lowercase()))
+}
+
+#[cfg(test)]
+mod tests {
+    use super::super::BoxState;
+    use super::*;
+    use crate::cache::RootfsCache;
+    use a3s_box_core::config::BoxConfig;
+    use a3s_box_core::{SnapshotImageConfig, SnapshotMetadata};
+    use std::sync::Arc;
+    use tempfile::TempDir;
+    use tokio::sync::RwLock;
+
+    fn make_vm_manager_with_home(home_dir: &Path) -> VmManager {
+        use a3s_box_core::event::EventEmitter;
+        let config = BoxConfig::default();
+        let emitter = EventEmitter::new(10);
+        VmManager {
+            config,
+            box_id: "test-box".to_string(),
+            state: Arc::new(RwLock::new(BoxState::Created)),
+            event_emitter: emitter,
+            provider: None,
+            handler: Arc::new(RwLock::new(None)),
+            #[cfg(unix)]
+            exec_client: None,
+            net_manager: None,
+            home_dir: home_dir.to_path_buf(),
+            anonymous_volumes: Vec::new(),
+            created_anonymous_volumes: Vec::new(),
+            image_config: None,
+            healthcheck_disabled: false,
+            preserve_rootfs_on_boot_failure: false,
+            #[cfg(unix)]
+            tee: None,
+            rootfs_provider: crate::rootfs::default_provider(),
+            exec_socket_path: None,
+            pty_socket_path: None,
+            port_forward_socket_path: None,
+            prom: None,
+            shim_exit_code: None,
+            pull_progress_fn: None,
+            log_config: a3s_box_core::log::LogConfig::default(),
+            resolved_execution_plan: None,
+        }
+    }
+
+    fn image_health_check(test: &[&str]) -> crate::oci::OciHealthCheck {
+        crate::oci::OciHealthCheck {
+            test: test.iter().map(|part| (*part).to_string()).collect(),
+            interval: None,
+            timeout: None,
+            retries: None,
+            start_period: None,
+        }
+    }
+
+    #[test]
+    fn image_health_support_is_platform_aware_and_honors_disable() {
+        let enabled = image_health_check(&["CMD", "/bin/true"]);
+        let result = validate_image_health_support(Some(&enabled), false);
+
+        if cfg!(windows) {
+            let error = result.expect_err("Windows must reject effective image health checks");
+            assert!(error
+                .to_string()
+                .contains("health checks are not supported on Windows"));
+        } else {
+            result.expect("Unix guests support image health checks");
+        }
+
+        validate_image_health_support(Some(&enabled), true)
+            .expect("an explicitly disabled image health check must not block boot");
+        validate_image_health_support(Some(&image_health_check(&["NONE"])), false)
+            .expect("Docker NONE is not an effective health check");
+        validate_image_health_support(Some(&image_health_check(&["CMD"])), false)
+            .expect("an empty CMD is not an effective health check");
+    }
+
+    #[test]
+    fn vm_image_auth_uses_the_managers_explicit_home() {
+        let home = TempDir::new().unwrap();
+        let store = crate::oci::CredentialStore::new(home.path().join("auth/credentials.json"));
+        store
+            .store(
+                "manager-layout.invalid:5443",
+                "layout-user",
+                "layout-secret",
+            )
+            .unwrap();
+
+        let auth = registry_auth_for_image(
+            home.path(),
+            "manager-layout.invalid:5443/a3s/private:latest",
+        )
+        .unwrap();
+
+        assert_eq!(
+            auth.basic_credentials(),
+            Some(("layout-user".to_string(), "layout-secret".to_string()))
+        );
+    }
+
+    #[test]
+    fn test_snapshot_lower_dir_marker() {
+        let tmp = TempDir::new().unwrap();
+        let box_dir = tmp.path();
+        // missing marker -> None
+        assert!(snapshot_lower_dir(box_dir).is_none());
+        // blank marker -> None
+        std::fs::write(box_dir.join(".snapshot-lower"), "  \n").unwrap();
+        assert!(snapshot_lower_dir(box_dir).is_none());
+        // populated marker -> trimmed path
+        std::fs::write(
+            box_dir.join(".snapshot-lower"),
+            "/root/.a3s/snapshots/snap-1/rootfs\n",
+        )
+        .unwrap();
+        assert_eq!(
+            snapshot_lower_dir(box_dir),
+            Some(PathBuf::from("/root/.a3s/snapshots/snap-1/rootfs"))
+        );
+    }
+
+    #[test]
+    fn retained_rootfs_cache_marker_is_strict_and_canonical() {
+        let temporary = TempDir::new().unwrap();
+        let box_dir = temporary.path();
+        assert_eq!(retained_rootfs_cache_key(box_dir).unwrap(), None);
+
+        std::fs::write(box_dir.join(".rootfs-cache-key"), "not-a-digest\n").unwrap();
+        assert!(retained_rootfs_cache_key(box_dir).is_err());
+
+        let uppercase = "A".repeat(64);
+        std::fs::write(box_dir.join(".rootfs-cache-key"), format!(" {uppercase}\n")).unwrap();
+        assert_eq!(
+            retained_rootfs_cache_key(box_dir).unwrap(),
+            Some("a".repeat(64))
+        );
+    }
+
+    #[test]
+    fn persistent_rootfs_generation_detection_ignores_empty_directories() {
+        let temporary = TempDir::new().unwrap();
+        let box_dir = temporary.path();
+        std::fs::create_dir(box_dir.join("rootfs")).unwrap();
+        std::fs::create_dir(box_dir.join("upper")).unwrap();
+        assert!(!persistent_rootfs_generation_exists(box_dir).unwrap());
+
+        std::fs::write(box_dir.join("upper/.a3s_rootfs_metadata_v1.json"), b"{}").unwrap();
+        assert!(persistent_rootfs_generation_exists(box_dir).unwrap());
+    }
+
+    #[tokio::test]
+    async fn snapshot_lower_layout_restores_the_resolved_image_entrypoint() {
+        let home = TempDir::new().unwrap();
+        let snapshot_id = "snapshot-with-image-config";
+        let snapshot_dir = home.path().join("snapshots").join(snapshot_id);
+        let lower = snapshot_dir.join("rootfs");
+        std::fs::create_dir_all(lower.join("usr/local/bin")).unwrap();
+        std::fs::write(lower.join("usr/local/bin/envd"), b"envd").unwrap();
+
+        let mut metadata = SnapshotMetadata::new(
+            snapshot_id.to_string(),
+            snapshot_id.to_string(),
+            "source-box".to_string(),
+            "example.invalid/runtime:latest".to_string(),
+        );
+        metadata.image_config = Some(SnapshotImageConfig {
+            entrypoint: Some(vec!["/usr/local/bin/envd".to_string()]),
+            cmd: Some(vec!["--port".to_string(), "49983".to_string()]),
+            env: vec![("RUNTIME".to_string(), "a3s".to_string())],
+            working_dir: Some("/home/user".to_string()),
+            user: Some("1000:1000".to_string()),
+            ..Default::default()
+        });
+        std::fs::write(
+            snapshot_dir.join("metadata.json"),
+            serde_json::to_vec_pretty(&metadata).unwrap(),
+        )
+        .unwrap();
+
+        let box_dir = home.path().join("boxes/test-box");
+        std::fs::create_dir_all(&box_dir).unwrap();
+        std::fs::write(
+            box_dir.join(".snapshot-lower"),
+            lower.to_string_lossy().as_bytes(),
+        )
+        .unwrap();
+        let mut vm = make_vm_manager_with_home(home.path());
+        vm.config.image = "example.invalid/runtime:latest".to_string();
+        vm.rootfs_provider = Box::new(crate::rootfs::CopyProvider);
+
+        let layout = vm.prepare_layout().await.unwrap();
+        let image_config = layout
+            .oci_config
+            .as_ref()
+            .expect("snapshot layout must restore the resolved image configuration");
+        assert_eq!(
+            image_config.entrypoint,
+            Some(vec!["/usr/local/bin/envd".to_string()])
+        );
+        assert_eq!(
+            image_config.cmd,
+            Some(vec!["--port".to_string(), "49983".to_string()])
+        );
+
+        // Keep the assertion independent of whether a guest-init test artifact is
+        // available next to the test binary on this host.
+        let _ = std::fs::remove_file(layout.rootfs_path.join("sbin/init"));
+        let spec = vm.build_instance_spec(&layout).unwrap();
+        assert_eq!(spec.entrypoint.executable, "/usr/local/bin/envd");
+        assert_eq!(spec.entrypoint.args, vec!["--port", "49983"]);
+        assert!(spec
+            .entrypoint
+            .env
+            .iter()
+            .any(|(key, value)| key == "RUNTIME" && value == "a3s"));
+        assert_eq!(spec.workdir, "/home/user");
+    }
+
+    #[test]
+    fn test_resolve_cache_dir_default() {
+        let tmp = TempDir::new().unwrap();
+        let vm = make_vm_manager_with_home(tmp.path());
+
+        let cache_dir = vm.resolve_cache_dir();
+        assert_eq!(cache_dir, tmp.path().join("cache"));
+    }
+
+    #[test]
+    fn test_resolve_cache_dir_custom() {
+        let tmp = TempDir::new().unwrap();
+        let mut vm = make_vm_manager_with_home(tmp.path());
+        vm.config.cache.cache_dir = Some(PathBuf::from("/custom/cache"));
+
+        let cache_dir = vm.resolve_cache_dir();
+        assert_eq!(cache_dir, PathBuf::from("/custom/cache"));
+    }
+
+    #[test]
+    fn test_try_rootfs_cache_disabled() {
+        let tmp = TempDir::new().unwrap();
+        let mut vm = make_vm_manager_with_home(tmp.path());
+        vm.config.cache.enabled = false;
+
+        let target = tmp.path().join("target");
+        let result = vm.try_rootfs_cache("some_key", &target).unwrap();
+        assert!(result.is_none());
+    }
+
+    #[test]
+    fn test_try_rootfs_cache_miss() {
+        let tmp = TempDir::new().unwrap();
+        let vm = make_vm_manager_with_home(tmp.path());
+
+        let target = tmp.path().join("target");
+        let result = vm.try_rootfs_cache("nonexistent_key", &target).unwrap();
+        assert!(result.is_none());
+    }
+
+    #[test]
+    fn test_try_rootfs_cache_hit() {
+        let tmp = TempDir::new().unwrap();
+        let vm = make_vm_manager_with_home(tmp.path());
+
+        // Pre-populate the cache
+        let cache_dir = tmp.path().join("cache").join("rootfs");
+        let cache = RootfsCache::new(&cache_dir).unwrap();
+        let source = tmp.path().join("source_rootfs");
+        std::fs::create_dir_all(&source).unwrap();
+        std::fs::write(source.join("agent.bin"), "binary").unwrap();
+        cache.put("test_key", &source, "test").unwrap();
+
+        // Now try_rootfs_cache should hit
+        let target = tmp.path().join("target_rootfs");
+        let result = vm.try_rootfs_cache("test_key", &target).unwrap();
+        assert!(result.is_some());
+        assert_eq!(result.unwrap(), target);
+        assert!(target.join("agent.bin").is_file());
+        assert_eq!(
+            std::fs::read_to_string(target.join("agent.bin")).unwrap(),
+            "binary"
+        );
+    }
+
+    #[test]
+    fn test_store_rootfs_cache_disabled() {
+        let tmp = TempDir::new().unwrap();
+        let mut vm = make_vm_manager_with_home(tmp.path());
+        vm.config.cache.enabled = false;
+
+        let source = tmp.path().join("rootfs");
+        std::fs::create_dir_all(&source).unwrap();
+        std::fs::write(source.join("f.txt"), "data").unwrap();
+
+        // Should not store anything
+        vm.store_rootfs_cache("key", &source, "test");
+
+        // Cache directory should not even be created
+        let cache_dir = tmp.path().join("cache").join("rootfs");
+        assert!(!cache_dir.exists());
+    }
+
+    #[cfg(not(target_os = "macos"))]
+    #[test]
+    fn test_store_rootfs_cache_success() {
+        let tmp = TempDir::new().unwrap();
+        let vm = make_vm_manager_with_home(tmp.path());
+
+        let source = tmp.path().join("rootfs");
+        std::fs::create_dir_all(&source).unwrap();
+        std::fs::write(source.join("agent.bin"), "binary").unwrap();
+
+        vm.store_rootfs_cache("store_key", &source, "test image");
+
+        // Verify it was stored
+        let cache_dir = tmp.path().join("cache").join("rootfs");
+        let cache = RootfsCache::new(&cache_dir).unwrap();
+        let result = cache.get("store_key").unwrap();
+        assert!(result.is_some());
+    }
+
+    #[cfg(not(target_os = "macos"))]
+    #[test]
+    fn test_store_rootfs_cache_prunes_on_store() {
+        let tmp = TempDir::new().unwrap();
+        let mut vm = make_vm_manager_with_home(tmp.path());
+        vm.config.cache.max_rootfs_entries = 2;
+
+        let source = tmp.path().join("rootfs");
+        std::fs::create_dir_all(&source).unwrap();
+        std::fs::write(source.join("f.txt"), "data").unwrap();
+
+        // Store 3 entries (exceeds max_rootfs_entries=2)
+        for i in 0..3 {
+            vm.store_rootfs_cache(&format!("key{}", i), &source, &format!("entry {}", i));
+            std::thread::sleep(std::time::Duration::from_millis(10));
+        }
+
+        // After pruning, should have at most 2 entries
+        let cache_dir = tmp.path().join("cache").join("rootfs");
+        let cache = RootfsCache::new(&cache_dir).unwrap();
+        assert!(cache.entry_count().unwrap() <= 2);
+    }
+
+    #[cfg(target_os = "macos")]
+    #[test]
+    fn test_prune_apfs_rootfs_cache_bounds_entries_and_protects_new_entry() {
+        let tmp = TempDir::new().unwrap();
+        let cache_dir = tmp.path().join("rootfs-apfs");
+        std::fs::create_dir_all(&cache_dir).unwrap();
+
+        for key in ["oldest", "middle", "new"] {
+            std::fs::write(
+                cache_dir.join(format!("{key}.sparseimage")),
+                vec![b'x'; 4096],
+            )
+            .unwrap();
+            std::thread::sleep(std::time::Duration::from_millis(10));
+        }
+        std::fs::write(cache_dir.join(".partial.tmp-1"), b"temporary").unwrap();
+
+        prune_apfs_rootfs_cache(&cache_dir, 1, u64::MAX, "new").unwrap();
+
+        assert!(!cache_dir.join("oldest.sparseimage").exists());
+        assert!(!cache_dir.join("middle.sparseimage").exists());
+        assert!(cache_dir.join("new.sparseimage").exists());
+        assert!(cache_dir.join(".partial.tmp-1").exists());
+    }
+
+    #[cfg(target_os = "macos")]
+    #[test]
+    fn test_prune_apfs_rootfs_cache_uses_allocated_bytes_not_virtual_length() {
+        use std::os::unix::fs::MetadataExt;
+
+        let tmp = TempDir::new().unwrap();
+        let cache_dir = tmp.path().join("rootfs-apfs");
+        std::fs::create_dir_all(&cache_dir).unwrap();
+        let old = cache_dir.join("old.sparseimage");
+        let protected = cache_dir.join("protected.sparseimage");
+        std::fs::write(&old, vec![b'x'; 8192]).unwrap();
+        std::thread::sleep(std::time::Duration::from_millis(10));
+        std::fs::write(&protected, vec![b'y'; 4096]).unwrap();
+        std::fs::OpenOptions::new()
+            .write(true)
+            .open(&protected)
+            .unwrap()
+            .set_len(64 * 1024 * 1024 * 1024)
+            .unwrap();
+        let protected_allocated = protected.metadata().unwrap().blocks() * 512;
+
+        prune_apfs_rootfs_cache(&cache_dir, usize::MAX, protected_allocated, "protected").unwrap();
+
+        assert!(!old.exists());
+        assert!(protected.exists());
+    }
+
+    #[cfg(unix)]
+    #[tokio::test]
+    async fn test_exec_command_rejects_created_state() {
+        let tmp = TempDir::new().unwrap();
+        let vm = make_vm_manager_with_home(tmp.path());
+
+        let result = vm.exec_command(vec!["echo".to_string()], 0).await;
+        assert!(result.is_err());
+        let err = result.unwrap_err();
+        assert!(err.to_string().contains("not yet booted"));
+    }
+
+    #[cfg(unix)]
+    #[tokio::test]
+    async fn test_exec_command_rejects_stopped_state() {
+        let tmp = TempDir::new().unwrap();
+        let vm = make_vm_manager_with_home(tmp.path());
+        *vm.state.write().await = BoxState::Stopped;
+
+        let result = vm.exec_command(vec!["echo".to_string()], 0).await;
+        assert!(result.is_err());
+        let err = result.unwrap_err();
+        assert!(err.to_string().contains("stopped"));
+    }
+
+    #[cfg(unix)]
+    #[tokio::test]
+    async fn test_exec_command_no_client() {
+        let tmp = TempDir::new().unwrap();
+        let vm = make_vm_manager_with_home(tmp.path());
+        *vm.state.write().await = BoxState::Ready;
+
+        let result = vm.exec_command(vec!["echo".to_string()], 0).await;
+        assert!(result.is_err());
+        let err = result.unwrap_err();
+        assert!(err.to_string().contains("not connected"));
+    }
+
+    #[cfg(unix)]
+    #[tokio::test]
+    async fn test_exec_request_rejects_empty_command() {
+        let tmp = TempDir::new().unwrap();
+        let vm = make_vm_manager_with_home(tmp.path());
+        *vm.state.write().await = BoxState::Ready;
+
+        let request = a3s_box_core::exec::ExecRequest {
+            request_id: None,
+            cmd: vec![],
+            timeout_ns: 0,
+            env: vec!["ENV=test".to_string()],
+            working_dir: Some("/app".to_string()),
+            rootfs: None,
+            stdin: None,
+            stdin_streaming: false,
+            user: None,
+            streaming: false,
+        };
+        let result = vm.exec_request(&request).await;
+        assert!(result.is_err());
+        let err = result.unwrap_err();
+        assert!(err.to_string().contains("non-empty command"));
+    }
+
+    #[cfg(unix)]
+    #[tokio::test]
+    async fn test_exec_request_no_client_preserves_request_fields() {
+        let tmp = TempDir::new().unwrap();
+        let vm = make_vm_manager_with_home(tmp.path());
+        *vm.state.write().await = BoxState::Ready;
+
+        let request = a3s_box_core::exec::ExecRequest {
+            request_id: None,
+            cmd: vec!["printenv".to_string()],
+            timeout_ns: 123,
+            env: vec!["ENV=test".to_string()],
+            working_dir: Some("/app".to_string()),
+            rootfs: Some("/run/a3s/cri/container-rootfs/sb/c/rootfs".to_string()),
+            stdin: Some(b"input".to_vec()),
+            stdin_streaming: false,
+            user: Some("1000:1000".to_string()),
+            streaming: false,
+        };
+        let result = vm.exec_request(&request).await;
+        assert!(result.is_err());
+        let err = result.unwrap_err();
+        assert!(err.to_string().contains("not connected"));
+        assert_eq!(request.env, vec!["ENV=test".to_string()]);
+        assert_eq!(request.working_dir, Some("/app".to_string()));
+        assert_eq!(request.stdin, Some(b"input".to_vec()));
+        assert_eq!(request.user, Some("1000:1000".to_string()));
+    }
+
+    #[cfg(not(target_os = "macos"))]
+    #[test]
+    fn test_try_and_store_roundtrip() {
+        let tmp = TempDir::new().unwrap();
+        let vm = make_vm_manager_with_home(tmp.path());
+
+        // First call: cache miss
+        let target1 = tmp.path().join("target1");
+        let result = vm.try_rootfs_cache("roundtrip_key", &target1).unwrap();
+        assert!(result.is_none());
+
+        // Build rootfs manually
+        let built_rootfs = tmp.path().join("built");
+        std::fs::create_dir_all(&built_rootfs).unwrap();
+        std::fs::write(built_rootfs.join("init"), "init_binary").unwrap();
+        std::fs::create_dir_all(built_rootfs.join("etc")).unwrap();
+        std::fs::write(built_rootfs.join("etc/config"), "config_data").unwrap();
+
+        // Store in cache
+        vm.store_rootfs_cache("roundtrip_key", &built_rootfs, "roundtrip test");
+
+        // Second call: cache hit
+        let target2 = tmp.path().join("target2");
+        let result = vm.try_rootfs_cache("roundtrip_key", &target2).unwrap();
+        assert!(result.is_some());
+        assert!(target2.join("init").is_file());
+        assert_eq!(
+            std::fs::read_to_string(target2.join("init")).unwrap(),
+            "init_binary"
+        );
+        assert_eq!(
+            std::fs::read_to_string(target2.join("etc/config")).unwrap(),
+            "config_data"
+        );
+    }
+}

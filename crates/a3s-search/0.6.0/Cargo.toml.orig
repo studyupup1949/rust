@@ -1,0 +1,80 @@
+[package]
+name = "a3s-search"
+version = "0.6.0"
+edition.workspace = true
+license.workspace = true
+repository = "https://github.com/A3S-Lab/Search"
+authors.workspace = true
+description = "Embeddable meta search engine library with CLI and proxy pool support"
+
+[[bin]]
+name = "a3s-search"
+path = "src/main.rs"
+
+[features]
+default = ["headless"]
+headless = ["dep:chromiumoxide", "dep:which", "dep:zip"]
+
+[dependencies]
+# Async runtime
+tokio.workspace = true
+
+# Serialization
+serde.workspace = true
+serde_json.workspace = true
+
+# Error handling
+thiserror.workspace = true
+anyhow.workspace = true
+
+# Logging
+tracing.workspace = true
+
+# Async utilities
+async-trait.workspace = true
+futures.workspace = true
+
+# HTTP client
+reqwest = { version = "0.12", default-features = false, features = ["rustls-tls", "json", "gzip", "brotli", "socks"] }
+
+# HTML parsing
+scraper = "0.22"
+
+# URL handling
+url = "2"
+urlencoding = "2"
+
+# Regex
+regex = "1"
+
+# Headless browser (optional, for JS-rendered engines)
+chromiumoxide = { version = "0.7", features = ["tokio-runtime"], optional = true }
+
+# Browser detection and auto-install (optional, for headless feature)
+which = { version = "7", optional = true }
+zip = { version = "2", default-features = false, features = ["deflate"], optional = true }
+
+# Self-update
+a3s-updater = { version = "0.2", path = "../updater" }
+
+# CLI
+clap = { version = "4", features = ["derive"] }
+
+# Logging for CLI
+tracing-subscriber = { version = "0.3", features = ["env-filter"] }
+
+[dev-dependencies]
+tokio-test.workspace = true
+
+# =============================================================================
+# Release Profile — optimized for binary size
+# =============================================================================
+# a3s-search is a CLI/library with optional headless browser (chromiumoxide).
+# I/O-bound workload — optimize for size over speed.
+#
+[profile.release]
+opt-level = "s"
+lto = "thin"
+codegen-units = 1
+strip = true
+panic = "abort"

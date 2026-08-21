@@ -1,0 +1,107 @@
+[workspace]
+members = []
+
+[workspace.package]
+edition = "2021"
+license = "MIT"
+authors = ["A3S Lab Team"]
+
+[workspace.dependencies]
+tokio = { version = "1.35", features = ["full"] }
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
+thiserror = "1.0"
+anyhow = "1.0"
+tracing = "0.1"
+async-trait = "0.1"
+futures = "0.3"
+tokio-test = "0.4"
+
+[package]
+name = "a3s-search"
+version = "2.1.2"
+edition.workspace = true
+license.workspace = true
+repository = "https://github.com/A3S-Lab/Search"
+authors.workspace = true
+description = "Extensible web search library and CLI with native AnySearch and Tavily providers"
+
+[[bin]]
+name = "a3s-search"
+path = "src/main.rs"
+
+[features]
+default = []
+headless = ["dep:a3s-use-browser"]
+# Lightpanda headless backend (Linux/macOS only; Windows unsupported by Lightpanda).
+lightpanda = ["headless", "a3s-use-browser/lightpanda"]
+
+[dependencies]
+# Async runtime
+tokio.workspace = true
+
+# Serialization
+serde.workspace = true
+serde_json.workspace = true
+
+# Error handling
+thiserror.workspace = true
+anyhow.workspace = true
+
+# Logging
+tracing.workspace = true
+
+# Async utilities
+async-trait.workspace = true
+futures.workspace = true
+fastrand = "2"
+
+# HTTP client
+reqwest = { version = "0.12", default-features = false, features = ["rustls-tls", "json", "gzip", "brotli", "socks", "stream", "cookies"] }
+httpdate = "1"
+
+# HTML parsing
+scraper = "0.22"
+
+# XML parsing for Bing's stable RSS search endpoint
+quick-xml = { version = "0.38", features = ["serialize"] }
+
+# Main article content extraction (Readability.js port, pure Rust)
+dom_smoothie = "0.18"
+
+# URL handling
+url = "2"
+urlencoding = "2"
+
+# Configuration file parsing
+a3s-acl = "0.2"
+
+# Typed rendering supplied by the independent A3S Browser repository.
+# Search never invokes the A3S Use facade, Browser driver, or MCP surface.
+a3s-use-browser = { version = "=0.3.0", git = "https://github.com/A3S-Lab/Browser", rev = "1830c7b6896b0a38637eba2b61a386bf8a36eada", optional = true }
+
+# Self-update
+a3s-updater = "0.2"
+
+# CLI
+clap = { version = "4", features = ["derive"] }
+
+# Logging for CLI
+tracing-subscriber = { version = "0.3", features = ["env-filter"] }
+
+[dev-dependencies]
+tokio-test.workspace = true
+tempfile = "3"
+
+# =============================================================================
+# Release Profile — optimized for binary size
+# =============================================================================
+# a3s-search is a CLI/library with optional A3S Browser rendering.
+# I/O-bound workload — optimize for size over speed.
+#
+[profile.release]
+opt-level = "s"
+lto = "thin"
+codegen-units = 1
+strip = true
+panic = "abort"

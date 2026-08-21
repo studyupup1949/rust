@@ -1,0 +1,30 @@
+load("@buckal//:wrapper.bzl", "rust_library")
+
+rust_library(
+    name = "a3s_power",
+    srcs = glob(["**/*.rs"]),
+    crate = "a3s_power",
+    crate_root = "src/lib.rs",
+    edition = "2021",
+    features = ["default"],
+
+    visibility = ["PUBLIC"],
+    deps = [
+        "//third-party/rust/crates/aes-gcm/0.10.3:aes_gcm",
+        "//third-party/rust/crates/async-trait/0.1.92:async_trait",
+        "//third-party/rust/crates/chrono/0.4.45:chrono",
+        "//third-party/rust/crates/ed25519-dalek/2.2.0:ed25519_dalek",
+        "//third-party/rust/crates/hex/0.4.3:hex",
+        "//third-party/rust/crates/libc/0.2.189:libc",
+        "//third-party/rust/crates/nix/0.29.0:nix",
+        "//third-party/rust/crates/rand/0.8.7:rand",
+        "//third-party/rust/crates/serde/1.0.229:serde",
+        "//third-party/rust/crates/serde_json/1.0.151:serde_json",
+        "//third-party/rust/crates/sha2/0.10.9:sha2",
+        "//third-party/rust/crates/thiserror/1.0.69:thiserror",
+        "//third-party/rust/crates/tokio-util/0.7.19:tokio_util",
+        "//third-party/rust/crates/tokio/1.53.1:tokio",
+        "//third-party/rust/crates/tracing/0.1.44:tracing",
+        "//third-party/rust/crates/zeroize/1.9.0:zeroize",
+    ],
+)

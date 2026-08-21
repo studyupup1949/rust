@@ -1,0 +1,28 @@
+mod capabilities;
+mod code_intelligence;
+pub(crate) mod config;
+mod context;
+mod dto;
+mod evolution;
+mod health;
+mod kernel;
+mod knowledge;
+mod loops;
+mod module;
+mod os;
+mod permissions;
+mod plugins;
+mod processes;
+mod remote;
+mod session_runtime;
+mod session_store;
+mod state;
+mod weixin;
+mod work;
+mod workspace;
+mod workspace_backend_cache;
+
+pub(super) use kernel::KernelService;
+pub(super) use module::CodeWebModule;
+pub(super) use session_store::CodeWebSessionRepository;
+pub(super) use state::CodeWebState;

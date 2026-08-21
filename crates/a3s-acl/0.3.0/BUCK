@@ -1,0 +1,15 @@
+load("@buckal//:wrapper.bzl", "rust_library")
+
+rust_library(
+    name = "a3s_acl",
+    srcs = glob(["**/*.rs"]),
+    crate = "a3s_acl",
+    crate_root = "src/lib.rs",
+    edition = "2021",
+
+    visibility = ["PUBLIC"],
+    deps = [
+        "//third-party/rust/crates/ryu-js/1.0.3:ryu_js",
+        "//third-party/rust/crates/sha2/0.10.9:sha2",
+    ],
+)

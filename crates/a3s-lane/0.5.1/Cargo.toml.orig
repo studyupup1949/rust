@@ -1,0 +1,74 @@
+[package]
+name = "a3s-lane"
+version = "0.5.1"
+edition = "2021"
+authors = ["A3S Lab"]
+license = "MIT"
+description = "Lane-based priority command queue for async task scheduling with reliability, scalability, and observability features"
+repository = "https://github.com/A3S-Lab/Lane"
+documentation = "https://docs.rs/a3s-lane"
+readme = "README.md"
+keywords = ["queue", "priority", "async", "scheduler", "concurrency"]
+categories = ["asynchronous", "concurrency"]
+
+[lib]
+name = "a3s_lane"
+path = "src/lib.rs"
+
+[features]
+default = ["metrics", "monitoring", "telemetry", "distributed"]
+metrics = []
+monitoring = ["metrics"]
+telemetry = ["metrics", "dep:opentelemetry", "dep:opentelemetry_sdk", "dep:dashmap"]
+distributed = ["dep:num_cpus"]
+redis-backend = ["dep:redis"]
+
+[dependencies]
+tokio = { version = "1", features = ["sync", "time", "rt", "macros", "fs"] }
+tokio-stream = { version = "0.1", features = ["sync"] }
+futures-core = { version = "0.3" }
+async-trait = "0.1"
+tracing = "0.1"
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+thiserror = "1"
+uuid = { version = "1", features = ["v4"] }
+chrono = { version = "0.4", features = ["serde"] }
+cron = { version = "0.17.0", features = ["serde"] }
+
+# Optional: distributed
+num_cpus = { version = "1", optional = true }
+
+# Optional: Redis-backed generic job queue
+redis = { version = "0.32.7", default-features = false, features = ["tokio-comp", "connection-manager", "script", "streams"], optional = true }
+
+# Optional: telemetry
+opentelemetry = { version = "0.21", features = ["metrics"], optional = true }
+opentelemetry_sdk = { version = "0.21", features = ["rt-tokio", "metrics"], optional = true }
+dashmap = { version = "6.0", optional = true }
+
+[dev-dependencies]
+tokio = { version = "1", features = ["full", "test-util"] }
+tracing-subscriber = { version = "0.3", features = ["env-filter"] }
+tempfile = "3"
+criterion = { version = "0.5", features = ["async_tokio"] }
+anyhow = "1"
+
+[[bench]]
+name = "queue_benchmark"
+harness = false
+required-features = ["metrics", "distributed"]
+
+[[example]]
+name = "observability"
+required-features = ["monitoring", "telemetry"]
+
+[[example]]
+name = "scalability"
+required-features = ["distributed"]
+
+[profile.release]
+opt-level = 3         # throughput over size; this is a queue library, not a CLI
+lto = "thin"          # comparable perf to fat LTO, compiles 2-4x faster
+codegen-units = 1     # single codegen unit — required for lto = "thin" to matter
+strip = true

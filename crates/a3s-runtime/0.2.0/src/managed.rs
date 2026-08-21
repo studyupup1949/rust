@@ -1,0 +1,652 @@
+use crate::contract::{
+    RuntimeActionRequest, RuntimeApplyRequest, RuntimeCapabilities, RuntimeExecRequest,
+    RuntimeExecResult, RuntimeInspection, RuntimeLogChunk, RuntimeLogQuery, RuntimeObservation,
+    RuntimeRemoval, RuntimeUnitState,
+};
+use crate::{
+    RuntimeActionKind, RuntimeClient, RuntimeClock, RuntimeDriver, RuntimeError,
+    RuntimeRequestKind, RuntimeRequestReceipt, RuntimeRequestState, RuntimeResult,
+    RuntimeStateStore, SystemRuntimeClock,
+};
+use async_trait::async_trait;
+use std::future::Future;
+use std::sync::Arc;
+use std::time::Duration;
+
+/// Shared durable lifecycle implementation used by provider integrations.
+pub struct ManagedRuntimeClient {
+    state: Arc<dyn RuntimeStateStore>,
+    driver: Arc<dyn RuntimeDriver>,
+    clock: Arc<dyn RuntimeClock>,
+}
+
+impl ManagedRuntimeClient {
+    pub fn new(state: Arc<dyn RuntimeStateStore>, driver: Arc<dyn RuntimeDriver>) -> Self {
+        Self::with_clock(state, driver, Arc::new(SystemRuntimeClock))
+    }
+
+    pub fn with_clock(
+        state: Arc<dyn RuntimeStateStore>,
+        driver: Arc<dyn RuntimeDriver>,
+        clock: Arc<dyn RuntimeClock>,
+    ) -> Self {
+        Self {
+            state,
+            driver,
+            clock,
+        }
+    }
+
+    async fn checked_capabilities(&self) -> RuntimeResult<RuntimeCapabilities> {
+        let capabilities = self.driver.capabilities().await?;
+        capabilities.validate().map_err(RuntimeError::Protocol)?;
+        if &capabilities.provider_id != self.driver.provider_id() {
+            return Err(RuntimeError::Protocol(format!(
+                "Runtime driver {:?} reported capabilities for {:?}",
+                self.driver.provider_id().as_str(),
+                capabilities.provider_id.as_str()
+            )));
+        }
+        Ok(capabilities)
+    }
+
+    fn check_deadline(&self, deadline_at_ms: Option<u64>) -> RuntimeResult<()> {
+        if deadline_at_ms.is_some_and(|deadline| deadline <= self.clock.now_ms()) {
+            return Err(RuntimeError::DeadlineExceeded(
+                "request expired before provider dispatch".into(),
+            ));
+        }
+        Ok(())
+    }
+
+    async fn bounded<T, F>(
+        &self,
+        deadline_at_ms: Option<u64>,
+        stage: &'static str,
+        future: F,
+    ) -> RuntimeResult<T>
+    where
+        T: Send,
+        F: Future<Output = RuntimeResult<T>> + Send,
+    {
+        let Some(deadline_at_ms) = deadline_at_ms else {
+            return future.await;
+        };
+        let now_ms = self.clock.now_ms();
+        let Some(remaining_ms) = deadline_at_ms.checked_sub(now_ms) else {
+            return Err(RuntimeError::DeadlineExceeded(format!(
+                "request expired before {stage}"
+            )));
+        };
+        if remaining_ms == 0 {
+            return Err(RuntimeError::DeadlineExceeded(format!(
+                "request expired before {stage}"
+            )));
+        }
+        tokio::time::timeout(Duration::from_millis(remaining_ms), future)
+            .await
+            .map_err(|_| {
+                RuntimeError::DeadlineExceeded(format!("request deadline elapsed during {stage}"))
+            })?
+    }
+
+    fn exec_deadline(&self, request: &RuntimeExecRequest, started_at_ms: u64) -> u64 {
+        let relative = started_at_ms.saturating_add(request.timeout_ms);
+        request
+            .deadline_at_ms
+            .map_or(relative, |absolute| absolute.min(relative))
+    }
+
+    async fn matching_receipt(
+        &self,
+        unit_id: &str,
+        generation: u64,
+        request_id: &str,
+        kind: RuntimeRequestKind,
+        request_digest: &str,
+    ) -> RuntimeResult<Option<RuntimeRequestReceipt>> {
+        let receipt = match self.state.load_request(unit_id, request_id).await {
+            Ok(receipt) => receipt,
+            Err(RuntimeError::RequestNotFound { .. }) => return Ok(None),
+            Err(error) => return Err(error),
+        };
+        receipt.validate().map_err(RuntimeError::Protocol)?;
+        if receipt.unit_id != unit_id || receipt.request_id != request_id {
+            return Err(RuntimeError::Protocol(
+                "Runtime request receipt storage key mismatch".into(),
+            ));
+        }
+        if receipt.generation != generation
+            || receipt.kind != kind
+            || receipt.request_digest != request_digest
+        {
+            return Err(RuntimeError::RequestConflict {
+                request_id: request_id.into(),
+            });
+        }
+        Ok(Some(receipt))
+    }
+
+    async fn completed_replay(
+        &self,
+        unit_id: &str,
+        generation: u64,
+        request_id: &str,
+        kind: RuntimeRequestKind,
+        request_digest: &str,
+    ) -> RuntimeResult<Option<RuntimeRequestReceipt>> {
+        Ok(self
+            .matching_receipt(unit_id, generation, request_id, kind, request_digest)
+            .await?
+            .filter(|receipt| receipt.state == RuntimeRequestState::Completed))
+    }
+}
+
+#[async_trait]
+impl RuntimeClient for ManagedRuntimeClient {
+    async fn capabilities(&self) -> RuntimeResult<RuntimeCapabilities> {
+        self.checked_capabilities().await
+    }
+
+    async fn apply(&self, request: &RuntimeApplyRequest) -> RuntimeResult<RuntimeObservation> {
+        request.validate().map_err(RuntimeError::InvalidRequest)?;
+        let request_digest = request.digest().map_err(RuntimeError::InvalidRequest)?;
+        if self
+            .completed_replay(
+                &request.spec.unit_id,
+                request.spec.generation,
+                &request.request_id,
+                RuntimeRequestKind::Apply,
+                &request_digest,
+            )
+            .await?
+            .is_some()
+        {
+            let _lease = self
+                .state
+                .acquire_operation_lease(&request.spec.unit_id)
+                .await?;
+            let reservation = self
+                .state
+                .reserve_apply(request, self.clock.now_ms())
+                .await?;
+            if reservation.dispatch {
+                return Err(RuntimeError::Protocol(
+                    "completed apply receipt regressed to pending".into(),
+                ));
+            }
+            return reservation.receipt.observation.ok_or_else(|| {
+                RuntimeError::Protocol("completed apply receipt has no observation".into())
+            });
+        }
+        self.check_deadline(request.deadline_at_ms)?;
+        let capabilities = self
+            .bounded(
+                request.deadline_at_ms,
+                "capability query",
+                self.checked_capabilities(),
+            )
+            .await?;
+        let missing = capabilities
+            .missing_for(&request.spec)
+            .map_err(RuntimeError::InvalidRequest)?;
+        if !missing.is_empty() {
+            return Err(RuntimeError::UnsupportedCapabilities(missing));
+        }
+
+        let _lease = self
+            .bounded(
+                request.deadline_at_ms,
+                "operation lease wait",
+                self.state.acquire_operation_lease(&request.spec.unit_id),
+            )
+            .await?;
+        self.check_deadline(request.deadline_at_ms)?;
+
+        let reservation = self
+            .state
+            .reserve_apply(request, self.clock.now_ms())
+            .await?;
+        if !reservation.dispatch {
+            return reservation.receipt.observation.ok_or_else(|| {
+                RuntimeError::Protocol("completed apply receipt has no observation".into())
+            });
+        }
+
+        let observation = self
+            .bounded(
+                request.deadline_at_ms,
+                "provider apply",
+                self.driver
+                    .apply(&request.spec, &reservation.record.observation),
+            )
+            .await?;
+        observation
+            .validate_against(&request.spec)
+            .map_err(RuntimeError::Protocol)?;
+        ensure_apply_result(&request.spec, &observation)?;
+        Ok(self
+            .state
+            .update_observation(Some(&request.request_id), &observation)
+            .await?
+            .observation)
+    }
+
+    async fn inspect(&self, unit_id: &str) -> RuntimeResult<RuntimeInspection> {
+        let _lease = self.state.acquire_operation_lease(unit_id).await?;
+        let record = match self.state.load(unit_id).await {
+            Ok(record) => record,
+            Err(RuntimeError::NotFound { .. }) => {
+                return Ok(RuntimeInspection::NotFound {
+                    schema: RuntimeInspection::SCHEMA.into(),
+                    unit_id: unit_id.into(),
+                    last_generation: None,
+                });
+            }
+            Err(error) => return Err(error),
+        };
+        if record.removed_at_ms.is_some() {
+            return Ok(RuntimeInspection::NotFound {
+                schema: RuntimeInspection::SCHEMA.into(),
+                unit_id: unit_id.into(),
+                last_generation: Some(record.spec.generation),
+            });
+        }
+        if record.observation.state.is_terminal() {
+            return Ok(RuntimeInspection::Found {
+                schema: RuntimeInspection::SCHEMA.into(),
+                observation: Box::new(record.observation),
+            });
+        }
+
+        let inspection = self.driver.inspect(&record).await?;
+        inspection.validate().map_err(RuntimeError::Protocol)?;
+        match inspection {
+            RuntimeInspection::Found { observation, .. } => {
+                observation
+                    .validate_against(&record.spec)
+                    .map_err(RuntimeError::Protocol)?;
+                let record = self
+                    .state
+                    .update_observation(None, observation.as_ref())
+                    .await?;
+                Ok(RuntimeInspection::Found {
+                    schema: RuntimeInspection::SCHEMA.into(),
+                    observation: Box::new(record.observation),
+                })
+            }
+            RuntimeInspection::NotFound { .. } => {
+                let mut unknown = record.observation;
+                unknown.state = RuntimeUnitState::Unknown;
+                unknown.observed_at_ms = unknown.observed_at_ms.max(self.clock.now_ms());
+                unknown.finished_at_ms = None;
+                unknown.health = None;
+                unknown.outputs.clear();
+                unknown.failure = None;
+                let record = self.state.update_observation(None, &unknown).await?;
+                Ok(RuntimeInspection::Found {
+                    schema: RuntimeInspection::SCHEMA.into(),
+                    observation: Box::new(record.observation),
+                })
+            }
+        }
+    }
+
+    async fn stop(&self, request: &RuntimeActionRequest) -> RuntimeResult<RuntimeInspection> {
+        request.validate().map_err(RuntimeError::InvalidRequest)?;
+        let request_digest = request.digest().map_err(RuntimeError::InvalidRequest)?;
+        if self
+            .completed_replay(
+                &request.unit_id,
+                request.generation,
+                &request.request_id,
+                RuntimeRequestKind::Stop,
+                &request_digest,
+            )
+            .await?
+            .is_some()
+        {
+            let _lease = self.state.acquire_operation_lease(&request.unit_id).await?;
+            let reservation = self
+                .state
+                .reserve_action(RuntimeActionKind::Stop, request, self.clock.now_ms())
+                .await?;
+            if reservation.dispatch {
+                return Err(RuntimeError::Protocol(
+                    "completed stop receipt regressed to pending".into(),
+                ));
+            }
+            return Ok(RuntimeInspection::Found {
+                schema: RuntimeInspection::SCHEMA.into(),
+                observation: Box::new(reservation.receipt.observation.ok_or_else(|| {
+                    RuntimeError::Protocol("completed stop receipt has no observation".into())
+                })?),
+            });
+        }
+        self.check_deadline(request.deadline_at_ms)?;
+        let capabilities = self
+            .bounded(
+                request.deadline_at_ms,
+                "capability query",
+                self.checked_capabilities(),
+            )
+            .await?;
+        if !capabilities.supports_feature(crate::contract::RuntimeFeature::Stop) {
+            return Err(RuntimeError::UnsupportedCapabilities(vec![
+                "feature:Stop".into()
+            ]));
+        }
+        let _lease = self
+            .bounded(
+                request.deadline_at_ms,
+                "operation lease wait",
+                self.state.acquire_operation_lease(&request.unit_id),
+            )
+            .await?;
+        self.check_deadline(request.deadline_at_ms)?;
+        let reservation = self
+            .state
+            .reserve_action(RuntimeActionKind::Stop, request, self.clock.now_ms())
+            .await?;
+        if !reservation.dispatch {
+            return Ok(RuntimeInspection::Found {
+                schema: RuntimeInspection::SCHEMA.into(),
+                observation: Box::new(reservation.receipt.observation.ok_or_else(|| {
+                    RuntimeError::Protocol("completed stop receipt has no observation".into())
+                })?),
+            });
+        }
+        let observation = self
+            .bounded(
+                request.deadline_at_ms,
+                "provider stop",
+                self.driver.stop(&reservation.record, request),
+            )
+            .await?;
+        observation
+            .validate_against(&reservation.record.spec)
+            .map_err(RuntimeError::Protocol)?;
+        ensure_stop_result(&reservation.record.observation, &observation)?;
+        let record = self
+            .state
+            .update_observation(Some(&request.request_id), &observation)
+            .await?;
+        Ok(RuntimeInspection::Found {
+            schema: RuntimeInspection::SCHEMA.into(),
+            observation: Box::new(record.observation),
+        })
+    }
+
+    async fn remove(&self, request: &RuntimeActionRequest) -> RuntimeResult<RuntimeRemoval> {
+        request.validate().map_err(RuntimeError::InvalidRequest)?;
+        let request_digest = request.digest().map_err(RuntimeError::InvalidRequest)?;
+        if self
+            .completed_replay(
+                &request.unit_id,
+                request.generation,
+                &request.request_id,
+                RuntimeRequestKind::Remove,
+                &request_digest,
+            )
+            .await?
+            .is_some()
+        {
+            let _lease = self.state.acquire_operation_lease(&request.unit_id).await?;
+            let reservation = self
+                .state
+                .reserve_action(RuntimeActionKind::Remove, request, self.clock.now_ms())
+                .await?;
+            if reservation.dispatch {
+                return Err(RuntimeError::Protocol(
+                    "completed remove receipt regressed to pending".into(),
+                ));
+            }
+            return reservation.receipt.removal.ok_or_else(|| {
+                RuntimeError::Protocol("completed remove receipt has no removal".into())
+            });
+        }
+        self.check_deadline(request.deadline_at_ms)?;
+        let capabilities = self
+            .bounded(
+                request.deadline_at_ms,
+                "capability query",
+                self.checked_capabilities(),
+            )
+            .await?;
+        if !capabilities.supports_feature(crate::contract::RuntimeFeature::Remove) {
+            return Err(RuntimeError::UnsupportedCapabilities(vec![
+                "feature:Remove".into(),
+            ]));
+        }
+        let _lease = self
+            .bounded(
+                request.deadline_at_ms,
+                "operation lease wait",
+                self.state.acquire_operation_lease(&request.unit_id),
+            )
+            .await?;
+        self.check_deadline(request.deadline_at_ms)?;
+        let reservation = self
+            .state
+            .reserve_action(RuntimeActionKind::Remove, request, self.clock.now_ms())
+            .await?;
+        if !reservation.dispatch {
+            return reservation.receipt.removal.ok_or_else(|| {
+                RuntimeError::Protocol("completed remove receipt has no removal".into())
+            });
+        }
+        let removal = self
+            .bounded(
+                request.deadline_at_ms,
+                "provider remove",
+                self.driver.remove(&reservation.record, request),
+            )
+            .await?;
+        removal.validate().map_err(RuntimeError::Protocol)?;
+        if removal.request_id != request.request_id
+            || removal.unit_id != request.unit_id
+            || removal.generation != request.generation
+        {
+            return Err(RuntimeError::Protocol(
+                "provider removal changed immutable request identity".into(),
+            ));
+        }
+        self.state.complete_removal(&removal).await?;
+        Ok(removal)
+    }
+
+    async fn logs(&self, query: &RuntimeLogQuery) -> RuntimeResult<Vec<RuntimeLogChunk>> {
+        query.validate().map_err(RuntimeError::InvalidRequest)?;
+        let capabilities = self.checked_capabilities().await?;
+        if !capabilities.supports_feature(crate::contract::RuntimeFeature::Logs) {
+            return Err(RuntimeError::UnsupportedCapabilities(vec![
+                "feature:Logs".into()
+            ]));
+        }
+        let _lease = self.state.acquire_operation_lease(&query.unit_id).await?;
+        let record = self.state.load(&query.unit_id).await?;
+        ensure_current_generation(&record, query.generation)?;
+        let chunks = self.driver.logs(&record, query).await?;
+        for chunk in &chunks {
+            chunk.validate().map_err(RuntimeError::Protocol)?;
+        }
+        if chunks
+            .windows(2)
+            .any(|pair| pair[0].sequence >= pair[1].sequence)
+        {
+            return Err(RuntimeError::Protocol(
+                "provider returned unordered log chunks".into(),
+            ));
+        }
+        Ok(chunks)
+    }
+
+    async fn exec(&self, request: &RuntimeExecRequest) -> RuntimeResult<RuntimeExecResult> {
+        request.validate().map_err(RuntimeError::InvalidRequest)?;
+        let request_digest = request.digest().map_err(RuntimeError::InvalidRequest)?;
+        let operation_started_at_ms = self.clock.now_ms();
+        let existing = self
+            .matching_receipt(
+                &request.unit_id,
+                request.generation,
+                &request.request_id,
+                RuntimeRequestKind::Exec,
+                &request_digest,
+            )
+            .await?;
+        if existing
+            .as_ref()
+            .is_some_and(|receipt| receipt.state == RuntimeRequestState::Completed)
+        {
+            let _lease = self.state.acquire_operation_lease(&request.unit_id).await?;
+            let reservation = self
+                .state
+                .reserve_exec(request, operation_started_at_ms)
+                .await?;
+            if reservation.dispatch {
+                return Err(RuntimeError::Protocol(
+                    "completed exec receipt regressed to pending".into(),
+                ));
+            }
+            return reservation.receipt.exec_result.ok_or_else(|| {
+                RuntimeError::Protocol("completed exec receipt has no result".into())
+            });
+        }
+        let deadline_at_ms = existing
+            .as_ref()
+            .and_then(|receipt| receipt.deadline_at_ms)
+            .unwrap_or_else(|| self.exec_deadline(request, operation_started_at_ms));
+        let deadline_at_ms = Some(deadline_at_ms);
+        self.check_deadline(deadline_at_ms)?;
+        let capabilities = self
+            .bounded(
+                deadline_at_ms,
+                "capability query",
+                self.checked_capabilities(),
+            )
+            .await?;
+        if !capabilities.supports_feature(crate::contract::RuntimeFeature::Exec) {
+            return Err(RuntimeError::UnsupportedCapabilities(vec![
+                "feature:Exec".into()
+            ]));
+        }
+        let _lease = self
+            .bounded(
+                deadline_at_ms,
+                "operation lease wait",
+                self.state.acquire_operation_lease(&request.unit_id),
+            )
+            .await?;
+        self.check_deadline(deadline_at_ms)?;
+        let reservation = self
+            .state
+            .reserve_exec(request, operation_started_at_ms)
+            .await?;
+        if !reservation.dispatch {
+            return reservation.receipt.exec_result.ok_or_else(|| {
+                RuntimeError::Protocol("completed exec receipt has no result".into())
+            });
+        }
+        let deadline_at_ms = reservation.receipt.deadline_at_ms.ok_or_else(|| {
+            RuntimeError::Protocol("pending exec receipt has no effective deadline".into())
+        })?;
+        let deadline_at_ms = Some(deadline_at_ms);
+        self.check_deadline(deadline_at_ms)?;
+        let mut provider_request = request.clone();
+        provider_request.deadline_at_ms = deadline_at_ms;
+        let result = self
+            .bounded(
+                deadline_at_ms,
+                "provider exec",
+                self.driver.exec(&reservation.record, &provider_request),
+            )
+            .await?;
+        result.validate().map_err(RuntimeError::Protocol)?;
+        result
+            .observation
+            .validate_against(&reservation.record.spec)
+            .map_err(RuntimeError::Protocol)?;
+        if result.request_id != request.request_id
+            || result.observation.unit_id != request.unit_id
+            || result.observation.generation != request.generation
+        {
+            return Err(RuntimeError::Protocol(
+                "provider exec changed immutable request identity".into(),
+            ));
+        }
+        self.state.complete_exec(&result).await?;
+        Ok(result)
+    }
+}
+
+fn ensure_current_generation(
+    record: &crate::RuntimeUnitRecord,
+    requested: u64,
+) -> RuntimeResult<()> {
+    if record.removed_at_ms.is_some() {
+        return Err(RuntimeError::NotFound {
+            unit_id: record.spec.unit_id.clone(),
+        });
+    }
+    if requested < record.spec.generation {
+        return Err(RuntimeError::StaleGeneration {
+            unit_id: record.spec.unit_id.clone(),
+            requested,
+            current: record.spec.generation,
+        });
+    }
+    if requested != record.spec.generation {
+        return Err(RuntimeError::GenerationConflict {
+            unit_id: record.spec.unit_id.clone(),
+            generation: requested,
+        });
+    }
+    Ok(())
+}
+
+fn ensure_apply_result(
+    spec: &crate::contract::RuntimeUnitSpec,
+    observation: &RuntimeObservation,
+) -> RuntimeResult<()> {
+    let allowed = match spec.class {
+        crate::contract::RuntimeUnitClass::Task => matches!(
+            observation.state,
+            RuntimeUnitState::Succeeded | RuntimeUnitState::Failed
+        ),
+        crate::contract::RuntimeUnitClass::Service => matches!(
+            observation.state,
+            RuntimeUnitState::Running
+                | RuntimeUnitState::Stopped
+                | RuntimeUnitState::Failed
+                | RuntimeUnitState::Unknown
+        ),
+    };
+    if !allowed {
+        return Err(RuntimeError::Protocol(format!(
+            "provider apply returned invalid {:?} result {:?}",
+            spec.class, observation.state
+        )));
+    }
+    if observation.provider_resource_id.is_none() || observation.provider_build.is_none() {
+        return Err(RuntimeError::Protocol(
+            "provider apply returned an observation without provider identity".into(),
+        ));
+    }
+    Ok(())
+}
+
+fn ensure_stop_result(
+    current: &RuntimeObservation,
+    observation: &RuntimeObservation,
+) -> RuntimeResult<()> {
+    if observation.state == RuntimeUnitState::Stopped
+        || observation.state == RuntimeUnitState::Unknown
+        || current.state.is_terminal() && observation == current
+    {
+        return Ok(());
+    }
+    Err(RuntimeError::Protocol(format!(
+        "provider stop returned nonterminal state {:?}",
+        observation.state
+    )))
+}

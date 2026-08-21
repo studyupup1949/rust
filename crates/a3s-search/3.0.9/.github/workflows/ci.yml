@@ -1,0 +1,63 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  check:
+    name: Check
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install Rust
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          components: rustfmt, clippy
+
+      - uses: Swatinem/rust-cache@v2
+
+      - name: Format check
+        run: cargo fmt -- --check
+
+      - name: Check browser feature boundary
+        shell: bash
+        run: |
+          set -euo pipefail
+          default_tree="$(cargo tree -e normal --locked)"
+          grep -q 'chromiumoxide' <<<"$default_tree"
+          default_features="$(cargo tree -e features -i a3s-use-browser --locked)"
+          if grep -q 'feature "lightpanda"' <<<"$default_features"; then
+            echo "default Search must use Chrome/Chromium without enabling Lightpanda" >&2
+            exit 1
+          fi
+          minimal_tree="$(cargo tree --no-default-features -e normal --locked)"
+          if grep -q 'chromiumoxide' <<<"$minimal_tree"; then
+            echo "minimal Search must not compile the browser/CDP dependency stack" >&2
+            exit 1
+          fi
+
+      - name: Clippy (no default features)
+        run: cargo clippy --all-targets --no-default-features --locked -- -D warnings
+
+      - name: Clippy (all features)
+        run: cargo clippy --all-targets --all-features --locked -- -D warnings
+
+      - name: Tests (no default features)
+        run: cargo test --no-default-features --locked
+
+      - name: Tests (all features)
+        run: cargo test --all-features --locked
+
+      - name: Rustdoc
+        env:
+          RUSTDOCFLAGS: -D warnings
+        run: cargo doc --no-deps --all-features --locked
+
+      - name: Release archive contract
+        run: |
+          scripts/test-release-package.sh
+          scripts/test-freeze-crate.sh

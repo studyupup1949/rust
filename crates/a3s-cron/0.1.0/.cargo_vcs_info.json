@@ -1,0 +1,6 @@
+{
+  "git": {
+    "sha1": "25534e993061c53523694f179aa062b677a918cb"
+  },
+  "path_in_vcs": "crates/cron"
+}

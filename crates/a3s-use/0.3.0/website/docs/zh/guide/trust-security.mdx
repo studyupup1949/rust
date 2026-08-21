@@ -1,0 +1,117 @@
+---
+title: 信任与安全
+description: A3S Use 如何验证包来源、冻结操作计划、限制权限并安全发布能力代际。
+---
+
+# 信任与安全
+
+A3S Use 的核心安全原则是：**包内容可以描述需求，但不能给自己授权。** Flow/Skill 源码、UI 消息、OKF 知识、Tool 输出、MCP 描述和远端内容始终是数据。
+
+## 三条信任路径
+
+| 来源           | 信任决定                                          | 适用场景       |
+| -------------- | ------------------------------------------------- | -------------- |
+| 本地目录或归档 | 人工审查并显式 `--allow-unsigned`                 | 开发与私有包   |
+| Release 内置包 | 经审查 component plan 中的精确摘要                | 第一方发布内容 |
+| 远端 Registry  | 固定 TUF root、签名元数据、回滚检查与 target 摘要 | 生产分发       |
+
+搜索只在已验证、受大小限制的目录元数据上运行，不下载 package archive。模型或浏览器不能创造目录中不存在的安装身份。
+
+## 可替换的 Registry 来源
+
+远端 Registry 是具名、由宿主持有的 ACL 配置。运维方可以增加镜像或私有 Registry，在稳定名称下替换 URL 与 trust root，在不删除信任状态的情况下停用，并在之后重新启用或移除。保留的内置 `a3s` 身份不能被替换、切换状态或移除。Release bundle 始终是独立于远端 Registry 的并列来源。
+
+```bash
+a3s registry add https://packages.example.org/a3s/ \
+  --trust-root ./root.json \
+  --yes
+
+a3s registry disable packages --yes
+a3s registry replace packages https://mirror.example.org/a3s/ \
+  --trust-root sha256:<64-hex-digits> \
+  --yes
+a3s registry enable packages --yes
+a3s registry refresh packages
+```
+
+只有启用的来源参与 Marketplace 浏览、package lookup、依赖解析、refresh 与升级；已停用来源仍会显示在 source status 中。文件形式的替换 root 会先复制到内容寻址、symlink-safe 的托管路径，再切换 ACL；替换会保留来源的 enabled 状态。同一个 package identity 同时出现在多个启用 Registry 时会以歧义失败。来源管理不会改写已安装 receipt：升级继续绑定记录中的 source name、URL、TUF root、channel 与 target digest，身份漂移时 fail closed。
+
+## 不可变计划
+
+install、upgrade 与 uninstall 在变更前生成带过期时间的 canonical plan。它至少绑定：
+
+- package ID、版本、channel、target 与 source registry；
+- 完整 canonical dependency lock 及其 digest；
+- TUF root 身份和 metadata version；
+- archive length、SHA-256 与 expanded package digest；
+- 表面变化、依赖变化与 Runtime provider evidence；
+- permission ceiling、secret/grant diff 和 workspace 影响；
+- download/installed size、drain 影响与 canonical plan digest。
+
+Apply 接受已审查 digest，重新解析所有输入，并在目标、内容、权限、提供者或所有权漂移时拒绝执行。用户确认与每个 grant proposal 也绑定这个 digest。
+
+对于 schema-v3 dependency，lock 绑定每个选定版本、依赖边、archive/package/manifest digest、宿主 target/version、Registry URL/trust root 和 TUF role version。Apply 在下载任何 archive 前重验完整闭包；同一依赖同时出现在多个已启用 Registry 时属于歧义并 fail closed。
+
+## 默认授权策略
+
+Agent lifecycle 操作默认是 `ask`，不是 `allow`。安全的 metadata search、inspect、list 和 plan 可以预授权；增加信任根、安装 unsigned package、授予 secret 和 purge data 只能由用户执行。
+
+包声明的权限是上限，不是授权。宿主 ACL policy 和 workspace grant 只能进一步收紧：
+
+```acl
+plugins {
+  schema = "a3s.plugin-policy.v1"
+
+  agent_install   = "allow"
+  agent_upgrade   = "ask"
+  agent_uninstall = "ask"
+
+  trusted_registries = ["a3s"]
+  trusted_publishers = ["a3s"]
+  allowed_surfaces   = ["mcp", "skill", "tool", "ui"]
+
+  permissions {
+    native_execution = false
+    private_service  = true
+    child_process    = false
+    secrets          = false
+
+    network "api.example.com" {
+      ports = [443]
+    }
+  }
+}
+```
+
+省略的 ceiling 等价于零、空或 `false`。重复项、未知字段、宽泛网络规则和无人值守 secret grant 都 fail closed。
+
+示例是当前 host policy v1，因此有意省略 `okf`。Core selection 和 manager-toolset v2 已定义 canonical value，但 umbrella host 必须显式 version 或兼容扩展 ACL policy，才能授权包含 OKF 的 operation。
+
+## 激活顺序
+
+```text
+resolve signed dependency graph
+    → freeze exact package lock
+    → build and review immutable plan
+    → revalidate every Registry before payload download
+    → verify and stage dependencies before dependents
+    → prepare grants and Runtime bindings
+    → preflight A3S Flow and stage Skill, UI, and OKF projections
+    → publish changed packages in one capability generation
+    → hide and drain superseded generation
+    → retire old grants, bindings, and owned files
+```
+
+新 generation 在所有 required dependency 就绪之前不可见。升级失败时保留旧 generation；disable/uninstall 先隐藏新调用，再排空精确 generation lease。
+
+精确且已发布的依赖可以 retained 而不重复 commit。卸载按 package 反向顺序执行；另一个已安装包仍需要该依赖时会拒绝移除。部分 enabled receipt 写入在完整 immutable snapshot 发布前保持不可见。
+
+OKF 控制面门禁与 package-lifecycle adapter 已经实现：缺失 Knowledge evidence 为 pending，staged 不发布，只有精确 promoted observation 才是 healthy。产生和清理这些 record 的真实 A3S Knowledge index 后端与 scoped 产品接线仍在开发中。
+
+Flow 的源码完整性与生命周期顺序已实现，但 embedding host 必须注入精确的 `a3s-flow` compiler/runtime adapter。standalone engine 会在 mutation 前拒绝 required Flow，不会把只有源码证据的 Flow 发布为 ready。
+
+## 平台隔离边界
+
+原生进程执行不自动等于 sandbox。在 filesystem、environment、process 与 network restriction 尚未被某个平台 provider 强制执行时，状态必须报告为 `native-unconfined`，且不能使用无人值守 `allow` 路径。
+
+完整的规范参见 [Plugin Lifecycle and Security](https://github.com/A3S-Lab/Use/blob/main/docs/plugin-platform-lifecycle-and-security.md)。

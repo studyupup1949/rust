@@ -1,0 +1,43 @@
+name: CI
+
+on:
+  push:
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          components: clippy, rustfmt
+      - name: Check formatting
+        run: cargo fmt --all -- --check
+      - name: Lint
+        run: cargo clippy --all-targets --locked -- -D warnings
+      - name: Run tests
+        run: cargo test --all-targets --locked
+      - name: Check embedded JavaScript
+        run: |
+          awk '1' \
+            src/workflow/retrieval_foundation.js \
+            src/workflow/retrieval_web.js \
+            src/workflow/retrieval_selection.js \
+            src/workflow/retrieval_reduction.js \
+            src/workflow/retrieval_materialization.js \
+            src/workflow/retrieval_loop.js \
+            src/workflow/retrieval_local.js \
+            src/workflow/retrieval_local_collection.js \
+            src/workflow/retrieval_execution.js |
+            node --check -
+          node --check src/workflow/generation.js
+      - name: Check documentation
+        env:
+          RUSTDOCFLAGS: -D warnings
+        run: cargo doc --no-deps --locked
+      - name: Check release package
+        run: cargo package --locked

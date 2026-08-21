@@ -1,0 +1,15 @@
+target/
+node_modules/
+*.node
+*.whl
+dist/
+build/
+*.egg-info/
+__pycache__/
+.pytest_cache/
+*.pyc
+*.pyo
+*.so
+*.dylib
+*.dll
+Cargo.lock

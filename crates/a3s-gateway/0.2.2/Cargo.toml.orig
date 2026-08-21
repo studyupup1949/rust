@@ -1,0 +1,133 @@
+[package]
+name = "a3s-gateway"
+version = "0.2.2"
+edition = "2021"
+authors = ["A3S Lab"]
+license = "MIT"
+repository = "https://github.com/A3S-Lab/Gateway"
+description = "A3S Gateway - AI-native API gateway with reverse proxy, routing, and agent orchestration"
+readme = "README.md"
+keywords = ["gateway", "api", "proxy", "routing", "load-balancer"]
+categories = ["web-programming::http-server", "network-programming"]
+
+[lib]
+name = "a3s_gateway"
+path = "src/lib.rs"
+
+[[bin]]
+name = "a3s-gateway"
+path = "src/main.rs"
+
+[dependencies]
+# Async runtime — explicit features only; drops unused: process, parking_lot, stats, io-std, tracing
+tokio = { version = "1", features = [
+    "rt-multi-thread",
+    "macros",
+    "sync",
+    "time",
+    "io-util",
+    "net",
+    "fs",
+    "signal",
+] }
+
+# HTTP
+hyper = { version = "1", features = ["http1", "http2", "client", "server"] }
+# Server-side only: drops client-legacy, service (confirmed unused via grep)
+hyper-util = { version = "0.1", features = ["server-auto", "http1", "http2", "tokio"] }
+http = "1"
+http-body-util = "0.1"
+bytes = "1"
+
+# TLS
+tokio-rustls = "0.26"
+rustls = "0.23"
+rustls-pemfile = "2"
+
+# WebSocket
+tokio-tungstenite = "0.24"
+futures-util = "0.3"
+
+# Serialization
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+hcl-rs = "0.18"
+
+# Error handling
+thiserror = "1"
+
+# Logging
+tracing = "0.1"
+tracing-subscriber = { version = "0.3", features = ["env-filter", "json"] }
+
+# CLI
+clap = { version = "4", features = ["derive"] }
+
+# HTTP client (for proxying + health checks)
+# default-features = false drops native-tls; rustls-tls reuses the rustls already in the binary
+reqwest = { version = "0.12", default-features = false, features = [
+    "json",
+    "stream",
+    "rustls-tls",
+    "http2",
+] }
+
+# ACME protocol (JWS signing + key generation)
+ring = "0.17"
+base64 = "0.22"
+
+# File watching (hot reload)
+notify = "7"
+
+# UUID
+uuid = { version = "1", features = ["v4"] }
+
+# Time
+chrono = { version = "0.4", features = ["serde"] }
+
+# Async utilities
+async-trait = "0.1"
+
+# IP address parsing
+ipnet = "2"
+
+# JWT authentication
+jsonwebtoken = "9"
+
+# Compression
+flate2 = "1"
+brotli = "7"
+
+# Redis (optional, for distributed rate limiting)
+redis = { version = "0.27", features = ["tokio-comp"], optional = true }
+
+# Kubernetes (optional, for K8s-native scaling)
+kube = { version = "0.98", features = ["client", "runtime"], optional = true }
+k8s-openapi = { version = "0.24", features = ["latest"], optional = true }
+
+# Self-update
+a3s-updater = { version = "0.2", path = "../updater" }
+
+[features]
+default = []
+redis = ["dep:redis"]
+kube = ["dep:kube", "dep:k8s-openapi"]
+
+[dev-dependencies]
+tokio-test = "0.4"
+tempfile = "3"
+# test-util provides tokio::time::pause() and #[tokio::test] helpers
+tokio = { version = "1", features = ["test-util"] }
+
+# ── Release profile ─────────────────────────────────────────────────────────
+[profile.release]
+# Optimize for binary size rather than speed; gateway throughput is I/O bound
+opt-level = "z"
+# Fat LTO: the linker sees all crates at once → aggressive dead-code elimination
+lto = "fat"
+# Single codegen unit maximises inlining and dead-code removal across modules
+codegen-units = 1
+# Strip local symbols and debuginfo (keeps panic location strings)
+strip = "symbols"
+# Abort on panic: drops the entire stack-unwinding machinery (~hundreds of KB)
+panic = "abort"

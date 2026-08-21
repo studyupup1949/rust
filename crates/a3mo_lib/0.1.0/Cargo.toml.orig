@@ -1,0 +1,38 @@
+[package]
+name = "a3mo_lib"
+version = "0.1.0"
+authors = ["Scarjit <scarjit@aol.com>"]
+edition = "2018"
+description = "Arma3 Mod Organizer libary. Provides funktions for CLI Client and GUI"
+license = "MIT"
+
+[badges]
+appveyor = { repository = "https://github.com/arma3modorganizer/CLI-Interface", branch = "master", service = "github" }
+travis-ci = { repository = "https://github.com/arma3modorganizer/CLI-Interface", branch = "master" }
+#coveralls = { repository = "https://github.com/arma3modorganizer/CLI-Interface", branch = "master", service = "github" }
+maintenance = { status = "actively-developed" }
+
+[dependencies]
+blake2b_simd = "0.5.5"
+rand = "0.7.0"
+xorshift = "0.1"
+time = "0.1.42"
+rustc-test = "0.3.0"
+faster-hex = "0.3.1"
+custom_error = "1.6.0"
+walkdir = "2.2.9"
+rayon = "1.1.0"
+#petgraph = {version="0.4.13", features = ["serde-1"]}
+
+serde = { version = "1.0.90",features = ["derive"] }
+serde_derive = { version = "1.0.90" }
+serde_json = {version = "1.0.40"}
+
+serde_indextree = "0.1.0"
+[dependencies.indextree]
+version = "3.3.0"
+feature = ["deser"]
+
+[dependencies.rusqlite]
+version = "0.20.0"
+features = ["bundled"]

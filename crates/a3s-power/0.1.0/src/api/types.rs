@@ -1,0 +1,708 @@
+use serde::{Deserialize, Serialize};
+
+// ============================================================================
+// OpenAI-compatible types
+// ============================================================================
+
+/// OpenAI-compatible chat completion request.
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct ChatCompletionRequest {
+    pub model: String,
+    pub messages: Vec<ChatCompletionMessage>,
+    #[serde(default)]
+    pub temperature: Option<f32>,
+    #[serde(default)]
+    pub top_p: Option<f32>,
+    #[serde(default)]
+    pub max_tokens: Option<u32>,
+    #[serde(default)]
+    pub stop: Option<Vec<String>>,
+    #[serde(default)]
+    pub stream: Option<bool>,
+    #[serde(default)]
+    pub frequency_penalty: Option<f32>,
+    #[serde(default)]
+    pub presence_penalty: Option<f32>,
+    #[serde(default)]
+    pub seed: Option<i64>,
+    #[serde(default)]
+    pub response_format: Option<ResponseFormat>,
+}
+
+/// Structured output format specifier.
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct ResponseFormat {
+    #[serde(rename = "type")]
+    pub r#type: String,
+}
+
+/// A single message in the chat format.
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct ChatCompletionMessage {
+    pub role: String,
+    pub content: String,
+}
+
+/// OpenAI-compatible chat completion response.
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct ChatCompletionResponse {
+    pub id: String,
+    pub object: String,
+    pub created: i64,
+    pub model: String,
+    pub choices: Vec<ChatChoice>,
+    pub usage: Usage,
+}
+
+/// A single choice in a chat completion response.
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct ChatChoice {
+    pub index: u32,
+    pub message: ChatCompletionMessage,
+    pub finish_reason: Option<String>,
+}
+
+/// A streaming chunk for chat completion.
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct ChatCompletionChunk {
+    pub id: String,
+    pub object: String,
+    pub created: i64,
+    pub model: String,
+    pub choices: Vec<ChatChunkChoice>,
+}
+
+/// A single choice in a streaming chat chunk.
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct ChatChunkChoice {
+    pub index: u32,
+    pub delta: ChatDelta,
+    pub finish_reason: Option<String>,
+}
+
+/// Delta content in a streaming chat chunk.
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct ChatDelta {
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub role: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub content: Option<String>,
+}
+
+// ============================================================================
+// Completion types
+// ============================================================================
+
+/// OpenAI-compatible text completion request.
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct CompletionRequest {
+    pub model: String,
+    pub prompt: String,
+    #[serde(default)]
+    pub temperature: Option<f32>,
+    #[serde(default)]
+    pub top_p: Option<f32>,
+    #[serde(default)]
+    pub max_tokens: Option<u32>,
+    #[serde(default)]
+    pub stop: Option<Vec<String>>,
+    #[serde(default)]
+    pub stream: Option<bool>,
+    #[serde(default)]
+    pub frequency_penalty: Option<f32>,
+    #[serde(default)]
+    pub presence_penalty: Option<f32>,
+    #[serde(default)]
+    pub seed: Option<i64>,
+}
+
+/// OpenAI-compatible text completion response.
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct CompletionResponse {
+    pub id: String,
+    pub object: String,
+    pub created: i64,
+    pub model: String,
+    pub choices: Vec<CompletionChoice>,
+    pub usage: Usage,
+}
+
+/// A single choice in a completion response.
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct CompletionChoice {
+    pub index: u32,
+    pub text: String,
+    pub finish_reason: Option<String>,
+}
+
+// ============================================================================
+// Embedding types
+// ============================================================================
+
+/// OpenAI-compatible embedding request.
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct EmbeddingRequest {
+    pub model: String,
+    pub input: EmbeddingInput,
+}
+
+/// Input to embedding endpoint - single string or array of strings.
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(untagged)]
+pub enum EmbeddingInput {
+    Single(String),
+    Multiple(Vec<String>),
+}
+
+impl EmbeddingInput {
+    pub fn into_vec(self) -> Vec<String> {
+        match self {
+            EmbeddingInput::Single(s) => vec![s],
+            EmbeddingInput::Multiple(v) => v,
+        }
+    }
+}
+
+/// OpenAI-compatible embedding response.
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct EmbeddingResponse {
+    pub object: String,
+    pub data: Vec<EmbeddingData>,
+    pub model: String,
+    pub usage: EmbeddingUsage,
+}
+
+/// A single embedding vector.
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct EmbeddingData {
+    pub object: String,
+    pub embedding: Vec<f32>,
+    pub index: u32,
+}
+
+/// Token usage for embedding requests.
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct EmbeddingUsage {
+    pub prompt_tokens: u32,
+    pub total_tokens: u32,
+}
+
+// ============================================================================
+// Model listing types
+// ============================================================================
+
+/// OpenAI-compatible model list response.
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct ModelList {
+    pub object: String,
+    pub data: Vec<ModelInfo>,
+}
+
+/// Metadata about a single model.
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct ModelInfo {
+    pub id: String,
+    pub object: String,
+    pub created: i64,
+    pub owned_by: String,
+}
+
+// ============================================================================
+// Shared types
+// ============================================================================
+
+/// Token usage information.
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct Usage {
+    pub prompt_tokens: u32,
+    pub completion_tokens: u32,
+    pub total_tokens: u32,
+}
+
+/// Standard error response.
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct ErrorResponse {
+    pub error: ErrorDetail,
+}
+
+/// Error detail inside an error response.
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct ErrorDetail {
+    pub message: String,
+    #[serde(rename = "type")]
+    pub error_type: String,
+    pub code: Option<String>,
+}
+
+// ============================================================================
+// Native API types (Ollama-compatible)
+// ============================================================================
+
+/// Ollama-compatible generate request.
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct GenerateRequest {
+    pub model: String,
+    pub prompt: String,
+    #[serde(default)]
+    pub stream: Option<bool>,
+    #[serde(default)]
+    pub options: Option<GenerateOptions>,
+    #[serde(default)]
+    pub format: Option<String>,
+    #[serde(default)]
+    pub keep_alive: Option<String>,
+}
+
+/// Generation options for the native API.
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct GenerateOptions {
+    pub temperature: Option<f32>,
+    pub top_p: Option<f32>,
+    pub num_predict: Option<u32>,
+    pub stop: Option<Vec<String>>,
+    pub top_k: Option<i32>,
+    pub min_p: Option<f32>,
+    pub repeat_penalty: Option<f32>,
+    pub frequency_penalty: Option<f32>,
+    pub presence_penalty: Option<f32>,
+    pub seed: Option<u32>,
+    pub num_ctx: Option<u32>,
+    pub mirostat: Option<u32>,
+    pub mirostat_tau: Option<f32>,
+    pub mirostat_eta: Option<f32>,
+    pub tfs_z: Option<f32>,
+    pub typical_p: Option<f32>,
+}
+
+/// Ollama-compatible generate response.
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct GenerateResponse {
+    pub model: String,
+    pub response: String,
+    pub done: bool,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub done_reason: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub total_duration: Option<u64>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub load_duration: Option<u64>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub prompt_eval_count: Option<u32>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub prompt_eval_duration: Option<u64>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub eval_count: Option<u32>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub eval_duration: Option<u64>,
+}
+
+/// Ollama-compatible chat request.
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct NativeChatRequest {
+    pub model: String,
+    pub messages: Vec<ChatCompletionMessage>,
+    #[serde(default)]
+    pub stream: Option<bool>,
+    #[serde(default)]
+    pub options: Option<GenerateOptions>,
+    #[serde(default)]
+    pub format: Option<String>,
+    #[serde(default)]
+    pub keep_alive: Option<String>,
+}
+
+/// Ollama-compatible chat response.
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct NativeChatResponse {
+    pub model: String,
+    pub message: ChatCompletionMessage,
+    pub done: bool,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub done_reason: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub total_duration: Option<u64>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub load_duration: Option<u64>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub prompt_eval_count: Option<u32>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub prompt_eval_duration: Option<u64>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub eval_count: Option<u32>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub eval_duration: Option<u64>,
+}
+
+/// Ollama-compatible model listing entry.
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct NativeModelInfo {
+    pub name: String,
+    pub modified_at: String,
+    pub size: u64,
+    pub digest: String,
+    pub details: NativeModelDetails,
+}
+
+/// Detailed information about a model in native format.
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct NativeModelDetails {
+    pub format: String,
+    pub parameter_size: Option<String>,
+    pub quantization_level: Option<String>,
+}
+
+/// Ollama-compatible pull request.
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct PullRequest {
+    pub name: String,
+    #[serde(default)]
+    pub stream: Option<bool>,
+}
+
+/// Ollama-compatible pull progress response (streamed).
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct PullResponse {
+    pub status: String,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub digest: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub total: Option<u64>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub completed: Option<u64>,
+}
+
+/// Show model request.
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct ShowRequest {
+    pub name: String,
+}
+
+/// Show model response.
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct ShowResponse {
+    pub modelfile: String,
+    pub parameters: String,
+    pub template: String,
+    pub details: NativeModelDetails,
+}
+
+/// Delete model request.
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct DeleteRequest {
+    pub name: String,
+}
+
+/// Native embedding request.
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct NativeEmbeddingRequest {
+    pub model: String,
+    pub prompt: String,
+}
+
+/// Native embedding response.
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct NativeEmbeddingResponse {
+    pub embedding: Vec<f32>,
+}
+
+/// Copy model request (Ollama-compatible).
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct CopyRequest {
+    pub source: String,
+    pub destination: String,
+}
+
+/// Native batch embed request (Ollama-compatible POST /api/embed).
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct NativeEmbedRequest {
+    pub model: String,
+    pub input: NativeEmbedInput,
+}
+
+/// Input for the native embed endpoint — single string or array of strings.
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(untagged)]
+pub enum NativeEmbedInput {
+    Single(String),
+    Multiple(Vec<String>),
+}
+
+impl NativeEmbedInput {
+    pub fn into_vec(self) -> Vec<String> {
+        match self {
+            NativeEmbedInput::Single(s) => vec![s],
+            NativeEmbedInput::Multiple(v) => v,
+        }
+    }
+}
+
+/// Native batch embed response (Ollama-compatible).
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct NativeEmbedResponse {
+    pub model: String,
+    pub embeddings: Vec<Vec<f32>>,
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_chat_completion_request_deserialize() {
+        let json = r#"{
+            "model": "llama3",
+            "messages": [{"role": "user", "content": "hi"}]
+        }"#;
+        let req: ChatCompletionRequest = serde_json::from_str(json).unwrap();
+        assert_eq!(req.model, "llama3");
+        assert_eq!(req.messages.len(), 1);
+        assert!(req.stream.is_none());
+        assert!(req.temperature.is_none());
+    }
+
+    #[test]
+    fn test_chat_completion_request_with_options() {
+        let json = r#"{
+            "model": "llama3",
+            "messages": [{"role": "user", "content": "hi"}],
+            "temperature": 0.7,
+            "top_p": 0.9,
+            "max_tokens": 256,
+            "stream": true
+        }"#;
+        let req: ChatCompletionRequest = serde_json::from_str(json).unwrap();
+        assert_eq!(req.temperature, Some(0.7));
+        assert_eq!(req.top_p, Some(0.9));
+        assert_eq!(req.max_tokens, Some(256));
+        assert_eq!(req.stream, Some(true));
+    }
+
+    #[test]
+    fn test_chat_completion_response_serialize() {
+        let resp = ChatCompletionResponse {
+            id: "chatcmpl-123".to_string(),
+            object: "chat.completion".to_string(),
+            created: 1700000000,
+            model: "llama3".to_string(),
+            choices: vec![ChatChoice {
+                index: 0,
+                message: ChatCompletionMessage {
+                    role: "assistant".to_string(),
+                    content: "Hello!".to_string(),
+                },
+                finish_reason: Some("stop".to_string()),
+            }],
+            usage: Usage {
+                prompt_tokens: 5,
+                completion_tokens: 3,
+                total_tokens: 8,
+            },
+        };
+        let json = serde_json::to_string(&resp).unwrap();
+        assert!(json.contains("chatcmpl-123"));
+        assert!(json.contains("Hello!"));
+    }
+
+    #[test]
+    fn test_chat_delta_skip_none() {
+        let delta = ChatDelta {
+            role: None,
+            content: Some("hi".to_string()),
+        };
+        let json = serde_json::to_string(&delta).unwrap();
+        assert!(!json.contains("role"));
+        assert!(json.contains("hi"));
+    }
+
+    #[test]
+    fn test_completion_request_deserialize() {
+        let json = r#"{"model": "llama3", "prompt": "Hello"}"#;
+        let req: CompletionRequest = serde_json::from_str(json).unwrap();
+        assert_eq!(req.model, "llama3");
+        assert_eq!(req.prompt, "Hello");
+    }
+
+    #[test]
+    fn test_embedding_input_single() {
+        let json = r#"{"model": "embed", "input": "hello"}"#;
+        let req: EmbeddingRequest = serde_json::from_str(json).unwrap();
+        let texts = req.input.into_vec();
+        assert_eq!(texts, vec!["hello"]);
+    }
+
+    #[test]
+    fn test_embedding_input_multiple() {
+        let json = r#"{"model": "embed", "input": ["hello", "world"]}"#;
+        let req: EmbeddingRequest = serde_json::from_str(json).unwrap();
+        let texts = req.input.into_vec();
+        assert_eq!(texts, vec!["hello", "world"]);
+    }
+
+    #[test]
+    fn test_generate_request_deserialize() {
+        let json = r#"{"model": "llama3", "prompt": "test"}"#;
+        let req: GenerateRequest = serde_json::from_str(json).unwrap();
+        assert_eq!(req.model, "llama3");
+        assert!(req.stream.is_none());
+        assert!(req.options.is_none());
+    }
+
+    #[test]
+    fn test_generate_request_with_options() {
+        let json = r#"{
+            "model": "llama3",
+            "prompt": "test",
+            "options": {"temperature": 0.5, "num_predict": 100, "top_k": 40, "seed": 42}
+        }"#;
+        let req: GenerateRequest = serde_json::from_str(json).unwrap();
+        let opts = req.options.unwrap();
+        assert_eq!(opts.temperature, Some(0.5));
+        assert_eq!(opts.num_predict, Some(100));
+        assert_eq!(opts.top_k, Some(40));
+        assert_eq!(opts.seed, Some(42));
+    }
+
+    #[test]
+    fn test_generate_response_skip_none() {
+        let resp = GenerateResponse {
+            model: "llama3".to_string(),
+            response: "hi".to_string(),
+            done: false,
+            done_reason: None,
+            total_duration: None,
+            load_duration: None,
+            prompt_eval_count: None,
+            prompt_eval_duration: None,
+            eval_count: None,
+            eval_duration: None,
+        };
+        let json = serde_json::to_string(&resp).unwrap();
+        assert!(!json.contains("total_duration"));
+        assert!(!json.contains("eval_count"));
+        assert!(!json.contains("prompt_eval_count"));
+        assert!(!json.contains("done_reason"));
+    }
+
+    #[test]
+    fn test_pull_request_deserialize() {
+        let json = r#"{"name": "llama3"}"#;
+        let req: PullRequest = serde_json::from_str(json).unwrap();
+        assert_eq!(req.name, "llama3");
+        assert!(req.stream.is_none());
+    }
+
+    #[test]
+    fn test_pull_response_skip_none() {
+        let resp = PullResponse {
+            status: "success".to_string(),
+            digest: None,
+            total: None,
+            completed: None,
+        };
+        let json = serde_json::to_string(&resp).unwrap();
+        assert!(!json.contains("digest"));
+        assert!(!json.contains("total"));
+    }
+
+    #[test]
+    fn test_model_list_serialize() {
+        let list = ModelList {
+            object: "list".to_string(),
+            data: vec![ModelInfo {
+                id: "llama3".to_string(),
+                object: "model".to_string(),
+                created: 1700000000,
+                owned_by: "local".to_string(),
+            }],
+        };
+        let json = serde_json::to_string(&list).unwrap();
+        assert!(json.contains("llama3"));
+        assert!(json.contains("\"object\":\"list\""));
+    }
+
+    #[test]
+    fn test_error_response_serialize() {
+        let resp = ErrorResponse {
+            error: ErrorDetail {
+                message: "not found".to_string(),
+                error_type: "invalid_request_error".to_string(),
+                code: Some("model_not_found".to_string()),
+            },
+        };
+        let json = serde_json::to_string(&resp).unwrap();
+        assert!(json.contains("not found"));
+        assert!(json.contains("model_not_found"));
+    }
+
+    #[test]
+    fn test_native_chat_request_deserialize() {
+        let json = r#"{
+            "model": "llama3",
+            "messages": [{"role": "user", "content": "hi"}]
+        }"#;
+        let req: NativeChatRequest = serde_json::from_str(json).unwrap();
+        assert_eq!(req.model, "llama3");
+        assert_eq!(req.messages.len(), 1);
+    }
+
+    #[test]
+    fn test_chat_completion_request_with_response_format() {
+        let json = r#"{
+            "model": "llama3",
+            "messages": [{"role": "user", "content": "hi"}],
+            "response_format": {"type": "json_object"},
+            "frequency_penalty": 0.5,
+            "presence_penalty": 0.3,
+            "seed": 42
+        }"#;
+        let req: ChatCompletionRequest = serde_json::from_str(json).unwrap();
+        let fmt = req.response_format.unwrap();
+        assert_eq!(fmt.r#type, "json_object");
+        assert_eq!(req.frequency_penalty, Some(0.5));
+        assert_eq!(req.presence_penalty, Some(0.3));
+        assert_eq!(req.seed, Some(42));
+    }
+
+    #[test]
+    fn test_generate_request_with_format_and_keep_alive() {
+        let json = r#"{
+            "model": "llama3",
+            "prompt": "test",
+            "format": "json",
+            "keep_alive": "5m"
+        }"#;
+        let req: GenerateRequest = serde_json::from_str(json).unwrap();
+        assert_eq!(req.format.as_deref(), Some("json"));
+        assert_eq!(req.keep_alive.as_deref(), Some("5m"));
+    }
+
+    #[test]
+    fn test_native_chat_request_with_format_and_keep_alive() {
+        let json = r#"{
+            "model": "llama3",
+            "messages": [{"role": "user", "content": "hi"}],
+            "format": "json",
+            "keep_alive": "-1"
+        }"#;
+        let req: NativeChatRequest = serde_json::from_str(json).unwrap();
+        assert_eq!(req.format.as_deref(), Some("json"));
+        assert_eq!(req.keep_alive.as_deref(), Some("-1"));
+    }
+
+    #[test]
+    fn test_show_response_serialize() {
+        let resp = ShowResponse {
+            modelfile: String::new(),
+            parameters: "{}".to_string(),
+            template: String::new(),
+            details: NativeModelDetails {
+                format: "GGUF".to_string(),
+                parameter_size: None,
+                quantization_level: Some("Q4_K_M".to_string()),
+            },
+        };
+        let json = serde_json::to_string(&resp).unwrap();
+        assert!(json.contains("GGUF"));
+        assert!(json.contains("Q4_K_M"));
+    }
+}

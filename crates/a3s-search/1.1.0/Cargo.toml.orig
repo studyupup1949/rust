@@ -1,0 +1,80 @@
+[package]
+name = "a3s-search"
+version = "1.1.0"
+edition.workspace = true
+license.workspace = true
+repository = "https://github.com/A3S-Lab/Search"
+authors.workspace = true
+description = "Embeddable meta search engine library with CLI and proxy pool support"
+
+[[bin]]
+name = "a3s-search"
+path = "src/main.rs"
+
+[features]
+default = ["obscura"]
+# Obscura headless backend (standalone Rust-native browser).
+# Supports Linux (x86_64/aarch64) and macOS (x86_64/aarch64).
+obscura = []
+
+[dependencies]
+# Async runtime
+tokio.workspace = true
+
+# Serialization
+serde.workspace = true
+serde_json.workspace = true
+
+# Error handling
+thiserror.workspace = true
+anyhow.workspace = true
+
+# Logging
+tracing.workspace = true
+
+# Async utilities
+async-trait.workspace = true
+futures.workspace = true
+
+# HTTP client
+reqwest = { version = "0.12", default-features = false, features = ["rustls-tls", "json", "gzip", "brotli", "socks"] }
+
+# HTML parsing
+scraper = "0.22"
+
+# URL handling
+url = "2"
+urlencoding = "2"
+
+# Configuration file parsing
+hcl-rs = "0.19"
+
+# Obscura headless backend: raw WebSocket CDP client
+tokio-tungstenite = "0.26"
+futures-util = "0.3"
+which = "7"
+
+# Self-update
+a3s-updater = { version = "0.2", path = "../updater" }
+
+# CLI
+clap = { version = "4", features = ["derive"] }
+
+# Logging for CLI
+tracing-subscriber = { version = "0.3", features = ["env-filter"] }
+
+[dev-dependencies]
+tokio-test.workspace = true
+
+# =============================================================================
+# Release Profile — optimized for binary size
+# =============================================================================
+# a3s-search uses obscura as the headless browser backend.
+# I/O-bound workload — optimize for size over speed.
+#
+[profile.release]
+opt-level = "s"
+lto = "thin"
+codegen-units = 1
+strip = true
+panic = "abort"

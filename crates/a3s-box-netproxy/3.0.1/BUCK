@@ -1,0 +1,11 @@
+load("@buckal//:wrapper.bzl", "rust_library")
+
+rust_library(
+    name = "a3s_box_netproxy",
+    srcs = glob(["**/*.rs"]),
+    crate = "a3s_box_netproxy",
+    crate_root = "src/lib.rs",
+    edition = "2021",
+
+    visibility = ["PUBLIC"],
+)

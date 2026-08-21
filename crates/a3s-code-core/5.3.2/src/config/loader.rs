@@ -1,0 +1,922 @@
+use super::provider::{
+    apply_model_caps, ModelConfig, ModelCost, ModelLimit, ModelModalities, ProviderConfig,
+};
+use super::{AutoDelegationConfig, CodeConfig, OsConfig, StorageBackend};
+use crate::error::{CodeError, Result};
+use crate::llm::LlmConfig;
+use crate::mcp::McpServerConfig;
+use crate::memory::MemoryConfig;
+use crate::queue::SessionQueueConfig;
+use a3s_memory::{PrunePolicy, RelevanceConfig};
+use serde_json::{Map as JsonMap, Value as JsonValue};
+use std::collections::HashMap;
+use std::path::{Path, PathBuf};
+
+// ============================================================================
+// ACL Parsing Helpers
+// ============================================================================
+
+fn acl_attr<'a>(block: &'a a3s_acl::Block, keys: &[&str]) -> Option<&'a a3s_acl::Value> {
+    keys.iter().find_map(|key| block.attributes.get(*key))
+}
+
+fn acl_string(value: &a3s_acl::Value) -> Option<String> {
+    match value {
+        a3s_acl::Value::String(s) => Some(s.clone()),
+        a3s_acl::Value::Call(name, args) if name == "env" => {
+            let var_name = args.first().and_then(acl_string)?;
+            std::env::var(var_name).ok()
+        }
+        _ => None,
+    }
+}
+
+fn acl_string_attr(block: &a3s_acl::Block, keys: &[&str]) -> Option<String> {
+    acl_attr(block, keys).and_then(acl_string)
+}
+
+fn acl_label_or_attr(block: &a3s_acl::Block, keys: &[&str]) -> Option<String> {
+    block
+        .labels
+        .first()
+        .cloned()
+        .or_else(|| acl_string_attr(block, keys))
+}
+
+fn acl_bool_attr(block: &a3s_acl::Block, keys: &[&str]) -> Option<bool> {
+    match acl_attr(block, keys) {
+        Some(a3s_acl::Value::Bool(value)) => Some(*value),
+        _ => None,
+    }
+}
+
+fn acl_usize_attr(block: &a3s_acl::Block, keys: &[&str]) -> Option<usize> {
+    match acl_attr(block, keys) {
+        Some(a3s_acl::Value::Number(value)) if *value >= 0.0 => Some(*value as usize),
+        _ => None,
+    }
+}
+
+fn acl_f32_attr(block: &a3s_acl::Block, keys: &[&str]) -> Option<f32> {
+    match acl_attr(block, keys) {
+        Some(a3s_acl::Value::Number(value)) => Some(*value as f32),
+        _ => None,
+    }
+}
+
+fn parse_auto_delegation_block(
+    block: &a3s_acl::Block,
+    base: &AutoDelegationConfig,
+) -> AutoDelegationConfig {
+    let mut config = base.clone();
+    if let Some(enabled) = acl_bool_attr(block, &["enabled"]) {
+        config.enabled = enabled;
+    }
+    if let Some(auto_parallel) =
+        acl_bool_attr(block, &["auto_parallel", "autoParallel", "parallel"])
+    {
+        config.auto_parallel = auto_parallel;
+    }
+    if let Some(allow_manual_delegation) = acl_bool_attr(
+        block,
+        &[
+            "allow_manual_delegation",
+            "allowManualDelegation",
+            "manual_delegation",
+            "manualDelegation",
+        ],
+    ) {
+        config.allow_manual_delegation = allow_manual_delegation;
+    }
+    if let Some(min_confidence) = acl_f32_attr(block, &["min_confidence", "minConfidence"]) {
+        config.min_confidence = min_confidence.clamp(0.0, 1.0);
+    }
+    if let Some(max_tasks) = acl_usize_attr(block, &["max_tasks", "maxTasks"]) {
+        config.max_tasks = max_tasks.max(1);
+    }
+    config
+}
+
+fn parse_memory_block(block: &a3s_acl::Block, base: Option<&MemoryConfig>) -> MemoryConfig {
+    let mut config = base.cloned().unwrap_or_default();
+
+    if let Some(max_short_term) = acl_usize_attr(block, &["max_short_term", "maxShortTerm"]) {
+        config.max_short_term = max_short_term;
+    }
+    if let Some(max_working) = acl_usize_attr(block, &["max_working", "maxWorking"]) {
+        config.max_working = max_working;
+    }
+    if let Some(prune_interval_secs) =
+        acl_usize_attr(block, &["prune_interval_secs", "pruneIntervalSecs"])
+    {
+        config.prune_interval_secs = prune_interval_secs as u64;
+    }
+    if let Some(llm_extraction) = acl_bool_attr(block, &["llm_extraction", "llmExtraction"]) {
+        config.llm_extraction = llm_extraction;
+    }
+    if let Some(max_items) = acl_usize_attr(
+        block,
+        &["llm_extraction_max_items", "llmExtractionMaxItems"],
+    ) {
+        config.llm_extraction_max_items = max_items;
+    }
+    if let Some(max_input_chars) = acl_usize_attr(
+        block,
+        &[
+            "llm_extraction_max_input_chars",
+            "llmExtractionMaxInputChars",
+        ],
+    ) {
+        config.llm_extraction_max_input_chars = max_input_chars;
+    }
+
+    if let Some(relevance) = acl_attr(block, &["relevance"]) {
+        config.relevance = parse_relevance_value(relevance, &config.relevance);
+    }
+
+    if let Some(prune_policy) = acl_attr(block, &["prune", "prune_policy", "prunePolicy"]) {
+        config.prune_policy = Some(parse_prune_policy_value(
+            prune_policy,
+            config.prune_policy.as_ref(),
+        ));
+    }
+
+    for child in &block.blocks {
+        let value = a3s_acl::Value::Object(
+            child
+                .attributes
+                .iter()
+                .map(|(key, value)| (key.clone(), value.clone()))
+                .collect(),
+        );
+        match child.name.as_str() {
+            "relevance" => {
+                config.relevance = parse_relevance_value(&value, &config.relevance);
+            }
+            "prune" | "prune_policy" | "prunePolicy" => {
+                config.prune_policy = Some(parse_prune_policy_value(
+                    &value,
+                    config.prune_policy.as_ref(),
+                ));
+            }
+            _ => {}
+        }
+    }
+
+    config
+}
+
+fn parse_relevance_value(value: &a3s_acl::Value, base: &RelevanceConfig) -> RelevanceConfig {
+    let mut config = base.clone();
+    if let Some(decay_days) = acl_object_f32_attr(value, &["decay_days", "decayDays"]) {
+        config.decay_days = decay_days.max(0.1);
+    }
+    if let Some(importance_weight) =
+        acl_object_f32_attr(value, &["importance_weight", "importanceWeight"])
+    {
+        config.importance_weight = importance_weight.max(0.0);
+    }
+    if let Some(recency_weight) = acl_object_f32_attr(value, &["recency_weight", "recencyWeight"]) {
+        config.recency_weight = recency_weight.max(0.0);
+    }
+    config
+}
+
+fn parse_prune_policy_value(value: &a3s_acl::Value, base: Option<&PrunePolicy>) -> PrunePolicy {
+    let mut policy = base.cloned().unwrap_or_default();
+    if let Some(max_age_days) = acl_object_u32_attr(value, &["max_age_days", "maxAgeDays"]) {
+        policy.max_age_days = max_age_days;
+    }
+    if let Some(min_importance) =
+        acl_object_f32_attr(value, &["min_importance_to_keep", "minImportanceToKeep"])
+    {
+        policy.min_importance_to_keep = min_importance.clamp(0.0, 1.0);
+    }
+    if let Some(max_items) = acl_object_usize_attr(value, &["max_items", "maxItems"]) {
+        policy.max_items = max_items;
+    }
+    policy
+}
+
+fn acl_object_attr<'a>(value: &'a a3s_acl::Value, keys: &[&str]) -> Option<&'a a3s_acl::Value> {
+    match value {
+        a3s_acl::Value::Object(pairs) => keys.iter().find_map(|key| {
+            pairs
+                .iter()
+                .find_map(|(candidate, value)| (candidate == key).then_some(value))
+        }),
+        _ => None,
+    }
+}
+
+fn acl_f32(value: &a3s_acl::Value) -> Option<f32> {
+    match value {
+        a3s_acl::Value::Number(value) => Some(*value as f32),
+        _ => None,
+    }
+}
+
+fn acl_usize(value: &a3s_acl::Value) -> Option<usize> {
+    match value {
+        a3s_acl::Value::Number(value) if *value >= 0.0 => Some(*value as usize),
+        _ => None,
+    }
+}
+
+fn acl_u32(value: &a3s_acl::Value) -> Option<u32> {
+    match value {
+        a3s_acl::Value::Number(value) if *value >= 0.0 => {
+            Some((*value as usize).min(u32::MAX as usize) as u32)
+        }
+        _ => None,
+    }
+}
+
+fn acl_object_f32_attr(value: &a3s_acl::Value, keys: &[&str]) -> Option<f32> {
+    acl_object_attr(value, keys).and_then(acl_f32)
+}
+
+fn acl_object_usize_attr(value: &a3s_acl::Value, keys: &[&str]) -> Option<usize> {
+    acl_object_attr(value, keys).and_then(acl_usize)
+}
+
+fn acl_object_u32_attr(value: &a3s_acl::Value, keys: &[&str]) -> Option<u32> {
+    acl_object_attr(value, keys).and_then(acl_u32)
+}
+
+fn acl_path_list_attr(block: &a3s_acl::Block, keys: &[&str]) -> Option<Vec<PathBuf>> {
+    let value = acl_attr(block, keys)?;
+    match value {
+        a3s_acl::Value::List(items) => Some(
+            items
+                .iter()
+                .filter_map(acl_string)
+                .map(PathBuf::from)
+                .collect(),
+        ),
+        _ => acl_string(value).map(|s| vec![PathBuf::from(s)]),
+    }
+}
+
+fn snake_to_camel(value: &str) -> String {
+    let mut output = String::with_capacity(value.len());
+    let mut uppercase_next = false;
+    for ch in value.chars() {
+        if ch == '_' || ch == '-' {
+            uppercase_next = true;
+        } else if uppercase_next {
+            output.extend(ch.to_uppercase());
+            uppercase_next = false;
+        } else {
+            output.push(ch);
+        }
+    }
+    output
+}
+
+fn acl_value_to_json(value: &a3s_acl::Value) -> Option<JsonValue> {
+    match value {
+        a3s_acl::Value::String(value) => Some(JsonValue::String(value.clone())),
+        a3s_acl::Value::Number(value) if value.fract() == 0.0 && *value >= 0.0 => {
+            Some(JsonValue::Number(serde_json::Number::from(*value as u64)))
+        }
+        a3s_acl::Value::Number(value) if value.fract() == 0.0 => {
+            Some(JsonValue::Number(serde_json::Number::from(*value as i64)))
+        }
+        a3s_acl::Value::Number(value) => {
+            serde_json::Number::from_f64(*value).map(JsonValue::Number)
+        }
+        a3s_acl::Value::Bool(value) => Some(JsonValue::Bool(*value)),
+        a3s_acl::Value::List(items) => Some(JsonValue::Array(
+            items.iter().filter_map(acl_value_to_json).collect(),
+        )),
+        a3s_acl::Value::Object(pairs) => {
+            let mut object = JsonMap::new();
+            for (key, value) in pairs {
+                if let Some(value) = acl_value_to_json(value) {
+                    object.insert(key.clone(), value);
+                }
+            }
+            Some(JsonValue::Object(object))
+        }
+        a3s_acl::Value::Null => Some(JsonValue::Null),
+        a3s_acl::Value::Call(name, _) if name == "env" => acl_string(value).map(JsonValue::String),
+        a3s_acl::Value::Call(_, _) => None,
+    }
+}
+
+fn insert_nested_json(object: &mut JsonMap<String, JsonValue>, key: String, value: JsonValue) {
+    match object.remove(&key) {
+        None => {
+            object.insert(key, value);
+        }
+        Some(JsonValue::Array(mut values)) => {
+            values.push(value);
+            object.insert(key, JsonValue::Array(values));
+        }
+        Some(previous) => {
+            object.insert(key, JsonValue::Array(vec![previous, value]));
+        }
+    }
+}
+
+fn acl_block_to_json(block: &a3s_acl::Block) -> JsonValue {
+    let mut object = JsonMap::new();
+    for (key, value) in &block.attributes {
+        if let Some(value) = acl_value_to_json(value) {
+            object.insert(snake_to_camel(key), value);
+        }
+    }
+
+    for child in &block.blocks {
+        let key = snake_to_camel(&child.name);
+        let value = acl_block_to_json(child);
+        if let Some(label) = child.labels.first() {
+            let entry = object
+                .entry(key)
+                .or_insert_with(|| JsonValue::Object(JsonMap::new()));
+            if let JsonValue::Object(entries) = entry {
+                entries.insert(label.clone(), value);
+            }
+        } else {
+            insert_nested_json(&mut object, key, value);
+        }
+    }
+
+    JsonValue::Object(object)
+}
+
+fn normalize_lane_name(value: &str) -> Option<&'static str> {
+    match value.trim().to_ascii_lowercase().as_str() {
+        "control" => Some("Control"),
+        "query" => Some("Query"),
+        "execute" => Some("Execute"),
+        "generate" => Some("Generate"),
+        _ => None,
+    }
+}
+
+fn normalize_lane_map(value: &mut JsonValue, normalize_handler_mode: bool) {
+    let JsonValue::Object(entries) = value else {
+        return;
+    };
+    let previous = std::mem::take(entries);
+    for (name, mut value) in previous {
+        let Some(name) = normalize_lane_name(&name) else {
+            continue;
+        };
+        if normalize_handler_mode {
+            if let JsonValue::Object(handler) = &mut value {
+                rename_json_key(handler, "timeoutMs", "timeout_ms");
+                if let Some(JsonValue::String(mode)) = handler.get_mut("mode") {
+                    *mode = match mode.trim().to_ascii_lowercase().as_str() {
+                        "external" => "External".to_string(),
+                        "hybrid" => "Hybrid".to_string(),
+                        _ => "Internal".to_string(),
+                    };
+                }
+            }
+        }
+        entries.insert(name.to_string(), value);
+    }
+}
+
+fn parse_queue_block(block: &a3s_acl::Block) -> Result<SessionQueueConfig> {
+    let mut value = acl_block_to_json(block);
+    if let Some(lane_handlers) = value.get_mut("laneHandlers") {
+        normalize_lane_map(lane_handlers, true);
+    }
+    if let Some(lane_timeouts) = value.get_mut("laneTimeouts") {
+        normalize_lane_map(lane_timeouts, false);
+    }
+    serde_json::from_value(value)
+        .map_err(|error| CodeError::Config(format!("Invalid queue configuration: {error}")))
+}
+
+fn parse_search_block(block: &a3s_acl::Block) -> Result<super::SearchConfig> {
+    serde_json::from_value(acl_block_to_json(block))
+        .map_err(|error| CodeError::Config(format!("Invalid search configuration: {error}")))
+}
+
+fn parse_document_parser_block(block: &a3s_acl::Block) -> Result<super::DocumentParserConfig> {
+    serde_json::from_value(acl_block_to_json(block)).map_err(|error| {
+        CodeError::Config(format!("Invalid document parser configuration: {error}"))
+    })
+}
+
+fn rename_json_key(object: &mut JsonMap<String, JsonValue>, from: &str, to: &str) {
+    if let Some(value) = object.remove(from) {
+        object.insert(to.to_string(), value);
+    }
+}
+
+fn parse_mcp_server_block(block: &a3s_acl::Block) -> Result<McpServerConfig> {
+    let mut value = acl_block_to_json(block);
+    let object = value.as_object_mut().ok_or_else(|| {
+        CodeError::Config("Invalid MCP server configuration: expected an object".to_string())
+    })?;
+    if let Some(label) = block.labels.first() {
+        object.insert("name".to_string(), JsonValue::String(label.clone()));
+    }
+    if let Some(JsonValue::Object(oauth)) = object.get_mut("oauth") {
+        rename_json_key(oauth, "authUrl", "auth_url");
+        rename_json_key(oauth, "tokenUrl", "token_url");
+        rename_json_key(oauth, "clientId", "client_id");
+        rename_json_key(oauth, "clientSecret", "client_secret");
+        rename_json_key(oauth, "redirectUri", "redirect_uri");
+        rename_json_key(oauth, "accessToken", "access_token");
+    }
+    serde_json::from_value(value)
+        .map_err(|error| CodeError::Config(format!("Invalid MCP server configuration: {error}")))
+}
+
+fn acl_string_map(value: &a3s_acl::Value) -> HashMap<String, String> {
+    match value {
+        a3s_acl::Value::Object(pairs) => pairs
+            .iter()
+            .filter_map(|(key, value)| acl_string(value).map(|value| (key.clone(), value)))
+            .collect(),
+        _ => HashMap::new(),
+    }
+}
+
+fn acl_string_list(value: &a3s_acl::Value) -> Vec<String> {
+    match value {
+        a3s_acl::Value::List(items) => items.iter().filter_map(acl_string).collect(),
+        _ => Vec::new(),
+    }
+}
+
+fn acl_object_f64_attr(value: &a3s_acl::Value, keys: &[&str]) -> Option<f64> {
+    match acl_object_attr(value, keys) {
+        Some(a3s_acl::Value::Number(value)) => Some(*value),
+        _ => None,
+    }
+}
+
+// ============================================================================
+// CodeConfig Implementation
+// ============================================================================
+
+impl CodeConfig {
+    /// Create a new empty configuration
+    pub fn new() -> Self {
+        Self::default()
+    }
+
+    /// Load configuration from an ACL-compatible config file.
+    ///
+    /// `.acl` is the only supported config file extension. JSON and legacy
+    /// `.hcl` config files are not supported.
+    pub fn from_file(path: &Path) -> Result<Self> {
+        let content = std::fs::read_to_string(path).map_err(|e| {
+            CodeError::Config(format!(
+                "Failed to read config file {}: {}",
+                path.display(),
+                e
+            ))
+        })?;
+
+        Self::from_acl(&content).map_err(|e| {
+            CodeError::Config(format!(
+                "Failed to parse ACL config {}: {}",
+                path.display(),
+                e
+            ))
+        })
+    }
+
+    /// Parse configuration from an ACL string.
+    ///
+    /// ACL (Agent Configuration Language) uses labeled blocks like
+    /// `providers "openai" { }`.
+    pub fn from_acl(content: &str) -> Result<Self> {
+        use a3s_acl::parse_acl;
+
+        let doc = parse_acl(content)
+            .map_err(|e| CodeError::Config(format!("Failed to parse ACL: {}", e)))?;
+
+        let mut config = Self::default();
+
+        for block in doc.blocks {
+            match block.name.as_str() {
+                "default_model" => {
+                    // ACL: default_model = "openai/gpt-4" or just "openai/gpt-4" as label
+                    if let Some(default_model) = acl_label_or_attr(&block, &["default_model"]) {
+                        config.default_model = Some(default_model);
+                    }
+                }
+                "storage_backend" => {
+                    if let Some(backend) = acl_string_attr(&block, &["storage_backend"]) {
+                        config.storage_backend = match backend.to_ascii_lowercase().as_str() {
+                            "memory" => StorageBackend::Memory,
+                            "custom" => StorageBackend::Custom,
+                            _ => StorageBackend::File,
+                        };
+                    }
+                }
+                "sessions_dir" => {
+                    if let Some(path) = acl_string_attr(&block, &["sessions_dir"]) {
+                        config.sessions_dir = Some(PathBuf::from(path));
+                    }
+                }
+                "memory_dir" | "memoryDir" => {
+                    if let Some(path) = acl_string_attr(&block, &["memory_dir", "memoryDir"]) {
+                        config.memory_dir = Some(PathBuf::from(path));
+                    }
+                }
+                "memory" => {
+                    config.memory = Some(parse_memory_block(&block, config.memory.as_ref()));
+                }
+                "queue" => {
+                    config.queue = Some(parse_queue_block(&block)?);
+                }
+                "search" => {
+                    config.search = Some(parse_search_block(&block)?);
+                }
+                "document_parser" | "documentParser" => {
+                    config.document_parser = Some(parse_document_parser_block(&block)?);
+                }
+                "mcp_servers" | "mcpServers" | "mcp_server" => {
+                    config.mcp_servers.push(parse_mcp_server_block(&block)?);
+                }
+                "storage_url" => {
+                    if let Some(storage_url) = acl_string_attr(&block, &["storage_url"]) {
+                        config.storage_url = Some(storage_url);
+                    }
+                }
+                "skill_dirs" | "skills" => {
+                    if let Some(paths) = acl_path_list_attr(&block, &["skill_dirs", "skills"]) {
+                        config.skill_dirs = paths;
+                    }
+                }
+                "agent_dirs" => {
+                    if let Some(paths) = acl_path_list_attr(&block, &["agent_dirs"]) {
+                        config.agent_dirs = paths;
+                    }
+                }
+                "max_tool_rounds" => {
+                    if let Some(max_tool_rounds) = acl_usize_attr(&block, &["max_tool_rounds"]) {
+                        config.max_tool_rounds = Some(max_tool_rounds);
+                    }
+                }
+                "max_parallel_tasks" => {
+                    if let Some(max_parallel_tasks) =
+                        acl_usize_attr(&block, &["max_parallel_tasks"])
+                    {
+                        config.max_parallel_tasks = Some(max_parallel_tasks);
+                    }
+                }
+                "auto_parallel" | "auto_parallel_enabled" => {
+                    if let Some(auto_parallel) =
+                        acl_bool_attr(&block, &["auto_parallel", "auto_parallel_enabled"])
+                    {
+                        config.auto_parallel = Some(auto_parallel);
+                    }
+                }
+                "auto_delegation" => {
+                    config.auto_delegation =
+                        parse_auto_delegation_block(&block, &config.auto_delegation);
+                }
+                "thinking_budget" => {
+                    if let Some(thinking_budget) = acl_usize_attr(&block, &["thinking_budget"]) {
+                        config.thinking_budget = Some(thinking_budget);
+                    }
+                }
+                "llm_api_timeout_ms" | "api_timeout_ms" | "model_api_timeout_ms" => {
+                    if let Some(timeout_ms) = acl_usize_attr(
+                        &block,
+                        &[
+                            "llm_api_timeout_ms",
+                            "api_timeout_ms",
+                            "model_api_timeout_ms",
+                        ],
+                    ) {
+                        config.llm_api_timeout_ms = Some(timeout_ms as u64);
+                    }
+                }
+                "os" => {
+                    if let Some(address) =
+                        acl_label_or_attr(&block, &["os", "address", "url", "baseUrl", "base_url"])
+                            .map(|value| value.trim().to_string())
+                            .filter(|value| !value.is_empty())
+                    {
+                        config.os = Some(OsConfig { address });
+                    }
+                }
+                "providers" => {
+                    let provider_name = block.labels.first().cloned().ok_or_else(|| {
+                        CodeError::Config(
+                            "providers block requires a label (e.g., providers \"openai\" { ... })"
+                                .into(),
+                        )
+                    })?;
+
+                    let mut provider = ProviderConfig {
+                        name: provider_name.clone(),
+                        api_key: None,
+                        base_url: None,
+                        headers: HashMap::new(),
+                        session_id_header: None,
+                        models: Vec::new(),
+                    };
+
+                    for (key, value) in &block.attributes {
+                        match key.as_str() {
+                            "apiKey" | "api_key" => {
+                                if let Some(api_key) = acl_string(value) {
+                                    provider.api_key = Some(api_key);
+                                }
+                            }
+                            "baseUrl" | "base_url" => {
+                                if let Some(base_url) = acl_string(value) {
+                                    provider.base_url = Some(base_url);
+                                }
+                            }
+                            "sessionIdHeader" | "session_id_header" => {
+                                if let Some(header) = acl_string(value) {
+                                    provider.session_id_header = Some(header);
+                                }
+                            }
+                            "headers" => {
+                                provider.headers = acl_string_map(value);
+                            }
+                            _ => {}
+                        }
+                    }
+
+                    // Process nested models blocks
+                    for model_block in &block.blocks {
+                        if model_block.name == "models" {
+                            let model_name =
+                                model_block.labels.first().cloned().ok_or_else(|| {
+                                    CodeError::Config(
+                                        "models block requires a label (e.g., models \"gpt-4\" { ... })"
+                                            .into(),
+                                    )
+                                })?;
+
+                            let mut model = ModelConfig {
+                                id: model_name.clone(),
+                                name: model_name.clone(),
+                                family: String::new(),
+                                api_key: None,
+                                base_url: None,
+                                headers: HashMap::new(),
+                                session_id_header: None,
+                                attachment: false,
+                                reasoning: false,
+                                tool_call: true,
+                                temperature: true,
+                                release_date: None,
+                                modalities: ModelModalities::default(),
+                                cost: ModelCost::default(),
+                                limit: ModelLimit::default(),
+                            };
+
+                            for (key, value) in &model_block.attributes {
+                                match key.as_str() {
+                                    "name" => {
+                                        if let Some(s) = acl_string(value) {
+                                            model.name = s;
+                                        }
+                                    }
+                                    "family" => {
+                                        if let Some(s) = acl_string(value) {
+                                            model.family = s;
+                                        }
+                                    }
+                                    "apiKey" | "api_key" => {
+                                        if let Some(api_key) = acl_string(value) {
+                                            model.api_key = Some(api_key);
+                                        }
+                                    }
+                                    "baseUrl" | "base_url" => {
+                                        if let Some(base_url) = acl_string(value) {
+                                            model.base_url = Some(base_url);
+                                        }
+                                    }
+                                    "sessionIdHeader" | "session_id_header" => {
+                                        if let Some(header) = acl_string(value) {
+                                            model.session_id_header = Some(header);
+                                        }
+                                    }
+                                    "headers" => {
+                                        model.headers = acl_string_map(value);
+                                    }
+                                    "attachment" => {
+                                        model.attachment =
+                                            acl_bool_attr(model_block, &["attachment"])
+                                                .unwrap_or(model.attachment);
+                                    }
+                                    "reasoning" => {
+                                        model.reasoning =
+                                            acl_bool_attr(model_block, &["reasoning"])
+                                                .unwrap_or(model.reasoning);
+                                    }
+                                    "toolCall" | "tool_call" => {
+                                        model.tool_call =
+                                            acl_bool_attr(model_block, &["toolCall", "tool_call"])
+                                                .unwrap_or(model.tool_call);
+                                    }
+                                    "temperature" => {
+                                        model.temperature =
+                                            acl_bool_attr(model_block, &["temperature"])
+                                                .unwrap_or(model.temperature);
+                                    }
+                                    "releaseDate" | "release_date" => {
+                                        if let Some(release_date) = acl_string(value) {
+                                            model.release_date = Some(release_date);
+                                        }
+                                    }
+                                    "maxTokens" => {
+                                        tracing::warn!(
+                                            provider = %provider.name,
+                                            model = %model.id,
+                                            field = "maxTokens",
+                                            "Flat ACL model token limit fields are deprecated; use limit = {{ output = ..., context = ... }}"
+                                        );
+                                        if let Some(output) = acl_u32(value) {
+                                            model.limit.output = output;
+                                        }
+                                    }
+                                    "contextTokens" => {
+                                        tracing::warn!(
+                                            provider = %provider.name,
+                                            model = %model.id,
+                                            field = "contextTokens",
+                                            "Flat ACL model token limit fields are deprecated; use limit = {{ output = ..., context = ... }}"
+                                        );
+                                        if let Some(context) = acl_u32(value) {
+                                            model.limit.context = context;
+                                        }
+                                    }
+                                    "limit" => {
+                                        if let Some(output) =
+                                            acl_object_u32_attr(value, &["output"])
+                                        {
+                                            model.limit.output = output;
+                                        }
+                                        if let Some(context) =
+                                            acl_object_u32_attr(value, &["context"])
+                                        {
+                                            model.limit.context = context;
+                                        }
+                                    }
+                                    "modalities" => {
+                                        if let Some(input) = acl_object_attr(value, &["input"]) {
+                                            model.modalities.input = acl_string_list(input);
+                                        }
+                                        if let Some(output) = acl_object_attr(value, &["output"]) {
+                                            model.modalities.output = acl_string_list(output);
+                                        }
+                                    }
+                                    "cost" => {
+                                        if let Some(input) = acl_object_f64_attr(value, &["input"])
+                                        {
+                                            model.cost.input = input;
+                                        }
+                                        if let Some(output) =
+                                            acl_object_f64_attr(value, &["output"])
+                                        {
+                                            model.cost.output = output;
+                                        }
+                                        if let Some(cache_read) =
+                                            acl_object_f64_attr(value, &["cache_read", "cacheRead"])
+                                        {
+                                            model.cost.cache_read = cache_read;
+                                        }
+                                        if let Some(cache_write) = acl_object_f64_attr(
+                                            value,
+                                            &["cache_write", "cacheWrite"],
+                                        ) {
+                                            model.cost.cache_write = cache_write;
+                                        }
+                                    }
+                                    _ => {}
+                                }
+                            }
+
+                            provider.models.push(model);
+                        }
+                    }
+
+                    config.providers.push(provider);
+                }
+                _ => {}
+            }
+        }
+
+        if let Some(auto_parallel) = config.auto_parallel {
+            config.auto_delegation.auto_parallel = auto_parallel;
+        }
+
+        Ok(config)
+    }
+
+    /// Find a provider by name
+    pub fn find_provider(&self, name: &str) -> Option<&ProviderConfig> {
+        self.providers.iter().find(|p| p.name == name)
+    }
+
+    /// Get the default provider configuration (parsed from `default_model` "provider/model" format)
+    pub fn default_provider_config(&self) -> Option<&ProviderConfig> {
+        let default = self.default_model.as_ref()?;
+        let (provider_name, _) = default.split_once('/')?;
+        self.find_provider(provider_name)
+    }
+
+    /// Get the default model configuration (parsed from `default_model` "provider/model" format)
+    pub fn default_model_config(&self) -> Option<(&ProviderConfig, &ModelConfig)> {
+        let default = self.default_model.as_ref()?;
+        let (provider_name, model_id) = default.split_once('/')?;
+        let provider = self.find_provider(provider_name)?;
+        let model = provider.find_model(model_id)?;
+        Some((provider, model))
+    }
+
+    /// Get LlmConfig for the default provider and model
+    ///
+    /// Returns None if default provider/model is not configured or API key is missing.
+    pub fn default_llm_config(&self) -> Option<LlmConfig> {
+        let (provider, model) = self.default_model_config()?;
+        let api_key = provider.get_api_key(model)?;
+        let base_url = provider.get_base_url(model);
+        let headers = provider.get_headers(model);
+        let session_id_header = provider.get_session_id_header(model);
+
+        let mut config = LlmConfig::new(&provider.name, &model.id, api_key);
+        if let Some(url) = base_url {
+            config = config.with_base_url(url);
+        }
+        if !headers.is_empty() {
+            config = config.with_headers(headers);
+        }
+        if let Some(header_name) = session_id_header {
+            config = config.with_session_id_header(header_name);
+        }
+        if let Some(timeout_ms) = self.llm_api_timeout_ms {
+            config = config.with_api_timeout(timeout_ms);
+        }
+        config = apply_model_caps(config, model, self.thinking_budget);
+        Some(config)
+    }
+
+    /// Get LlmConfig for a specific provider and model
+    ///
+    /// Returns None if provider/model is not found or API key is missing.
+    pub fn llm_config(&self, provider_name: &str, model_id: &str) -> Option<LlmConfig> {
+        let provider = self.find_provider(provider_name)?;
+        let model = provider.find_model(model_id)?;
+        let api_key = provider.get_api_key(model)?;
+        let base_url = provider.get_base_url(model);
+        let headers = provider.get_headers(model);
+        let session_id_header = provider.get_session_id_header(model);
+
+        let mut config = LlmConfig::new(&provider.name, &model.id, api_key);
+        if let Some(url) = base_url {
+            config = config.with_base_url(url);
+        }
+        if !headers.is_empty() {
+            config = config.with_headers(headers);
+        }
+        if let Some(header_name) = session_id_header {
+            config = config.with_session_id_header(header_name);
+        }
+        if let Some(timeout_ms) = self.llm_api_timeout_ms {
+            config = config.with_api_timeout(timeout_ms);
+        }
+        config = apply_model_caps(config, model, self.thinking_budget);
+        Some(config)
+    }
+
+    /// List all available models across all providers
+    pub fn list_models(&self) -> Vec<(&ProviderConfig, &ModelConfig)> {
+        self.providers
+            .iter()
+            .flat_map(|p| p.models.iter().map(move |m| (p, m)))
+            .collect()
+    }
+
+    /// Add a skill directory
+    pub fn add_skill_dir(mut self, dir: impl Into<PathBuf>) -> Self {
+        self.skill_dirs.push(dir.into());
+        self
+    }
+
+    /// Add an agent directory
+    pub fn add_agent_dir(mut self, dir: impl Into<PathBuf>) -> Self {
+        self.agent_dirs.push(dir.into());
+        self
+    }
+
+    /// Check if any directories are configured
+    pub fn has_directories(&self) -> bool {
+        !self.skill_dirs.is_empty() || !self.agent_dirs.is_empty()
+    }
+
+    /// Check if provider configuration is available
+    pub fn has_providers(&self) -> bool {
+        !self.providers.is_empty()
+    }
+}

@@ -1,0 +1,29 @@
+load("@buckal//:wrapper.bzl", "rust_library")
+
+rust_library(
+    name = "a3s_office",
+    srcs = glob(["**/*.rs"]),
+    crate = "a3s_office",
+    crate_root = "src/lib.rs",
+    edition = "2021",
+    features = ["default"],
+
+    visibility = ["PUBLIC"],
+    deps = [
+        "//third-party/rust/crates/a3s-office-formula-parser/0.1.0:a3s_office_formula_parser",
+        "//third-party/rust/crates/a3s-use-core/0.2.2:a3s_use_core",
+        "//third-party/rust/crates/async-trait/0.1.92:async_trait",
+        "//third-party/rust/crates/base64/0.22.1:base64",
+        "//third-party/rust/crates/fs2/0.4.3:fs2",
+        "//third-party/rust/crates/quick-xml/0.38.4:quick_xml",
+        "//third-party/rust/crates/regex/1.13.1:regex",
+        "//third-party/rust/crates/reqwest/0.12.28:reqwest",
+        "//third-party/rust/crates/serde/1.0.229:serde",
+        "//third-party/rust/crates/serde_json/1.0.151:serde_json",
+        "//third-party/rust/crates/sha2/0.10.9:sha2",
+        "//third-party/rust/crates/tempfile/3.27.0:tempfile",
+        "//third-party/rust/crates/tokio/1.53.1:tokio",
+        "//third-party/rust/crates/url/2.5.8:url",
+        "//third-party/rust/crates/zip/2.4.2:zip",
+    ],
+)

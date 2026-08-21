@@ -1,0 +1,149 @@
+[package]
+name = "a3s-code-core"
+version = "3.0.0"
+edition = "2021"
+authors = ["A3S Lab Team"]
+license = "MIT"
+repository = "https://github.com/A3S-Lab/Code"
+description = "A3S Code Core - Embeddable AI agent library with tool execution"
+
+[lib]
+name = "a3s_code_core"
+path = "src/lib.rs"
+
+[dependencies]
+# Internal crates
+a3s-common = "0.1.1"
+a3s-memory = "0.1.1"
+a3s-lane = "0.4"
+a3s-search = { version = "1.2.3", default-features = false, features = ["lightpanda"] }
+
+# Async runtime
+tokio = { version = "1.35", features = [
+    "rt-multi-thread", "sync", "time", "io-util",
+    "process", "fs", "macros"
+] }
+tokio-stream = { version = "0.1", features = ["net"] }
+tokio-util = { version = "0.7", features = ["codec"] }
+
+# Serialization
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
+serde_yaml = "0.9"
+toml = "0.8"
+
+# ACL config parsing
+a3s-acl = { git = "https://github.com/A3S-Lab/ACL.git", tag = "v0.2.0", version = "0.2.0" }
+
+# Error handling
+anyhow = "1.0"
+thiserror = "1.0"
+
+# Logging (tracing only — no OTel)
+tracing = "0.1"
+tracing-subscriber = { version = "0.3", features = ["env-filter", "json"] }
+
+# OpenTelemetry (optional — requires `telemetry` feature)
+opentelemetry = { version = "0.27", optional = true }
+opentelemetry_sdk = { version = "0.27", features = ["rt-tokio"], optional = true }
+opentelemetry-otlp = { version = "0.27", features = ["tonic"], optional = true }
+tracing-opentelemetry = { version = "0.28", optional = true }
+
+# Async utilities
+futures = "0.3"
+async-trait = "0.1"
+async-stream = "0.3"
+
+# HTTP client for LLM APIs
+reqwest = { version = "0.11", default-features = false, features = ["json", "stream", "rustls-tls"] }
+
+# File operations
+glob = "0.3"
+ignore = "0.4"
+
+# Diff for edit tool
+similar = "2.4"
+
+# Home directory for project memory
+dirs = "5.0"
+
+# Regex for template substitution
+regex = "1.10"
+
+# SHA256 for security provider
+sha256 = "1.5"
+
+# Shell argument parsing
+shell-words = "1.1"
+
+# HTML to text/markdown conversion
+html2text = "0.16"
+htmd = "0.5"
+pdf-extract = "0.7"
+lopdf = "0.34"
+roxmltree = "0.20"
+zip = { version = "0.6", default-features = false, features = ["deflate"] }
+cfb = "0.14"
+flate2 = "1.0"
+tar = "0.4"
+tempfile = "3.10"
+
+# Base64 for image encoding
+base64 = "0.21"
+
+# Bytes for streaming
+bytes = "1.5"
+
+# Pin for futures
+pin-project-lite = "0.2"
+
+# UUID
+uuid = { version = "1.6", features = ["v4", "serde"] }
+
+# Time handling
+chrono = { version = "0.4", features = ["serde"] }
+rquickjs = { version = "0.11.0", features = ["futures"] }
+
+# S3-compatible workspace backend (optional, gated by `s3` feature)
+aws-sdk-s3 = { version = "1", default-features = false, features = ["rt-tokio", "rustls"], optional = true }
+aws-credential-types = { version = "1", optional = true }
+aws-smithy-types = { version = "1", optional = true }
+aws-smithy-runtime-api = { version = "1", optional = true }
+
+[target.'cfg(unix)'.dependencies]
+a3s-ahp = { version = "2.4", optional = true, features = ["http", "websocket", "unix-socket"] }
+
+[target.'cfg(not(unix))'.dependencies]
+a3s-ahp = { version = "2.4", optional = true, features = ["http", "websocket"] }
+
+[features]
+default = []
+# Enable OpenTelemetry OTLP export for traces and metrics.
+# When active, `TelemetryConfig::init()` sets up OTLP exporter + tracing subscriber.
+telemetry = [
+    "dep:opentelemetry",
+    "dep:opentelemetry_sdk",
+    "dep:opentelemetry-otlp",
+    "dep:tracing-opentelemetry",
+]
+# Enable AHP (Agent Harness Protocol) integration for external supervision
+ahp = ["dep:a3s-ahp"]
+# Enable the S3-compatible workspace backend (`S3WorkspaceBackend`).
+# Brings in the AWS Rust SDK and is safe to point at any S3-compatible
+# endpoint (AWS S3, MinIO, RustFS, Cloudflare R2, ...).
+s3 = [
+    "dep:aws-sdk-s3",
+    "dep:aws-credential-types",
+    "dep:aws-smithy-types",
+    "dep:aws-smithy-runtime-api",
+]
+
+[dev-dependencies]
+# AHP for integration tests
+a3s-ahp = "2.4"
+# HTTP mocking for the RemoteGitBackend (and any future HTTP-backed workspace
+# provider). Production code does not depend on wiremock.
+wiremock = "0.6"
+# Self-signed cert generation for mTLS happy-path tests. Production code does
+# not depend on rcgen.
+rcgen = "0.13"

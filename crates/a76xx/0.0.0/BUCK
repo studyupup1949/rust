@@ -1,0 +1,21 @@
+load("@buckal//:wrapper.bzl", "rust_library")
+
+rust_library(
+    name = "a76xx",
+    srcs = glob(["**/*.rs"]),
+    crate = "a76xx",
+    crate_root = "src/lib.rs",
+    edition = "2024",
+
+    visibility = ["PUBLIC"],
+    deps = [
+        "//third-party/rust/crates/atat/0.24.1:atat",
+        "//third-party/rust/crates/embassy-futures/0.1.2:embassy_futures",
+        "//third-party/rust/crates/embassy-sync/0.8.0:embassy_sync",
+        "//third-party/rust/crates/embassy-time/0.5.1:embassy_time",
+        "//third-party/rust/crates/embedded-hal/1.0.0:embedded_hal",
+        "//third-party/rust/crates/embedded-io-async/0.7.0:embedded_io_async",
+        "//third-party/rust/crates/heapless/0.9.3:heapless",
+        "//third-party/rust/crates/static_cell/2.1.1:static_cell",
+    ],
+)

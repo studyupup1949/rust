@@ -1,0 +1,16 @@
+load("@buckal//:wrapper.bzl", "rust_library")
+
+rust_library(
+    name = "a7105",
+    srcs = glob(["**/*.rs"]),
+    crate = "a7105",
+    crate_root = "src/lib.rs",
+    edition = "2021",
+    features = ["default"],
+
+    visibility = ["PUBLIC"],
+    deps = [
+        "//third-party/rust/crates/defmt/0.3.100:defmt",
+        "//third-party/rust/crates/maybe-async/0.2.11:maybe_async",
+    ],
+)

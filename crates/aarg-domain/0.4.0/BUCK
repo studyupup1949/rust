@@ -1,0 +1,20 @@
+load("@buckal//:wrapper.bzl", "rust_library")
+
+rust_library(
+    name = "aarg_domain",
+    srcs = glob(["**/*.rs"]),
+    crate = "aarg_domain",
+    crate_root = "src/lib.rs",
+    edition = "2024",
+    features = ["default"],
+
+    visibility = ["PUBLIC"],
+    deps = [
+        "//third-party/rust/crates/aarg-core/0.4.0:aarg_core",
+        "//third-party/rust/crates/async-trait/0.1.92:async_trait",
+        "//third-party/rust/crates/chrono/0.4.45:chrono",
+        "//third-party/rust/crates/serde/1.0.229:serde",
+        "//third-party/rust/crates/serde_json/1.0.151:serde_json",
+        "//third-party/rust/crates/thiserror/2.0.20:thiserror",
+    ],
+)

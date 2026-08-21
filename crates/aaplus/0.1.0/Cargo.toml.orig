@@ -1,0 +1,52 @@
+[package]
+name = "aaplus"
+version = "0.1.0"
+authors = ["thuleqaid <thuleqaid@163.com>"]
+readme = "README.md"
+repository = "https://github.com/thuleqaid/rust-aaplus"
+description = "Rust implementation for astronomical algorithms"
+license = "MIT"
+
+[profile.dev]
+opt-level = 0
+debug = true
+rpath = false
+lto = false
+debug-assertions = true
+codegen-units = 1
+panic = 'unwind'
+
+[profile.release]
+opt-level = 3
+debug = false
+rpath = false
+lto = false
+debug-assertions = false
+codegen-units = 1
+panic = 'unwind'
+
+[profile.test]
+debug = 2
+rpath = false
+lto = false
+debug-assertions = true
+codegen-units = 1
+panic = 'unwind'
+
+[profile.bench]
+debug = false
+rpath = false
+lto = false
+debug-assertions = false
+codegen-units = 1
+panic = 'unwind'
+
+[profile.doc]
+debug = 2
+rpath = false
+lto = false
+debug-assertions = true
+codegen-units = 1
+panic = 'unwind'
+
+[dependencies]

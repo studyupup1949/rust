@@ -1,0 +1,36 @@
+{
+  "idShort": "UGxhbnQx",
+  "displayName": [
+    {
+      "language": "en",
+      "text": "Plant 1"
+    }
+  ],
+  "id": "https://example.com/idta/aas/Plant1/1/0",
+  "assetInformation": {
+    "assetKind": "Instance",
+    "globalAssetId": "https://example.com/idta/asset/Plant1/1/0",
+    "assetType": "Plant"
+  },
+  "submodels": [
+    {
+      "type": "ModelReference",
+      "keys": [
+        {
+          "type": "Submodel",
+          "value": "https://example.com/idta/Submodel/Plant1/GeneralInfo/1/0"
+        }
+      ]
+    },
+    {
+      "type": "ModelReference",
+      "keys": [
+        {
+          "type": "Submodel",
+          "value": "https://example.com/idta/Submodel/Plant1/ProductionLines/1/0"
+        }
+      ]
+    }
+  ],
+  "modelType": "AssetAdministrationShell"
+}

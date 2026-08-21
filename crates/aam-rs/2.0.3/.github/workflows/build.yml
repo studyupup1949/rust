@@ -1,0 +1,1132 @@
+name: Manual Build & Attach C Libs
+
+on:
+  workflow_dispatch:
+    inputs:
+      reason:
+        description: "Reason for manual build"
+        required: false
+        default: "Force build and attach C libraries to latest release"
+      publish_npm:
+        description: "Publish Node.js packages to npm"
+        required: false
+        default: false
+        type: boolean
+      publish_pypi:
+        description: "Publish Python packages to PyPI"
+        required: false
+        default: false
+        type: boolean
+      publish_github_release:
+        description: "Publish built artifacts to GitHub Release"
+        required: false
+        default: true
+        type: boolean
+      publish_cargo_crates:
+        description: "Publish Rust crates to crates.io"
+        required: false
+        default: false
+        type: boolean
+      publish_maven_central:
+        description: "Publish Java artifacts to Maven Central"
+        required: false
+        default: false
+        type: boolean
+      publish_nuget:
+        description: "Publish C# package to NuGet"
+        required: false
+        default: false
+        type: boolean
+      publish_ruby:
+        description: "Publish Ruby gem to RubyGems and GitHub Packages"
+        required: false
+        default: false
+        type: boolean
+      publish_php:
+        description: "Publish PHP package to separate mirror repo (for Packagist)"
+        required: false
+        default: false
+        type: boolean
+
+permissions:
+  contents: write
+  packages: write
+  id-token: write
+  attestations: write
+
+jobs:
+  get-latest-tag:
+    name: Find Latest Release
+    runs-on: ubuntu-latest
+    outputs:
+      tag_name: ${{ steps.get_tag.outputs.tag }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Fetch Latest Release Tag
+        id: get_tag
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          LATEST_TAG=$(gh api repos/${{ github.repository }}/releases/latest --jq '.tag_name' 2>/dev/null || echo "")
+
+          if [ -z "$LATEST_TAG" ]; then
+            echo "Error: No releases found in the repository. Please create a release first." >&2
+            exit 1
+          fi
+
+          echo "tag=$LATEST_TAG" >> "$GITHUB_OUTPUT"
+          echo "Found actual tag: $LATEST_TAG"
+
+  generate-credits:
+    name: Generate Licenses (CREDITS)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+      - name: Install cargo-binstall
+        uses: cargo-bins/cargo-binstall@main
+      - name: Install cargo-about
+        run: cargo binstall cargo-about -y
+      - name: Generate CREDITS.html
+        run: cargo about generate about.hbs > CREDITS.html
+      - name: Upload CREDITS
+        uses: actions/upload-artifact@v4
+        with:
+          name: credits-html
+          path: CREDITS.html
+          retention-days: 1
+
+  publish-cargo:
+    name: Publish to crates.io
+    needs: get-latest-tag
+    if: ${{ github.event.inputs.publish_cargo_crates == 'true' }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+      - uses: dtolnay/rust-toolchain@stable
+      - run: cargo publish --token ${{ secrets.CRATES_TOKEN }} --no-verify
+
+  build-c-libs:
+    name: Build & Upload C Libs
+    needs: [ get-latest-tag, generate-credits ]
+    strategy:
+      matrix:
+        include:
+          - os: ubuntu-latest
+            artifact_name: aam-c-linux-x86_64
+            lib_name: aam-c.so
+          - os: macos-latest
+            artifact_name: aam-c-macos-x86_64
+            lib_name: aam-c.dylib
+          - os: windows-latest
+            artifact_name: aam-c-windows-x86_64
+            lib_name: aam-c.dll
+    runs-on: ${{ matrix.os }}
+    defaults:
+      run:
+        shell: bash
+    steps:
+      - uses: actions/checkout@v6
+      - name: Install Rust toolchain
+        uses: dtolnay/rust-toolchain@stable
+      - name: Install cargo-binstall
+        uses: cargo-bins/cargo-binstall@main
+      - name: Install cbindgen
+        run: cargo binstall cbindgen -y
+      - name: Build release library
+        run: cargo build --release
+      - name: Prepare C/C++ Package Structure
+        run: |
+          mkdir -p package/include package/lib/cmake/aam-c package/bin package/examples
+          cbindgen --config cbindgen.toml --output package/include/aam-c.h
+          cp LICENSE package/ 2>/dev/null || true
+          cp examples/c/*.c package/examples/ 2>/dev/null || true
+          cp examples/c/*.aam package/examples/ 2>/dev/null || true
+          cp examples/c/Makefile package/examples/ 2>/dev/null || true
+          cp examples/c/CMakeLists.txt package/examples/ 2>/dev/null || true
+          cp aam-cConfig.cmake package/lib/cmake/aam-c/ 2>/dev/null || true
+
+          if [ "${{ runner.os }}" == "Windows" ]; then
+            cp target/release/aam_rs.dll package/bin/aam-c.dll
+            cp target/release/aam_rs.dll.lib package/lib/aam-c.lib
+          elif [ "${{ runner.os }}" == "macOS" ]; then
+            cp target/release/libaam_rs.dylib package/lib/libaam-c.dylib
+          else
+            cp target/release/libaam_rs.so package/lib/libaam-c.so
+          fi
+      - name: Download CREDITS.html
+        uses: actions/download-artifact@v4
+        with:
+          name: credits-html
+          path: ./
+      - name: Copy licenses
+        run: cp LICENSE-MIT LICENSE-APACHE CREDITS.html package/
+      - name: Zip Package
+        if: runner.os != 'Windows'
+        run: |
+          cd package
+          zip -r ../${{ matrix.artifact_name }}.zip ./*
+      - name: Zip Package (Windows)
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: |
+          Compress-Archive -Path package\* -DestinationPath "${{ matrix.artifact_name }}.zip" -Force
+      - name: Upload Release Artifact
+        if: ${{ github.event.inputs.publish_github_release == 'true' }}
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ needs.get-latest-tag.outputs.tag_name }}
+          files: ${{ matrix.artifact_name }}.zip
+
+  build-node-bindings:
+    name: Build Node.js Native Addons
+    needs: [ get-latest-tag, generate-credits ]
+    strategy:
+      matrix:
+        include:
+          - os: ubuntu-latest
+            artifact: node-binding-linux-x64-gnu
+            binary: aam_rs_node.linux-x64-gnu.node
+          - os: macos-15-intel
+            artifact: node-binding-darwin-x64
+            binary: aam_rs_node.darwin-x64.node
+          - os: macos-latest
+            artifact: node-binding-darwin-arm64
+            binary: aam_rs_node.darwin-arm64.node
+          - os: windows-latest
+            artifact: node-binding-win32-x64-msvc
+            binary: aam_rs_node.win32-x64-msvc.node
+    runs-on: ${{ matrix.os }}
+    defaults:
+      run:
+        shell: bash
+    steps:
+      - uses: actions/checkout@v6
+      - name: Install Rust toolchain
+        uses: dtolnay/rust-toolchain@stable
+      - name: Setup Rust cache
+        uses: Swatinem/rust-cache@v2
+      - name: Set up Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version: 24
+      - name: Install Node.js dependencies
+        working-directory: ./js
+        run: npm install
+      - name: Download CREDITS.html
+        uses: actions/download-artifact@v4
+        with:
+          name: credits-html
+          path: ./
+      - name: Copy licenses
+        run: cp LICENSE-MIT LICENSE-APACHE CREDITS.html js/
+      - name: Build release addon
+        working-directory: ./js
+        run: npm run build
+      - name: Upload addon artifact
+        uses: actions/upload-artifact@v7
+        with:
+          name: ${{ matrix.artifact }}
+          path: js/${{ matrix.binary }}
+          retention-days: 1
+
+  upload-node-to-release:
+    name: Upload Node.js Addons to Release
+    needs: [ get-latest-tag, build-node-bindings ]
+    if: ${{ github.event.inputs.publish_github_release == 'true' }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Download Node.js addon artifacts
+        uses: actions/download-artifact@v8
+        with:
+          pattern: node-binding-*
+          merge-multiple: true
+          path: node-artifacts
+      - name: Upload Node.js addons to Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ needs.get-latest-tag.outputs.tag_name }}
+          files: node-artifacts/*.node
+
+  publish-npm:
+    name: Publish Node package to npm
+    needs: [ get-latest-tag, build-node-bindings, generate-credits ]
+    if: ${{ github.event.inputs.publish_npm == 'true' }}
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        shell: bash
+    steps:
+      - uses: actions/checkout@v6
+      - name: Set up Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version: 24
+          registry-url: https://registry.npmjs.org
+      - name: Download Node.js addon artifacts
+        uses: actions/download-artifact@v8
+        with:
+          pattern: node-binding-*
+          merge-multiple: true
+          path: node-artifacts
+      - name: Install Node.js dependencies
+        working-directory: ./js
+        run: npm install
+      - name: Install Rust toolchain
+        uses: dtolnay/rust-toolchain@stable
+      - name: Download CREDITS.html
+        uses: actions/download-artifact@v4
+        with:
+          name: credits-html
+          path: ./
+      - name: Copy licenses
+        run: cp LICENSE-MIT LICENSE-APACHE CREDITS.html js/
+      - name: Populate platform packages
+        run: |
+          cp node-artifacts/aam_rs_node.linux-x64-gnu.node js/npm/linux-x64-gnu/
+          cp node-artifacts/aam_rs_node.darwin-x64.node js/npm/darwin-x64/
+          cp node-artifacts/aam_rs_node.darwin-arm64.node js/npm/darwin-arm64/
+          cp node-artifacts/aam_rs_node.win32-x64-msvc.node js/npm/win32-x64-msvc/
+      - name: Publish platform packages
+        working-directory: ./js
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+        run: |
+          npm publish ./npm/linux-x64-gnu --access public --provenance
+          npm publish ./npm/darwin-x64 --access public --provenance
+          npm publish ./npm/darwin-arm64 --access public --provenance
+          npm publish ./npm/win32-x64-msvc --access public --provenance
+      - name: Publish main package
+        working-directory: ./js
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+        run: npm publish --access public --provenance
+
+  publish-npm-github:
+    name: Publish Node package to GitHub Packages
+    needs: [ get-latest-tag, build-node-bindings, generate-credits ]
+    if: ${{ github.event.inputs.publish_npm == 'true' }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+      - name: Set up Node.js for GitHub Packages
+        uses: actions/setup-node@v6
+        with:
+          node-version: 24
+          registry-url: https://npm.pkg.github.com
+      - name: Install Node.js dependencies
+        working-directory: ./js
+        run: npm install
+      - name: Install Rust toolchain
+        uses: dtolnay/rust-toolchain@stable
+      - name: Download CREDITS.html
+        uses: actions/download-artifact@v4
+        with:
+          name: credits-html
+          path: ./
+      - name: Copy licenses
+        run: cp LICENSE-MIT LICENSE-APACHE CREDITS.html js/
+      - name: Publish scoped package to GitHub Packages
+        working-directory: ./js
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          OWNER=$(echo "${{ github.repository_owner }}" | tr '[:upper:]' '[:lower:]')
+          npm pkg set name="@${OWNER}/aam-nodejs"
+          npm publish
+
+  build-wasm-bindings:
+    name: Build & Test WASM Bindings
+    needs: [ get-latest-tag, generate-credits ]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+      - name: Install Rust toolchain
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: wasm32-unknown-unknown
+      - name: Install wasm-pack
+        run: cargo install wasm-pack --locked
+      - name: Build WASM package
+        working-directory: ./wasm
+        run: wasm-pack build --release --target nodejs --out-dir pkg
+      - name: Run WASM tests
+        working-directory: ./wasm
+        run: |
+          cargo test
+          wasm-pack test --node
+      - name: Download CREDITS.html
+        uses: actions/download-artifact@v4
+        with:
+          name: credits-html
+          path: ./
+      - name: Copy licenses
+        run: cp LICENSE-MIT LICENSE-APACHE CREDITS.html wasm/pkg/
+      - name: Upload WASM artifact
+        uses: actions/upload-artifact@v7
+        with:
+          name: wasm-pkg
+          path: wasm/pkg
+          retention-days: 1
+
+  upload-wasm-to-release:
+    name: Upload WASM Package to Release
+    needs: [ get-latest-tag, build-wasm-bindings ]
+    if: ${{ github.event.inputs.publish_github_release == 'true' }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Download WASM package
+        uses: actions/download-artifact@v8
+        with:
+          name: wasm-pkg
+          path: wasm-pkg
+      - name: Zip WASM package
+        run: |
+          cd wasm-pkg
+          zip -r ../aam-wasm-package.zip ./*
+      - name: Upload WASM package to Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ needs.get-latest-tag.outputs.tag_name }}
+          files: aam-wasm-package.zip
+
+  publish-wasm-npm:
+    name: Publish WASM package to npm
+    needs: [ get-latest-tag, build-wasm-bindings ]
+    if: ${{ github.event.inputs.publish_npm == 'true' }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Download WASM package artifact
+        uses: actions/download-artifact@v8
+        with:
+          name: wasm-pkg
+          path: wasm-pkg
+      - name: Set up Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version: 24
+          registry-url: https://registry.npmjs.org
+      - name: Publish WASM package to npm
+        working-directory: ./wasm-pkg
+        env:
+          NODE_AUTH_TOKEN: ${{  secrets.NPM_TOKEN }}
+        run: npm publish --access public --provenance
+
+  build-ruby-bindings:
+    name: Build & Test Ruby Bindings
+    needs: [ get-latest-tag, generate-credits ]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+      - name: Set up Ruby
+        uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: "3.3"
+      - name: Install Rust toolchain
+        uses: dtolnay/rust-toolchain@stable
+      - name: Build Ruby extension
+        run: cargo build --manifest-path ruby/ext/aam_rs/Cargo.toml --release
+      - name: Download CREDITS.html
+        uses: actions/download-artifact@v4
+        with:
+          name: credits-html
+          path: ./
+      - name: Copy licenses
+        run: cp LICENSE-MIT LICENSE-APACHE CREDITS.html ruby/
+      - name: Fix Ruby Naming and Prepare Payload
+        run: |
+          # Фикс имени для сборки гема + патч файла
+          cp ruby/ext/aam_rs/target/release/libaam_ruby.so ruby/lib/aam_ruby.so 2>/dev/null || true
+          cp ruby/ext/aam_rs/target/release/libaam_rs_ruby.so ruby/lib/aam_rs_ruby.so 2>/dev/null || true
+          sed -i 's/libaam_ruby/aam_ruby/g' ruby/lib/aam_rb.rb 2>/dev/null || true
+          sed -i 's/libaam_rs_ruby/aam_rs_ruby/g' ruby/lib/aam_rb.rb 2>/dev/null || true
+          cd ruby
+          gem build aam-ruby.gemspec --output ../aam-ruby.gem
+      - name: Upload Ruby artifact
+        uses: actions/upload-artifact@v7
+        with:
+          name: ruby-gem
+          path: aam-ruby.gem
+          retention-days: 1
+
+  upload-ruby-to-release:
+    name: Upload Ruby Gem to Release
+    needs: [ get-latest-tag, build-ruby-bindings ]
+    if: ${{ github.event.inputs.publish_github_release == 'true' }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Download Ruby package
+        uses: actions/download-artifact@v8
+        with:
+          name: ruby-gem
+          path: ruby-artifacts
+      - name: Upload Ruby package to Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ needs.get-latest-tag.outputs.tag_name }}
+          files: ruby-artifacts/aam-ruby.gem
+
+  publish-ruby:
+    name: Publish Ruby Gem (RubyGems + GitHub Packages)
+    needs: [ get-latest-tag, build-ruby-bindings ]
+    if: ${{ github.event.inputs.publish_ruby == 'true' }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Download Ruby gem artifact
+        uses: actions/download-artifact@v8
+        with:
+          name: ruby-gem
+          path: ruby-artifacts
+      - name: Publish to RubyGems
+        env:
+          GEM_HOST_API_KEY: ${{ secrets.RUBY_GEMS_TOKEN || secrets.RUBYGEMS_API_KEY }}
+        run: gem push ruby-artifacts/aam-ruby.gem
+      - name: Publish to GitHub Packages (RubyGems)
+        env:
+          GEM_HOST_API_KEY: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          OWNER=$(echo "${{ github.repository_owner }}" | tr '[:upper:]' '[:lower:]')
+          gem push --host "https://rubygems.pkg.github.com/$OWNER" ruby-artifacts/aam-ruby.gem
+
+  build-php-bindings:
+    name: Build & Test PHP Bindings
+    needs: [ get-latest-tag, generate-credits ]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+      - name: Install Rust toolchain
+        uses: dtolnay/rust-toolchain@stable
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: "8.3"
+          coverage: none
+          ini-values: ffi.enable=1
+      - name: Build native library for PHP FFI
+        run: cargo build --release --features ffi
+      - name: Download CREDITS.html
+        uses: actions/download-artifact@v4
+        with:
+          name: credits-html
+          path: ./
+      - name: Copy licenses
+        run: |
+          mkdir -p php-pkg
+          cp LICENSE-MIT LICENSE-APACHE CREDITS.html php-pkg/
+      - name: Package PHP artifacts
+        run: |
+          mkdir -p php-pkg/src php-pkg/tests php-pkg/native
+          cp php/src/AamPhp.php php-pkg/src/
+          cp php/tests/smoke.php php-pkg/tests/
+          cp php/README.md php-pkg/ 2>/dev/null || true
+          cp php/composer.json php-pkg/ 2>/dev/null || true 
+          cp target/release/libaam_rs.so php-pkg/native/
+          cd php-pkg
+          zip -r ../aam-php-package.zip ./*
+      - name: Upload PHP artifact
+        uses: actions/upload-artifact@v7
+        with:
+          name: php-package
+          path: aam-php-package.zip
+          retention-days: 1
+
+  upload-php-to-release:
+    name: Upload PHP Package to Release
+    needs: [ get-latest-tag, build-php-bindings ]
+    if: ${{ github.event.inputs.publish_github_release == 'true' }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Download PHP package
+        uses: actions/download-artifact@v8
+        with:
+          name: php-package
+          path: .
+      - name: Upload PHP package to Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ needs.get-latest-tag.outputs.tag_name }}
+          files: aam-php-package.zip
+
+  publish-php-mirror:
+    name: Publish PHP Package to Mirror Repo (Packagist)
+    needs: [ get-latest-tag, build-php-bindings ]
+    if: ${{ github.event.inputs.publish_php == 'true' }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Download PHP package artifact
+        uses: actions/download-artifact@v8
+        with:
+          name: php-package
+          path: php-artifact
+      - name: Push to PHP Mirror Repository
+        env:
+          TAG_NAME: ${{ needs.get-latest-tag.outputs.tag_name }}
+          TARGET_REPO: "ininids/aam-php"
+          MIRROR_TOKEN: ${{ secrets.PHP_MIRROR_TOKEN }}
+        run: |
+          mkdir php-repo
+          cd php-repo
+          unzip ../php-artifact/aam-php-package.zip
+          git init
+          git branch -M main
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add .
+          git commit -m "Release $TAG_NAME"
+          git tag "$TAG_NAME"
+          git remote add origin "https://x-access-token:${MIRROR_TOKEN}@github.com/${TARGET_REPO}.git"
+          git push origin main --force
+          git push origin "$TAG_NAME" --force
+
+  linux:
+    needs: [ generate-credits ]
+    runs-on: ${{ matrix.platform.runner }}
+    strategy:
+      matrix:
+        platform:
+          - runner: ubuntu-22.04
+            target: x86_64
+          - runner: ubuntu-22.04
+            target: x86
+          - runner: ubuntu-22.04
+            target: aarch64
+          - runner: ubuntu-22.04
+            target: armv7
+          - runner: ubuntu-22.04
+            target: s390x
+          - runner: ubuntu-22.04
+            target: ppc64le
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-python@v6
+        with:
+          python-version: 3.x
+      - name: Download CREDITS.html
+        uses: actions/download-artifact@v4
+        with:
+          name: credits-html
+          path: ./
+      - name: Build wheels
+        uses: PyO3/maturin-action@v1
+        with:
+          target: ${{ matrix.platform.target }}
+          args: --release --out dist
+          sccache: false
+          manylinux: auto
+      - name: Build free-threaded wheels
+        uses: PyO3/maturin-action@v1
+        with:
+          target: ${{ matrix.platform.target }}
+          args: --release --out dist -i python3.14t
+          sccache: false
+          manylinux: auto
+      - name: Upload wheels
+        uses: actions/upload-artifact@v7
+        with:
+          name: wheels-linux-${{ matrix.platform.target }}
+          path: dist
+
+  musllinux:
+    needs: [ generate-credits ]
+    runs-on: ${{ matrix.platform.runner }}
+    strategy:
+      matrix:
+        platform:
+          - runner: ubuntu-22.04
+            target: x86_64
+          - runner: ubuntu-22.04
+            target: x86
+          - runner: ubuntu-22.04
+            target: aarch64
+          - runner: ubuntu-22.04
+            target: armv7
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-python@v6
+        with:
+          python-version: 3.x
+      - name: Download CREDITS.html
+        uses: actions/download-artifact@v4
+        with:
+          name: credits-html
+          path: ./
+      - name: Build wheels
+        uses: PyO3/maturin-action@v1
+        with:
+          target: ${{ matrix.platform.target }}
+          args: --release --out dist
+          sccache: false
+          manylinux: musllinux_1_2
+      - name: Build free-threaded wheels
+        uses: PyO3/maturin-action@v1
+        with:
+          target: ${{ matrix.platform.target }}
+          args: --release --out dist -i python3.14t
+          sccache: false
+          manylinux: musllinux_1_2
+      - name: Upload wheels
+        uses: actions/upload-artifact@v7
+        with:
+          name: wheels-musllinux-${{ matrix.platform.target }}
+          path: dist
+
+  windows:
+    needs: [ generate-credits ]
+    runs-on: ${{ matrix.platform.runner }}
+    strategy:
+      matrix:
+        platform:
+          - runner: windows-latest
+            target: x64
+            python_arch: x64
+          - runner: windows-latest
+            target: x86
+            python_arch: x86
+          - runner: windows-11-arm
+            target: aarch64
+            python_arch: arm64
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-python@v6
+        with:
+          python-version: 3.13
+          architecture: ${{ matrix.platform.python_arch }}
+      - name: Download CREDITS.html
+        uses: actions/download-artifact@v4
+        with:
+          name: credits-html
+          path: ./
+      - name: Build wheels
+        uses: PyO3/maturin-action@v1
+        with:
+          target: ${{ matrix.platform.target }}
+          args: --release --out dist
+          sccache: false
+      - uses: actions/setup-python@v6
+        with:
+          python-version: 3.14t
+          architecture: ${{ matrix.platform.python_arch }}
+      - name: Build free-threaded wheels
+        uses: PyO3/maturin-action@v1
+        with:
+          target: ${{ matrix.platform.target }}
+          args: --release --out dist -i python3.14t
+          sccache: false
+      - name: Upload wheels
+        uses: actions/upload-artifact@v7
+        with:
+          name: wheels-windows-${{ matrix.platform.target }}
+          path: dist
+
+  macos:
+    needs: [ generate-credits ]
+    runs-on: ${{ matrix.platform.runner }}
+    strategy:
+      matrix:
+        platform:
+          - runner: macos-15-intel
+            target: x86_64
+          - runner: macos-latest
+            target: aarch64
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-python@v6
+        with:
+          python-version: 3.x
+      - name: Download CREDITS.html
+        uses: actions/download-artifact@v4
+        with:
+          name: credits-html
+          path: ./
+      - name: Build wheels
+        uses: PyO3/maturin-action@v1
+        with:
+          target: ${{ matrix.platform.target }}
+          args: --release --out dist
+          sccache: false
+      - name: Build free-threaded wheels
+        uses: PyO3/maturin-action@v1
+        with:
+          target: ${{ matrix.platform.target }}
+          args: --release --out dist -i python3.14t
+          sccache: false
+      - name: Upload wheels
+        uses: actions/upload-artifact@v7
+        with:
+          name: wheels-macos-${{ matrix.platform.target }}
+          path: dist
+
+  sdist:
+    needs: [ generate-credits ]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+      - name: Download CREDITS.html
+        uses: actions/download-artifact@v4
+        with:
+          name: credits-html
+          path: ./
+      - name: Build sdist
+        uses: PyO3/maturin-action@v1
+        with:
+          command: sdist
+          args: --out dist
+      - name: Upload sdist
+        uses: actions/upload-artifact@v7
+        with:
+          name: wheels-sdist
+          path: dist
+
+  upload-wheels-to-release:
+    name: Upload Python Wheels to Release
+    needs: [ get-latest-tag, linux, musllinux, windows, macos, sdist ]
+    if: ${{ github.event.inputs.publish_github_release == 'true' }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Download all wheels
+        uses: actions/download-artifact@v8
+        with:
+          pattern: wheels-*
+          merge-multiple: true
+          path: dist
+      - name: Upload Wheels and sdist to Release Artifact
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ needs.get-latest-tag.outputs.tag_name }}
+          files: dist/*
+
+  publish-pypi:
+    name: Publish to PyPI
+    needs: [ linux, musllinux, windows, macos, sdist ]
+    if: ${{ github.event.inputs.publish_pypi == 'true' }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/download-artifact@v8
+        with:
+          pattern: wheels-*
+          merge-multiple: true
+          path: dist
+      - name: Generate artifact attestation
+        uses: actions/attest-build-provenance@v3
+        with:
+          subject-path: "dist/*"
+      - name: Install uv
+        uses: astral-sh/setup-uv@v7
+      - name: Publish to PyPI
+        run: uv publish dist/*
+        env:
+          UV_PUBLISH_TOKEN: ${{ secrets.PYPI_API_TOKEN }}
+
+  build-jni-libs:
+    name: Build JNI Native Libraries
+    strategy:
+      matrix:
+        include:
+          - os: ubuntu-latest
+            target: x86_64-unknown-linux-gnu
+            artifact: jni-linux-x86_64
+            file: libaam_rs.so
+          - os: macos-15-intel
+            target: x86_64-apple-darwin
+            artifact: jni-macos-x86_64
+            file: libaam_rs.dylib
+          - os: macos-latest
+            target: aarch64-apple-darwin
+            artifact: jni-macos-aarch64
+            file: libaam_rs.dylib
+          - os: windows-latest
+            target: x86_64-pc-windows-msvc
+            artifact: jni-windows-x86_64
+            file: aam_rs.dll
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v6
+      - name: Install Rust toolchain
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: ${{ matrix.target }}
+      - name: Build JNI release library
+        run: cargo build --release --target ${{ matrix.target }}
+      - name: Upload JNI artifact
+        uses: actions/upload-artifact@v7
+        with:
+          name: ${{ matrix.artifact }}
+          path: target/${{ matrix.target }}/release/${{ matrix.file }}
+          retention-days: 1
+
+  upload-jni-to-release:
+    name: Upload JNI to GitHub Release
+    needs: [ get-latest-tag, build-jni-libs ]
+    if: ${{ github.event.inputs.publish_github_release == 'true' }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v6
+      - name: Download all JNI artifacts
+        uses: actions/download-artifact@v8
+        with:
+          pattern: jni-*
+          path: jni-artifacts
+          merge-multiple: true
+      - name: Upload to GitHub Release
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          TAG_NAME: ${{ needs.get-latest-tag.outputs.tag_name }}
+        run: |
+          gh release upload "$TAG_NAME" jni-artifacts/*
+
+  publish-java:
+    name: Publish Java Artifacts
+    needs: [ get-latest-tag, build-jni-libs, generate-credits ]
+    if: ${{ github.event.inputs.publish_maven_central == 'true' && github.event.inputs.publish_github_release == 'true' }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+      - name: Set up JDK 17
+        uses: actions/setup-java@v5
+        with:
+          distribution: "temurin"
+          java-version: "17"
+          cache: "gradle"
+      - uses: actions/download-artifact@v8
+        with:
+          name: jni-linux-x86_64
+          path: java/src/main/resources/natives/linux-x86_64
+      - uses: actions/download-artifact@v8
+        with:
+          name: jni-macos-x86_64
+          path: java/src/main/resources/natives/macos-x86_64
+      - uses: actions/download-artifact@v8
+        with:
+          name: jni-macos-aarch64
+          path: java/src/main/resources/natives/macos-aarch64
+      - uses: actions/download-artifact@v8
+        with:
+          name: jni-windows-x86_64
+          path: java/src/main/resources/natives/windows-x86_64
+      - name: Install Rust toolchain
+        uses: dtolnay/rust-toolchain@stable
+      - name: Download CREDITS.html
+        uses: actions/download-artifact@v4
+        with:
+          name: credits-html
+          path: ./
+      - name: Copy licenses
+        run: |
+          mkdir -p java/src/main/resources/META-INF
+          cp LICENSE-MIT LICENSE-APACHE CREDITS.html java/src/main/resources/META-INF/
+      - name: Build and Publish locally
+        working-directory: ./java
+        run: ./gradlew build publish
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          ORG_GRADLE_PROJECT_signingInMemoryKey: ${{ secrets.GPG_PRIVATE_KEY }}
+          ORG_GRADLE_PROJECT_signingInMemoryKeyPassword: ${{ secrets.GPG_PASSPHRASE }}
+      - name: Create Zip Bundle for Central Portal
+        if: ${{ github.event.inputs.publish_maven_central == 'true' }}
+        working-directory: ./java
+        run: |
+          cd build/staging-repo 
+          zip -r ../bundle.zip .
+      - name: Upload Bundle to Maven Central
+        if: ${{ github.event.inputs.publish_maven_central == 'true' }}
+        working-directory: ./java
+        env:
+          CENTRAL_USERNAME: ${{ secrets.MAVEN_USERNAME }}
+          CENTRAL_PASSWORD: ${{ secrets.MAVEN_PASSWORD }}
+        run: |
+          echo "Uploading bundle to Maven Central Portal..."
+          curl --request POST \
+            --url 'https://central.sonatype.com/api/v1/publisher/upload?publishingType=AUTOMATIC' \
+            -u "$CENTRAL_USERNAME:$CENTRAL_PASSWORD" \
+            --header 'Accept: application/json' \
+            --form bundle=@build/bundle.zip \
+            --fail
+      - name: Upload JAR to Release
+        if: ${{ github.event.inputs.publish_github_release == 'true' }}
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ needs.get-latest-tag.outputs.tag_name }}
+          files: java/build/libs/*.jar
+
+  build-csharp-libs:
+    name: Build C# Native Libraries
+    strategy:
+      matrix:
+        include:
+          - os: ubuntu-latest
+            target: x86_64-unknown-linux-gnu
+            artifact: csharp-linux-x64
+            file: libaam_rs.so
+          - os: macos-15-intel
+            target: x86_64-apple-darwin
+            artifact: csharp-osx-x64
+            file: libaam_rs.dylib
+          - os: macos-latest
+            target: aarch64-apple-darwin
+            artifact: csharp-osx-arm64
+            file: libaam_rs.dylib
+          - os: windows-latest
+            target: x86_64-pc-windows-msvc
+            artifact: csharp-win-x64
+            file: aam_rs.dll
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v6
+      - name: Install Rust toolchain
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: ${{ matrix.target }}
+      - name: Setup Rust cache
+        uses: Swatinem/rust-cache@v2
+      - name: Build release library for FFI
+        run: cargo build --release --features ffi --target ${{ matrix.target }}
+      - name: Upload C# native artifact
+        uses: actions/upload-artifact@v7
+        with:
+          name: ${{ matrix.artifact }}
+          path: target/${{ matrix.target }}/release/${{ matrix.file }}
+          retention-days: 1
+
+  publish-csharp:
+    name: Publish C# package
+    needs: [ get-latest-tag, build-csharp-libs, generate-credits ]
+    if: ${{ github.event.inputs.publish_nuget == 'true' }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v5
+        with:
+          dotnet-version: "10.0.x"
+      - uses: actions/download-artifact@v8
+        with:
+          name: csharp-linux-x64
+          path: csharp/runtimes/linux-x64/native
+      - uses: actions/download-artifact@v8
+        with:
+          name: csharp-osx-x64
+          path: csharp/runtimes/osx-x64/native
+      - uses: actions/download-artifact@v8
+        with:
+          name: csharp-osx-arm64
+          path: csharp/runtimes/osx-arm64/native
+      - uses: actions/download-artifact@v8
+        with:
+          name: csharp-win-x64
+          path: csharp/runtimes/win-x64/native
+      - name: Resolve package version
+        id: csharp_version
+        shell: bash
+        run: |
+          TAG="${{ needs.get-latest-tag.outputs.tag_name }}"
+          VERSION="${TAG##*-v}"
+          if [[ ! "$VERSION" =~ ^[0-9]+\.[0-9]+\.[0-9]+([.-][0-9A-Za-z.-]+)?$ ]]; then
+            echo "Could not parse semantic version from tag: $TAG"
+            exit 1
+          fi
+          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+      - name: Install Rust toolchain
+        uses: dtolnay/rust-toolchain@stable
+      - name: Download CREDITS.html
+        uses: actions/download-artifact@v4
+        with:
+          name: credits-html
+          path: ./
+      - name: Copy licenses
+        run: cp LICENSE-MIT LICENSE-APACHE CREDITS.html csharp/
+      - name: Pack NuGet
+        working-directory: ./csharp
+        run: dotnet pack AamCsharp.sln -c Release -p:Version=${{ steps.csharp_version.outputs.version }} -o artifacts
+      - name: Publish NuGet package
+        working-directory: ./csharp
+        run: dotnet nuget push "artifacts/*.nupkg" --source "https://api.nuget.org/v3/index.json" --api-key "${{ secrets.NUGET_API_KEY }}" --skip-duplicate
+      - name: Publish NuGet package to GitHub Packages
+        working-directory: ./csharp
+        run: |
+          dotnet nuget add source "https://nuget.pkg.github.com/${{ github.repository_owner }}/index.json" \
+            --name github \
+            --username "${{ github.repository_owner }}" \
+            --password "${{ secrets.GITHUB_TOKEN }}" \
+            --store-password-in-clear-text
+          dotnet nuget push "artifacts/*.nupkg" --source github --api-key "${{ secrets.GITHUB_TOKEN }}" --skip-duplicate
+      - name: Upload NuGet package to Release
+        if: ${{ github.event.inputs.publish_github_release == 'true' }}
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ needs.get-latest-tag.outputs.tag_name }}
+          files: csharp/artifacts/*.nupkg
+
+  build-go-libs:
+    name: Build Go Native Libs
+    needs: [ get-latest-tag, generate-credits ]
+    strategy:
+      matrix:
+        include:
+          - os: ubuntu-latest
+            target: x86_64-unknown-linux-gnu
+            artifact: aam-go-linux-x86_64
+          - os: macos-15-intel
+            target: x86_64-apple-darwin
+            artifact: aam-go-macos-x86_64
+          - os: macos-latest
+            target: aarch64-apple-darwin
+            artifact: aam-go-macos-aarch64
+          - os: windows-latest
+            target: x86_64-pc-windows-msvc
+            artifact: aam-go-windows-x86_64
+    runs-on: ${{ matrix.os }}
+    defaults:
+      run:
+        shell: bash
+    steps:
+      - uses: actions/checkout@v6
+      - name: Install Rust toolchain
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: ${{ matrix.target }}
+      - name: Build Rust library with FFI (static + dynamic)
+        run: cargo build --release --features ffi --target ${{ matrix.target }}
+      - name: Download CREDITS.html
+        uses: actions/download-artifact@v4
+        with:
+          name: credits-html
+          path: ./
+      - name: Copy licenses
+        run: |
+          mkdir -p go-pkg
+          cp LICENSE-MIT LICENSE-APACHE CREDITS.html go-pkg/
+      - name: Package Go bindings
+        if: runner.os != 'Windows'
+        run: |
+          mkdir -p go-pkg/lib go-pkg/include go-pkg/src
+          cp include/aam.h go-pkg/include/
+          cp -r go/ go-pkg/src/
+          if [ "${{ runner.os }}" == "Windows" ]; then
+            cp target/${{ matrix.target }}/release/aam_rs.dll     go-pkg/lib/ 2>/dev/null || true
+            cp target/${{ matrix.target }}/release/aam_rs.dll.lib go-pkg/lib/aam_rs.lib 2>/dev/null || true
+          elif [ "${{ runner.os }}" == "macOS" ]; then
+            cp target/${{ matrix.target }}/release/libaam_rs.a     go-pkg/lib/ 2>/dev/null || true
+            cp target/${{ matrix.target }}/release/libaam_rs.dylib go-pkg/lib/ 2>/dev/null || true
+          else
+            cp target/${{ matrix.target }}/release/libaam_rs.a  go-pkg/lib/ 2>/dev/null || true
+            cp target/${{ matrix.target }}/release/libaam_rs.so go-pkg/lib/ 2>/dev/null || true
+          fi
+          cd go-pkg && zip -r ../${{ matrix.artifact }}.zip ./*
+      - name: Package Go bindings (Windows)
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: |
+          New-Item -ItemType Directory -Path go-pkg/lib,go-pkg/include,go-pkg/src -Force | Out-Null
+          Copy-Item include/aam.h go-pkg/include/
+          Copy-Item go go-pkg/src -Recurse
+          Copy-Item "target/${{ matrix.target }}/release/aam_rs.dll" go-pkg/lib/ -ErrorAction SilentlyContinue
+          Copy-Item "target/${{ matrix.target }}/release/aam_rs.dll.lib" go-pkg/lib/aam_rs.lib -ErrorAction SilentlyContinue
+          Compress-Archive -Path go-pkg\* -DestinationPath "${{ matrix.artifact }}.zip" -Force
+      - name: Upload Go package to Release
+        if: ${{ github.event.inputs.publish_github_release == 'true' }}
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ needs.get-latest-tag.outputs.tag_name }}
+          files: ${{ matrix.artifact }}.zip

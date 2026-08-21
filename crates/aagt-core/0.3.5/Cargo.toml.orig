@@ -1,0 +1,60 @@
+[package]
+name = "aagt-core"
+description = "Core types and traits for the AAGT AI Agent framework"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+repository.workspace = true
+readme = "../README.md"
+
+[dependencies]
+tokio = { workspace = true }
+futures = { workspace = true }
+async-trait = { workspace = true }
+serde = { workspace = true }
+serde_json = { workspace = true }
+fs2 = "0.4.3"
+reqwest = { workspace = true }
+bytes = { workspace = true }
+thiserror = { workspace = true }
+anyhow.workspace = true
+tracing = { workspace = true }
+tracing-appender = { workspace = true }
+tracing-subscriber = { workspace = true, features = ["env-filter"] }
+uuid = { workspace = true }
+chrono = { workspace = true }
+dashmap = { workspace = true }
+parking_lot = { workspace = true }
+rayon = { workspace = true }
+schemars = { workspace = true }
+simd-json = { workspace = true }
+serde_yaml_ng = { workspace = true }
+rust_decimal = { workspace = true }
+rust_decimal_macros = { workspace = true }
+console-subscriber = "0.5.0"
+tonic = { workspace = true }
+prost = { workspace = true }
+which = "8.0.0"
+tiktoken-rs = "0.9.1"
+tokio-cron-scheduler = { workspace = true }
+wasmtime = "29.0.0"
+wasmtime-wasi = "29.0.0"
+zip = "0.6.6"
+base64 = { version = "0.21", optional = true }
+libp2p = { version = "0.53", optional = true, features = ["tcp", "dns", "kad", "gossipsub", "noise", "yamux", "tokio", "macros", "identify", "ping"] }
+argon2 = { version = "0.5", optional = true }
+
+[features]
+default = ["trading", "telegram"]
+trading = []
+telegram = []
+swarm-p2p = ["dep:libp2p", "dep:argon2", "dep:base64"]
+
+[build-dependencies]
+tonic-build = { workspace = true }
+
+[dev-dependencies]
+tempfile = "3.24.0"
+tokio-test = "0.4"
+clap = { version = "4.4", features = ["derive"] }
+# aagt-qmd = { workspace = true }

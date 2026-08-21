@@ -1,0 +1,15 @@
+load("@buckal//:wrapper.bzl", "rust_library")
+
+rust_library(
+    name = "aabel_multihash_rs",
+    srcs = glob(["**/*.rs"]),
+    crate = "aabel_multihash_rs",
+    crate_root = "src/lib.rs",
+    edition = "2021",
+
+    visibility = ["PUBLIC"],
+    deps = [
+        "//third-party/rust/crates/rand/0.8.7:rand",
+        "//third-party/rust/crates/siphasher/1.0.3:siphasher",
+    ],
+)

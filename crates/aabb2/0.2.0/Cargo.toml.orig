@@ -1,0 +1,23 @@
+[package]
+name = "aabb2"
+version = "0.2.0"
+authors = ["Nathan Faucett <nathanfaucett@gmail.com>"]
+
+keywords = ["axis", "aligned", "bounding", "box", "2d"]
+categories = []
+
+description = "aabb2"
+license = "MIT"
+readme = "README.md"
+repository = "https://gitlab.com/nathanfaucett/rs-aabb2.git"
+homepage = "https://gitlab.com/nathanfaucett/rs-aabb2"
+
+[lib]
+name = "aabb2"
+path = "src/lib.rs"
+
+[dependencies]
+num-traits = "0.2"
+vec2 = { version = "0.2", path = "../vec2" }
+
+[dev-dependencies]

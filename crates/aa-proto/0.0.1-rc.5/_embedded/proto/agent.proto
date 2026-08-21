@@ -1,0 +1,221 @@
+syntax = "proto3";
+
+package assembly.agent.v1;
+
+import "common.proto";
+
+// AgentLifecycleService handles paths ① (runtime → gateway) and ④ (gateway → runtime).
+//
+//  ① runtime → gateway: Register, Heartbeat, Deregister  (unary)
+//  ④ gateway → runtime: ControlStream                     (server-streaming)
+//
+// Consumed by: aa-runtime/src/gateway_client.rs (client side)
+//              aa-gateway/src/registry.rs        (server side)
+service AgentLifecycleService {
+  // RequestChallenge issues a fresh, single-use, server-random nonce that the
+  // agent must sign and return in Register (AAASM-3866). Issuing the challenge
+  // server-side is what makes the possession proof non-replayable and
+  // non-precomputable: the signed payload is no longer a deterministic, public
+  // value (the agent_id did:key) that anyone who knows the id could sign in
+  // advance, but an unpredictable nonce the agent cannot know until it asks.
+  rpc RequestChallenge(ChallengeRequest) returns (ChallengeResponse);
+
+  // Register is called once on agent startup to join the governance gateway.
+  rpc Register(RegisterRequest) returns (RegisterResponse);
+
+  // Heartbeat is called periodically so the gateway can detect offline agents.
+  rpc Heartbeat(HeartbeatRequest) returns (HeartbeatResponse);
+
+  // Deregister is called on clean agent shutdown to remove it from the registry.
+  rpc Deregister(DeregisterRequest) returns (DeregisterResponse);
+
+  // ControlStream is a server-streaming RPC: the runtime opens a persistent
+  // connection and receives gateway-initiated commands (suspend, resume, kill, etc.).
+  rpc ControlStream(ControlStreamRequest) returns (stream ControlCommand);
+}
+
+// ── Challenge ─────────────────────────────────────────────────────────────────
+
+// ChallengeRequest asks the gateway to issue a fresh possession-proof nonce
+// before Register (AAASM-3866).
+message ChallengeRequest {
+  // Composite agent identity the challenge is being requested for. The issued
+  // nonce is bound to this identity so a challenge cannot be redirected to a
+  // different agent at Register time.
+  assembly.common.v1.AgentId agent_id   = 1;
+  // Ed25519 public key (lowercase hex, 64 chars) the agent will register with.
+  // The nonce is bound to this key, so a challenge issued for one key cannot be
+  // replayed to register a different key.
+  string                     public_key = 2;
+  // next: 3
+}
+
+// ChallengeResponse carries the server-issued nonce the agent must sign.
+message ChallengeResponse {
+  // Server-issued, cryptographically-random, single-use nonce. The agent signs
+  // exactly these bytes with its Ed25519 key and returns the signature as
+  // RegisterRequest.possession_proof plus the nonce as
+  // RegisterRequest.registration_nonce.
+  bytes nonce              = 1;
+  // Unix-epoch milliseconds after which the gateway rejects the nonce as
+  // expired. Advisory for the client; the gateway is authoritative.
+  int64 expires_at_unix_ms = 2;
+  // next: 3
+}
+
+// ── Register ─────────────────────────────────────────────────────────────────
+
+message RegisterRequest {
+  // Composite agent identity (org + team + agent_id).
+  assembly.common.v1.AgentId     agent_id          = 1;
+  // Human-readable agent name.
+  string                         name              = 2;
+  // Agent framework name (e.g. "langgraph", "crewai", "custom").
+  string                         framework         = 3;
+  // Semver version of the agent process.
+  string                         version           = 4;
+  // Risk tier the agent is registering under.
+  assembly.common.v1.RiskTier    risk_tier         = 5;
+  // Tools the agent declares it intends to use — used for pre-registration policy check.
+  repeated string                tool_names        = 6;
+  // Ed25519 public key for request signing verification by the gateway.
+  string                         public_key        = 7;
+  // Arbitrary key-value metadata (e.g. team, owner, git_commit, environment).
+  map<string, string>            metadata          = 8;
+  // UUID of the parent agent that spawned this one — None for root agents.
+  optional string                parent_agent_id   = 9;
+  // Free-form reason the parent delegated to this agent — recorded for audit/observability.
+  optional string                delegation_reason = 10;
+  // Tool / framework that triggered the spawn (e.g. "langgraph.subgraph", "openai.handoff").
+  optional string                spawned_by_tool   = 11;
+  // Maximum delegation depth this agent is allowed to create — gateway enforces depth caps.
+  optional uint32                max_child_depth   = 12;
+  // Per-agent enforcement-mode override. UNSPECIFIED (0) means inherit from
+  // the policy document; ENFORCE / OBSERVE / DISABLED override at the agent
+  // scope. Enables gradual rollout — trusted agents stay in ENFORCE while
+  // new / experimental ones run under OBSERVE under the same policy.
+  assembly.common.v1.EnforcementMode enforcement_mode = 13;
+  // Proof of possession of the private key matching `public_key`
+  // (AAASM-3591, hardened by AAASM-3866): a raw 64-byte Ed25519 signature over
+  // the server-issued `registration_nonce` (NOT over the public `agent_id`,
+  // which would be replayable/precomputable). The gateway verifies this before
+  // minting a credential_token, so reaching the unauthenticated gRPC port is
+  // not enough to mint one — the caller must hold the agent's key AND have just
+  // obtained a fresh nonce. Coordinates with AAASM-3416 (broad per-endpoint
+  // authn); this field is the credential_token possession gate.
+  bytes                          possession_proof  = 14;
+  // Server-issued nonce from a preceding RequestChallenge call that
+  // `possession_proof` signs (AAASM-3866). The gateway rejects a Register whose
+  // nonce is unknown, expired, already used, or was not issued for this
+  // agent_id + public_key.
+  bytes                          registration_nonce = 15;
+  // next: 16
+}
+
+message RegisterResponse {
+  // Short-lived credential token issued by the gateway; must be carried on all subsequent requests.
+  string          credential_token       = 1;
+  // ID of the policy assigned to this agent at registration time.
+  string          assigned_policy        = 2;
+  // How often the gateway expects a heartbeat (seconds).
+  int64           heartbeat_interval_sec = 3;
+  // Echo of `parent_agent_id` from the request — confirms the gateway accepted the topology metadata.
+  optional string parent_agent_id        = 4;
+  // Echo of the `team_id` from the request's `AgentId` — confirms the gateway accepted team scoping.
+  optional string team_id                = 5;
+  // Computed root of the delegation chain — server-side authoritative value.
+  // For root agents equals the registering agent's own UUID bytes.
+  // For sub-agents equals parent.root_agent_id (propagated transitively).
+  optional bytes  root_agent_id          = 6;
+  // next: 7
+}
+
+// ── Heartbeat ─────────────────────────────────────────────────────────────────
+
+message HeartbeatRequest {
+  // Composite identity of the agent sending the heartbeat.
+  assembly.common.v1.AgentId agent_id         = 1;
+  // Credential token from RegisterResponse; validated on every heartbeat.
+  string                     credential_token = 2;
+  // Number of concurrent runs executing at heartbeat time.
+  int32                      active_runs      = 3;
+  // Total actions taken since the previous heartbeat.
+  int64                      actions_count    = 4;
+}
+
+message HeartbeatResponse {
+  // If true, the agent's policy has changed — the agent should re-fetch it.
+  bool policy_updated = 1;
+  // If true, the gateway is requesting the agent to pause execution.
+  bool should_suspend = 2;
+}
+
+// ── Deregister ────────────────────────────────────────────────────────────────
+
+message DeregisterRequest {
+  // Composite identity of the agent deregistering.
+  assembly.common.v1.AgentId agent_id         = 1;
+  // Credential token for authentication.
+  string                     credential_token = 2;
+  // Optional human-readable reason for deregistration (e.g. "clean shutdown").
+  string                     reason           = 3;
+}
+
+message DeregisterResponse {
+  // Whether the deregistration was accepted by the gateway.
+  bool   success  = 1;
+  // Echo of the deregistered agent_id for caller confirmation.
+  string agent_id = 2;
+}
+
+// ── Control stream ────────────────────────────────────────────────────────────
+
+// ControlStreamRequest opens a persistent server-streaming channel.
+// The runtime holds this connection open for the lifetime of the agent process.
+message ControlStreamRequest {
+  // Composite identity of the subscribing agent.
+  assembly.common.v1.AgentId agent_id         = 1;
+  // Credential token; gateway validates before accepting the stream.
+  string                     credential_token = 2;
+}
+
+// ControlCommand is a server-initiated message pushed down the control stream.
+message ControlCommand {
+  oneof command {
+    // Request the agent to pause all action dispatching.
+    SuspendCommand      suspend       = 1;
+    // Request the agent to resume normal operation after a suspension.
+    ResumeCommand       resume        = 2;
+    // Notify the agent that its policy has been updated; provides the new version.
+    PolicyUpdateCommand policy_update = 3;
+    // Forced termination — reserved for CRITICAL risk situations only.
+    KillCommand         kill          = 4;
+  }
+}
+
+// SuspendCommand asks the agent to pause action dispatching gracefully.
+message SuspendCommand {
+  // Human-readable reason for the suspension (shown in audit log).
+  string reason = 1;
+}
+
+// ResumeCommand lifts a previously issued SuspendCommand.
+message ResumeCommand {
+  // Optional note from the reviewer who lifted the suspension.
+  string note = 1;
+}
+
+// PolicyUpdateCommand notifies the agent that its assigned policy has changed.
+message PolicyUpdateCommand {
+  // ID of the newly assigned policy.
+  string new_policy_id    = 1;
+  // Serialised policy bytes; agent may cache this for low-latency local checks.
+  bytes  policy_bytes     = 2;
+}
+
+// KillCommand instructs the agent to terminate immediately.
+// Must only be issued at CRITICAL risk tier escalation.
+message KillCommand {
+  // Mandatory reason; written to the immutable audit log.
+  string reason = 1;
+}

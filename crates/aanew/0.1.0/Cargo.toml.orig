@@ -1,0 +1,17 @@
+[package]
+name = "aanew"
+version = "0.1.0"
+edition = "2024"
+authors = ["Ariel Ril"]
+description = "ANEW append new lines to files"
+license-file = "LICENSE"
+documentation = "https://github.com/arielril/anew"
+homepage = "https://github.com/arielril/anew"
+repository = "https://github.com/arielril/anew"
+
+[[bin]]
+name = "anew"
+path = "src/main.rs"
+
+[dependencies]
+anyhow = "1.0.101"

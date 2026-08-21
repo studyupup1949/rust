@@ -1,0 +1,15 @@
+load("@buckal//:wrapper.bzl", "rust_library")
+
+rust_library(
+    name = "aabel_bloom_rs",
+    srcs = glob(["**/*.rs"]),
+    crate = "aabel_bloom_rs",
+    crate_root = "src/lib.rs",
+    edition = "2021",
+
+    visibility = ["PUBLIC"],
+    deps = [
+        "//third-party/rust/crates/aabel-multihash-rs/0.1.2:aabel_multihash_rs",
+        "//third-party/rust/crates/bitvec/1.1.1:bitvec",
+    ],
+)

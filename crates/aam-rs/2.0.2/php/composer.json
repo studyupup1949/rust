@@ -1,0 +1,23 @@
+{
+  "name": "ininids/aam-php",
+  "version": "2.0.2",
+  "description": "AAM PHP bindings",
+  "type": "library",
+  "license": "MIT OR Apache-2.0",
+  "authors": [
+    {
+      "name": "Nikita Goncharov",
+      "email": "ininids@ininids.in.rs",
+      "homepage": "https://ininids.in.rs",
+      "role": "Developer"
+    }
+  ],
+  "autoload": {
+    "classmap": [
+      "src/AamPhp.php"
+    ]
+  },
+  "require": {
+    "php": ">=8.0"
+  }
+}

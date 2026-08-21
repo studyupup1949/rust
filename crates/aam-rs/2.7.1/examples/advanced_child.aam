@@ -1,0 +1,17 @@
+# advanced_child.aam
+# Child file demonstrates:
+#   1. Selective @derive — import only the Player schema from the base file
+#   2. Optional fields (score* not set — that's fine)
+#   3. Lists of strings and integers
+#   4. Nested schemas (Weapon contains a field of type Item)
+
+# ── Import only the Player schema from the base file ─────────────────────────
+@derive advanced_base.aam::Player
+
+# ── Player schema fields (all required ones provided, score* is skipped) ──────
+player_name = HeroPlayer
+level = 42
+tags = [warrior, veteran, hero]
+equipped_ids = [200, 201, 202]
+
+# score is not set — that is fine, the field is declared with *

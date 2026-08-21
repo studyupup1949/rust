@@ -1,0 +1,14 @@
+load("@buckal//:wrapper.bzl", "rust_library")
+
+rust_library(
+    name = "aarch64",
+    srcs = glob(["**/*.rs"]),
+    crate = "aarch64",
+    crate_root = "src/lib.rs",
+    edition = "2018",
+
+    visibility = ["PUBLIC"],
+    deps = [
+        "//third-party/rust/crates/cortex-a/3.0.5:cortex_a",
+    ],
+)

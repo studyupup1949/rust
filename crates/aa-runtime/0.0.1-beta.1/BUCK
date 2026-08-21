@@ -1,0 +1,34 @@
+load("@buckal//:wrapper.bzl", "rust_library")
+
+rust_library(
+    name = "aa_runtime",
+    srcs = glob(["**/*.rs"]),
+    crate = "aa_runtime",
+    crate_root = "src/lib.rs",
+    edition = "2021",
+    features = ["default"],
+
+    visibility = ["PUBLIC"],
+    deps = [
+        "//third-party/rust/crates/async-nats/0.49.1:async_nats",
+        "//third-party/rust/crates/async-trait/0.1.92:async_trait",
+        "//third-party/rust/crates/axum/0.8.9:axum",
+        "//third-party/rust/crates/bitflags/2.13.1:bitflags",
+        "//third-party/rust/crates/bytes/1.12.1:bytes",
+        "//third-party/rust/crates/dashmap/6.2.1:dashmap",
+        "//third-party/rust/crates/metrics-exporter-prometheus/0.18.3:metrics_exporter_prometheus",
+        "//third-party/rust/crates/metrics/0.24.6:metrics",
+        "//third-party/rust/crates/prost/0.14.4:prost",
+        "//third-party/rust/crates/serde/1.0.229:serde",
+        "//third-party/rust/crates/serde_json/1.0.151:serde_json",
+        "//third-party/rust/crates/sha2/0.11.0:sha2",
+        "//third-party/rust/crates/tokio-stream/0.1.19:tokio_stream",
+        "//third-party/rust/crates/tokio-util/0.7.19:tokio_util",
+        "//third-party/rust/crates/tokio/1.53.1:tokio",
+        "//third-party/rust/crates/tonic/0.14.6:tonic",
+        "//third-party/rust/crates/tracing-subscriber/0.3.23:tracing_subscriber",
+        "//third-party/rust/crates/tracing/0.1.44:tracing",
+        "//third-party/rust/crates/uuid/1.24.0:uuid",
+        "//third-party/rust/crates/which/8.0.5:which",
+    ],
+)

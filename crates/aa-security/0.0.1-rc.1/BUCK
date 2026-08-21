@@ -1,0 +1,14 @@
+load("@buckal//:wrapper.bzl", "rust_library")
+
+rust_library(
+    name = "aa_security",
+    srcs = glob(["**/*.rs"]),
+    crate = "aa_security",
+    crate_root = "src/lib.rs",
+    edition = "2021",
+
+    visibility = ["PUBLIC"],
+    deps = [
+        "//third-party/rust/crates/aho-corasick/1.1.5:aho_corasick",
+    ],
+)

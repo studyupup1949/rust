@@ -1,0 +1,19 @@
+load("@buckal//:wrapper.bzl", "rust_library")
+
+rust_library(
+    name = "aa_storage_redis",
+    srcs = glob(["**/*.rs"]),
+    crate = "aa_storage_redis",
+    crate_root = "src/lib.rs",
+    edition = "2021",
+
+    visibility = ["PUBLIC"],
+    deps = [
+        "//third-party/rust/crates/async-trait/0.1.92:async_trait",
+        "//third-party/rust/crates/deadpool-redis/0.23.0:deadpool_redis",
+        "//third-party/rust/crates/redis/1.5.0:redis",
+        "//third-party/rust/crates/serde/1.0.229:serde",
+        "//third-party/rust/crates/serde_json/1.0.151:serde_json",
+        "//third-party/rust/crates/tracing/0.1.44:tracing",
+    ],
+)

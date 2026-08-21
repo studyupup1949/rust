@@ -1,0 +1,16 @@
+[package]
+name = "aae-protocol"
+version = "0.0.1"
+edition = "2021"
+rust-version = "1.75"
+authors = ["Brent Ellis <brent@r3motely.com>"]
+description = "Accountable Agentic Execution — name reservation placeholder (see repository)"
+license = "MIT OR Apache-2.0"
+repository = "https://github.com/r3moteBee/aae"
+readme = "README.md"
+keywords = ["agent", "ai", "governance", "policy", "audit"]
+categories = ["api-bindings"]
+
+[lib]
+name = "aae"
+path = "src/lib.rs"

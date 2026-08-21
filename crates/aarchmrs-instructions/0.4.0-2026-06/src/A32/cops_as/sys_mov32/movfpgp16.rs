@@ -1,0 +1,107 @@
+/* Copyright (c) 2010-2026 Arm Limited or its affiliates. All rights reserved.
+ *
+ * This document is Non-confidential and licensed under the BSD 3-clause license.
+ */
+
+pub mod VMOV_toh_A1 {
+    #[cfg(feature = "meta")]
+    pub const OPCODE_MASK: u32 = 0b00001111111100000000111101111111u32;
+    #[cfg(feature = "meta")]
+    pub const OPCODE: u32 = 0b00001110000000000000100100010000u32;
+    #[cfg(feature = "meta")]
+    pub const SHOULD_BE_MASK: u32 = 0b00000000000000000000000001101111u32;
+    #[cfg(feature = "meta")]
+    pub const NAME: &str = "VMOV_toh_A1";
+    #[cfg(feature = "meta_field")]
+    #[allow(nonstandard_style)]
+    pub const FIELD_N_OFFSET: u32 = 7u32;
+    #[cfg(feature = "meta_field")]
+    #[allow(nonstandard_style)]
+    pub const FIELD_N_WIDTH: u32 = 1u32;
+    #[cfg(feature = "meta_field")]
+    #[allow(nonstandard_style)]
+    pub const FIELD_Rt_OFFSET: u32 = 12u32;
+    #[cfg(feature = "meta_field")]
+    #[allow(nonstandard_style)]
+    pub const FIELD_Rt_WIDTH: u32 = 4u32;
+    #[cfg(feature = "meta_field")]
+    #[allow(nonstandard_style)]
+    pub const FIELD_Vn_OFFSET: u32 = 16u32;
+    #[cfg(feature = "meta_field")]
+    #[allow(nonstandard_style)]
+    pub const FIELD_Vn_WIDTH: u32 = 4u32;
+    #[cfg(feature = "meta_field")]
+    #[allow(nonstandard_style)]
+    pub const FIELD_cond_OFFSET: u32 = 28u32;
+    #[cfg(feature = "meta_field")]
+    #[allow(nonstandard_style)]
+    pub const FIELD_cond_WIDTH: u32 = 4u32;
+    #[inline]
+    pub const fn VMOV_toh_A1(
+        cond: ::aarchmrs_types::BitValue<4>,
+        Vn: ::aarchmrs_types::BitValue<4>,
+        Rt: ::aarchmrs_types::BitValue<4>,
+        N: ::aarchmrs_types::BitValue<1>,
+    ) -> ::aarchmrs_types::InstructionCode {
+        ::aarchmrs_types::InstructionCode::from_u32(
+            cond.into_inner() << 28u32
+                | 0b11100000u32 << 20u32
+                | Vn.into_inner() << 16u32
+                | Rt.into_inner() << 12u32
+                | 0b1001u32 << 8u32
+                | N.into_inner() << 7u32
+                | 0b0010000u32 << 0u32,
+        )
+    }
+}
+pub mod VMOV_h_A1 {
+    #[cfg(feature = "meta")]
+    pub const OPCODE_MASK: u32 = 0b00001111111100000000111101111111u32;
+    #[cfg(feature = "meta")]
+    pub const OPCODE: u32 = 0b00001110000100000000100100010000u32;
+    #[cfg(feature = "meta")]
+    pub const SHOULD_BE_MASK: u32 = 0b00000000000000000000000001101111u32;
+    #[cfg(feature = "meta")]
+    pub const NAME: &str = "VMOV_h_A1";
+    #[cfg(feature = "meta_field")]
+    #[allow(nonstandard_style)]
+    pub const FIELD_N_OFFSET: u32 = 7u32;
+    #[cfg(feature = "meta_field")]
+    #[allow(nonstandard_style)]
+    pub const FIELD_N_WIDTH: u32 = 1u32;
+    #[cfg(feature = "meta_field")]
+    #[allow(nonstandard_style)]
+    pub const FIELD_Rt_OFFSET: u32 = 12u32;
+    #[cfg(feature = "meta_field")]
+    #[allow(nonstandard_style)]
+    pub const FIELD_Rt_WIDTH: u32 = 4u32;
+    #[cfg(feature = "meta_field")]
+    #[allow(nonstandard_style)]
+    pub const FIELD_Vn_OFFSET: u32 = 16u32;
+    #[cfg(feature = "meta_field")]
+    #[allow(nonstandard_style)]
+    pub const FIELD_Vn_WIDTH: u32 = 4u32;
+    #[cfg(feature = "meta_field")]
+    #[allow(nonstandard_style)]
+    pub const FIELD_cond_OFFSET: u32 = 28u32;
+    #[cfg(feature = "meta_field")]
+    #[allow(nonstandard_style)]
+    pub const FIELD_cond_WIDTH: u32 = 4u32;
+    #[inline]
+    pub const fn VMOV_h_A1(
+        cond: ::aarchmrs_types::BitValue<4>,
+        Vn: ::aarchmrs_types::BitValue<4>,
+        Rt: ::aarchmrs_types::BitValue<4>,
+        N: ::aarchmrs_types::BitValue<1>,
+    ) -> ::aarchmrs_types::InstructionCode {
+        ::aarchmrs_types::InstructionCode::from_u32(
+            cond.into_inner() << 28u32
+                | 0b11100001u32 << 20u32
+                | Vn.into_inner() << 16u32
+                | Rt.into_inner() << 12u32
+                | 0b1001u32 << 8u32
+                | N.into_inner() << 7u32
+                | 0b0010000u32 << 0u32,
+        )
+    }
+}

@@ -1,0 +1,11 @@
+[package]
+name = "aaronia-rtsa-sys"
+version = "0.0.3"
+edition = "2021"
+build = "build.rs"
+links = "AaroniaRTSAAPI"
+license = "Apache-2.0"
+description = "FFI bindings for Aaronia RTSA"
+
+[build-dependencies]
+bindgen = "0.63"

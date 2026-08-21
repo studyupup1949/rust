@@ -1,0 +1,26 @@
+load("@buckal//:wrapper.bzl", "rust_binary")
+
+rust_binary(
+    name = "aaai_gui",
+    srcs = glob(["**/*.rs"]),
+    crate = "aaai_gui",
+    crate_root = "src/main.rs",
+    edition = "2024",
+
+    visibility = ["PUBLIC"],
+    deps = [
+        "//third-party/rust/crates/aaai/0.41.0:aaai",
+        "//third-party/rust/crates/anyhow/1.0.104:anyhow",
+        "//third-party/rust/crates/chrono/0.4.45:chrono",
+        "//third-party/rust/crates/env_logger/0.11.11:env_logger",
+        "//third-party/rust/crates/glob/0.3.4:glob",
+        "//third-party/rust/crates/iced/0.14.0:iced",
+        "//third-party/rust/crates/log/0.4.33:log",
+        "//third-party/rust/crates/regex/1.13.1:regex",
+        "//third-party/rust/crates/rfd/0.17.2:rfd",
+        "//third-party/rust/crates/rust-i18n/4.2.1:rust_i18n",
+        "//third-party/rust/crates/similar/3.1.2:similar",
+        "//third-party/rust/crates/snora/0.25.3:snora",
+        "//third-party/rust/crates/tokio/1.53.1:tokio",
+    ],
+)

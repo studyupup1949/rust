@@ -1,0 +1,20 @@
+[package]
+name        = "aaai-cli"
+description = "Command-line interface for aaai — audit for asset integrity"
+version.workspace   = true
+edition.workspace   = true
+authors.workspace   = true
+license.workspace   = true
+
+[[bin]]
+name = "aaai"
+path = "src/main.rs"
+
+[dependencies]
+aaai-core  = { path = "../aaai-core", version = "0.1.0" }
+clap       = { workspace = true }
+colored    = { workspace = true }
+anyhow     = { workspace = true }
+log        = { workspace = true }
+env_logger = { workspace = true }
+chrono     = { workspace = true }

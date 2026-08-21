@@ -1,0 +1,21 @@
+load("@buckal//:wrapper.bzl", "rust_binary")
+
+rust_binary(
+    name = "aam",
+    srcs = glob(["**/*.rs"]),
+    crate = "aam",
+    crate_root = "src/main.rs",
+    edition = "2024",
+
+    visibility = ["PUBLIC"],
+    deps = [
+        "//third-party/rust/crates/aam-rs/2.9.0:aam_rs",
+        "//third-party/rust/crates/anyhow/1.0.104:anyhow",
+        "//third-party/rust/crates/clap/4.6.6:clap",
+        "//third-party/rust/crates/crossterm/0.29.0:crossterm",
+        "//third-party/rust/crates/ratatui/0.30.2:ratatui",
+        "//third-party/rust/crates/tokio/1.53.1:tokio",
+        "//third-party/rust/crates/tower-lsp/0.20.0:tower_lsp",
+        "//third-party/rust/crates/tui-textarea-2/0.11.0:tui_textarea_2",
+    ],
+)

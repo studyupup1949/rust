@@ -1,0 +1,144 @@
+app:
+  title: aaai — audit for asset integrity
+batch:
+  approve_button: Approve All
+  cancel: Cancel
+  reason_label: Shared reason for all selected entries
+  reason_placeholder: Why are these changes allowed?
+  selected: selected entries
+  title: Batch Approve
+diff:
+  no_changes: No changed lines.
+  no_text_content: No text content available.
+  tab_changed_only: Changes only
+  tab_unified: Unified
+  tab_side_by_side: Side by side
+  legend_label: Diff highlight
+  legend_removed: Removed
+  legend_added: Added
+  after: After
+  before: Before
+  directory: (directory)
+  identical: Files are identical.
+  unreadable: File cannot be compared.
+expiry:
+  expired_badge: EXPIRED
+  soon_badge: Expiring soon
+filter:
+  all: All
+  changed: Changed
+  errors: Errors
+  pending: Pending
+footer:
+  unsaved: ● Unsaved changes
+inspector:
+  add_rule: + Add rule
+  approved_by_label: Approved by
+  approved_by_placeholder: Your name or ID
+  checksum_label: Expected SHA-256
+  checksum_placeholder: 64-char hex digest
+  exact_label: Expected full content
+  expires_at_label: Expires at
+  expires_at_placeholder: YYYY-MM-DD (leave blank = no expiry)
+  linematch_label: Expected line changes
+  note_label: Note (optional)
+  note_placeholder: Additional context...
+  reason_label: Reason
+  regex_pattern_label: Pattern
+  regex_target_label: Apply to
+  strategy_label: Content Audit Strategy
+  template_label: Apply template
+  template_none: (none)
+  ticket_label: Ticket / Issue
+  ticket_placeholder: e.g. JIRA-123, INF-42
+opening:
+  open_recent: Open
+  recent_section: Or open a recent project
+  pick_file: Pick file
+  ignore_label: .aaaiignore file
+  optional_hint: Collapsed by default. Without these, a new audit definition is created.
+  optional_section: Optional settings (audit definition / .aaaiignore)
+  change_folder: Change folder
+  pick_folder: Pick folder
+  unselected: Not selected
+  after_card: After (target)
+  before_card: Before (source)
+  guide: Pick two folders to audit.
+  definition_label: Audit definition
+  start_button: Start Audit
+  subtitle: audit for asset integrity
+  title: aaai
+  drop_here: Drop a folder anywhere on this screen
+profile:
+  deleted: Profile deleted
+  saved: Profile saved
+status:
+  error: Error
+  failed: Failed
+  ignored: Ignored
+  ok: OK
+  passed: PASSED
+  pending: Pending
+  result_failed: FAILED
+toast:
+  save_before_leaving: Save before leaving or changes will be lost.
+  unsaved_warning: Unsaved changes
+  approved: Approved
+  batch_approved: Batch approved
+  export_failed: Export failed
+  export_ok: Report exported
+  rerun: Re-run
+  save_failed: Save failed
+  saved: Saved
+toolbar:
+  audit_status: Audit status
+  report_output: Export Report
+  run_audit: Run Audit
+  open: Open
+  save: Save
+  passed: Passed
+  failed: Failed
+  undo: Undo
+bottombar:
+  selected: 'Selected:'
+  approve_and_save: Approve & Save
+error:
+  opening:
+    before_not_found:
+      message: 'Before folder not found: %{path}'
+      hint: Pick a folder that exists, or create the folder before starting the audit.
+    after_not_found:
+      message: 'After folder not found: %{path}'
+      hint: Pick a folder that exists, or create the folder before starting the audit.
+    definition_load_failed:
+      message: 'Failed to load audit definition: %{reason}'
+      hint: Check the YAML is well-formed, or regenerate it with `aaai snap`.
+    drop_invalid_kind:
+      message: 'Dropped item is not a folder: %{path}'
+      hint: Drop a folder (not a file) onto either card.
+  diff:
+    failed:
+      message: 'Folder comparison failed: %{reason}'
+      hint: Make sure both folders are readable and try again.
+relative:
+  just_now: Just now
+  minutes_ago: '%{n} min ago'
+  hours_ago: '%{n} h ago'
+  days_ago: '%{n} d ago'
+empty_state:
+  onboarding_title: Getting started
+  onboarding_step1: Pick the 'Before' folder — the audit baseline
+  onboarding_step2: Pick the 'After' folder — what you want to audit
+  onboarding_step3: Click 'Start audit'
+  onboarding_note: An audit.yaml file is created automatically when you start.
+  file_tree_no_result_title: No audit result yet
+  file_tree_no_result_hint: Click '▶ Run audit' in the toolbar to see file differences
+    here.
+  diff_no_audit_title: No audit result yet
+  diff_no_audit_step1: Click '▶ Run audit' in the toolbar
+  diff_no_audit_step2: Or click '□ Open' to start a new project
+  inspector_no_selection: Pick a file to inspect
+  inspector_no_selection_hint: Choose an entry from the file tree on the left.
+banner:
+  saved_label: Saved
+  reported_label: Reported

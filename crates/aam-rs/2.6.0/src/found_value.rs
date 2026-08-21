@@ -1,0 +1,148 @@
+//! Wrapper type returned by AAML lookup methods.
+
+use crate::aaml::parsing;
+use crate::types::list::ListType;
+use std::collections::HashMap;
+use std::fmt::Display;
+use std::ops::Deref;
+
+/// The result of a successful key lookup in an [`AAML`](crate::aaml::AAML) map.
+///
+/// `FoundValue` wraps the string value associated with a key and provides
+/// helper methods for common transformations.
+#[derive(Debug, Clone, PartialEq, Eq)]
+#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
+pub struct FoundValue {
+    inner: String,
+}
+
+impl FoundValue {
+    /// Creates a new `FoundValue` from a string slice.
+    #[must_use]
+    pub fn new(value: &str) -> Self {
+        Self {
+            inner: value.to_string(),
+        }
+    }
+
+    /// Removes all occurrences of `target` from the inner string in-place.
+    ///
+    /// Returns `&mut Self` for chaining.
+    pub fn remove(&mut self, target: &str) -> &mut Self {
+        self.inner = self.inner.replace(target, "");
+        self
+    }
+
+    /// Returns the inner value as a string slice.
+    #[must_use]
+    pub fn as_str(&self) -> &str {
+        &self.inner
+    }
+
+    /// Parses the value as a list literal `[item, item, ...]` and returns
+    /// the items as a `Vec<String>`.
+    ///
+    /// Returns `None` if the value is not in `[...]` form.
+    ///
+    /// # Example
+    /// ```
+    /// use aam_rs::found_value::FoundValue;
+    /// let v = FoundValue::new("[rust, aam, config]");
+    /// assert_eq!(v.as_list().unwrap(), vec!["rust", "aam", "config"]);
+    /// ```
+    #[must_use]
+    pub fn as_list(&self) -> Option<Vec<String>> {
+        ListType::parse_items(&self.inner)
+    }
+
+    /// Parses the value as an inline object `{ k = v, ... }` and returns a
+    /// `HashMap<String, String>` of its fields.
+    ///
+    /// Returns `None` if the value is not in `{...}` form or cannot be parsed.
+    ///
+    /// # Example
+    /// ```
+    /// use aam_rs::found_value::FoundValue;
+    /// let v = FoundValue::new("{ x = 1.0, y = 2.0 }");
+    /// let map = v.as_object().unwrap();
+    /// assert_eq!(map["x"], "1.0");
+    /// ```
+    #[must_use]
+    pub fn as_object(&self) -> Option<HashMap<String, String>> {
+        if !parsing::is_inline_object(&self.inner) {
+            return None;
+        }
+        parsing::parse_inline_object(&self.inner)
+            .ok()
+            .map(|pairs| pairs.into_iter().collect())
+    }
+
+    /// Returns `true` when this value is a list literal `[...]`.
+    #[must_use]
+    pub fn is_list(&self) -> bool {
+        let s = self.inner.trim();
+        s.starts_with('[') && s.ends_with(']')
+    }
+
+    /// Returns `true` when this value is an inline object literal `{...}`.
+    #[must_use]
+    pub fn is_object(&self) -> bool {
+        parsing::is_inline_object(&self.inner)
+    }
+
+    /// Attempts to parse the inner value into any type that implements `FromStr`.
+    /// Suitable for u32, f32, bool, etc.
+    ///
+    /// # Errors
+    ///
+    /// Returns `FromStr`'s associated error type if parsing fails (e.g., invalid format for the target type).
+    pub fn parse<T>(&self) -> Result<T, T::Err>
+    where
+        T: std::str::FromStr,
+    {
+        self.inner.parse::<T>()
+    }
+
+    /// Specialized method for parsing "list" strings of the form [1, 2, 3]
+    /// into a vector of elements of the desired type.
+    ///
+    /// Returns `None` if this is not a list, or a `Result` with the element parsing error.
+    #[must_use]
+    pub fn parse_list<T>(&self) -> Option<Result<Vec<T>, T::Err>>
+    where
+        T: std::str::FromStr,
+    {
+        self.as_list().map(|items| {
+            items
+                .into_iter()
+                .map(|s| s.trim().parse::<T>())
+                .collect::<Result<Vec<T>, T::Err>>()
+        })
+    }
+}
+
+impl From<String> for FoundValue {
+    fn from(value: String) -> Self {
+        Self { inner: value }
+    }
+}
+
+impl PartialEq<&str> for FoundValue {
+    fn eq(&self, other: &&str) -> bool {
+        self.inner == *other
+    }
+}
+
+impl Display for FoundValue {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.write_str(&self.inner)
+    }
+}
+
+impl Deref for FoundValue {
+    type Target = str;
+
+    fn deref(&self) -> &Self::Target {
+        &self.inner
+    }
+}

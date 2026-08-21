@@ -1,0 +1,16 @@
+load("@buckal//:wrapper.bzl", "rust_binary")
+
+rust_binary(
+    name = "aart",
+    srcs = glob(["**/*.rs"]),
+    crate = "aart",
+    crate_root = "src/main.rs",
+    edition = "2018",
+
+    visibility = ["PUBLIC"],
+    deps = [
+        "//third-party/rust/crates/clap/2.34.0:clap",
+        "//third-party/rust/crates/image/0.21.3:image",
+        "//third-party/rust/crates/rusttype/0.7.9:rusttype",
+    ],
+)

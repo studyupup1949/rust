@@ -1,0 +1,24 @@
+[package]
+name = "aa-storage"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+repository.workspace = true
+description = "Storage trait abstraction (pure interface) for the Agent Assembly persistence layer"
+
+[dependencies]
+# Facade crate: the storage traits live in `aa-core::storage` and are re-exported
+# here. `serde`/`toml` back the `[storage]` config schema + driver registry; the
+# crate stays a pure interface (no `sqlx`/`redis`/`tonic` backend dependency).
+# `async-trait` is a dev-dep used by the conformance test's example implementation.
+aa-core   = { path = "../aa-core", version = "0.0.1-rc.6" }
+serde     = { workspace = true }
+thiserror = { workspace = true }
+toml      = { workspace = true }
+
+[dev-dependencies]
+async-trait = { workspace = true }
+tokio = { workspace = true, features = ["macros", "rt"] }
+
+[lints]
+workspace = true

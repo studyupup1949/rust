@@ -1,0 +1,15 @@
+load("@buckal//:wrapper.bzl", "rust_library")
+
+rust_library(
+    name = "aarch32_rt",
+    srcs = glob(["**/*.rs"]),
+    crate = "aarch32_rt",
+    crate_root = "src/lib.rs",
+    edition = "2021",
+
+    visibility = ["PUBLIC"],
+    deps = [
+        "//third-party/rust/crates/aarch32-cpu/0.1.0:aarch32_cpu",
+        "//third-party/rust/crates/aarch32-rt-macros/0.1.0:aarch32_rt_macros",
+    ],
+)

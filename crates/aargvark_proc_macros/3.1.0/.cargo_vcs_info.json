@@ -1,0 +1,6 @@
+{
+  "git": {
+    "sha1": "49a6f3bb5ba0102c9decc5e2adad7c7adae31fdd"
+  },
+  "path_in_vcs": "crates/aargvark_proc_macros"
+}

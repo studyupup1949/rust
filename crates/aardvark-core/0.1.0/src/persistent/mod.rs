@@ -1,0 +1,14 @@
+//! Persistent-runtime helpers: isolates, bundle handles, and pools.
+
+mod artifact;
+mod inline;
+mod isolate;
+mod pool;
+
+pub use artifact::BundleArtifact;
+pub use inline::InlinePythonOptions;
+pub use isolate::{BundleHandle, CleanupMode, HandlerSession, IsolateConfig, PythonIsolate};
+pub use pool::{
+    BundlePool, CallContext, CallOutcome, IsolateId, LifecycleHooks, PoolOptions, PoolStats,
+    QueueMode, RecycleReason,
+};

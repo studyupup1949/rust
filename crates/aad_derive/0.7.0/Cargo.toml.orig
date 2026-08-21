@@ -1,0 +1,16 @@
+[package]
+name = "aad_derive"
+version = "0.7.0"
+authors = ["Hikaru Nakashima <nakashima.alg57@gmail.com>"]
+description = "Utility derive macro for aad crate"
+edition = "2021"
+repository = "https://github.com/nakashima-hikaru/aad"
+license-file = "LICENSE"
+
+[dependencies]
+syn = { version = "2.0", features = ["full", "fold"] }
+quote = "1.0"
+
+[lib]
+name = "aad_derive"
+proc-macro = true

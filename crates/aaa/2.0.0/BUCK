@@ -1,0 +1,25 @@
+load("@buckal//:wrapper.bzl", "rust_binary")
+
+rust_binary(
+    name = "aaa",
+    srcs = glob(["**/*.rs"]),
+    crate = "aaa",
+    crate_root = "src/main.rs",
+    edition = "2024",
+
+    visibility = ["PUBLIC"],
+    deps = [
+        "//third-party/rust/crates/ab_glyph/0.2.32:ab_glyph",
+        "//third-party/rust/crates/anyhow/1.0.104:anyhow",
+        "//third-party/rust/crates/atty/0.2.14:atty",
+        "//third-party/rust/crates/clap/4.6.6:clap",
+        "//third-party/rust/crates/clap_complete/4.6.9:clap_complete",
+        "//third-party/rust/crates/clap_complete_nushell/4.6.2:clap_complete_nushell",
+        "//third-party/rust/crates/ctrlc/3.5.2:ctrlc",
+        "//third-party/rust/crates/image/0.25.10:image",
+        "//third-party/rust/crates/imageproc/0.26.2:imageproc",
+        "//third-party/rust/crates/rs3a/2.5.0:rs3a",
+        "//third-party/rust/crates/rust-embed/8.12.0:rust_embed",
+        "//third-party/rust/crates/tempfile/3.27.0:tempfile",
+    ],
+)

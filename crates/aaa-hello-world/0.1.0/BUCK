@@ -1,0 +1,11 @@
+load("@buckal//:wrapper.bzl", "rust_binary")
+
+rust_binary(
+    name = "aaa_hello_world",
+    srcs = glob(["**/*.rs"]),
+    crate = "aaa_hello_world",
+    crate_root = "src/main.rs",
+    edition = "2021",
+
+    visibility = ["PUBLIC"],
+)

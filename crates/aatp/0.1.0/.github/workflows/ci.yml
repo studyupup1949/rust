@@ -1,0 +1,47 @@
+name: CI
+
+on:
+  push:
+    branches: [main, master]
+  pull_request:
+
+jobs:
+  lint:
+    name: fmt · clippy
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          components: rustfmt, clippy
+      - run: cargo fmt --all --check
+      - run: cargo clippy --all-targets -- -D warnings
+
+  test:
+    name: test · ${{ matrix.os }} · rust ${{ matrix.rust }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      # run the whole batch even if one cell fails, so a single-platform break is visible
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest, macos-latest]
+        # `stable` = the moving target; `1.85` = the pinned MSRV (edition 2024 floor)
+        rust: [stable, "1.85"]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@master
+        with:
+          toolchain: ${{ matrix.rust }}
+      - run: cargo test --all
+
+  no_std:
+    name: no_std build (bare-metal target)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: thumbv7em-none-eabihf
+      # Builds the library only (no dev-deps), for a target with no std — proof that
+      # #![no_std] genuinely holds, not just on the host.
+      - run: cargo build --lib --target thumbv7em-none-eabihf

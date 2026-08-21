@@ -1,0 +1,17 @@
+load("@buckal//:wrapper.bzl", "rust_library")
+
+rust_library(
+    name = "aarch32_cpu",
+    srcs = glob(["**/*.rs"]),
+    crate = "aarch32_cpu",
+    crate_root = "src/lib.rs",
+    edition = "2021",
+
+    visibility = ["PUBLIC"],
+    deps = [
+        "//third-party/rust/crates/arbitrary-int/2.1.1:arbitrary_int",
+        "//third-party/rust/crates/bitbybit/1.4.0:bitbybit",
+        "//third-party/rust/crates/num_enum/0.7.6:num_enum",
+        "//third-party/rust/crates/thiserror/2.0.20:thiserror",
+    ],
+)

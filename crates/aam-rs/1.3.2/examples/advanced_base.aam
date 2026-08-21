@@ -1,0 +1,26 @@
+@schema Item {
+    item_name: string
+    item_weight: f64
+    item_rare*: bool
+}
+
+@schema Weapon {
+    base: Item
+    damage: i32
+    description*: string
+}
+
+@schema Player {
+    player_name: string
+    level: i32
+    score*: f64
+    tags: list<string>
+    equipped_ids: list<i32>
+}
+
+player_name = BasePlayer
+level = 1
+tags = [beginner, default]
+equipped_ids = [100, 101]
+
+sword = { base = { item_name = Sword, item_weight = 3.5 }, damage = 45 }

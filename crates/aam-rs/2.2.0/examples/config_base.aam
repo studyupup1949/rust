@@ -1,0 +1,41 @@
+# config_base.aam — base application configuration
+# Demonstrates: schemas, optional fields (*), lists, nested schemas.
+
+# ── Address schema (used as a nested type inside Server) ─────────────────────
+@schema Address {
+    host: string
+    port: i32
+    tls*: bool
+}
+
+# ── Database schema ────────────────────────────────────────────────────────────
+@schema Database {
+    driver: string
+    url: string
+    pool_min: i32
+    pool_max: i32
+    timeout*: f64
+}
+
+# ── Server schema — `address` field is typed by the Address schema ────────────
+@schema Server {
+    name: string
+    version: string
+    address: Address
+    allowed_ips: list<string>
+    debug*: bool
+}
+
+# ── Values ────────────────────────────────────────────────────────────────────
+app_env = production
+build_id = 42
+description = Main production configuration
+
+address = { host = 127.0.0.1, port = 8080 }
+
+database = { driver = postgres, url = postgres://localhost/mydb, pool_min = 2, pool_max = 10 }
+
+server = { name = MyApp, version = 1.0.5, address = { host = 0.0.0.0, port = 443, tls = true }, allowed_ips = [10.0.0.1, 10.0.0.2, 10.0.0.3] }
+
+tags = [stable, production, v1]
+feature_flags = [auth, metrics, tracing]

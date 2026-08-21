@@ -1,0 +1,25 @@
+[build-system]
+requires = ["maturin>=1.4,<2.0"]
+build-backend = "maturin"
+
+[project]
+name = "aam-py"
+description = "Python bindings for the aam-rs AAML configuration parser"
+readme = "README_PY.md"
+license = { text = "MIT OR Apache-2.0" }
+license-files = ["LICENSE-MIT", "LICENSE-APACHE", "CREDITS.html"]
+dynamic = ["version"]
+requires-python = ">=3.8"
+classifiers = [
+    "Programming Language :: Rust",
+    "Programming Language :: Python :: Implementation :: CPython",
+    "Programming Language :: Python :: Implementation :: PyPy",
+]
+
+[tool.maturin]
+# Name of the Python extension module produced (import aam_py)
+module-name = "aam_py._native"
+# Only build the cdylib for Python; strip the rlib from the Python wheel
+python-source = "python"
+features = ["python"]
+

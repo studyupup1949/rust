@@ -1,0 +1,18 @@
+# config_child.aam — child overrides base + imports only selected schemas
+#
+# Uses @derive to pull in Server and Database schemas (not Address).
+# Overrides server address and adds staging-specific keys.
+# `debug` is optional in Server — deliberately not set here.
+
+@derive config_base.aam::Server::Database
+
+# ── Required Server fields ────────────────────────────────────────────────────
+server = { name = MyApp-Staging, version = 1.0.5-rc1, address = { host = staging.example.com, port = 80 }, allowed_ips = [192.168.0.10, 192.168.0.11] }
+
+# ── Required Database fields ──────────────────────────────────────────────────
+database = { driver = sqlite, url = file:staging.db, pool_min = 1, pool_max = 3 }
+
+# ── Staging-specific keys (not validated by any schema) ──────────────────────
+app_env = staging
+build_id = 99
+deployed_by = CI-bot

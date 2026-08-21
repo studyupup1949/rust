@@ -1,0 +1,14 @@
+load("@buckal//:wrapper.bzl", "rust_library")
+
+rust_library(
+    name = "aaronia_rtsa",
+    srcs = glob(["**/*.rs"]),
+    crate = "aaronia_rtsa",
+    crate_root = "src/lib.rs",
+    edition = "2021",
+
+    visibility = ["PUBLIC"],
+    deps = [
+        "//third-party/rust/crates/aaronia-rtsa-sys/0.0.1:aaronia_rtsa_sys",
+    ],
+)

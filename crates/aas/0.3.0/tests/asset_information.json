@@ -1,0 +1,71 @@
+{
+  "assetKind": "Instance",
+  "globalAssetId": "asset",
+  "specificAssetIds": [
+    {
+      "semanticId": {
+        "type": "ExternalReference",
+        "keys": [
+          {
+            "type": "AnnotatedRelationshipElement",
+            "value": "test_value"
+          }
+        ],
+        "referredSemanticId": {
+          "type": "ExternalReference",
+          "keys": [
+            {
+              "type": "AnnotatedRelationshipElement",
+              "value": "testval"
+            }
+          ]
+        }
+      },
+      "supplementalSemanticIds": [
+        {
+          "type": "ExternalReference",
+          "keys": [
+            {
+              "type": "AnnotatedRelationshipElement",
+              "value": "test_value2"
+            }
+          ],
+          "referredSemanticId": {
+            "type": "ExternalReference",
+            "keys": [
+              {
+                "type": "AnnotatedRelationshipElement",
+                "value": "test_value3"
+              }
+            ]
+          }
+        }
+      ],
+      "name": "test_value4",
+      "value": "test_value5",
+      "externalSubjectId": {
+        "type": "ExternalReference",
+        "keys": [
+          {
+            "type": "AnnotatedRelationshipElement",
+            "value": "undefined"
+          }
+        ],
+        "referredSemanticId": {
+          "type": "ExternalReference",
+          "keys": [
+            {
+              "type": "AnnotatedRelationshipElement",
+              "value": "test_value6"
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "assetType": "identifier",
+  "defaultThumbnail": {
+    "path": "file:://anywhere.json",
+    "contentType": "application/json"
+  }
+}

@@ -1,0 +1,35 @@
+AATP — Build & Safety Guarantees
+================================
+Commit: 9d203924f1e5e6a8103dd46767ade985b1521b30
+Date:   2026-07-11
+
+Memory safety (compiler-enforced)
+---------------------------------
+  src/lib.rs:27   #![no_std]
+  src/lib.rs:28   #![forbid(unsafe_code)]
+
+  `forbid(unsafe_code)` is a hard compile error on any `unsafe` block or impl — not a
+  lint that can be downgraded. There is no `unsafe` anywhere in the crate.
+
+no_std bare-metal build (no host, no allocator)
+-----------------------------------------------
+  $ cargo build --lib --target thumbv7em-none-eabihf
+      Compiling aatp v0.1.0
+       Finished `dev` profile in 0.30s
+
+  Building the library for a target with no std proves #![no_std] genuinely holds,
+  not merely that it compiles on a std host.
+
+Continuous integration (GitHub Actions, .github/workflows/ci.yml)
+-----------------------------------------------------------------
+  lint    : cargo fmt --all --check   +   cargo clippy --all-targets -D warnings
+  test    : cargo test --all   x   {ubuntu, windows, macos}   x   {stable, MSRV 1.85}
+  no_std  : cargo build --lib --target thumbv7em-none-eabihf
+
+  All eight jobs green on the release commit — the MSRV (1.85) is enforced on all
+  three major platforms, not just asserted in Cargo.toml.
+
+Dependencies
+------------
+  Zero runtime dependencies and zero dev-dependencies. The fuzz/property harness and
+  all tests use only the standard library and a hand-written PRNG.

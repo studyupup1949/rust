@@ -1,0 +1,12 @@
+load("@buckal//:wrapper.bzl", "rust_library")
+
+rust_library(
+    name = "aatree",
+    srcs = glob(["**/*.rs"]),
+    crate = "aatree",
+    crate_root = "src/lib.rs",
+    edition = "2021",
+    features = ["default"],
+
+    visibility = ["PUBLIC"],
+)

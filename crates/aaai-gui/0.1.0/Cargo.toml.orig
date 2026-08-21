@@ -1,0 +1,22 @@
+[package]
+name        = "aaai-gui"
+description = "GUI for aaai — audit for asset integrity"
+version.workspace   = true
+edition.workspace   = true
+authors.workspace   = true
+license.workspace   = true
+
+[[bin]]
+name = "aaai-gui"
+path = "src/main.rs"
+
+[dependencies]
+aaai-core  = { path = "../aaai-core", version = "0.1.0" }
+iced       = { workspace = true }
+snora      = "0.8"
+anyhow     = { workspace = true }
+log        = { workspace = true }
+env_logger = { workspace = true }
+chrono     = { workspace = true }
+similar    = { workspace = true, features = ["unicode"] }
+tokio      = { workspace = true }

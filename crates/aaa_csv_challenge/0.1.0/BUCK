@@ -1,0 +1,20 @@
+load("@buckal//:wrapper.bzl", "rust_library")
+
+rust_library(
+    name = "aaa_csv_challenge",
+    srcs = glob(["**/*.rs"]),
+    crate = "aaa_csv_challenge",
+    crate_root = "src/lib.rs",
+    edition = "2018",
+
+    visibility = ["PUBLIC"],
+    deps = [
+        "//third-party/rust/crates/failure/0.1.8:failure",
+        "//third-party/rust/crates/failure_derive/0.1.8:failure_derive",
+        "//third-party/rust/crates/lazy-regex/2.5.0:lazy_regex",
+        "//third-party/rust/crates/lazy_static/1.5.0:lazy_static",
+        "//third-party/rust/crates/regex/1.13.1:regex",
+        "//third-party/rust/crates/structopt-derive/0.4.18:structopt_derive",
+        "//third-party/rust/crates/structopt/0.3.26:structopt",
+    ],
+)

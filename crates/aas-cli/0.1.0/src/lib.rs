@@ -1,0 +1,11 @@
+pub mod agents;
+pub mod cli;
+pub mod config;
+pub mod dashboard;
+pub mod execution;
+pub mod integrations;
+pub mod llm;
+pub mod memory;
+pub mod notifications;
+pub mod rsi;
+pub mod swarm;

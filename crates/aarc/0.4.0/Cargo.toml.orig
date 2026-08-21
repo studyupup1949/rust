@@ -1,0 +1,17 @@
+[package]
+name = "aarc"
+version = "0.4.0"
+edition = "2021"
+description = "An atomically updatable Arc for lock-free concurrency."
+homepage = "https://github.com/aarc-rs/aarc"
+repository = "https://github.com/aarc-rs/aarc"
+license = "MIT"
+keywords = ["atomic", "arc", "thread-safe", "sync", "lock-free"]
+categories = ["concurrency", "memory-management", "data-structures", "algorithms"]
+exclude = [".github/", ".gitignore", "target/"]
+
+[dependencies]
+fast-smr = "0.2.3"
+
+[dev-dependencies]
+rand = "0.8"

@@ -1,0 +1,38 @@
+[package]
+name = "aarty"
+version = "0.3.5"
+edition = "2021"
+authors = ["Anas Elgarhy <anas.elgarhy.dev@gmail.com>"]
+description = "A simple CLI tool to convert the images to ASCII art"
+repository = "https://github.com/anas-elgarhy/aarty"
+license = "MIT"
+readme = "README.md"
+keywords = [
+    "ascii",
+    "art",
+    "image",
+    "cli"
+]
+categories = [
+    "command-line-utilities",
+    "multimedia",
+    "text-processing"
+]
+include = [
+    "src/**/*",
+    "Cargo.toml",
+    "README.md",
+    "LICENSE",
+    "CHANGELOG.md"
+]
+exclude = ["images/*"]
+
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+clap = { version = "4.0.12-rc.3", features = ["derive"] }
+colored = "2.0.0"
+image = "0.24.4"
+log = "0.4.17"
+pretty_env_logger = "0.4.0"

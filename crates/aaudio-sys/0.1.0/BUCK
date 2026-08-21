@@ -1,0 +1,14 @@
+load("@buckal//:wrapper.bzl", "rust_library")
+
+rust_library(
+    name = "aaudio_sys",
+    srcs = glob(["**/*.rs"]),
+    crate = "aaudio_sys",
+    crate_root = "src/lib.rs",
+    edition = "2015",
+
+    visibility = ["PUBLIC"],
+    deps = [
+        "//third-party/rust/crates/libc/0.2.189:libc",
+    ],
+)

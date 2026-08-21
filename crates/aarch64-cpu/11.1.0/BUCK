@@ -1,0 +1,14 @@
+load("@buckal//:wrapper.bzl", "rust_library")
+
+rust_library(
+    name = "aarch64_cpu",
+    srcs = glob(["**/*.rs"]),
+    crate = "aarch64_cpu",
+    crate_root = "src/lib.rs",
+    edition = "2018",
+
+    visibility = ["PUBLIC"],
+    deps = [
+        "//third-party/rust/crates/tock-registers/0.10.1:tock_registers",
+    ],
+)

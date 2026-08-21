@@ -1,0 +1,122 @@
+[package]
+name = "aa-gateway"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+repository.workspace = true
+description = "Control plane — policy enforcement engine and agent registry for Agent Assembly"
+
+[dependencies]
+aa-core      = { path = "../aa-core", version = "0.0.1-rc.5", features = ["serde"] }
+# AAASM-3907: the shared HTTP auth framework (AuthConfig / ApiKeyStore /
+# JwtVerifier / RateLimiter / RequireAdmin) extracted to a leaf crate by
+# AAASM-3899. aa-gateway IS in the crates.io publish set, so this path-dep MUST
+# carry a version — crates.io rejects a version-less path-dep on a published
+# crate (broke the v0.0.1-rc.3 publish). Keep this pin realigned to the workspace
+# version on every release cut, like the other internal deps below.
+aa-auth      = { path = "../aa-auth", version = "0.0.1-rc.5" }
+aa-security  = { path = "../aa-security", version = "0.0.1-rc.5", features = ["serde"] }
+aa-proto     = { path = "../aa-proto", version = "0.0.1-rc.5" }
+aa-runtime   = { path = "../aa-runtime", version = "0.0.1-rc.5" }
+tokio        = { workspace = true, features = ["full"] }
+regex        = "1"
+serde        = { workspace = true }
+serde_json   = { workspace = true }
+serde_yaml   = { workspace = true }
+arc-swap     = "1"
+bs58         = "0.5"
+dashmap      = { workspace = true }
+ed25519-dalek = "3"
+# CSPRNG for server-issued, single-use registration-challenge nonces
+# (AAASM-3866). `rand::random` draws from an OS-seeded ChaCha thread CSPRNG, so
+# the nonce is unpredictable and the possession proof cannot be precomputed.
+# Same major version aa-runtime / aa-sdk-client already use for handshake nonces.
+rand         = "0.10"
+hex          = { workspace = true }
+notify       = { version = "8", features = [] }
+chrono       = { workspace = true, features = ["clock", "serde"] }
+chrono-tz    = { workspace = true, features = ["serde"] }
+cron         = "0.17"
+rust_decimal = { workspace = true, features = ["serde-str"] }
+thiserror    = { workspace = true }
+dirs         = { workspace = true }
+async-stream = "0.3"
+async-trait  = { workspace = true }
+sha2         = { workspace = true }
+# AAASM-3922: constant-time byte comparison for credential-token validation
+# (defence-in-depth against a timing side-channel). Tiny, BSD-licensed, already
+# present in the dependency graph via the ed25519/curve crates.
+subtle       = "2"
+similar      = "3"
+tokio-stream = { workspace = true }
+tonic        = { workspace = true }
+tracing      = { workspace = true }
+tracing-subscriber = { workspace = true, features = ["env-filter"] }
+reqwest      = { workspace = true, features = ["json", "rustls"] }
+uuid         = { workspace = true, features = ["v4", "v5", "v7", "serde"] }
+clap         = { workspace = true, features = ["derive"] }
+moka         = { workspace = true, features = ["sync"] }
+strsim       = "0.11"
+humantime    = "2"
+ahash        = "0.8"
+metrics      = { workspace = true }
+sqlx         = { workspace = true, features = ["runtime-tokio-rustls", "sqlite", "postgres", "macros", "migrate", "uuid", "chrono", "json"] }
+tokio-util   = { workspace = true }
+parking_lot  = { workspace = true }
+utoipa       = { workspace = true }
+axum         = { workspace = true }
+axum-server  = { version = "0.8", features = ["tls-rustls"] }
+tower-http   = { workspace = true, features = ["fs"] }
+x509-parser  = "0.18"
+redis        = { workspace = true, features = ["tokio-comp", "connection-manager"], optional = true }
+# AAASM-3883: cross-process op-control delivery over a NATS subject (ADR 0011).
+# async-nats is a regular (non-optional) dependency here because it is already a
+# non-optional transitive dependency via aa-runtime's audit publisher — so it is
+# in the crates.io publish set regardless. The op-control bridge/publisher is
+# therefore always compiled and activated at runtime by AA_OPCONTROL_NATS_URL,
+# matching the always-on runtime audit publisher rather than the feature-gated
+# audit consumer.
+async-nats   = { workspace = true }
+
+[dev-dependencies]
+# Path-only (the driver is publish=false). The migration-drift test runs the
+# driver's own embedded MIGRATOR so the gateway can never drift from the
+# canonical MVP schema (AAASM-2389).
+aa-storage-postgres = { path = "../aa-storage-postgres" }
+# End-to-end proof that an SDK-derived did:key identity is accepted by the
+# live AgentLifecycleService.Register RPC (AAASM-3387). Default features off
+# to avoid pulling the advisory-preflight (aa-security) dependency.
+aa-sdk-client = { path = "../aa-sdk-client", default-features = false }
+criterion    = { workspace = true, features = ["async_tokio"] }
+proptest     = { workspace = true }
+tempfile     = { workspace = true }
+tokio        = { workspace = true, features = ["test-util", "macros", "rt-multi-thread"] }
+tokio-stream = { workspace = true }
+insta        = { workspace = true }
+tower        = { workspace = true }
+rcgen        = { workspace = true, features = ["pem"] }
+time         = { workspace = true }
+testcontainers-modules = { workspace = true, features = ["postgres", "nats"] }
+rustls       = { workspace = true }
+
+[features]
+default = []
+# Pulls the `redis` crate in and gates the Redis-backed `PolicyCache` variant.
+# Off by default — the gateway runs with `PolicyCache::Disabled` unless a
+# downstream binary explicitly enables this feature.
+redis-cache = ["dep:redis"]
+
+[[bin]]
+name = "aa-gateway"
+path = "src/main.rs"
+
+[[bench]]
+name    = "policy_check"
+harness = false
+
+[[bench]]
+name    = "policy_cascade"
+harness = false
+
+[lints]
+workspace = true

@@ -1,0 +1,17 @@
+[package]
+name = "aabel-bloom-rs"
+version = "0.1.0"
+edition = "2021"
+keywords = ["membership", "probabilistic"]
+authors = ["Vlad Eminovici"]
+description = "A crate the implements the Bloom filter"
+homepage = "https://github.com/veminovici/aabel-bloom-rs"
+repository = "https://github.com/veminovici/aabel-vloom-rs"
+license = "MIT OR Apache-2.0"
+categories = ["algorithms", "data-structures"]
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+aabel-multihash-rs = "0.1"
+bitvec = "1.0"

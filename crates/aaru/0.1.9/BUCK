@@ -1,0 +1,29 @@
+load("@buckal//:wrapper.bzl", "rust_library")
+
+rust_library(
+    name = "aaru",
+    srcs = glob(["**/*.rs"]),
+    crate = "aaru",
+    crate_root = "src/lib.rs",
+    edition = "2021",
+    features = ["default"],
+
+    visibility = ["PUBLIC"],
+    deps = [
+        "//third-party/rust/crates/bytes/1.12.1:bytes",
+        "//third-party/rust/crates/chrono/0.4.45:chrono",
+        "//third-party/rust/crates/dotenv/0.15.0:dotenv",
+        "//third-party/rust/crates/either/1.17.0:either",
+        "//third-party/rust/crates/geo/0.29.3:geo",
+        "//third-party/rust/crates/geohash/0.13.2:geohash",
+        "//third-party/rust/crates/log/0.4.33:log",
+        "//third-party/rust/crates/petgraph/0.6.5:petgraph",
+        "//third-party/rust/crates/prost/0.13.5:prost",
+        "//third-party/rust/crates/rayon/1.12.0:rayon",
+        "//third-party/rust/crates/rstar/0.12.2:rstar",
+        "//third-party/rust/crates/serde/1.0.229:serde",
+        "//third-party/rust/crates/strum/0.26.3:strum",
+        "//third-party/rust/crates/test-log/0.2.21:test_log",
+        "//third-party/rust/crates/wkt/0.11.1:wkt",
+    ],
+)

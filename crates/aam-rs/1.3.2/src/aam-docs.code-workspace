@@ -1,0 +1,21 @@
+{
+	"folders": [
+		{
+			"path": "../../../projects/aam-docs"
+		},
+		{
+			"path": ".."
+		}
+	],
+	"settings": {
+		"workbench.activityBar.location": "hidden",
+		"workbench.sideBar.location": "left",
+		"workbench.statusBar.visible": false,
+		"workbench.editor.showTabs": "single",
+		"zenMode.fullScreen": false,
+		"zenMode.hideLineNumbers": false,
+		"zenMode.hideStatusBar": true,
+		"zenMode.hideActivityBar": true,
+		"zenMode.centerLayout": false
+	}
+}

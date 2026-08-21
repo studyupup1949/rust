@@ -1,0 +1,29 @@
+# Rust
+/target/
+Cargo.lock
+**/*.rs.bk
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+
+# Config & Data
+~/.config/aas/
+~/.local/share/aas/
+.env
+.env.local
+config.json
+aas.db
+aas.db-journal
+
+# Logs
+*.log
+logs/
+
+# Backup files
+*.bak
+*.backup

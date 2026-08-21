@@ -1,0 +1,25 @@
+load("@buckal//:wrapper.bzl", "rust_library")
+
+rust_library(
+    name = "aa_auth",
+    srcs = glob(["**/*.rs"]),
+    crate = "aa_auth",
+    crate_root = "src/lib.rs",
+    edition = "2021",
+
+    visibility = ["PUBLIC"],
+    deps = [
+        "//third-party/rust/crates/argon2/0.5.3:argon2",
+        "//third-party/rust/crates/axum/0.8.9:axum",
+        "//third-party/rust/crates/dashmap/6.2.1:dashmap",
+        "//third-party/rust/crates/http/1.5.0:http",
+        "//third-party/rust/crates/jsonwebtoken/10.4.0:jsonwebtoken",
+        "//third-party/rust/crates/rand/0.10.2:rand",
+        "//third-party/rust/crates/rand_core/0.6.4:rand_core",
+        "//third-party/rust/crates/serde/1.0.229:serde",
+        "//third-party/rust/crates/serde_json/1.0.151:serde_json",
+        "//third-party/rust/crates/thiserror/2.0.20:thiserror",
+        "//third-party/rust/crates/tracing/0.1.44:tracing",
+        "//third-party/rust/crates/utoipa/5.5.0:utoipa",
+    ],
+)

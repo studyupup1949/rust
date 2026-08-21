@@ -1,0 +1,18 @@
+load("@buckal//:wrapper.bzl", "rust_binary")
+
+rust_binary(
+    name = "aarty",
+    srcs = glob(["**/*.rs"]),
+    crate = "aarty",
+    crate_root = "src/main.rs",
+    edition = "2021",
+
+    visibility = ["PUBLIC"],
+    deps = [
+        "//third-party/rust/crates/clap/4.6.6:clap",
+        "//third-party/rust/crates/colored/2.2.0:colored",
+        "//third-party/rust/crates/image/0.24.9:image",
+        "//third-party/rust/crates/log/0.4.33:log",
+        "//third-party/rust/crates/pretty_env_logger/0.5.0:pretty_env_logger",
+    ],
+)

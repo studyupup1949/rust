@@ -1,0 +1,106 @@
+[package]
+
+name = "aabb"
+version = "0.6.3"
+description = "Static AABB spatial index for 2D queries"
+rust-version = "1.88"
+edition = "2024"
+categories = ["algorithms", "data-structures", "graphics", "mathematics"]
+keywords = ["2d", "spatial", "aabb", "hilbert", "rtree"]
+license = "MIT"
+homepage = "https://github.com/radevgit/aabb"
+repository = "https://github.com/radevgit/aabb"
+documentation = "https://docs.rs/aabb"
+readme = "README.md"
+
+[lib]
+crate-type = ["lib"]
+
+[profile.release]
+lto = true
+codegen-units = 1
+panic = "abort"
+opt-level = 3
+
+[dev-dependencies]
+rand = "0.9"
+
+[[bench]]
+name = "query_intersecting_bench_leg"
+harness = false
+
+[[bench]]
+name = "query_intersecting_bench"
+harness = false
+
+[[bench]]
+name = "query_intersecting_bench_i32"
+harness = false
+
+[[bench]]
+name = "profile_bench"
+harness = false
+
+[[bench]]
+name = "profile_parallel"
+harness = false
+
+[lints.rust]
+keyword_idents_2024 = "forbid"
+non_ascii_idents = "forbid"
+non_local_definitions = "forbid"
+unsafe_op_in_unsafe_fn = "forbid"
+
+elided_lifetimes_in_paths = "warn"
+let_underscore_drop = "warn"
+missing_debug_implementations = "warn"
+missing_docs = "warn"
+single_use_lifetimes = "warn"
+trivial_numeric_casts = "warn"
+# Setting check-cfg can be removed once we fix the benchmarks.
+unexpected_cfgs = { level = "warn", check-cfg = ['cfg(nightly)'] }
+unit_bindings = "warn"
+unnameable_types = "warn"
+unreachable_pub = "warn"
+unused_import_braces = "warn"
+unused_lifetimes = "warn"
+unused_macro_rules = "warn"
+unused_qualifications = "warn"
+variant_size_differences = "warn"
+
+[lints.clippy]
+unused_results = "deny"
+allow_attributes = "warn"
+allow_attributes_without_reason = "warn"
+cast_possible_truncation = "warn"
+collection_is_never_read = "warn"
+dbg_macro = "warn"
+debug_assert_with_mut_call = "warn"
+doc_markdown = "warn"
+exhaustive_enums = "warn"
+fn_to_numeric_cast_any = "forbid"
+infinite_loop = "warn"
+large_include_file = "warn"
+large_stack_arrays = "warn"
+match_same_arms = "warn"
+mismatching_type_param_order = "warn"
+missing_assert_message = "warn"
+missing_errors_doc = "warn"
+missing_fields_in_debug = "warn"
+missing_panics_doc = "warn"
+partial_pub_fields = "warn"
+return_self_not_must_use = "warn"
+same_functions_in_if_condition = "warn"
+semicolon_if_nothing_returned = "warn"
+shadow_unrelated = "warn"
+should_panic_without_expect = "warn"
+todo = "warn"
+trivially_copy_pass_by_ref = "warn"
+unseparated_literal_suffix = "warn"
+use_self = "warn"
+wildcard_imports = "warn"
+
+cargo_common_metadata = "warn"
+negative_feature_names = "warn"
+redundant_feature_names = "warn"
+wildcard_dependencies = "warn"

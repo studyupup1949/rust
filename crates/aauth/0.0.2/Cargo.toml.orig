@@ -1,0 +1,89 @@
+[package]
+name = "aauth"
+version = "0.0.2"
+edition.workspace = true
+license.workspace = true
+rust-version.workspace = true
+authors.workspace = true
+repository.workspace = true
+description = "Rust implementation of the AAuth authorization protocol"
+documentation = "https://docs.rs/aauth"
+readme = "../README.md"
+keywords = ["aauth", "oauth", "authentication", "http-signatures"]
+categories = ["authentication", "web-programming"]
+
+[features]
+default = ["client", "client-reqwest", "server", "server-axum"]
+client = []
+client-reqwest = [
+    "client",
+    "dep:reqwest",
+    "dep:reqwest-middleware",
+    "dep:http-body-util",
+    "dep:tokio",
+]
+server = []
+server-axum = ["server", "dep:axum", "dep:tower", "dep:reqwest"]
+
+[dependencies]
+async-trait.workspace = true
+axum = { workspace = true, optional = true }
+tower = { workspace = true, optional = true }
+base64.workspace = true
+bytes.workspace = true
+ed25519-dalek.workspace = true
+http.workspace = true
+jsonwebtoken.workspace = true
+rand.workspace = true
+anyhow.workspace = true
+reqwest = { workspace = true, optional = true }
+reqwest-middleware = { workspace = true, optional = true }
+http-body-util = { workspace = true, optional = true }
+serde.workspace = true
+serde_json.workspace = true
+sfv.workspace = true
+sha2.workspace = true
+thiserror.workspace = true
+tokio = { workspace = true, optional = true, features = ["time"] }
+url.workspace = true
+uuid.workspace = true
+
+[dev-dependencies]
+tokio.workspace = true
+wiremock.workspace = true
+reqwest.workspace = true
+reqwest-middleware.workspace = true
+http-body-util.workspace = true
+anyhow.workspace = true
+axum.workspace = true
+tower.workspace = true
+async-trait.workspace = true
+serde_json.workspace = true
+rstest.workspace = true
+
+[[example]]
+name = "identity_based"
+required-features = ["client-reqwest", "server", "server-axum"]
+
+[[example]]
+name = "person_server_managed"
+required-features = ["client-reqwest", "server", "server-axum"]
+
+[[example]]
+name = "resource_managed"
+required-features = ["client-reqwest", "server", "server-axum"]
+
+[[example]]
+name = "federated"
+required-features = ["client-reqwest", "server", "server-axum"]
+
+[[test]]
+name = "axum_integration"
+required-features = ["client-reqwest", "server", "server-axum"]
+
+[[test]]
+name = "example_flows"
+required-features = ["client-reqwest", "server", "server-axum"]
+
+[package.metadata.docs.rs]
+all-features = true

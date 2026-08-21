@@ -1,0 +1,29 @@
+[package]
+name = "aa-proto"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+repository.workspace = true
+description = "Generated protobuf/gRPC types for Agent Assembly (prost + tonic)"
+
+# AAASM-2340: explicit include list lets `_embedded/proto/` (a build-time
+# mirror of workspace-root `proto/`) ship in the published tarball even
+# though it's gitignored. cargo's default file-enumeration respects
+# .gitignore; `include` overrides that.
+include = [
+    "src/**",
+    "build.rs",
+    "Cargo.toml",
+    "_embedded/proto/**",
+]
+
+[dependencies]
+prost       = { workspace = true }
+tonic       = { workspace = true }
+tonic-prost = "0.14"
+
+[build-dependencies]
+tonic-prost-build = "0.14"
+
+[lints]
+workspace = true

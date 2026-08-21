@@ -1,0 +1,13 @@
+[package]
+name = "aabel-hashmap-rs"
+version = "0.1.0"
+edition = "2021"
+keywords = ["membership", "probabilistic"]
+authors = ["Vlad Eminovici"]
+description = "A crate the implements extensions for HashMap"
+homepage = "https://github.com/veminovici/aabel-hashmap-rs"
+repository = "https://github.com/veminovici/aabel-hashmap-rs"
+license = "MIT OR Apache-2.0"
+categories = ["algorithms", "data-structures"]
+
+[dependencies]

@@ -1,0 +1,9 @@
+[package]
+name = "aac"
+version = "0.0.0"
+authors = ["est31 <MTest31@outlook.com>"]
+homepage = "https://gist.github.com/est31/da97a67dd7356e1dae5c0dd34b5a342c"
+license = "Apache-2.0/MIT"
+description = "RESERVED. Open for adoption by projects that fulfill some criteria. Please see the linked gist for details."
+
+[dependencies]

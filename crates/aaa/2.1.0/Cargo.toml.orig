@@ -1,0 +1,26 @@
+[package]
+name = "aaa"
+version = "2.1.0"
+edition = "2024"
+authors = ["asciimoth"]
+description = "Swiss Army knife for animated ascii art"
+repository = "https://github.com/asciimoth/aaa"
+keywords = ["3a", "animated-ascii-art", "text", "ascii", "ascii-art"]
+categories = ["command-line-utilities", "graphics", "multimedia", "multimedia::encoding", "rendering"]
+readme = "README.md"
+license = "GPL-3.0"
+
+[dependencies]
+rs3a = "2.5.0"
+anyhow = "1.0.101"
+rust-embed = "8.11.0"
+atty = "0.2.14"
+ctrlc = "3.5.2"
+image = "0.25.9"
+imageproc = "0.26.0"
+ab_glyph = "0.2.32"
+tempfile = "3.25.0"
+clap = { version = "4.5.60", features = ["derive"] }
+clap_complete = "4.5.66"
+clap_complete_nushell = "4.5.10"
+

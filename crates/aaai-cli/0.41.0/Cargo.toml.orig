@@ -1,0 +1,37 @@
+[package]
+name            = "aaai-cli"
+description     = "Command-line interface for aaai — audit for asset integrity"
+readme          = "README.md"
+documentation   = "https://nabbisen.github.io/aaai/cli.html"
+version.workspace       = true
+edition.workspace       = true
+license.workspace       = true
+authors.workspace       = true
+categories.workspace    = true
+keywords.workspace      = true
+repository.workspace    = true
+homepage.workspace      = true
+
+[[bin]]
+name = "aaai"
+path = "src/main.rs"
+
+[dependencies]
+aaai                        = { workspace = true }
+
+chrono                      = { workspace = true }
+clap                        = { workspace = true }
+clap_complete               = { workspace = true }
+colored                     = { workspace = true }
+indicatif                   = { workspace = true }
+notify                      = { workspace = true }
+similar                     = { workspace = true }
+
+anyhow                      = { workspace = true }
+log                         = { workspace = true }
+env_logger                  = { workspace = true }
+serde                       = { workspace = true }
+serde_json                  = { workspace = true }
+
+[dev-dependencies]
+tempfile                    = { workspace = true }

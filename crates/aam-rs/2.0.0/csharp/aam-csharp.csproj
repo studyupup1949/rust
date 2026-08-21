@@ -1,0 +1,29 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <EnableDefaultCompileItems>false</EnableDefaultCompileItems>
+    <PackageId>aam-csharp</PackageId>
+    <Version>2.0.0</Version> <!-- x-release-please-version -->
+    <Authors>INiNiDS</Authors>
+    <Description>C# bindings for aam-rs AAML parser</Description>
+    <PackageLicenseExpression>MIT OR Apache-2.0</PackageLicenseExpression>
+    <RepositoryUrl>https://github.com/INiNiDS/aam-rs</RepositoryUrl>
+    <PackageTags>aam aaml config parser rust ffi</PackageTags>
+    <PackageReadmeFile>README.md</PackageReadmeFile>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Include="src/**/*.cs" />
+    <None Include="README.md" Pack="true" PackagePath="/" />
+    <None Include="LICENSE-MIT" Pack="true" PackagePath="/" />
+    <None Include="LICENSE-APACHE" Pack="true" PackagePath="/" />
+    <None Include="CREDITS.html" Pack="true" PackagePath="/" />
+    <None Include="runtimes/**/*.*" Pack="true" PackagePath="%(Identity)" Visible="false" />
+  </ItemGroup>
+</Project>
+
+

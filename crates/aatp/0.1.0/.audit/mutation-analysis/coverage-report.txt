@@ -1,0 +1,42 @@
+AATP — Behavioural Mutation-Coverage Report
+===========================================
+Commit:  9d203924f1e5e6a8103dd46767ade985b1521b30
+Date:    2026-07-11
+Method:  Behavioural mutation analysis. Each mutation applies one operator swap to
+         the source, rebuilds, and reruns the full test suite; a mutation is "killed"
+         when at least one test fails. A surviving mutation is an untested behaviour.
+
+Operator set (what "100%" is scoped to)
+---------------------------------------
+  - comparison swaps ....... >  <->  >=,  <  <->  <=,  ==  <->  !=
+  - boolean swaps .......... &&  <->  ||,  true  <->  false
+  - arithmetic swaps ....... +  <->  -,  *  <->  /,  %  -> *
+  - compound-assign, bitwise/shift equivalents
+  - structural ............. cond -> !(cond) / true / false;  unary-negation removal (!x -> x)
+
+  This set does NOT mutate integer/byte literals. Wide constant tables (the CRC32C
+  table, the SplitMix64 keystream, the dictionary vocabulary) are therefore pinned
+  separately by explicit known-answer, snapshot, and fold-digest tests — see
+  ../verification-proofs/fuzz-and-corruption.txt.
+
+Per-module result
+-----------------
+  module            viable mutants   killed   survivors   score
+  src/codec.rs           8              8          0       100%
+  src/message.rs        25             25          0       100%
+  src/state.rs          17             17          0       100%
+  src/dict.rs           35             35          0       100%
+  src/shadow.rs         16             16          0       100%
+  src/lib.rs            46             46          0       100%
+  ------------------------------------------------------------
+  TOTAL                147            147          0       100%     (3 unviable, excluded)
+
+Result: 0 survivors across all modules. Every behaviour reachable by the operator
+set above is pinned by at least one test.
+
+Reproduce
+---------
+  Run any behavioural mutation-coverage tool that applies operator swaps and reruns
+  `cargo test` per mutant. The "0 survivors" result is a property of the TEST SUITE,
+  not of any one engine — a different tool's exact mutant count will differ, but a
+  well-tested suite shows no untested behaviour under its operator set either way.

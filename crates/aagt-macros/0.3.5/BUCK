@@ -1,0 +1,19 @@
+load("@buckal//:wrapper.bzl", "rust_library")
+
+rust_library(
+    name = "aagt_macros",
+    srcs = glob(["**/*.rs"]),
+    crate = "aagt_macros",
+    crate_root = "src/lib.rs",
+    edition = "2021",
+    proc_macro = True,
+
+    visibility = ["PUBLIC"],
+    deps = [
+        "//third-party/rust/crates/proc-macro2/1.0.107:proc_macro2",
+        "//third-party/rust/crates/quote/1.0.47:quote",
+        "//third-party/rust/crates/schemars/0.8.22:schemars",
+        "//third-party/rust/crates/serde_json/1.0.151:serde_json",
+        "//third-party/rust/crates/syn/2.0.119:syn",
+    ],
+)

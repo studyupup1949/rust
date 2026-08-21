@@ -1,0 +1,135 @@
+replicaCount: 1
+
+image:
+  repository: aas
+  pullPolicy: IfNotPresent
+  tag: "latest"
+
+imagePullSecrets: []
+nameOverride: ""
+fullnameOverride: ""
+
+serviceAccount:
+  create: true
+  annotations: {}
+  name: ""
+
+podAnnotations: {}
+
+podSecurityContext:
+  runAsNonRoot: true
+  runAsUser: 1000
+  fsGroup: 1000
+
+securityContext:
+  allowPrivilegeEscalation: false
+  capabilities:
+    drop:
+      - ALL
+  readOnlyRootFilesystem: false
+
+service:
+  type: ClusterIP
+  port: 3000
+  targetPort: 3000
+  annotations: {}
+
+ingress:
+  enabled: false
+  className: "nginx"
+  annotations: {}
+  hosts:
+    - host: aas.example.com
+      paths:
+        - path: /
+          pathType: Prefix
+  tls: []
+
+resources:
+  limits:
+    cpu: 1000m
+    memory: 512Mi
+  requests:
+    cpu: 250m
+    memory: 256Mi
+
+autoscaling:
+  enabled: false
+  minReplicas: 1
+  maxReplicas: 3
+  targetCPUUtilizationPercentage: 80
+  targetMemoryUtilizationPercentage: 80
+
+nodeSelector: {}
+
+tolerations: []
+
+affinity: {}
+
+livenessProbe:
+  httpGet:
+    path: /health
+    port: http
+  initialDelaySeconds: 5
+  periodSeconds: 10
+  timeoutSeconds: 3
+  failureThreshold: 3
+
+readinessProbe:
+  httpGet:
+    path: /ready
+    port: http
+  initialDelaySeconds: 2
+  periodSeconds: 5
+  timeoutSeconds: 2
+  failureThreshold: 2
+
+env:
+  RUST_LOG: info
+
+secrets:
+  anthropicApiKey: ""
+
+persistence:
+  enabled: true
+  storageClass: ""
+  accessMode: ReadWriteOnce
+  size: 10Gi
+  mountPath: /root/.aas
+
+config:
+  version: "1.0"
+  llm:
+    provider: claude
+    model_name: claude-3-5-sonnet-20241022
+    timeout_seconds: 30
+  agents:
+    repository:
+      enabled: true
+      detection_interval: "5m"
+      auto_commit: false
+      require_pr_approval: true
+    health:
+      enabled: true
+      detection_interval: "30s"
+      auto_restart: false
+    logs:
+      enabled: true
+      detection_interval: "continuous"
+    metrics:
+      enabled: true
+      detection_interval: "1m"
+    task:
+      enabled: false
+    trace:
+      enabled: false
+  execution:
+    mode: "staged_rollout"
+    max_concurrent_actions: 1
+    approval_required_for: ["commit", "restart"]
+    rollback_enabled: true
+    rollback_timeout_minutes: 60
+  learning:
+    enabled: true
+    prediction_enabled: true
+    prediction_confidence_threshold: 0.85

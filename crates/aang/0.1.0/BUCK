@@ -1,0 +1,34 @@
+load("@buckal//:wrapper.bzl", "rust_binary")
+
+rust_binary(
+    name = "aang",
+    srcs = glob(["**/*.rs"]),
+    crate = "aang",
+    crate_root = "src/main.rs",
+    edition = "2021",
+
+    visibility = ["PUBLIC"],
+    deps = [
+        "//third-party/rust/crates/anyhow/1.0.104:anyhow",
+        "//third-party/rust/crates/base64/0.22.1:base64",
+        "//third-party/rust/crates/bs58/0.5.1:bs58",
+        "//third-party/rust/crates/chrono/0.4.45:chrono",
+        "//third-party/rust/crates/clap/4.6.6:clap",
+        "//third-party/rust/crates/crossterm/0.28.1:crossterm",
+        "//third-party/rust/crates/directories/5.0.1:directories",
+        "//third-party/rust/crates/futures/0.3.34:futures",
+        "//third-party/rust/crates/ratatui/0.29.0:ratatui",
+        "//third-party/rust/crates/serde/1.0.229:serde",
+        "//third-party/rust/crates/serde_json/1.0.151:serde_json",
+        "//third-party/rust/crates/solana-account-decoder/2.3.13:solana_account_decoder",
+        "//third-party/rust/crates/solana-client/2.3.13:solana_client",
+        "//third-party/rust/crates/solana-sdk/2.3.1:solana_sdk",
+        "//third-party/rust/crates/spl-token/6.0.0:spl_token",
+        "//third-party/rust/crates/thiserror/2.0.20:thiserror",
+        "//third-party/rust/crates/tokio-cron-scheduler/0.13.0:tokio_cron_scheduler",
+        "//third-party/rust/crates/tokio/1.53.1:tokio",
+        "//third-party/rust/crates/toml/0.8.23:toml",
+        "//third-party/rust/crates/tracing-subscriber/0.3.23:tracing_subscriber",
+        "//third-party/rust/crates/tracing/0.1.44:tracing",
+    ],
+)

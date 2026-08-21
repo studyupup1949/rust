@@ -1,0 +1,59 @@
+[package]
+name = "aa-cli"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+repository.workspace = true
+description = "aasm — command-line tool for Agent Assembly"
+
+[[bin]]
+name = "aasm"
+path = "src/main.rs"
+
+[dependencies]
+aa-core              = { path = "../aa-core", version = "0.0.1-beta.2" }
+aa-security          = { path = "../aa-security", version = "0.0.1-beta.2", features = ["serde"] }
+aa-gateway           = { path = "../aa-gateway", version = "0.0.1-beta.2" }
+aa-proxy             = { path = "../aa-proxy", version = "0.0.1-beta.2" }
+aa-sandbox           = { path = "../aa-sandbox", version = "0.0.1-beta.2" }
+aa-storage           = { path = "../aa-storage", version = "0.0.1-beta.2" }
+aa-storage-memory    = { path = "../aa-storage-memory", version = "0.0.1-beta.2" }
+aa-storage-redis     = { path = "../aa-storage-redis", version = "0.0.1-beta.2" }
+anyhow         = { workspace = true }
+async-trait    = { workspace = true }
+axum           = { workspace = true }
+chrono         = { workspace = true, features = ["serde"] }
+clap           = { workspace = true, features = ["derive", "env"] }
+clap_complete  = "4"
+colored        = "3"
+csv            = "1"
+comfy-table    = "7"
+console        = "0.16"
+crossterm      = "0.29"
+dirs           = { workspace = true }
+futures-util   = "0.3"
+hex            = { workspace = true }
+include_dir    = "0.7"
+libc           = { workspace = true }
+mime_guess     = "2"
+open           = "5"
+owo-colors     = "4"
+ratatui        = { version = "0.30", features = ["crossterm"] }
+reqwest        = { workspace = true, features = ["rustls-tls", "json", "blocking"] }
+serde          = { workspace = true }
+serde_json     = { workspace = true }
+serde_yaml     = { workspace = true }
+thiserror      = { workspace = true }
+tokio          = { workspace = true, features = ["full"] }
+tokio-tungstenite = { workspace = true, features = ["rustls-tls-native-roots"] }
+toml           = { workspace = true }
+url            = { workspace = true }
+uuid           = { workspace = true, features = ["serde", "v4"] }
+
+[dev-dependencies]
+assert_cmd     = { workspace = true }
+tempfile       = { workspace = true }
+wiremock       = "0.6"
+
+[lints]
+workspace = true

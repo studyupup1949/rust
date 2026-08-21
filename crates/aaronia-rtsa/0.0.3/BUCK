@@ -1,0 +1,19 @@
+load("@buckal//:wrapper.bzl", "rust_library")
+
+rust_library(
+    name = "aaronia_rtsa",
+    srcs = glob(["**/*.rs"]),
+    crate = "aaronia_rtsa",
+    crate_root = "src/lib.rs",
+    edition = "2021",
+
+    visibility = ["PUBLIC"],
+    deps = [
+        "//third-party/rust/crates/aaronia-rtsa-sys/0.0.3:aaronia_rtsa_sys",
+        "//third-party/rust/crates/gnuplot/0.0.37:gnuplot",
+        "//third-party/rust/crates/num-complex/0.4.6:num_complex",
+        "//third-party/rust/crates/rustfft/6.4.1:rustfft",
+        "//third-party/rust/crates/thiserror/1.0.69:thiserror",
+        "//third-party/rust/crates/widestring/1.2.1:widestring",
+    ],
+)

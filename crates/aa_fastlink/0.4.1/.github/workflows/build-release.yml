@@ -1,0 +1,126 @@
+name: Build Release
+
+on:
+  push:
+    tags:
+      - "*"
+
+env:
+  IMAGE: ghcr.io/apt37/aa-fastlink
+  ACTIONS_ALLOW_USE_UNSECURE_NODE_VERSION: true
+
+jobs:
+  release:
+    name: ${{ matrix.name }}
+    runs-on: ${{ matrix.os }}
+    environment: default
+    strategy:
+      matrix:
+        name: [linux-x64, linux-arm]
+
+        include:
+          - name: linux-x64
+            os: ubuntu-latest
+            artifact_name: target/release/aa-fastlink
+            asset_name: target/release/aa-fastlink-linux-x64
+          - name: linux-arm
+            os: ubuntu-24.04-arm
+            artifact_name: target/release/aa-fastlink
+            asset_name: target/release/aa-fastlink-linux-arm64
+
+    steps:
+      - uses: actions/checkout@v6
+
+      - uses: actions-rs/toolchain@v1
+        with:
+          profile: minimal
+          toolchain: stable
+
+      - name: Build
+        run: |
+          cargo build --release
+          mv ${{ matrix.artifact_name }} ${{ matrix.asset_name }}
+
+      - name: Make Release
+        uses: softprops/action-gh-release@v3
+        with:
+          files: ${{ matrix.asset_name }}
+          fail_on_unmatched_files: true
+
+  publish:
+    name: Publish crate
+    runs-on: ubuntu-latest
+    environment: default
+    needs: release
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Install Rust toolchain
+        uses: actions-rs/toolchain@v1
+        with:
+          profile: minimal
+          toolchain: stable
+
+      - name: Publish crate
+        run: |
+          cargo login ${{ secrets.CARGO_REGISTRY_TOKEN }}
+          cargo publish --no-verify
+
+  docker:
+    name: Build and Push Docker Image
+    runs-on: ubuntu-latest
+    environment: default
+    needs: release
+
+    steps:
+      - name: Create asset download directory
+        run: |
+          mkdir -p dist
+
+      - name: Download binaries
+        uses: KevinRohn/github-full-release-data@v2
+        with:
+          asset-file: "aa-fastlink-linux-*"
+          asset-output: "dist/"
+
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v4
+
+      - name: Log into GHCR
+        uses: docker/login-action@v4
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Create Dockerfile
+        run: |
+          cat > Dockerfile <<'EOF'
+          FROM debian:trixie-slim
+          RUN apt-get update && apt install -y ca-certificates
+          ARG BINARY_NAME
+          COPY ${BINARY_NAME} /usr/local/bin/aa-fastlink
+          RUN chmod +x /usr/local/bin/aa-fastlink
+          ENTRYPOINT ["/usr/local/bin/aa-fastlink"]
+          EOF
+
+      - name: Build and push multi-arch image
+        env:
+          TAG: ${{ github.ref_name }}
+        run: |
+          docker buildx build \
+            --platform linux/amd64,linux/arm64 \
+            --tag ${IMAGE}:${TAG} \
+            --tag ${IMAGE}:latest \
+            --push \
+            --build-context dist=./dist \
+            --file Dockerfile \
+            --progress plain \
+            --build-arg BINARY_NAME=dist/aa-fastlink-linux-x64 \
+            --build-arg BINARY_NAME=dist/aa-fastlink-linux-arm64 \
+            .

@@ -1,0 +1,45 @@
+[workspace]
+members = [".", "crates/httpsig", "crates/httpsig-policy"]
+resolver = "2"
+
+[package]
+name = "aauth-core"
+version = "0.1.0"
+edition = "2021"
+rust-version = "1.86"
+description = "Rust implementation of the AAuth protocol — authentication and authorization for autonomous agents, built on HTTP Message Signatures (RFC 9421) and JWT-based proof-of-possession tokens."
+license = "Apache-2.0"
+repository = "https://github.com/nolabs-ai/aauth-rs"
+keywords = ["aauth", "agents", "http-signatures", "rfc9421", "authorization"]
+categories = ["authentication", "web-programming"]
+
+[dependencies]
+base64 = "0.22"
+getrandom = { version = "0.4", features = ["sys_rng"] }
+httpsig = { package = "aauth-httpsig", version = "0.1.0", path = "crates/httpsig" }
+httpsig-policy = { package = "aauth-httpsig-policy", version = "0.1.0", path = "crates/httpsig-policy" }
+rand_core = "0.10"
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+thiserror = "2"
+url = "2"
+uuid = { version = "1", features = ["v4"] }
+
+reqwest = { version = "0.13", optional = true, default-features = false, features = ["blocking", "json", "rustls"] }
+
+[features]
+default = []
+# Enables the built-in blocking HTTP client (JWKS discovery, metadata
+# fetching, token exchange, polling) backed by reqwest.
+reqwest-client = ["dep:reqwest"]
+
+[dev-dependencies]
+base64 = "0.22"
+# Minimal blocking HTTP server for real-socket end-to-end tests.
+tiny_http = "0.12"
+
+# This example uses the built-in reqwest client, so it only builds when that
+# feature is enabled (`cargo build --examples` skips it otherwise).
+[[example]]
+name = "exchange_resource_token"
+required-features = ["reqwest-client"]

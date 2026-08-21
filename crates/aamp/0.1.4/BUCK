@@ -1,0 +1,27 @@
+load("@buckal//:wrapper.bzl", "rust_library")
+
+rust_library(
+    name = "aamp",
+    srcs = glob(["**/*.rs"]),
+    crate = "aamp",
+    crate_root = "src/lib.rs",
+    edition = "2018",
+
+    visibility = ["PUBLIC"],
+    deps = [
+        "//third-party/rust/crates/binread/1.4.1:binread",
+        "//third-party/rust/crates/binwrite/0.2.1:binwrite",
+        "//third-party/rust/crates/cached/0.23.0:cached",
+        "//third-party/rust/crates/crc/1.8.1:crc",
+        "//third-party/rust/crates/glob/0.3.4:glob",
+        "//third-party/rust/crates/indexmap/1.9.3:indexmap",
+        "//third-party/rust/crates/lazy_static/1.5.0:lazy_static",
+        "//third-party/rust/crates/metrohash/1.0.7:metrohash",
+        "//third-party/rust/crates/num-format/0.4.4:num_format",
+        "//third-party/rust/crates/parse_int/0.5.0:parse_int",
+        "//third-party/rust/crates/regex/1.13.1:regex",
+        "//third-party/rust/crates/ryu/1.0.23:ryu",
+        "//third-party/rust/crates/thiserror/1.0.69:thiserror",
+        "//third-party/rust/crates/unescape/0.1.0:unescape",
+    ],
+)

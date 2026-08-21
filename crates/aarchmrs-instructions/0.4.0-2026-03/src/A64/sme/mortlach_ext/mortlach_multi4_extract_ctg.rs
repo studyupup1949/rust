@@ -1,0 +1,217 @@
+/* Copyright (c) 2010-2026 Arm Limited or its affiliates. All rights reserved.
+ *
+ * This document is Non-confidential and licensed under the BSD 3-clause license.
+ */
+
+pub mod mova_mz4_za_b1 {
+    #[cfg(feature = "meta")]
+    pub const OPCODE_MASK: u32 = 0b11111111111111110001111110000011u32;
+    #[cfg(feature = "meta")]
+    pub const OPCODE: u32 = 0b11000000000001100000010000000000u32;
+    #[cfg(feature = "meta")]
+    pub const SHOULD_BE_MASK: u32 = 0b00000000000000000000000000000000u32;
+    #[cfg(feature = "meta")]
+    pub const NAME: &str = "mova_mz4_za_b1";
+    #[cfg(feature = "meta_field")]
+    #[allow(nonstandard_style)]
+    pub const FIELD_Zd_OFFSET: u32 = 2u32;
+    #[cfg(feature = "meta_field")]
+    #[allow(nonstandard_style)]
+    pub const FIELD_Zd_WIDTH: u32 = 3u32;
+    #[cfg(feature = "meta_field")]
+    #[allow(nonstandard_style)]
+    pub const FIELD_off2_OFFSET: u32 = 5u32;
+    #[cfg(feature = "meta_field")]
+    #[allow(nonstandard_style)]
+    pub const FIELD_off2_WIDTH: u32 = 2u32;
+    #[cfg(feature = "meta_field")]
+    #[allow(nonstandard_style)]
+    pub const FIELD_Rs_OFFSET: u32 = 13u32;
+    #[cfg(feature = "meta_field")]
+    #[allow(nonstandard_style)]
+    pub const FIELD_Rs_WIDTH: u32 = 2u32;
+    #[cfg(feature = "meta_field")]
+    #[allow(nonstandard_style)]
+    pub const FIELD_V_OFFSET: u32 = 15u32;
+    #[cfg(feature = "meta_field")]
+    #[allow(nonstandard_style)]
+    pub const FIELD_V_WIDTH: u32 = 1u32;
+    #[inline]
+    pub const fn mova_mz4_za_b1(
+        V: ::aarchmrs_types::BitValue<1>,
+        Rs: ::aarchmrs_types::BitValue<2>,
+        off2: ::aarchmrs_types::BitValue<2>,
+        Zd: ::aarchmrs_types::BitValue<3>,
+    ) -> ::aarchmrs_types::InstructionCode {
+        ::aarchmrs_types::InstructionCode::from_u32(
+            0b1100000000000110u32 << 16u32
+                | V.into_inner() << 15u32
+                | Rs.into_inner() << 13u32
+                | 0b001000u32 << 7u32
+                | off2.into_inner() << 5u32
+                | Zd.into_inner() << 2u32
+                | 0b00u32 << 0u32,
+        )
+    }
+}
+pub mod mova_mz4_za_h1 {
+    #[cfg(feature = "meta")]
+    pub const OPCODE_MASK: u32 = 0b11111111111111110001111110000011u32;
+    #[cfg(feature = "meta")]
+    pub const OPCODE: u32 = 0b11000000010001100000010000000000u32;
+    #[cfg(feature = "meta")]
+    pub const SHOULD_BE_MASK: u32 = 0b00000000000000000000000000000000u32;
+    #[cfg(feature = "meta")]
+    pub const NAME: &str = "mova_mz4_za_h1";
+    #[cfg(feature = "meta_field")]
+    #[allow(nonstandard_style)]
+    pub const FIELD_Zd_OFFSET: u32 = 2u32;
+    #[cfg(feature = "meta_field")]
+    #[allow(nonstandard_style)]
+    pub const FIELD_Zd_WIDTH: u32 = 3u32;
+    #[cfg(feature = "meta_field")]
+    #[allow(nonstandard_style)]
+    pub const FIELD_o1_OFFSET: u32 = 5u32;
+    #[cfg(feature = "meta_field")]
+    #[allow(nonstandard_style)]
+    pub const FIELD_o1_WIDTH: u32 = 1u32;
+    #[cfg(feature = "meta_field")]
+    #[allow(nonstandard_style)]
+    pub const FIELD_ZAn_OFFSET: u32 = 6u32;
+    #[cfg(feature = "meta_field")]
+    #[allow(nonstandard_style)]
+    pub const FIELD_ZAn_WIDTH: u32 = 1u32;
+    #[cfg(feature = "meta_field")]
+    #[allow(nonstandard_style)]
+    pub const FIELD_Rs_OFFSET: u32 = 13u32;
+    #[cfg(feature = "meta_field")]
+    #[allow(nonstandard_style)]
+    pub const FIELD_Rs_WIDTH: u32 = 2u32;
+    #[cfg(feature = "meta_field")]
+    #[allow(nonstandard_style)]
+    pub const FIELD_V_OFFSET: u32 = 15u32;
+    #[cfg(feature = "meta_field")]
+    #[allow(nonstandard_style)]
+    pub const FIELD_V_WIDTH: u32 = 1u32;
+    #[inline]
+    pub const fn mova_mz4_za_h1(
+        V: ::aarchmrs_types::BitValue<1>,
+        Rs: ::aarchmrs_types::BitValue<2>,
+        ZAn: ::aarchmrs_types::BitValue<1>,
+        o1: ::aarchmrs_types::BitValue<1>,
+        Zd: ::aarchmrs_types::BitValue<3>,
+    ) -> ::aarchmrs_types::InstructionCode {
+        ::aarchmrs_types::InstructionCode::from_u32(
+            0b1100000001000110u32 << 16u32
+                | V.into_inner() << 15u32
+                | Rs.into_inner() << 13u32
+                | 0b001000u32 << 7u32
+                | ZAn.into_inner() << 6u32
+                | o1.into_inner() << 5u32
+                | Zd.into_inner() << 2u32
+                | 0b00u32 << 0u32,
+        )
+    }
+}
+pub mod mova_mz4_za_w1 {
+    #[cfg(feature = "meta")]
+    pub const OPCODE_MASK: u32 = 0b11111111111111110001111110000011u32;
+    #[cfg(feature = "meta")]
+    pub const OPCODE: u32 = 0b11000000100001100000010000000000u32;
+    #[cfg(feature = "meta")]
+    pub const SHOULD_BE_MASK: u32 = 0b00000000000000000000000000000000u32;
+    #[cfg(feature = "meta")]
+    pub const NAME: &str = "mova_mz4_za_w1";
+    #[cfg(feature = "meta_field")]
+    #[allow(nonstandard_style)]
+    pub const FIELD_Zd_OFFSET: u32 = 2u32;
+    #[cfg(feature = "meta_field")]
+    #[allow(nonstandard_style)]
+    pub const FIELD_Zd_WIDTH: u32 = 3u32;
+    #[cfg(feature = "meta_field")]
+    #[allow(nonstandard_style)]
+    pub const FIELD_ZAn_OFFSET: u32 = 5u32;
+    #[cfg(feature = "meta_field")]
+    #[allow(nonstandard_style)]
+    pub const FIELD_ZAn_WIDTH: u32 = 2u32;
+    #[cfg(feature = "meta_field")]
+    #[allow(nonstandard_style)]
+    pub const FIELD_Rs_OFFSET: u32 = 13u32;
+    #[cfg(feature = "meta_field")]
+    #[allow(nonstandard_style)]
+    pub const FIELD_Rs_WIDTH: u32 = 2u32;
+    #[cfg(feature = "meta_field")]
+    #[allow(nonstandard_style)]
+    pub const FIELD_V_OFFSET: u32 = 15u32;
+    #[cfg(feature = "meta_field")]
+    #[allow(nonstandard_style)]
+    pub const FIELD_V_WIDTH: u32 = 1u32;
+    #[inline]
+    pub const fn mova_mz4_za_w1(
+        V: ::aarchmrs_types::BitValue<1>,
+        Rs: ::aarchmrs_types::BitValue<2>,
+        ZAn: ::aarchmrs_types::BitValue<2>,
+        Zd: ::aarchmrs_types::BitValue<3>,
+    ) -> ::aarchmrs_types::InstructionCode {
+        ::aarchmrs_types::InstructionCode::from_u32(
+            0b1100000010000110u32 << 16u32
+                | V.into_inner() << 15u32
+                | Rs.into_inner() << 13u32
+                | 0b001000u32 << 7u32
+                | ZAn.into_inner() << 5u32
+                | Zd.into_inner() << 2u32
+                | 0b00u32 << 0u32,
+        )
+    }
+}
+pub mod mova_mz4_za_d1 {
+    #[cfg(feature = "meta")]
+    pub const OPCODE_MASK: u32 = 0b11111111111111110001111100000011u32;
+    #[cfg(feature = "meta")]
+    pub const OPCODE: u32 = 0b11000000110001100000010000000000u32;
+    #[cfg(feature = "meta")]
+    pub const SHOULD_BE_MASK: u32 = 0b00000000000000000000000000000000u32;
+    #[cfg(feature = "meta")]
+    pub const NAME: &str = "mova_mz4_za_d1";
+    #[cfg(feature = "meta_field")]
+    #[allow(nonstandard_style)]
+    pub const FIELD_Zd_OFFSET: u32 = 2u32;
+    #[cfg(feature = "meta_field")]
+    #[allow(nonstandard_style)]
+    pub const FIELD_Zd_WIDTH: u32 = 3u32;
+    #[cfg(feature = "meta_field")]
+    #[allow(nonstandard_style)]
+    pub const FIELD_ZAn_OFFSET: u32 = 5u32;
+    #[cfg(feature = "meta_field")]
+    #[allow(nonstandard_style)]
+    pub const FIELD_ZAn_WIDTH: u32 = 3u32;
+    #[cfg(feature = "meta_field")]
+    #[allow(nonstandard_style)]
+    pub const FIELD_Rs_OFFSET: u32 = 13u32;
+    #[cfg(feature = "meta_field")]
+    #[allow(nonstandard_style)]
+    pub const FIELD_Rs_WIDTH: u32 = 2u32;
+    #[cfg(feature = "meta_field")]
+    #[allow(nonstandard_style)]
+    pub const FIELD_V_OFFSET: u32 = 15u32;
+    #[cfg(feature = "meta_field")]
+    #[allow(nonstandard_style)]
+    pub const FIELD_V_WIDTH: u32 = 1u32;
+    #[inline]
+    pub const fn mova_mz4_za_d1(
+        V: ::aarchmrs_types::BitValue<1>,
+        Rs: ::aarchmrs_types::BitValue<2>,
+        ZAn: ::aarchmrs_types::BitValue<3>,
+        Zd: ::aarchmrs_types::BitValue<3>,
+    ) -> ::aarchmrs_types::InstructionCode {
+        ::aarchmrs_types::InstructionCode::from_u32(
+            0b1100000011000110u32 << 16u32
+                | V.into_inner() << 15u32
+                | Rs.into_inner() << 13u32
+                | 0b00100u32 << 8u32
+                | ZAn.into_inner() << 5u32
+                | Zd.into_inner() << 2u32
+                | 0b00u32 << 0u32,
+        )
+    }
+}

@@ -1,0 +1,84 @@
+[package]
+name = "aam-rs"
+version = "2.0.1"
+description = "A Rust implementation of the Abstract Alias Mapping (AAM) framework for aliasing and maping aam files."
+license = "MIT OR Apache-2.0"
+repository = "https://github.com/INiNiDS/aam-rs/"
+edition = "2024"
+readme = "README.md"
+categories = [
+    "data-structures",
+    "parsing",
+    "config",
+]
+authors = ["Nikita Goncharov <ininids@ininids.in.rs>"]
+
+[dependencies]
+ahash = { version = "0.8.12", optional = true }
+rapidhash = { version = "4.1.1", optional = true }
+ripemd = { version = "0.2.0-rc.5", optional = true }
+colored = "3.1.1"
+rustc-hash = { version = "2.1.1" }
+smol_str = "0.3.6"
+bumpalo = { version = "3.20.2" }
+tinyvec = { version = "1.11.0", features = ["alloc"] }
+rayon = { version = "1", optional = true }
+serde = { version = "1.0.228", features = ["derive"], optional = true }
+pyo3 = { version = "0.28", features = ["extension-module", "abi3-py38"], optional = true }
+jni = { version = "0.22.3", optional = true }
+memmap2 = { version = "0.9.9", optional = true }
+rkyv = { version = "0.8.15", features = ["std", "bytecheck"], optional = true }
+
+[build-dependencies]
+csbindgen = { version = "1.9.7", optional = true }
+
+[features]
+default = ["legacy", "aot", "release", "hash-std"]
+hash-std = []
+hash-fx = []
+hash-ahash = ["dep:ahash"]
+hash-rapidhash = ["dep:rapidhash"]
+hash-ripemd = ["dep:ripemd"]
+perf-hash = ["hash-ahash", "dep:ahash"]
+aot = ["dep:rkyv", "dep:memmap2"]
+dev = []
+release = []
+unsafe_fast_path = []
+ffi = []
+python = ["pyo3"]
+jni = ["dep:jni"]
+csharp = ["dep:csbindgen", "ffi"]
+legacy = []
+parallel = ["dep:rayon"]
+64bit = ["rkyv/pointer_width_64"]
+
+[[example]]
+name = "standard"
+
+[[example]]
+name = "standard_stress"
+
+[[example]]
+name = "derive"
+
+[[example]]
+name = "custom_types"
+
+[[example]]
+name = "advanced"
+
+[[example]]
+name = "schema_in_schema"
+
+[[example]]
+name = "config_inheritance"
+
+[[example]]
+name = "builder"
+
+[dev-dependencies]
+serde_json = "1.0.149"
+tempfile = "3.27.0"
+
+[lib]
+crate-type = ["cdylib", "rlib", "staticlib"]

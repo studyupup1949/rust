@@ -1,0 +1,11 @@
+load("@buckal//:wrapper.bzl", "rust_library")
+
+rust_library(
+    name = "aabb_collision",
+    srcs = glob(["**/*.rs"]),
+    crate = "aabb_collision",
+    crate_root = "src/lib.rs",
+    edition = "2024",
+
+    visibility = ["PUBLIC"],
+)

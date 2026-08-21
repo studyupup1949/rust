@@ -1,0 +1,17 @@
+[package]
+name = "aarch64"
+version = "0.0.4"
+authors = ["Stefan Lankes <slankes@eonerc.rwth-aachen.de>"]
+
+homepage = "https://github.com/hermitcore/rust-aarch64"
+description = "Rust library to use aarch64 specific functionality and registers"
+repository = "https://github.com/hermitcore/rust-aarch64.git"
+documentation = "https://docs.rs/aarch64"
+readme = "README.md"
+keywords = ["os", "arm64", "aarch64"]
+license = "MIT/Apache-2.0"
+edition = '2018'
+exclude = ["/.travis.yml", "/.gitlab-ci.yml", ".gitignore", ".gitattributes", "/.github/*"]
+
+[dependencies]
+cortex-a = "3.0.4"

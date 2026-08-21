@@ -1,0 +1,12 @@
+load("@buckal//:wrapper.bzl", "rust_library")
+
+rust_library(
+    name = "aa_ebpf_common",
+    srcs = glob(["**/*.rs"]),
+    crate = "aa_ebpf_common",
+    crate_root = "src/lib.rs",
+    edition = "2021",
+    features = ["default"],
+
+    visibility = ["PUBLIC"],
+)

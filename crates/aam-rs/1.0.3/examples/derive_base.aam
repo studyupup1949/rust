@@ -1,0 +1,11 @@
+# Base config file (derive_base.aam)
+# Defines shared defaults for all configs that derive from this one
+
+@schema Entity { id: i32, name: string, active: bool }
+
+app_name   = MyApp
+log_level  = info
+max_retries = 3
+timeout    = 30
+theme      = light
+

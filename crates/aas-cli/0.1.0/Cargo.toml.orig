@@ -1,0 +1,33 @@
+[package]
+name = "aas-cli"
+version = "0.1.0"
+edition = "2021"
+description = "Autonomous Agent System CLI — multi-domain monitoring, reasoning, and action swarm"
+authors = ["Alexander <alex@thealxlabs.ca>"]
+license = "MIT"
+repository = "https://github.com/AutonomousAgentSystem/aas"
+homepage = "https://autonomousagentsystem.com"
+keywords = ["agents", "autonomous", "monitoring", "llm", "self-healing"]
+categories = ["command-line-utilities", "development-tools"]
+
+[dependencies]
+tokio = { version = "1", features = ["full"] }
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+clap = { version = "4", features = ["derive"] }
+axum = "0.7"
+tower-http = { version = "0.5", features = ["cors", "fs"] }
+rusqlite = "0.31"
+reqwest = { version = "0.12", features = ["json"] }
+chrono = { version = "0.4", features = ["serde"] }
+uuid = { version = "1", features = ["v4", "serde"] }
+tracing = "0.1"
+tracing-subscriber = { version = "0.3", features = ["env-filter"] }
+async-trait = "0.1"
+dirs = "5"
+sysinfo = "0.30"
+rustyline = "14"
+dashmap = "5"
+ratatui = "0.26"
+crossterm = { version = "0.27", features = ["events"] }
+which = "6"

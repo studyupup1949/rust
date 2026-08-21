@@ -1,0 +1,35 @@
+[package]
+name            = "aaai-gui"
+description     = "GUI for aaai — audit for asset integrity"
+readme          = "README.md"
+documentation   = "https://nabbisen.github.io/aaai/gui.html"
+version.workspace       = true
+edition.workspace       = true
+license.workspace       = true
+authors.workspace       = true
+categories.workspace    = true
+keywords.workspace      = true
+repository.workspace    = true
+homepage.workspace      = true
+
+[[bin]]
+name = "aaai-gui"
+path = "src/main.rs"
+
+[dependencies]
+aaai                        = { workspace = true }
+
+iced                        = { workspace = true }
+snora                       = { workspace = true }
+
+chrono                      = { workspace = true }
+glob                        = { workspace = true }
+regex                       = { workspace = true }
+rfd                         = { workspace = true }
+rust-i18n                   = { workspace = true }
+similar                     = { workspace = true, features = ["unicode"] }
+
+anyhow                      = { workspace = true }
+env_logger                  = { workspace = true }
+log                         = { workspace = true }
+tokio                       = { workspace = true }

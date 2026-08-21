@@ -1,0 +1,10 @@
+[package]
+name = "aadhaar-offline-kyc"
+version = "0.0.0"
+edition = "2021"
+description = "Aadhaar offline e-KYC (India UIDAI): Secure QR v2 + Paperless Offline e-KYC (ZIP/XML) parsing and UIDAI signature verification. Name reserved; implementation in progress."
+license = "MIT OR Apache-2.0"
+repository = "https://github.com/wearekesk/kyc-rs"
+readme = "README.md"
+keywords = ["kyc", "identity"]
+categories = ["parser-implementations"]

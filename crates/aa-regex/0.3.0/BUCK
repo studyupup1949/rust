@@ -1,0 +1,17 @@
+load("@buckal//:wrapper.bzl", "rust_library")
+
+rust_library(
+    name = "aa_regex",
+    srcs = glob(["**/*.rs"]),
+    crate = "aa_regex",
+    crate_root = "src/lib.rs",
+    edition = "2018",
+    proc_macro = True,
+
+    visibility = ["PUBLIC"],
+    deps = [
+        "//third-party/rust/crates/proc-macro-error/1.0.4:proc_macro_error",
+        "//third-party/rust/crates/proc-macro2/1.0.107:proc_macro2",
+        "//third-party/rust/crates/syn/1.0.109:syn",
+    ],
+)

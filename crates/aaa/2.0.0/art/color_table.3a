@@ -1,0 +1,436 @@
+@3a
+;; This work is licensed under the Creative Commons Attribution 4.0 International License. To view a copy of this license, visit
+;; http://creativecommons.org/licenses/by/4.0/.
+title ANSI colors table
+license CC0-1.0
+colors yes
+;; 4-bit
+col 0 fg:black bg:white
+col 1 bg:black fg:white
+col 2 fg:bright-black bg:white
+col 3 bg:bright-black fg:white
+;;
+col 4 fg:red
+col 5 bg:red fg:black
+col 6 fg:bright-red
+col 7 bg:bright-red fg:black
+;;
+col 8 fg:green
+col 9 bg:green fg:black
+col a fg:bright-green
+col b bg:bright-green fg:black
+;;
+col c fg:yellow
+col d bg:yellow fg:black
+col e fg:bright-yellow
+col f bg:bright-yellow fg:black
+;;
+col g fg:magenta
+col h bg:magenta fg:black
+col i fg:bright-magenta
+col j bg:bright-magenta fg:black
+;;
+col k fg:blue
+col l bg:blue fg:black
+col m fg:bright-blue
+col n bg:bright-blue fg:black
+;;
+col o fg:cyan
+col p bg:cyan fg:black
+col r fg:bright-cyan
+col s bg:bright-cyan fg:black
+;;
+col t fg:white
+col u bg:white fg:black
+col v fg:bright-white
+col w bg:bright-white fg:black
+;; 256
+col x fg:0 bg:white
+col y bg:0 fg:white
+col z fg:1
+col A bg:1 fg:black
+col B fg:2
+col C bg:2 fg:black
+col D fg:3
+col E bg:3 fg:black
+col F fg:4
+col G bg:4 fg:black
+col H fg:5
+col I bg:5 fg:black
+col J fg:6
+col K bg:6 fg:black
+col L fg:7
+col M bg:7 fg:black
+col N fg:8
+col O bg:8 fg:black
+col P fg:9
+col R bg:9 fg:black
+col S fg:10
+col T bg:10 fg:black
+col U fg:11
+col V bg:11 fg:black
+col W fg:12
+col X bg:12 fg:black
+col Y fg:13
+col Z bg:13 fg:black
+col Q fg:14
+col - bg:14 fg:black
+col + fg:15
+col , bg:15 fg:black
+;; 215
+col . fg:16 bg:white
+col ~ fg:17
+col ? fg:18
+col ! fg:19
+col @ fg:20
+col # fg:21
+;;
+col $ fg:22
+col % fg:23
+col ^ fg:24
+col & fg:25
+col * fg:26
+col ` fg:27
+;;
+col < fg:28
+col > fg:29
+col ( fg:30
+col ) fg:31
+col [ fg:32
+col ] fg:33
+;;
+col { fg:34
+col } fg:35
+col " fg:36
+col ' fg:37
+col \ fg:38
+col | fg:39
+;;
+col / fg:40
+col : fg:41
+col ; fg:42
+col № fg:43
+col ¢ fg:44
+col £ fg:45
+;;
+col ¥ fg:46
+col € fg:47
+col ° fg:48
+col ± fg:49
+col ÷ fg:50
+col ¶ fg:51
+;;
+col § fg:52
+col µ fg:53
+col • fg:54
+col … fg:55
+col ¬ fg:56
+col ≈ fg:57
+;;
+col ≠ fg:58
+col ≤ fg:59
+col ≥ fg:60
+col ∞ fg:61
+col ∆ fg:62
+col ∂ fg:63
+;;
+col ∑ fg:64
+col ∏ fg:65
+col ∫ fg:66
+col √ fg:67
+col ■ fg:68
+col □ fg:69
+;;
+col ▢ fg:70
+col ▣ fg:71
+col ▤ fg:72
+col ▥ fg:73
+col ▦ fg:74
+col ▧ fg:75
+;;
+col ▨ fg:76
+col ▩ fg:77
+col ▪ fg:78
+col ▫ fg:79
+col ▬ fg:80
+col ▭ fg:81
+;;
+col ▮ fg:82
+col ▯ fg:83
+col ▰ fg:84
+col ▱ fg:85
+col ▲ fg:86
+col △ fg:87
+;;
+col ▴ fg:88
+col ▵ fg:89
+col ▶ fg:90
+col ▷ fg:91
+col ▸ fg:92
+col ▹ fg:93
+;;
+col ► fg:94
+col ▻ fg:95
+col ▼ fg:96
+col ▽ fg:97
+col ▾ fg:98
+col ▿ fg:99
+;;
+col ◀ fg:100
+col ◁ fg:101
+col ◂ fg:102
+col ◃ fg:103
+col ◄ fg:104
+col ◅ fg:105
+;;
+col ◆ fg:106
+col ◇ fg:107
+col ◈ fg:108
+col ◉ fg:109
+col ◊ fg:110
+col ○ fg:111
+;;
+col ◌ fg:112
+col ◍ fg:113
+col ◎ fg:114
+col ● fg:115
+col ◐ fg:116
+col ◑ fg:117
+;;
+col ◒ fg:118
+col ◓ fg:119
+col ◔ fg:120
+col ◕ fg:121
+col ◖ fg:122
+col ◗ fg:123
+;;
+col ◘ fg:124
+col ◙ fg:125
+col ◚ fg:126
+col ◛ fg:127
+col ◜ fg:128
+col ◝ fg:129
+;;
+col ◞ fg:130
+col ◟ fg:131
+col ◠ fg:132
+col ◡ fg:133
+col ◢ fg:134
+col ◣ fg:135
+;;
+col ◤ fg:136
+col ◥ fg:137
+col ◦ fg:138
+col ◧ fg:139
+col ◨ fg:140
+col ◩ fg:141
+;;
+col ◪ fg:142
+col ◫ fg:143
+col ◬ fg:144
+col ◭ fg:145
+col ◮ fg:146
+col ◰ fg:147
+;;
+col ◱ fg:148
+col ◲ fg:149
+col ◳ fg:150
+col ◴ fg:151
+col ◵ fg:152
+col ◶ fg:153
+;;
+col ◷ fg:154
+col ◸ fg:155
+col ◹ fg:156
+col ◺ fg:157
+col ◻ fg:158
+col ◼ fg:159
+;;
+col ◽ fg:160
+col ◾ fg:161
+col ◿ fg:162
+col ▀ fg:163
+col ▁ fg:164
+col ▂ fg:165
+;;
+col ▃ fg:166
+col ▄ fg:167
+col ▆ fg:168
+col ▇ fg:169
+col ▅ fg:170
+col ░ fg:171
+;;
+col ▒ fg:172
+col ▓ fg:173
+col ▔ fg:174
+col ▖ fg:175
+col ▗ fg:176
+col ▘ fg:177
+;;
+col ▙ fg:178
+col ▚ fg:179
+col ▛ fg:180
+col ▜ fg:181
+col ▝ fg:182
+col ▞ fg:183
+;;
+col ▟ fg:184
+col 🬀 fg:185
+col 🬁 fg:186
+col 🬂 fg:187
+col 🬃 fg:188
+col 🬄 fg:189
+;;
+col 🬅 fg:190
+col 🬆 fg:191
+col 🬇 fg:192
+col 🬈 fg:193
+col 🬉 fg:194
+col 🬊 fg:195
+;;
+col 🬋 fg:196
+col 🬌 fg:197
+col 🬍 fg:198
+col 🬎 fg:199
+col 🬏 fg:200
+col 🬐 fg:201
+;;
+col 🬑 fg:202
+col 🬒 fg:203
+col 🬓 fg:204
+col 🬔 fg:205
+col 🬕 fg:206
+col 🬖 fg:207
+;;
+col 🬗 fg:208
+col 🬘 fg:209
+col 🬙 fg:210
+col 🬚 fg:211
+col 🬛 fg:212
+col 🬜 fg:213
+;;
+col 🬝 fg:214
+col 🬞 fg:215
+col 🬟 fg:216
+col 🬠 fg:217
+col 🬡 fg:218
+col 🬢 fg:219
+;;
+col 🬣 fg:220
+col 🬤 fg:221
+col 🬥 fg:222
+col 🬦 fg:223
+col 🬨 fg:224
+col 🬩 fg:225
+;;
+col 🬪 fg:226
+col 🬫 fg:227
+col 🬬 fg:228
+col 🬭 fg:229
+col 🬮 fg:230
+col 🬯 fg:231
+;;
+col 🬰 fg:232
+col 🬱 fg:233
+col 🬲 fg:234
+col 🬳 fg:235
+col 🬴 fg:236
+col 🬵 fg:237
+;;
+col 🬶 fg:238
+col 🬷 fg:239
+col 🬸 fg:240
+col 🬹 fg:241
+col 🬺 fg:242
+col 🬻 fg:243
+;;
+col 🬼 fg:244
+col 🭇 fg:245
+col 🬽 fg:246
+col 🬾 fg:247
+col 🬿 fg:248
+col 🭀 fg:249
+;;
+col 🭁 fg:250
+col 🭂 fg:251
+col 🭃 fg:252
+col 🭄 fg:253
+col 🭅 fg:254
+col 🭆 fg:255
+
+@body
+             [4-bit colors]           ______________________________________
+            normal          bright    ______________________________________
+black:   fg (0) | bg  |  fg (8) | bg  _________000000___11_____222222___33__
+red:     fg (1) | bg  |  fg (9) | bg  _________444444___55_____666666___77__
+green:   fg (2) | bg  |  fg (a) | bg  _________888888___99_____aaaaaa___bb__
+yellow:  fg (3) | bg  |  fg (b) | bg  _________cccccc___dd_____eeeeee___ff__
+blue:    fg (4) | bg  |  fg (c) | bg  _________kkkkkk___ll_____mmmmmm___nn__
+magenta: fg (5) | bg  |  fg (d) | bg  _________gggggg___hh_____iiiiii___jj__
+cyan:    fg (6) | bg  |  fg (e) | bg  _________oooooo___pp_____rrrrrr___ss__
+white:   fg (7) | bg  |  fg (f) | bg  _________tttttt___uu_____vvvvvv___ww__
+                                      ______________________________________
+         [256 standard colors]        ______________________________________
+         0  0  1  1  2  2  3  3       ________xx_yy_zz_AA_BB_CC_DD_EE_______
+         4  4  5  5  6  6  7  7       ________FF_GG_HH_II_JJ_KK_LL_MM_______
+         8  8  9  9 10 10 11 11       ________NN_OO_PP_RR_SS_TT_UU_VV_______
+        12 12 13 13 14 14 15 15       ________WW_XX_YY_ZZ_QQ_--_++_,,_______
+                                      ______________________________________
+           [256 216 colors]           ______________________________________
+         16  17  18  19  20  21       ________..._~~~_???_!!!_@@@_###_______
+         22  23  24  25  26  27       ________$$$_%%%_^^^_&&&_***_```_______
+         28  29  30  31  32  33       ________<<<_>>>_(((_)))_[[[_]]]_______
+         34  35  36  37  38  39       ________{{{_}}}_"""_'''_\\\_|||_______
+         40  41  42  43  44  45       ________///_:::_;;;_№№№_¢¢¢_£££_______
+         46  47  48  59  50  51       ________¥¥¥_€€€_°°°_±±±_÷÷÷_¶¶¶_______
+                                      ______________________________________
+         52  53  54  55  56  57       ________§§§_µµµ_•••_………_¬¬¬_≈≈≈_______
+         58  59  60  61  62  63       ________≠≠≠_≤≤≤_≥≥≥_∞∞∞_∆∆∆_∂∂∂_______
+         64  65  66  67  68  69       ________∑∑∑_∏∏∏_∫∫∫_√√√_■■■_□□□_______
+         70  71  72  73  74  75       ________▢▢▢_▣▣▣_▤▤▤_▥▥▥_▦▦▦_▧▧▧_______
+         76  77  78  79  80  81       ________▨▨▨_▩▩▩_▪▪▪_▫▫▫_▬▬▬_▭▭▭_______
+         82  83  84  85  86  87       ________▮▮▮_▯▯▯_▰▰▰_▱▱▱_▲▲▲_△△△_______
+                                      ______________________________________
+         88  89  90  91  92  93       ________▴▴▴_▵▵▵_▶▶▶_▷▷▷_▸▸▸_▹▹▹_______
+         94  95  96  97  98  99       ________►►►_▻▻▻_▼▼▼_▽▽▽_▾▾▾_▿▿▿_______
+        100 101 102 103 104 105       ________◀◀◀_◁◁◁_◂◂◂_◃◃◃_◄◄◄_◅◅◅_______
+        106 107 108 109 110 111       ________◆◆◆_◇◇◇_◈◈◈_◉◉◉_◊◊◊_○○○_______
+        112 113 114 115 116 117       ________◌◌◌_◍◍◍_◎◎◎_●●●_◐◐◐_◑◑◑_______
+        118 119 120 121 122 123       ________◒◒◒_◓◓◓_◔◔◔_◕◕◕_◖◖◖_◗◗◗_______
+                                      ______________________________________
+        124 125 126 127 128 129       ________◘◘◘_◙◙◙_◚◚◚_◛◛◛_◜◜◜_◝◝◝_______
+        130 131 132 133 134 135       ________◞◞◞_◟◟◟_◟◟◟_◡◡◡_◢◢◢_◣◣◣_______
+        136 137 138 139 140 141       ________◤◤◤_◥◥◥_◦◦◦_◧◧◧_◨◨◨_◩◩◩_______
+        142 143 144 145 146 147       ________◪◪◪_◫◫◫_◬◬◬_◭◭◭_◮◮◮_◰◰◰_______
+        148 149 150 151 152 153       ________◱◱◱_◲◲◲_◳◳◳_◴◴◴_◵◵◵_◶◶◶_______
+        154 155 156 157 158 159       ________◷◷◷_◸◸◸_◹◹◹_◺◺◺_◻◻◻_◼◼◼_______
+                                      ______________________________________
+        160 161 162 163 164 165       ________◽◽◽_◾◾◾_◿◿◿_▀▀▀_▁▁▁_▂▂▂_______
+        166 167 168 169 170 171       ________▃▃▃_▄▄▄_▆▆▆_▇▇▇_▅▅▅_░░░_______
+        172 173 174 175 176 177       ________▒▒▒_▓▓▓_▔▔▔_▖▖▖_▗▗▗_▘▘▘_______
+        178 179 180 181 182 183       ________▙▙▙_▚▚▚_▛▛▛_▜▜▜_▝▝▝_▞▞▞_______
+        184 185 186 187 188 189       ________▟▟▟_🬀🬀🬀_🬁🬁🬁_🬂🬂🬂_🬃🬃🬃_🬄🬄🬄_______
+        190 191 192 193 194 195       ________🬅🬅🬅_🬆🬆🬆_🬇🬇🬇_🬈🬈🬈_🬉🬉🬉_🬊🬊🬊_______
+                                      ______________________________________
+        196 197 198 199 200 201       ________🬋🬋🬋_🬌🬌🬌_🬍🬍🬍_🬎🬎🬎_🬏🬏🬏_🬐🬐🬐_______
+        202 203 204 205 206 207       ________🬑🬑🬑_🬒🬒🬒_🬓🬓🬓_🬔🬔🬔_🬕🬕🬕_🬖🬖🬖_______
+        208 209 210 211 212 213       ________🬗🬗🬗_🬘🬘🬘_🬙🬙🬙_🬚🬚🬚_🬛🬛🬛_🬜🬜🬜_______
+        214 215 216 217 218 219       ________🬝🬝🬝_🬞🬞🬞_🬟🬟🬟_🬠🬠🬠_🬡🬡🬡_🬢🬢🬢_______
+        220 221 222 223 224 225       ________🬣🬣🬣_🬤🬤🬤_🬥🬥🬥_🬦🬦🬦_🬨🬨🬨_🬩🬩🬩_______
+        226 227 228 229 230 231       ________🬪🬪🬪_🬫🬫🬫_🬬🬬🬬_🬭🬭🬭_🬮🬮🬮_🬯🬯🬯_______
+                                      ______________________________________
+        232 233 234 235 236 237       ________🬰🬰🬰_🬱🬱🬱_🬲🬲🬲_🬳🬳🬳_🬴🬴🬴_🬵🬵🬵_______
+        238 239 240 241 242 243       ________🬶🬶🬶_🬷🬷🬷_🬸🬸🬸_🬹🬹🬹_🬺🬺🬺_🬻🬻🬻_______
+        244 245 246 247 248 249       ________🬼🬼🬼_🭇🭇🭇_🬽🬽🬽_🬾🬾🬾_🬿🬿🬿_🭀🭀🭀_______
+        250 251 252 253 254 255       ________🭁🭁🭁_🭂🭂🭂_🭃🭃🭃_🭄🭄🭄_🭅🭅🭅_🭆🭆🭆_______
+                                      ______________________________________
+
+
+
+
+
+
+
+
+
+

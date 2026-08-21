@@ -1,0 +1,291 @@
+//! Report generation — Markdown and JSON output.
+
+use super::html::build_html;
+use std::path::Path;
+use chrono::Local;
+
+use crate::audit::result::{AuditResult, AuditStatus};
+
+pub struct ReportGenerator;
+
+impl ReportGenerator {
+    /// Generate a Markdown report and write to `output_path`.
+    /// Pass `Some(masker)` to redact secrets from reason / content fields.
+    pub fn write_markdown(
+        result: &AuditResult,
+        before_root: &Path,
+        after_root: &Path,
+        definition_path: Option<&Path>,
+        output_path: &Path,
+        masker: Option<&crate::masking::engine::MaskingEngine>,
+    ) -> anyhow::Result<()> {
+        let md = Self::build_markdown(result, before_root, after_root, definition_path, masker);
+        // (include_diff variant available via build_markdown_string)
+        std::fs::write(output_path, md.as_bytes())?;
+        log::info!("Markdown report written to {}", output_path.display());
+        Ok(())
+    }
+
+    /// Generate a SARIF v2.1.0 report for CI/CD annotation systems.
+    pub fn write_sarif(
+        result: &AuditResult,
+        before_root: &Path,
+        after_root: &Path,
+        output_path: &Path,
+    ) -> anyhow::Result<()> {
+        let sarif = crate::report::sarif::build_sarif(result, before_root, after_root);
+        let json = serde_json::to_string_pretty(&sarif)?;
+        std::fs::write(output_path, json.as_bytes())?;
+        log::info!("SARIF report written to {}", output_path.display());
+        Ok(())
+    }
+
+    /// Generate a JSON report and write to `output_path`.
+    pub fn write_json(
+        result: &AuditResult,
+        before_root: &Path,
+        after_root: &Path,
+        definition_path: Option<&Path>,
+        output_path: &Path,
+        masker: Option<&crate::masking::engine::MaskingEngine>,
+    ) -> anyhow::Result<()> {
+        let json = Self::build_json(result, before_root, after_root, definition_path, masker)?;
+        std::fs::write(output_path, json.as_bytes())?;
+        log::info!("JSON report written to {}", output_path.display());
+        Ok(())
+    }
+
+    /// Build a Markdown report string.
+    /// `include_diff`: embed actual diff text for Modified entries.
+    pub fn build_markdown_string(
+        result: &AuditResult,
+        before_root: &Path,
+        after_root: &Path,
+        definition_path: Option<&Path>,
+        masker: Option<&crate::masking::engine::MaskingEngine>,
+        include_diff: bool,
+    ) -> String {
+        let mut md = Self::build_markdown(result, before_root, after_root, definition_path, masker); // masker is used below
+        if include_diff {
+            md.push_str("
+## Diff Details
+
+");
+            for r in &result.results {
+                if r.diff.diff_type != crate::diff::entry::DiffType::Modified { continue; }
+                if r.diff.is_binary { continue; }
+                let before = r.diff.before_text.as_deref().unwrap_or("");
+                let after  = r.diff.after_text.as_deref().unwrap_or("");
+                if before == after { continue; }
+                md.push_str(&format!("### `{}`
+
+```diff
+", r.diff.path));
+                use similar::{ChangeTag, TextDiff};
+                let td = TextDiff::from_lines(before, after);
+                for change in td.iter_all_changes() {
+                    let prefix = match change.tag() {
+                        ChangeTag::Insert => "+",
+                        ChangeTag::Delete => "-",
+                        ChangeTag::Equal  => " ",
+                    };
+                    let line = change.value().trim_end_matches('\n');
+                    if let Some(m) = masker {
+                        md.push_str(&format!("{prefix}{}
+", m.mask(line)));
+                    } else {
+                        md.push_str(&format!("{prefix}{line}
+"));
+                    }
+                }
+                md.push_str("```
+
+");
+            }
+        }
+        md
+    }
+
+    fn build_markdown(
+        result: &AuditResult,
+        before_root: &Path,
+        after_root: &Path,
+        definition_path: Option<&Path>,
+        masker: Option<&crate::masking::engine::MaskingEngine>,
+    ) -> String {
+        let now = Local::now().format("%Y-%m-%d %H:%M:%S %Z").to_string();
+        let s = &result.summary;
+        let (verdict_sym, verdict_word) =
+            if s.is_passing() { ("✓", "PASSED") } else { ("✗", "FAILED") };
+
+        let mut md = String::new();
+        // ── Zone 1: Header ───────────────────────────────────────────
+        md.push_str("# aaai Audit Report\n\n");
+        md.push_str(&format!("**Result: {verdict_sym} {verdict_word}**\n\n"));
+
+        // ── Zone 2: Summary (issues-first column order) ──────────────
+        md.push_str("## Summary\n\n");
+        md.push_str("| Status | Count |\n|---|---:|\n");
+        if s.failed  > 0 { md.push_str(&format!("| ✗ Failed  | {} |\n", s.failed)); }
+        if s.pending > 0 { md.push_str(&format!("| ⚠ Pending | {} |\n", s.pending)); }
+        if s.error   > 0 { md.push_str(&format!("| ! Error   | {} |\n", s.error)); }
+        md.push_str(&format!("| ✓ OK      | {} |\n", s.ok));
+        if s.ignored > 0 { md.push_str(&format!("| — Ignored | {} |\n", s.ignored)); }
+        md.push_str(&format!("| **Total** | **{}** |\n", s.total));
+        md.push('\n');
+
+        // ── Zone 3: Execution Details ────────────────────────────────
+        md.push_str("## Execution Details\n\n");
+        md.push_str(&format!("- **Run at:** {now}\n"));
+        md.push_str(&format!("- **Before:** `{}`\n", before_root.display()));
+        md.push_str(&format!("- **After:** `{}`\n", after_root.display()));
+        if let Some(dp) = definition_path {
+            md.push_str(&format!("- **Definition:** `{}`\n", dp.display()));
+        }
+        md.push('\n');
+
+        // ── Zone 4: Action Required (Failed + Pending + Error) ───────
+        let attention: Vec<_> = result.results.iter()
+            .filter(|r| matches!(r.status,
+                AuditStatus::Failed | AuditStatus::Pending | AuditStatus::Error))
+            .collect();
+        if !attention.is_empty() {
+            let counts = format!("Failed: {}, Pending: {}, Error: {}",
+                s.failed, s.pending, s.error);
+            md.push_str(&format!("## ⚠ Action Required ({counts})\n\n"));
+            for r in &attention {
+                Self::md_entry(&mut md, r, masker);
+            }
+        }
+
+        // ── Zone 5: Passed entries ───────────────────────────────────
+        let ok_entries: Vec<_> = result.results.iter()
+            .filter(|r| r.status == AuditStatus::Ok)
+            .collect();
+        if !ok_entries.is_empty() {
+            md.push_str(&format!("## ✓ Passed Entries ({})\n\n", ok_entries.len()));
+            for r in &ok_entries {
+                Self::md_entry(&mut md, r, masker);
+            }
+        }
+
+        // ── Zone 6: Ignored entries ──────────────────────────────────
+        let ignored: Vec<_> = result.results.iter()
+            .filter(|r| r.status == AuditStatus::Ignored)
+            .collect();
+        if !ignored.is_empty() {
+            md.push_str(&format!("## — Ignored Entries ({})\n\n", ignored.len()));
+            for r in &ignored {
+                Self::md_entry(&mut md, r, masker);
+            }
+        }
+
+        md
+    }
+
+    fn md_entry(
+        md: &mut String,
+        r: &crate::audit::result::FileAuditResult,
+        masker: Option<&crate::masking::engine::MaskingEngine>,
+    ) {
+        let sym = match r.status {
+            AuditStatus::Ok      => "✓",
+            AuditStatus::Pending => "⚠",
+            AuditStatus::Failed  => "✗",
+            AuditStatus::Error   => "!",
+            AuditStatus::Ignored => "—",
+        };
+        md.push_str(&format!("### `{}` — {} {}\n\n", r.diff.path, sym, r.status));
+        md.push_str(&format!("- **Diff type:** {}\n", r.diff.diff_type));
+
+        if let Some(entry) = &r.entry {
+            let raw_reason = entry.reason.trim();
+            let reason = if raw_reason.is_empty() {
+                "*(no reason provided)*".to_string()
+            } else {
+                masker.map(|m| m.mask(raw_reason))
+                    .unwrap_or_else(|| raw_reason.to_string())
+            };
+            md.push_str(&format!("- **Reason:** {}\n", reason));
+            md.push_str(&format!("- **Strategy:** {}\n", entry.strategy.label()));
+            if let Some(t)  = &entry.ticket      { md.push_str(&format!("- **Ticket:** {t}\n")); }
+            if let Some(ab) = &entry.approved_by { md.push_str(&format!("- **Approved by:** {ab}\n")); }
+            if let Some(at) = &entry.approved_at {
+                md.push_str(&format!("- **Approved at:** {}\n", at.format("%Y-%m-%d %H:%M UTC")));
+            }
+            if let Some(exp) = &entry.expires_at { md.push_str(&format!("- **Expires:** {exp}\n")); }
+            if let Some(note) = &entry.note      { md.push_str(&format!("- **Note:** {note}\n")); }
+        }
+        if r.diff.is_binary { md.push_str("- **Type:** Binary file\n"); }
+        if let Some(label) = r.diff.size_change_label() {
+            md.push_str(&format!("- **Size:** {label}\n"));
+        }
+        if let Some(stats) = &r.diff.stats {
+            md.push_str(&format!("- **Lines:** +{} −{}\n",
+                stats.lines_added, stats.lines_removed));
+        }
+        // Audit check detail — shown as blockquote for visibility
+        if let Some(detail) = &r.detail {
+            md.push_str(&format!("\n> {sym} {detail}\n"));
+        }
+        md.push('\n');
+    }
+
+    /// Generate an HTML report and write to `output_path`.
+    pub fn write_html(
+        result: &AuditResult,
+        before_root: &Path,
+        after_root: &Path,
+        definition_path: Option<&Path>,
+        output_path: &Path,
+        masker: Option<&crate::masking::engine::MaskingEngine>,
+    ) -> anyhow::Result<()> {
+        let html = build_html(result, before_root, after_root, definition_path, masker);
+        std::fs::write(output_path, html.as_bytes())?;
+        log::info!("HTML report written to {}", output_path.display());
+        Ok(())
+    }
+
+    fn build_json(
+        result: &AuditResult,
+        before_root: &Path,
+        after_root: &Path,
+        definition_path: Option<&Path>,
+        _masker: Option<&crate::masking::engine::MaskingEngine>,
+    ) -> anyhow::Result<String> {
+        use serde_json::{json, Value};
+        let now = Local::now().format("%Y-%m-%dT%H:%M:%S").to_string();
+        let s = &result.summary;
+
+        let entries: Vec<Value> = result.results.iter().map(|r| {
+            json!({
+                "path": r.diff.path,
+                "diff_type": r.diff.diff_type.to_string(),
+                "status": r.status.to_string(),
+                "reason": r.entry.as_ref().map(|e| &e.reason),
+                "strategy": r.entry.as_ref().map(|e| e.strategy.label()),
+                "detail": r.detail,
+            })
+        }).collect();
+
+        let doc = json!({
+            "app": "aaai",
+            "run_at": now,
+            "before": before_root.display().to_string(),
+            "after": after_root.display().to_string(),
+            "definition": definition_path.map(|p| p.display().to_string()),
+            "result": if s.is_passing() { "PASSED" } else { "FAILED" },
+            "summary": {
+                "total": s.total,
+                "ok": s.ok,
+                "pending": s.pending,
+                "failed": s.failed,
+                "ignored": s.ignored,
+                "error": s.error,
+            },
+            "entries": entries,
+        });
+
+        Ok(serde_json::to_string_pretty(&doc)?)
+    }
+}

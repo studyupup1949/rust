@@ -1,0 +1,18 @@
+load("@buckal//:wrapper.bzl", "rust_binary")
+
+rust_binary(
+    name = "aa_fastlink",
+    srcs = glob(["**/*.rs"]),
+    crate = "aa_fastlink",
+    crate_root = "src/main.rs",
+    edition = "2024",
+
+    visibility = ["PUBLIC"],
+    deps = [
+        "//third-party/rust/crates/reqwest/0.13.4:reqwest",
+        "//third-party/rust/crates/serde/1.0.229:serde",
+        "//third-party/rust/crates/tokio/1.52.4:tokio",
+        "//third-party/rust/crates/warp/0.4.3:warp",
+        "//third-party/rust/crates/webpki-roots/1.0.9:webpki_roots",
+    ],
+)

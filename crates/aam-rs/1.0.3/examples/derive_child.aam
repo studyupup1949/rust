@@ -1,0 +1,14 @@
+# Child config file (derive_child.aam)
+# Inherits all defaults from derive_base.aam, but overrides some values
+
+@derive derive_base.aam
+
+# Override base values
+log_level  = debug
+theme      = dark
+
+# Add child-specific keys
+author     = Alice
+version    = 2.0
+
+@schema Plugin { plugin_name: string, enabled: bool }

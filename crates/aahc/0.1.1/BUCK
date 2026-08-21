@@ -1,0 +1,17 @@
+load("@buckal//:wrapper.bzl", "rust_library")
+
+rust_library(
+    name = "aahc",
+    srcs = glob(["**/*.rs"]),
+    crate = "aahc",
+    crate_root = "src/lib.rs",
+    edition = "2024",
+    features = ["default"],
+
+    visibility = ["PUBLIC"],
+    deps = [
+        "//third-party/rust/crates/futures-core/0.3.34:futures_core",
+        "//third-party/rust/crates/futures-io/0.3.34:futures_io",
+        "//third-party/rust/crates/httparse/1.10.1:httparse",
+    ],
+)

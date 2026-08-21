@@ -1,0 +1,19 @@
+load("@buckal//:wrapper.bzl", "rust_binary")
+
+rust_binary(
+    name = "aap",
+    srcs = glob(["**/*.rs"]),
+    crate = "aap",
+    crate_root = "src/main.rs",
+    edition = "2018",
+
+    visibility = ["PUBLIC"],
+    deps = [
+        "//third-party/rust/crates/clap/2.34.0:clap",
+        "//third-party/rust/crates/fakeit/1.4.1:fakeit",
+        "//third-party/rust/crates/luhn/1.0.1:luhn",
+        "//third-party/rust/crates/rand/0.8.7:rand",
+        "//third-party/rust/crates/reqwest/0.11.27:reqwest",
+        "//third-party/rust/crates/spinners/1.2.0:spinners",
+    ],
+)

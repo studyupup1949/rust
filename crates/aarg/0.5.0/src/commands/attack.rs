@@ -1,0 +1,108 @@
+//! `aarg attack <build>` (FR-3.7) — re-run the adversarial reviewer on a
+//! build's saved draft, without re-tailoring.
+//!
+//! The reviewer is non-deterministic and reads the *current* dataset, so a
+//! second pass is a useful second opinion: after backing a skill or
+//! dismissing an objection, attack tells you what the reviewer thinks now —
+//! for the cost of one review call, not a full Opus tailor + render loop.
+//! It's a read-only re-look: the build's stored report is left untouched.
+
+use crate::agent::{Agent, AgentContext, ModelTier};
+use crate::ats::AtsReport;
+use crate::commands::tailor::format_objection;
+use crate::commands::{CliError, configured_client};
+use crate::dataset::store;
+use crate::jd::JobRequirements;
+use crate::review::{AdversarialReviewerAgent, ReviewInput, Severity};
+use crate::style::{self, Spinner};
+use crate::tailor::TailoredResume;
+
+pub async fn run(build: Option<String>) -> Result<(), CliError> {
+    // Resolve which build to re-review. An explicit id is used as-is; with
+    // no id we offer a single-select picker — but only to a real person.
+    // A piped/CI run gets a typed pointer, never a hang or a silent pick.
+    let build = match build {
+        Some(id) => id,
+        None => match super::pick_build("pick a build to re-review", "aarg attack 021").await? {
+            Some(id) => id,
+            // No builds, or a non-interactive run: the picker has already
+            // said why, so there's nothing left to do.
+            None => return Ok(()),
+        },
+    };
+
+    // The draft and the JD it was tailored for; coverage is reused from the
+    // stored ATS report (the draft hasn't changed, so coverage hasn't).
+    let resume: TailoredResume = crate::history::read_artifact(&build, "canonical.json")?;
+    let jd: JobRequirements = crate::history::read_artifact(&build, "jd.json")?;
+    let ats: AtsReport = crate::history::read_artifact(&build, "ats_report.json")?;
+
+    let dataset = store::load()?;
+    let (client, config) = configured_client().await?;
+    let tracer = super::default_tracer()?;
+    let ctx = AgentContext {
+        llm: &*client,
+        model: config.active_resolver(),
+        tracer: &tracer,
+        sink: None,
+    };
+    let model = ctx
+        .model
+        .resolve("adversarial_reviewer_v1", ModelTier::Smart);
+
+    let sp = Spinner::start(format!("re-reviewing build {build} (no re-tailor)"));
+    let run = AdversarialReviewerAgent
+        .run(
+            &ctx,
+            ReviewInput {
+                draft: resume,
+                jd,
+                dataset: dataset.clone(),
+            },
+        )
+        .await?;
+    sp.finish(style::done("re-reviewed"));
+
+    let report = run.output;
+    // Objections the user has already accepted are filtered from the view,
+    // same as a tailor run; the honest score still uses the full report.
+    let visible = report.without_dismissed(&dataset.metadata.dismissed_objections);
+    let score = 0.6 * report.overall_score + 0.4 * ats.coverage;
+
+    if !report.persona_notes.is_empty() {
+        eprintln!(
+            "{}",
+            style::section(format!("reviewer verdict ({:.2})", report.overall_score))
+        );
+        eprintln!("  {}", report.persona_notes);
+    }
+    eprintln!(
+        "  {}  {}",
+        style::cyan(format!("score {score:.2}")),
+        style::dim(format!("(review · {:.0}% coverage)", ats.coverage * 100.0))
+    );
+
+    if visible.objections.is_empty() {
+        eprintln!("  {}", style::success("no open objections"));
+    } else {
+        eprintln!(
+            "{}",
+            style::section(format!("{} objection(s)", visible.objections.len()))
+        );
+        for objection in &visible.objections {
+            let line = format_objection(objection);
+            // Blocking/major stand out as warnings; minors are quiet bullets.
+            match objection.severity {
+                Severity::Blocking | Severity::Major => {
+                    eprintln!("  {}", style::warn(line))
+                }
+                Severity::Minor => eprintln!("  {}", style::bullet(line)),
+            }
+        }
+    }
+
+    if let Some(cost) = crate::pricing::cost_usd(model, &run.usage, &config.prices) {
+        eprintln!("\n{}", style::dim(format!("~${cost:.2} (review only)")));
+    }
+    Ok(())
+}

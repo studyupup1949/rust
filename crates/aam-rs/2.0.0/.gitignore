@@ -1,0 +1,127 @@
+# Rust / Cargo
+/target/
+**/*.rs.bk
+
+Cargo.lock 
+
+# OS generated files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+Desktop.ini
+
+# IDEs and editors
+/.idea/
+.project
+.classpath
+.settings/
+/.vscode/
+*.swp
+*.swo
+rust-toolchain
+rust-toolchain.toml
+
+# Game Engine Specific
+# It is best practice to ignore massive, uncompressed source art files.
+# Keep your exported .png / .ogg files in an tracked /assets folder, 
+# but keep the raw project files out of git.
+*.psd
+*.blend
+*.blend1
+*.xcf
+*.kra
+*.aup3
+
+# Crash logs and profiling data
+*.log
+callgrind.out.*
+flamegraph.svg
+
+build/
+
+# C# / .NET
+csharp/**/bin/
+csharp/**/obj/
+csharp/**/TestResults/
+csharp/artifacts/
+csharp/**/runtimes/
+csharp/src/AamNative.cs.generated
+*.nupkg
+*.snupkg
+*.dll
+*.lib
+
+# Node / npm
+js/node_modules/
+js/.npm/
+js/.pnpm-store/
+js/.yarn/
+js/.yarn-cache/
+js/npm/*/*.node
+js/aam_rs_node.*.node
+js/*.node
+js/index.js
+js/target/
+js/dist/
+node-artifacts/
+dist/
+*.tgz
+
+# WASM
+wasm/pkg/
+wasm/node_modules/
+
+# Ruby
+ruby/ext/aam_rb/target/
+ruby/*.gem
+ruby/.bundle/
+
+# PHP
+php-pkg/
+aam-php-package.zip
+
+### JetBrains IDE (IntelliJ IDEA) ###
+.idea/
+*.iws
+*.iml
+*.ipr
+out/
+!**/src/main/resources/
+!**/src/test/resources/
+
+### Gradle ###
+.gradle/
+!gradle/wrapper/gradle-wrapper.jar
+!gradle/wrapper/gradle-wrapper.properties
+
+### Maven ###
+target/
+pom.xml.tag
+pom.xml.releaseBackup
+pom.xml.versionsBackup
+pom.xml.restoreBackup
+release.properties
+dependency-reduced-pom.xml
+buildNumber.properties
+.mvn/timing.properties
+.mvn/wrapper/maven-wrapper.jar
+
+### Kotlin ###
+*.kotlin_module
+.kotlin/
+
+generated_stress_test.aam
+generated_stress_test.aam.bin
+
+test.fish
+backup_*.zip
+full_project_code.txt
+
+*.bin
+tmp/*
+
+Cargo.lock

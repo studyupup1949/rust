@@ -1,0 +1,15 @@
+load("@buckal//:wrapper.bzl", "rust_library")
+
+rust_library(
+    name = "aarchmrs_instructions",
+    srcs = glob(["**/*.rs"]),
+    crate = "aarchmrs_instructions",
+    crate_root = "src/lib.rs",
+    edition = "2024",
+    features = ["default"],
+
+    visibility = ["PUBLIC"],
+    deps = [
+        "//third-party/rust/crates/aarchmrs-types/0.1.2:aarchmrs_types",
+    ],
+)

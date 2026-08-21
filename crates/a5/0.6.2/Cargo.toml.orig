@@ -1,0 +1,34 @@
+[package]
+name = "a5"
+version = "0.6.2"
+edition = "2021"
+authors = ["Felix Palmer <felixpalmer@gmail.com>"]
+description = "High-performance Rust implementation of the A5 hierarchical spatial indexing system"
+license = "Apache-2.0"
+repository = "https://github.com/felixpalmer/a5-rs"
+homepage = "https://github.com/felixpalmer/a5-rs"
+documentation = "https://docs.rs/a5"
+keywords = ["geospatial", "indexing", "hierarchical", "spatial", "gis"]
+categories = ["algorithms", "data-structures", "science::geo"]
+readme = "README.md"
+autoexamples = false
+include = [
+    "src/**/*",
+    "LICENSE",
+    "README.md",
+    "Cargo.toml",
+    "Cargo.lock",
+]
+
+[lib]
+path = "src/lib.rs"
+
+[dependencies]
+lazy_static = "1.4"  # For static pattern arrays
+
+[dev-dependencies]
+approx = "0.5.1"
+criterion = "0.5"  # For benchmarking
+serde_json = "1.0"  # For reading test fixtures and examples
+serde = { version = "1.0", features = ["derive"] }
+tempfile = "3.0"  # For temporary files in tests

@@ -1,0 +1,16 @@
+load("@buckal//:wrapper.bzl", "rust_library")
+
+rust_library(
+    name = "a5",
+    srcs = glob(["**/*.rs"]),
+    crate = "a5",
+    crate_root = "src/lib.rs",
+    edition = "2021",
+
+    visibility = ["PUBLIC"],
+    deps = [
+        "//third-party/rust/crates/lazy_static/1.5.0:lazy_static",
+        "//third-party/rust/crates/num-bigint/0.4.8:num_bigint",
+        "//third-party/rust/crates/num-traits/0.2.19:num_traits",
+    ],
+)

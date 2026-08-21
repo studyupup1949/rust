@@ -1,0 +1,38 @@
+# Build artifacts
+/target/
+**/*.rs.bk
+Cargo.lock
+
+# Databases (large files - download separately)
+/databases/
+*.fdb
+*.mmi
+
+# External dependencies (build from source)
+/external/
+
+# Test data (large files)
+/tests/
+
+# Archives
+/archives/
+
+# Internal working directory
+/.omc/
+
+# PDFs and documents
+*.pdf
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Temporary files
+*.tmp
+*.temp

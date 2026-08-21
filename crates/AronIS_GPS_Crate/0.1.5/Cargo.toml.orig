@@ -1,0 +1,12 @@
+[package]
+name = "AronIS_GPS_Crate"
+version = "0.1.5"
+authors = ["Aron Ingi Sverrisson"]  #CHANGE USER TO YOU
+edition = "2018"
+license = "MIT"
+description = "A GPS crate that reads the current altitude and position of the GPS module."
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+rpi_embedded = "0.0.5"

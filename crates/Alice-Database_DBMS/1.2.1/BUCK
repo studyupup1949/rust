@@ -1,0 +1,27 @@
+load("@buckal//:wrapper.bzl", "rust_library")
+
+rust_library(
+    name = "Alice_Database_DBMS",
+    srcs = glob(["**/*.rs"]),
+    crate = "Alice_Database_DBMS",
+    crate_root = "src/lib.rs",
+    edition = "2021",
+
+    visibility = ["PUBLIC"],
+    deps = [
+        "//third-party/rust/crates/chrono/0.4.45:chrono",
+        "//third-party/rust/crates/env_logger/0.11.11:env_logger",
+        "//third-party/rust/crates/log/0.4.33:log",
+        "//third-party/rust/crates/pest/2.8.8:pest",
+        "//third-party/rust/crates/pest_derive/2.8.8:pest_derive",
+        "//third-party/rust/crates/prost/0.13.5:prost",
+        "//third-party/rust/crates/rand/0.8.7:rand",
+        "//third-party/rust/crates/ring/0.17.14:ring",
+        "//third-party/rust/crates/serde/1.0.229:serde",
+        "//third-party/rust/crates/serde_json/1.0.151:serde_json",
+        "//third-party/rust/crates/simplelog/0.12.2:simplelog",
+        "//third-party/rust/crates/tokio/1.53.1:tokio",
+        "//third-party/rust/crates/tonic/0.12.3:tonic",
+        "//third-party/rust/crates/uuid/1.24.0:uuid",
+    ],
+)

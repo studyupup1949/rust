@@ -1,0 +1,19 @@
+[package]
+name = "Actix-rs"
+version = "0.1.0"
+authors = ["Skillwon <skillwon@outlook.com>"]
+edition = "2024"
+description = "rust actor framework"
+documentation = "https://docs.rs/actix-rs"
+license = "MIT OR Apache-2.0"
+keywords = ["actor", "erlang", "caf", "concurrency", "parallel"]
+repository = "https://github.com/skillwon/actix-rs"
+categories = ["asynchronous", "concurrency"]
+rust-version = "1.90"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+[dependencies]
+log = "0.4"
+# log4rs = "1.4"
+# bytes = "1.10"
+# tokio = { version = "1.48", features = ["full"] }

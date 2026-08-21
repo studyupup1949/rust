@@ -1,0 +1,14 @@
+load("@buckal//:wrapper.bzl", "rust_binary")
+
+rust_binary(
+    name = "Acxus",
+    srcs = glob(["**/*.rs"]),
+    crate = "Acxus",
+    crate_root = "src/main.rs",
+    edition = "2024",
+
+    visibility = ["PUBLIC"],
+    deps = [
+        "//third-party/rust/crates/log/0.4.33:log",
+    ],
+)

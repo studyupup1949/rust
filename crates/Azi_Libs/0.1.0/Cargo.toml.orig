@@ -1,0 +1,8 @@
+[package]
+name = "Azi_Libs"
+version = "0.1.0"
+edition = "2021"
+description = "Aziki's personal crates."
+license = "MIT OR Apache-2.0"
+
+[dependencies]

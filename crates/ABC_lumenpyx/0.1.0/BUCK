@@ -1,0 +1,18 @@
+load("@buckal//:wrapper.bzl", "rust_library")
+
+rust_library(
+    name = "ABC_lumenpyx",
+    srcs = glob(["**/*.rs"]),
+    crate = "ABC_lumenpyx",
+    crate_root = "src/lib.rs",
+    edition = "2021",
+
+    visibility = ["PUBLIC"],
+    deps = [
+        "//third-party/rust/crates/ABC_Game_Engine/0.1.2:ABC_Game_Engine",
+        "//third-party/rust/crates/glium/0.34.0:glium",
+        "//third-party/rust/crates/lumenpyx/0.2.2:lumenpyx",
+        "//third-party/rust/crates/mouse_position/0.1.4:mouse_position",
+        "//third-party/rust/crates/winit/0.29.15:winit",
+    ],
+)

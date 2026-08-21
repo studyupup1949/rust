@@ -1,0 +1,9 @@
+[package]
+name = "Atomica"
+description = "A CLI tool/ crate for parsing molecular data"
+license = "MIT"
+version = "0.1.0"
+edition = "2024"
+
+[dependencies]
+clap = "4.6.1"

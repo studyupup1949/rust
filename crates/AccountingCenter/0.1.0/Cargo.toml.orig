@@ -1,0 +1,11 @@
+[package]
+name = "AccountingCenter"
+version = "0.1.0"
+edition = "2021"
+license = "MIT OR Apache-2.0"
+authors = ["青山大队长"]
+description = "这是一个使用rust语言构建超市结算的开源学习项目"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]

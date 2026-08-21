@@ -1,0 +1,56 @@
+[package]
+name = "ARGenus"
+version = "0.2.0"
+edition = "2021"
+description = "ARG detection and genus-level classification using flanking sequence analysis"
+authors = ["Your Name <your.email@institution.edu>"]
+license = "MIT"
+repository = "https://github.com/necoli1822/ARGenus"
+homepage = "https://github.com/necoli1822/ARGenus"
+documentation = "https://docs.rs/ARGenus"
+readme = "README.md"
+keywords = ["bioinformatics", "ARG", "metagenomics", "genomics", "amr"]
+categories = ["science", "command-line-utilities"]
+exclude = [
+    "databases/*",
+    "tests/*",
+    "external/*",
+    "archives/*",
+    ".omc/*",
+    "*.pdf",
+]
+
+[lib]
+name = "ARGenus"
+path = "src/lib.rs"
+
+[[bin]]
+name = "ARGenus"
+path = "src/main.rs"
+
+[[bin]]
+name = "paf_to_fdb"
+path = "src/bin/paf_to_fdb.rs"
+
+[dependencies]
+clap = { version = "4", features = ["derive"] }
+rustc-hash = "2.0"
+flate2 = "1.0"
+anyhow = "1.0"
+rayon = "1.10"
+num_cpus = "1.16"
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
+zstd = "0.13"
+ureq = { version = "2.9", features = ["json"] }
+chrono = "0.4"
+bzip2 = "0.5"
+tar = "0.4"
+zip = "2.0"
+extsort-iter = { version = "0.3", features = ["parallel_sort", "compression_lz4_flex"] }
+tempfile = "3.10"
+
+[profile.release]
+lto = true
+codegen-units = 1
+opt-level = 3

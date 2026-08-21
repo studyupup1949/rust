@@ -1,0 +1,16 @@
+load("@buckal//:wrapper.bzl", "rust_library")
+
+rust_library(
+    name = "ArmlabRadio",
+    srcs = glob(["**/*.rs"]),
+    crate = "ArmlabRadio",
+    crate_root = "src/lib.rs",
+    edition = "2021",
+
+    visibility = ["PUBLIC"],
+    deps = [
+        "//third-party/rust/crates/i2cdev/0.3.2:i2cdev",
+        "//third-party/rust/crates/radio/0.4.4:radio",
+        "//third-party/rust/crates/serialport/4.9.0:serialport",
+    ],
+)

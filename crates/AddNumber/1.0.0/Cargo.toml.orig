@@ -1,0 +1,10 @@
+[package]
+name = "AddNumber"
+version = "1.0.0"
+edition = "2024"
+license = "MIT"
+description = "Add a one number to another number. Made this for class if you use this just why"
+keywords = ["Add"]
+categories = ["mathematics"]
+
+[dependencies]

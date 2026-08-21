@@ -1,0 +1,16 @@
+load("@buckal//:wrapper.bzl", "rust_binary")
+
+rust_binary(
+    name = "ApacheLogAnonymizer",
+    srcs = glob(["**/*.rs"]),
+    crate = "ApacheLogAnonymizer",
+    crate_root = "src/main.rs",
+    edition = "2018",
+
+    visibility = ["PUBLIC"],
+    deps = [
+        "//third-party/rust/crates/clap/2.33.4:clap",
+        "//third-party/rust/crates/lazy_static/1.4.0:lazy_static",
+        "//third-party/rust/crates/regex/1.3.9:regex",
+    ],
+)

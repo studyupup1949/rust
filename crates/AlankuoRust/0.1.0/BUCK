@@ -1,0 +1,14 @@
+load("@buckal//:wrapper.bzl", "rust_library")
+
+rust_library(
+    name = "AlankuoRust",
+    srcs = glob(["**/*.rs"]),
+    crate = "AlankuoRust",
+    crate_root = "src/lib.rs",
+    edition = "2021",
+
+    visibility = ["PUBLIC"],
+    deps = [
+        "//third-party/rust/crates/rand/0.5.6:rand",
+    ],
+)

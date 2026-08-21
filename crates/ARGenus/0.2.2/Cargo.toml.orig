@@ -1,0 +1,65 @@
+[package]
+name = "ARGenus"
+version = "0.2.2"
+edition = "2021"
+description = "ARG detection and genus-level classification using flanking sequence analysis"
+authors = ["Sunju Kim <n.e.coli.1822@gmail.com>"]
+license = "MIT"
+repository = "https://github.com/necoli1822/ARGenus"
+homepage = "https://github.com/necoli1822/ARGenus"
+documentation = "https://docs.rs/ARGenus"
+readme = "README.md"
+keywords = ["bioinformatics", "ARG", "metagenomics", "genomics", "amr"]
+categories = ["science", "command-line-utilities"]
+exclude = [
+    "databases/*",
+    "tests/*",
+    "external/*",
+    "archives/*",
+    ".omc/*",
+    "*.pdf",
+]
+
+# The crate/lib name intentionally keeps the mixed-case "ARGenus" branding,
+# which triggers rustc's non_snake_case lint on the crate name itself.
+[lints.rust]
+non_snake_case = "allow"
+
+[lib]
+name = "ARGenus"
+path = "src/lib.rs"
+
+[[bin]]
+name = "ARGenus"
+path = "src/main.rs"
+
+[[bin]]
+name = "paf_to_fdb"
+path = "src/bin/paf_to_fdb.rs"
+
+[dependencies]
+clap = { version = "4", features = ["derive"] }
+rustc-hash = "2.0"
+flate2 = "1.0"
+anyhow = "1.0"
+rayon = "1.10"
+num_cpus = "1.16"
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
+zstd = "0.13"
+ureq = { version = "2.9", features = ["json"] }
+chrono = "0.4"
+bzip2 = "0.5"
+tar = "0.4"
+# xz/lzma features dropped: they pull xz2 → lzma-sys, which collides on the
+# native `links = "lzma"` with oxagorn's needletail 0.6 (liblzma) in this
+# workspace. argenus only reads deflate genome-batch zips (xz decompression here
+# is done via the external `tar` binary), so no functionality is lost.
+zip = { version = "2.0", default-features = false, features = ["aes-crypto", "bzip2", "deflate64", "deflate", "time", "zstd"] }
+extsort-iter = { version = "0.3", features = ["parallel_sort", "compression_lz4_flex"] }
+tempfile = "3.10"
+
+[profile.release]
+lto = true
+codegen-units = 1
+opt-level = 3

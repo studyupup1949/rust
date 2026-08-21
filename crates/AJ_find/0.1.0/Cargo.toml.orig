@@ -1,0 +1,11 @@
+[package]
+name = "AJ_find"
+version = "0.1.0"
+edition = "2021"
+license = "MIT OR Apache-2.0"
+author = ["Anthony Marinelli anthonyjmarinelli17@gmail.com"]
+description = "find the path for a file or directory"
+
+[dependencies]
+walkdir = "2.3.2"
+clap = { version = "4.0", features = ["derive"] }

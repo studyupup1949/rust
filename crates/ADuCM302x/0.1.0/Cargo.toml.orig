@@ -1,0 +1,22 @@
+[package]
+name = "ADuCM302x"
+description = "A Peripheral Access Crate for the Analog Devices ADuCM302x series of MCUs"
+version = "0.1.0"
+authors = ["Colin Suckow <csuckow99@gmail.com>"]
+edition = "2018"
+repository = "https://github.com/Colin-Suckow/ADuCM302x"
+license = "MIT"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+bare-metal = "0.2.0"
+cortex-m = "0.5.8"
+vcell = "0.1.0"
+
+[dependencies.cortex-m-rt]
+optional = true
+version = "0.6.5"
+
+[features]
+rt = ["cortex-m-rt/device"]

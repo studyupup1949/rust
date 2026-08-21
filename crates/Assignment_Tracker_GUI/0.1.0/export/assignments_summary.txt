@@ -1,0 +1,7 @@
+Assignment Summary
+===================
+Generated on: 2025-11-08 19:07:45
+
+Programming Language - A4_Assignment (Due: 2025-11-02 23:59, Status: ✅ Done)
+Social - Case study (Due: 2025-11-08 23:59, Status: ✅ Done)
+Math - problem -6 (Due: 2025-11-17 23:59, Status: ❌ Pending)

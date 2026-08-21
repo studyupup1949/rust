@@ -1,0 +1,15 @@
+[package]
+name = "AsciiArts"
+version = "0.1.0"
+edition = "2024"
+authors = ["Marco marcostrada258@gmail.com"]
+license = "MIT"
+description = "A tool to search files"
+readme = "Readme.txt"
+homepage = "https://github.com/silentShulk/Rust-Cli-Tools"
+repository = "https://github.com/silentShulk/Rust-Cli-Tools/GrepRip"
+keywords = ["cli", "search", "demo"]
+categories = ["command-line-utilities"]
+
+[dependencies]
+clap = { version = "4.0", features = ["derive"] }

@@ -1,0 +1,17 @@
+load("@buckal//:wrapper.bzl", "rust_library")
+
+rust_library(
+    name = "ADA_Standards",
+    srcs = glob(["**/*.rs"]),
+    crate = "ADA_Standards",
+    crate_root = "src/lib.rs",
+    edition = "2024",
+
+    visibility = ["PUBLIC"],
+    deps = [
+        "//third-party/rust/crates/fancy-regex/0.14.0:fancy_regex",
+        "//third-party/rust/crates/indextree/4.8.1:indextree",
+        "//third-party/rust/crates/lazy_static/1.5.0:lazy_static",
+        "//third-party/rust/crates/regex/1.13.1:regex",
+    ],
+)

@@ -1,0 +1,12 @@
+[package]
+name = "AirBurn"
+version = "0.1.0"
+edition = "2024"
+description = "目标是一个通用的空烧库"
+repository = "https://github.com/tooupper/AirBurn"
+license = "MIT OR Apache-2.0"
+authors = ["kay <kay@tooupper.com>"]
+readme = "README.md"
+
+[dependencies]
+

@@ -1,0 +1,30 @@
+[
+  {
+    "subject": "Programming Language",
+    "title": "A4_Assignment",
+    "due_date": "2025-11-02",
+    "due_time": "23:59",
+    "completed": true
+  },
+  {
+    "subject": "Social",
+    "title": "Case study",
+    "due_date": "2025-11-08",
+    "due_time": "23:59",
+    "completed": false
+  },
+  {
+    "subject": "Math",
+    "title": "problem -6",
+    "due_date": "2025-11-17",
+    "due_time": "23:59",
+    "completed": false
+  },
+  {
+    "subject": "Science ",
+    "title": "DQ-2",
+    "due_date": "2025-11-10",
+    "due_time": "23:59",
+    "completed": false
+  }
+]

@@ -1,0 +1,11 @@
+[package]
+name = "Algod"
+version = "0.1.0"
+edition = "2021"
+author = "Dumbo-programmer"
+description = "Many types of rust algorithms and data-structures"
+readme = "README.md"
+license = "MIT"
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]

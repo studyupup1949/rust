@@ -1,0 +1,14 @@
+load("@buckal//:wrapper.bzl", "rust_library")
+
+rust_library(
+    name = "Anjola_guessing_game",
+    srcs = glob(["**/*.rs"]),
+    crate = "Anjola_guessing_game",
+    crate_root = "src/lib.rs",
+    edition = "2024",
+
+    visibility = ["PUBLIC"],
+    deps = [
+        "//third-party/rust/crates/rand/0.9.5:rand",
+    ],
+)

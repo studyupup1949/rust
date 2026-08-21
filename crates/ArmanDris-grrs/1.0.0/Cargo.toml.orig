@@ -1,0 +1,20 @@
+[package]
+name = "ArmanDris-grrs"
+version = "1.0.0"
+edition = "2021"
+authors = ["Arman Drismir <adrismir@gmail.com>"]
+license = "MIT"
+description = "A tool to search files"
+readme = "README.md"
+homepage = "https://drismir.ca"
+keywords = ["cli", "search", "demo"]
+categories = ["command-line-utilities"]
+
+[dependencies]
+clap = { version = "4.0", features = ["derive"] }
+anyhow = "1.0"
+
+[dev-dependencies]
+assert_cmd = "2.0.14"
+predicates = "3.1.0"
+assert_fs = "1.1.1"

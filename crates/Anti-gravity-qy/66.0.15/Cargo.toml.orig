@@ -1,0 +1,15 @@
+[package]
+name = "Anti-gravity-qy"
+version = "66.0.15"
+edition = "2021"
+authors = ["SuperMaker <support@supermaker.ai>"]
+description = "High-quality integration for https://antigravity.google/"
+license = "MIT"
+homepage = "https://antigravity.google/"
+repository = "https://github.com/qy-upup/Anti-gravity-qy"
+
+[dependencies]
+
+[lib]
+name = "Anti_gravity_qy"
+path = "src/lib.rs"

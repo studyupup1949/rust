@@ -1,0 +1,17 @@
+load("@buckal//:wrapper.bzl", "rust_library")
+
+rust_library(
+    name = "ABC_ECS",
+    srcs = glob(["**/*.rs"]),
+    crate = "ABC_ECS",
+    crate_root = "src/lib.rs",
+    edition = "2021",
+
+    visibility = ["PUBLIC"],
+    deps = [
+        "//third-party/rust/crates/nohash-hasher/0.2.0:nohash_hasher",
+        "//third-party/rust/crates/rayon/1.12.0:rayon",
+        "//third-party/rust/crates/rustc-hash/1.1.0:rustc_hash",
+        "//third-party/rust/crates/slotmap/1.1.1:slotmap",
+    ],
+)

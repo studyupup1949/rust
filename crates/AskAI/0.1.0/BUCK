@@ -1,0 +1,21 @@
+load("@buckal//:wrapper.bzl", "rust_library")
+
+rust_library(
+    name = "AskAI",
+    srcs = glob(["**/*.rs"]),
+    crate = "AskAI",
+    crate_root = "src/lib.rs",
+    edition = "2021",
+
+    visibility = ["PUBLIC"],
+    deps = [
+        "//third-party/rust/crates/ai21/0.1.4:ai21",
+        "//third-party/rust/crates/anyhow/1.0.104:anyhow",
+        "//third-party/rust/crates/reqwest/0.11.27:reqwest",
+        "//third-party/rust/crates/serde_json/1.0.151:serde_json",
+        "//third-party/rust/crates/serenity/0.11.7:serenity",
+        "//third-party/rust/crates/shuttle-secrets/0.7.2:shuttle_secrets",
+        "//third-party/rust/crates/shuttle-service/0.7.2:shuttle_service",
+        "//third-party/rust/crates/tracing/0.1.44:tracing",
+    ],
+)

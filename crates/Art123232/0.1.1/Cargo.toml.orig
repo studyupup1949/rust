@@ -1,0 +1,8 @@
+[package]
+name = "Art123232"
+version = "0.1.1"
+edition = "2024"
+license = "MIT"
+description = "A fun game where you guess...."
+
+[dependencies]

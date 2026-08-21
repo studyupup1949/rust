@@ -1,0 +1,25 @@
+[package]
+name = "Agentic-rs"
+version = "0.1.0"
+edition = "2021" # the current version, obeying semver
+authors = ["Hamze Ghalebi <ghalebi@gmail.com>"]
+description = "The `agents` package provides a set of tools for creating and managing agents capable of processing text and performing specified tasks based on a given role. It leverages asynchronous Rust programming with Tokio for efficient task execution."
+license = "MIT"
+readme = "README.md"
+repository = "https://github.com/RustSandbox/agents"
+
+[dependencies]
+regex = "1"
+
+reqwest = { version = "0.12.4", features = ["json"] }
+tokio = { version = "1", features = ["full"] }
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
+tokio-stream = "0.1.15"
+ollama-rs = { version = "0.1.9", features = ["stream"] }
+scraper = "0.19.0"
+lazy_static = { version = "1.4.0" }
+pdf-extract = "0.7.7"
+indicatif = "0.17.8"
+time = "0.3.36"
+

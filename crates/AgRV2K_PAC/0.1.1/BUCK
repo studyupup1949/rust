@@ -1,0 +1,16 @@
+load("@buckal//:wrapper.bzl", "rust_library")
+
+rust_library(
+    name = "AgRV2K_PAC",
+    srcs = glob(["**/*.rs"]),
+    crate = "AgRV2K_PAC",
+    crate_root = "src/lib.rs",
+    edition = "2021",
+
+    visibility = ["PUBLIC"],
+    deps = [
+        "//third-party/rust/crates/riscv-peripheral/0.2.1:riscv_peripheral",
+        "//third-party/rust/crates/riscv/0.12.1:riscv",
+        "//third-party/rust/crates/vcell/0.1.3:vcell",
+    ],
+)

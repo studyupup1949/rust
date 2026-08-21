@@ -1,0 +1,20 @@
+[package]
+name = "AthenaEngine"
+authors = ["fkdldkrhya <sihun.choi@email.rhya-network.kro.kr>"]
+description = "Web server template engine for rust"
+license = "MIT"
+version = "0.1.7"
+edition = "2021"
+repository = "https://github.com/fkdldkRhya/AthenaEngine.git"
+exclude = ["src/main.rs"]
+readme = "README.md"
+documentation = "https://github.com/fkdldkRhya/AthenaEngine/blob/master/README.md"
+homepage = "https://github.com/fkdldkRhya/AthenaEngine"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+
+
+[dependencies]
+chrono = "0.4.23"
+urlencoding = "2.1.2"

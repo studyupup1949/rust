@@ -1,0 +1,17 @@
+[package]
+name = "Aetherus"
+version = "0.1.1"
+authors = ["Freddy Wordingham <f.wordingham@exeter.ac.uk>", "Sam Morrell <s.morrell@exeter.ac.uk>"]
+edition = "2018"
+description = "Physics simulation library and binaries"
+repository = "https://github.com/aetherus-wg/aetherus"
+readme = "README.md"
+license = "MIT"
+keywords = ["physics", "mcrt", "rt"]
+categories = ["science", "simulation"]
+documentation = "https://aetherus-wg.github.io/aetherus"
+exclude = ["docs/", "input/", "output/"]
+
+[dependencies]
+
+[lib]

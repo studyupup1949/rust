@@ -1,0 +1,18 @@
+[package]
+name = "AISHub-data-collector"
+version = "1.1.0"
+edition = "2024"
+license = "GPL-3.0-or-later"
+description = "A tool to fetch and store data from https://www.aishub.net/"
+repository = "https://github.com/G0rocks/aishub_data_collector"
+categories = ["science::geo", "api-bindings"]
+keywords = ["shipping", "marine", "AIS", "AISHub"]
+readme = "README.md"
+
+
+[dependencies]
+csv = "1.4.0"
+reqwest = { version = "0.12.24", features = ["blocking"] }
+serde = { version = "1.0.228", features = ["derive"] }
+serde_json = "1.0.145"
+time = "0.3.44"

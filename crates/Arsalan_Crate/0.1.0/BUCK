@@ -1,0 +1,11 @@
+load("@buckal//:wrapper.bzl", "rust_library")
+
+rust_library(
+    name = "Arsalan_Crate",
+    srcs = glob(["**/*.rs"]),
+    crate = "Arsalan_Crate",
+    crate_root = "src/lib.rs",
+    edition = "2018",
+
+    visibility = ["PUBLIC"],
+)

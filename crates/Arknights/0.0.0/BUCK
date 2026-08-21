@@ -1,0 +1,15 @@
+load("@buckal//:wrapper.bzl", "rust_library")
+
+rust_library(
+    name = "Arknights",
+    srcs = glob(["**/*.rs"]),
+    crate = "Arknights",
+    crate_root = "src/lib.rs",
+    edition = "2021",
+    features = ["default"],
+
+    visibility = ["PUBLIC"],
+    deps = [
+        "//third-party/rust/crates/ndarray/0.8.4:ndarray",
+    ],
+)

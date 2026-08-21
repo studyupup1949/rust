@@ -1,0 +1,49 @@
+ARGenus — Third-Party Database Notice
+=====================================
+
+The ARGenus SOURCE CODE is licensed under the MIT License (see LICENSE).
+This notice concerns the PRE-BUILT DATABASES only.
+
+The pre-built databases distributed as GitHub Release / Zenodo assets
+(argenus-db-*.tar.gz, containing AMR_PanRes.mmi, PanRes_genes_v1.0.0.fa,
+flanking.fdb, plasmid_contigs.txt, contig_species.tsv, and any files derived
+from them) are DERIVED FROM the PanRes resistance-gene database and are therefore
+licensed under:
+
+    Creative Commons Attribution-NonCommercial 4.0 International (CC BY-NC 4.0)
+    https://creativecommons.org/licenses/by-nc/4.0/
+
+  >> NON-COMMERCIAL USE ONLY. These databases and any derivative works may not
+     be used for commercial purposes. This is separate from, and more restrictive
+     than, the MIT license that covers the ARGenus code.
+
+Source & attribution
+---------------------
+PanRes — a unified collection of antimicrobial resistance genes, distributed via
+Zenodo under CC BY-NC 4.0.
+
+  PanRes v1.0.0 (Zenodo):  https://doi.org/10.5281/zenodo.8055116
+  ARGprofiler:             https://github.com/genomicepidemiology/ARGprofiler
+
+Please cite:
+
+  Martiny H-M, et al. "ARGprofiler—a pipeline for large-scale analysis of
+  antimicrobial resistance genes and their flanking regions in metagenomic
+  datasets." Bioinformatics 40(3):btae086 (2024).
+  https://doi.org/10.1093/bioinformatics/btae086
+
+PanRes aggregates the following resistance-gene collections; please also honour
+their respective terms of use:
+  ResFinder, ResFinderFG, CARD (v3.2.5), MEGARes (v3.0.0), NCBI AMRFinderPlus,
+  ARG-ANNOT, and BacMet (v1.1).
+
+Modifications made by ARGenus
+-----------------------------
+The distributed database was produced FROM PanRes by:
+  - indexing the PanRes gene sequences with minimap2 (AMR_PanRes.mmi);
+  - building a flanking-sequence database (flanking.fdb) that pairs PanRes gene
+    identifiers with genomic flanking regions drawn from public sequence sources
+    (e.g. GenBank / PLSDB);
+  - adding auxiliary files (plasmid_contigs.txt, contig_species.tsv).
+
+All of these derivatives remain licensed under CC BY-NC 4.0.

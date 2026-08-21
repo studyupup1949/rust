@@ -1,0 +1,17 @@
+[package]
+name = "ADA_Standards"
+version = "1.0.1"
+edition = "2024"
+authors = ["Francesco Abate "]
+license = "MIT"
+description = "A library to help you handle checks on your ADA projects, especially good to build scripts to check coding standards conformity."
+keywords = ["string", "parsing", "analysis", "ADA", "code"]
+categories = ["text-processing", "development-tools", "data-structures"]
+documentation = "https://docs.rs/ADA_Standards"
+repository = "https://github.com/frontinus/ADA_Standards_Lib"
+
+[dependencies]
+indextree = "4.7.4"
+regex = "1.12.2"
+lazy_static = "1.5.0"
+fancy-regex = "0.16.2"

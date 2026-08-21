@@ -1,0 +1,19 @@
+load("@buckal//:wrapper.bzl", "rust_library")
+
+rust_library(
+    name = "AsgoreCore",
+    srcs = glob(["**/*.rs"]),
+    crate = "AsgoreCore",
+    crate_root = "src/lib.rs",
+    edition = "2021",
+
+    visibility = ["PUBLIC"],
+    deps = [
+        "//third-party/rust/crates/clipboard/0.5.0:clipboard",
+        "//third-party/rust/crates/const_format/0.2.36:const_format",
+        "//third-party/rust/crates/csv/1.4.0:csv",
+        "//third-party/rust/crates/hex/0.4.3:hex",
+        "//third-party/rust/crates/lazy_static/1.5.0:lazy_static",
+        "//third-party/rust/crates/regex/1.13.1:regex",
+    ],
+)

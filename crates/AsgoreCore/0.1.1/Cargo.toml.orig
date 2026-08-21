@@ -1,0 +1,28 @@
+[package]
+name = "AsgoreCore"
+version = "0.1.1"
+edition = "2021"
+authors = ["asgore-undertale"]
+description = "A small rust library to manipulate arabic text to fit in non-supporting arabic games or programes"
+license = "MIT"
+homepage = "https://github.com/asgore-undertale/AsgoreCore"
+documentation = "https://github.com/asgore-undertale/AsgoreCore"
+repository = "https://github.com/asgore-undertale/AsgoreCore"
+readme = "README.md"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+clipboard = "0.5.0"
+const_format = "0.2.30"
+csv = "1.2.0"
+hex = "0.4.3"
+lazy_static = "1.4.0"
+regex = "1.7.1"
+
+[profile.release]
+opt-level = 'z'
+lto = true
+codegen-units = 1
+panic = 'abort'
+strip = true

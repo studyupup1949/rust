@@ -1,0 +1,16 @@
+[package]
+name = "App1"
+version = "0.1.0"
+edition = "2021"
+license = "MIT"
+description = "A sample Rust library project"
+homepage = "https://github.com/LogeshM05/RustDemo"
+documentation = "https://github.com/LogeshM05/RustDemo"
+repository = "https://github.com/LogeshM05/RustDemo.git"
+readme = "README.md"
+
+[lib]
+name = "rust_lib1"
+path = "src/main.rs"
+
+[dependencies]

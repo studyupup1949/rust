@@ -1,0 +1,22 @@
+[package]
+name = "Arknights"
+version = "0.1.1"
+authors = ["Aster <192607617@qq.com>"]
+description = "Arknights Database"
+repository = "https://github.com/oovm/arknights-rs"
+documentation = "https://docs.rs/arknights"
+readme = "Readme.md"
+license = "MPL-2.0"
+edition = "2021"
+exclude = ["data/*"]
+
+[lib]
+name = "arknights"
+
+[dependencies]
+ndarray = "0.8.0"
+
+[dev-dependencies]
+
+[features]
+default = []

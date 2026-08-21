@@ -1,0 +1,11 @@
+[package]
+name = "AjusteOnuDeReferencia"
+version = "0.1.0"
+edition = "2021"
+authors = ["Luiz Fernando Silverio Felisbino <kakasten.cipher@gmail.com>"]
+description = "Programa para ajuste de onu"
+readme = "README.md"
+license-file = "LICENSE.txt"
+
+[dependencies]
+ssh2 = "^0.9"

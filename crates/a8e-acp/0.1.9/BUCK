@@ -1,0 +1,36 @@
+load("@buckal//:wrapper.bzl", "rust_library")
+
+rust_library(
+    name = "a8e_acp",
+    srcs = glob(["**/*.rs"]),
+    crate = "a8e_acp",
+    crate_root = "src/lib.rs",
+    edition = "2021",
+
+    visibility = ["PUBLIC"],
+    deps = [
+        "//third-party/rust/crates/a8e-core/0.1.15:a8e_core",
+        "//third-party/rust/crates/a8e-mcp/0.1.15:a8e_mcp",
+        "//third-party/rust/crates/agent-client-protocol-schema/0.10.8:agent_client_protocol_schema",
+        "//third-party/rust/crates/anyhow/1.0.104:anyhow",
+        "//third-party/rust/crates/async-stream/0.3.6:async_stream",
+        "//third-party/rust/crates/axum/0.8.9:axum",
+        "//third-party/rust/crates/bytes/1.12.1:bytes",
+        "//third-party/rust/crates/clap/4.6.6:clap",
+        "//third-party/rust/crates/fs-err/3.3.1:fs_err",
+        "//third-party/rust/crates/futures/0.3.34:futures",
+        "//third-party/rust/crates/http-body-util/0.1.4:http_body_util",
+        "//third-party/rust/crates/regex/1.13.1:regex",
+        "//third-party/rust/crates/rmcp/0.15.0:rmcp",
+        "//third-party/rust/crates/sacp/10.1.0:sacp",
+        "//third-party/rust/crates/serde/1.0.229:serde",
+        "//third-party/rust/crates/serde_json/1.0.151:serde_json",
+        "//third-party/rust/crates/tokio-util/0.7.19:tokio_util",
+        "//third-party/rust/crates/tokio/1.53.1:tokio",
+        "//third-party/rust/crates/tower-http/0.6.11:tower_http",
+        "//third-party/rust/crates/tracing-subscriber/0.3.23:tracing_subscriber",
+        "//third-party/rust/crates/tracing/0.1.44:tracing",
+        "//third-party/rust/crates/url/2.5.8:url",
+        "//third-party/rust/crates/uuid/1.24.0:uuid",
+    ],
+)

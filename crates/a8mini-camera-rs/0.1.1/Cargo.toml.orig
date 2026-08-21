@@ -1,0 +1,16 @@
+[package]
+name = "a8mini-camera-rs"
+version = "0.1.1"
+edition = "2021"
+description = "A8 Mini Camera Controller"
+license = "MIT"
+repository = "https://github.com/PurdueAerialRoboticsTeam/A8mini-camera-rs"
+readme = "README.md"
+keywords = ["rust", "siyi", "a8mini", "gimbal", "camera"]
+
+[dependencies]
+bincode = "1.3"
+bytes = "1"
+reqwest = { version = "0.12.9", features = ["json"] }
+serde = { version = "1.0.215", features = ["derive"] }
+tokio = { version = "1", features = ["full"] }

@@ -1,0 +1,22 @@
+load("@buckal//:wrapper.bzl", "rust_library")
+
+rust_library(
+    name = "a8mini_camera_rs",
+    srcs = glob(["**/*.rs"]),
+    crate = "a8mini_camera_rs",
+    crate_root = "src/lib.rs",
+    edition = "2021",
+
+    visibility = ["PUBLIC"],
+    deps = [
+        "//third-party/rust/crates/anyhow/1.0.104:anyhow",
+        "//third-party/rust/crates/bincode/1.3.3:bincode",
+        "//third-party/rust/crates/bytes/1.12.1:bytes",
+        "//third-party/rust/crates/chrono/0.4.45:chrono",
+        "//third-party/rust/crates/reqwest/0.12.28:reqwest",
+        "//third-party/rust/crates/serde/1.0.229:serde",
+        "//third-party/rust/crates/tokio/1.53.1:tokio",
+        "//third-party/rust/crates/tracing-subscriber/0.3.23:tracing_subscriber",
+        "//third-party/rust/crates/tracing/0.1.44:tracing",
+    ],
+)

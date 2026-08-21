@@ -1,0 +1,9 @@
+target
+.direnv/
+/result*
+.DS_Store
+tmp.jpeg
+
+# Added by cargo
+
+/.pre-commit-config.yaml

@@ -1,0 +1,16 @@
+load("@buckal//:wrapper.bzl", "rust_binary")
+
+rust_binary(
+    name = "A_Mazed",
+    srcs = glob(["**/*.rs"]),
+    crate = "A_Mazed",
+    crate_root = "src/main.rs",
+    edition = "2021",
+
+    visibility = ["PUBLIC"],
+    deps = [
+        "//third-party/rust/crates/clap/4.6.6:clap",
+        "//third-party/rust/crates/colored/2.2.0:colored",
+        "//third-party/rust/crates/rand/0.8.7:rand",
+    ],
+)

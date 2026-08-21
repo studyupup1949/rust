@@ -1,0 +1,29 @@
+load("@buckal//:wrapper.bzl", "rust_library")
+
+rust_library(
+    name = "a653rs_linux_core",
+    srcs = glob(["**/*.rs"]),
+    crate = "a653rs_linux_core",
+    crate_root = "src/lib.rs",
+    edition = "2021",
+
+    visibility = ["PUBLIC"],
+    deps = [
+        "//third-party/rust/crates/a653rs/0.6.1:a653rs",
+        "//third-party/rust/crates/anyhow/1.0.104:anyhow",
+        "//third-party/rust/crates/bincode/1.3.3:bincode",
+        "//third-party/rust/crates/byteorder/1.5.0:byteorder",
+        "//third-party/rust/crates/bytesize/1.3.3:bytesize",
+        "//third-party/rust/crates/enum_primitive/0.1.1:enum_primitive",
+        "//third-party/rust/crates/itertools/0.13.0:itertools",
+        "//third-party/rust/crates/memfd/0.6.5:memfd",
+        "//third-party/rust/crates/memmap2/0.9.11:memmap2",
+        "//third-party/rust/crates/nix/0.29.0:nix",
+        "//third-party/rust/crates/polling/3.11.0:polling",
+        "//third-party/rust/crates/procfs/0.16.0:procfs",
+        "//third-party/rust/crates/ptr_meta/0.2.0:ptr_meta",
+        "//third-party/rust/crates/serde/1.0.229:serde",
+        "//third-party/rust/crates/thiserror/1.0.69:thiserror",
+        "//third-party/rust/crates/walkdir/2.5.0:walkdir",
+    ],
+)

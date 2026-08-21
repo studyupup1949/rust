@@ -1,0 +1,24 @@
+load("@buckal//:wrapper.bzl", "rust_library")
+
+rust_library(
+    name = "a653rs_macros",
+    srcs = glob(["**/*.rs"]),
+    crate = "a653rs_macros",
+    crate_root = "src/lib.rs",
+    edition = "2021",
+    proc_macro = True,
+
+    visibility = ["PUBLIC"],
+    deps = [
+        "//third-party/rust/crates/bytesize/1.3.3:bytesize",
+        "//third-party/rust/crates/convert_case/0.6.0:convert_case",
+        "//third-party/rust/crates/darling/0.20.11:darling",
+        "//third-party/rust/crates/humantime/2.4.0:humantime",
+        "//third-party/rust/crates/itertools/0.13.0:itertools",
+        "//third-party/rust/crates/proc-macro2/1.0.107:proc_macro2",
+        "//third-party/rust/crates/quote/1.0.47:quote",
+        "//third-party/rust/crates/static_assertions/1.1.0:static_assertions",
+        "//third-party/rust/crates/strum/0.26.3:strum",
+        "//third-party/rust/crates/syn/2.0.119:syn",
+    ],
+)

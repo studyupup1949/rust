@@ -1,0 +1,39 @@
+name: Nix Related Actions
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+jobs:
+  checks:
+    name: Nix Checks
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Install Nix
+        uses: DeterminateSystems/nix-installer-action@v4
+      - name: Run the Magic Nix Cache
+        uses: DeterminateSystems/magic-nix-cache-action@v1
+      - name: Run Checks
+        run: nix flake check
+
+  verify:
+    name: Verifications
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        command:
+          - verify-no_std
+          - verify-doc
+          - verify-features
+          - verify-tests
+    steps:
+      - uses: actions/checkout@v2
+      - name: Install Nix
+        uses: DeterminateSystems/nix-installer-action@v4
+      - name: Run the Magic Nix Cache
+        uses: DeterminateSystems/magic-nix-cache-action@v1
+      - name: Run verify commands
+        run: nix develop --command ${{ matrix.command }}

@@ -1,0 +1,33 @@
+[package]
+name = "a653rs-xng"
+version = "0.1.1"
+edition = "2021"
+authors = [
+  "Wanja Zaeske <wanja.zaeske@dlr.de>",
+  "Sven Friedrich <sven.friedrich@dlr.de>"
+]
+license = "MIT OR Apache-2.0"
+keywords = [
+  "xng",
+  "arinc",
+  "avionics",
+  "embedded",
+  "no_std",
+]
+description = "a653rs partition library for xng hypervisor"
+categories = [
+  "aerospace", 
+  "embedded",
+  "no-std"
+]
+repository = "https://github.com/DLR-FT/a653rs-xng/"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[features]
+panic_handler = [ "dep:log" ]
+
+[dependencies]
+cty = "0.2"
+a653rs = { version = "0.6", features = ["strum", "bindings"] }
+log = { version = "0.4", optional = true }

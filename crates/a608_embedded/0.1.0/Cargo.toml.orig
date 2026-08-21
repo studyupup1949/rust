@@ -1,0 +1,17 @@
+[package]
+name = "a608_embedded"
+version = "0.1.0"
+edition = "2024"
+authors = ["NightSling"]
+description = "A no_std Rust library for interfacing with fingerprint sensors (R503, R307, AS608, ZFM-20) on embedded systems via UART"
+license = "MIT"
+repository = "https://github.com/NightSling/a608_embedded_hal"
+homepage = "https://github.com/NightSling/a608_embedded_hal"
+documentation = "https://docs.rs/a608_embedded"
+readme = "README.txt"
+keywords = ["fingerprint", "embedded", "no_std", "uart", "sensor"]
+categories = ["embedded", "no-std", "hardware-support"]
+
+[dependencies]
+embedded-hal = "1.0.0"
+embedded-io = "0.7.1"

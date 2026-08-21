@@ -1,0 +1,45 @@
+[package]
+name = "a653rs-postcard"
+version = "0.4.0"
+edition = "2021"
+authors = ["Sven Friedrich <sven.friedrich@dlr.de>"]
+license = "MIT OR Apache-2.0"
+keywords = [
+  "arinc",
+  "avionics",
+  "embedded",
+  "no_std",
+  "serialization"
+]
+description = "Extension traits for sending types via a653rs channels using postcard"
+categories = [
+  "aerospace", 
+  "embedded",
+  "no-std",
+]
+repository = "https://github.com/DLR-FT/a653rs-postcard/"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[features]
+default = []
+alloc = ["postcard/alloc"]
+
+[dependencies]
+serde.workspace = true
+postcard = { version = "1.0", default-features = false }
+a653rs.workspace = true
+
+[dev-dependencies]
+a653rs = { workspace = true, features = ["bindings"] }
+serde = { workspace = true, features = ["alloc"] }
+
+[package.metadata.cargo-all-features]
+skip_optional_dependencies = true
+
+[package.metadata."docs.rs"]
+all-features = true
+
+[workspace.dependencies]
+a653rs = "0.6"
+serde = { version = "1.0", default-features = false}

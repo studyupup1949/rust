@@ -1,0 +1,15 @@
+load("@buckal//:wrapper.bzl", "rust_library")
+
+rust_library(
+    name = "a653rs_xng",
+    srcs = glob(["**/*.rs"]),
+    crate = "a653rs_xng",
+    crate_root = "src/lib.rs",
+    edition = "2021",
+
+    visibility = ["PUBLIC"],
+    deps = [
+        "//third-party/rust/crates/a653rs/0.6.1:a653rs",
+        "//third-party/rust/crates/cty/0.2.2:cty",
+    ],
+)

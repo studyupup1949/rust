@@ -1,0 +1,17 @@
+load("@buckal//:wrapper.bzl", "rust_library")
+
+rust_library(
+    name = "a653rs_postcard",
+    srcs = glob(["**/*.rs"]),
+    crate = "a653rs_postcard",
+    crate_root = "src/lib.rs",
+    edition = "2021",
+    features = ["default"],
+
+    visibility = ["PUBLIC"],
+    deps = [
+        "//third-party/rust/crates/a653rs/0.6.1:a653rs",
+        "//third-party/rust/crates/postcard/1.1.3:postcard",
+        "//third-party/rust/crates/serde/1.0.229:serde",
+    ],
+)

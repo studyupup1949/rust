@@ -1,0 +1,32 @@
+[package]
+name = "a2a"
+version = "0.1.0"
+edition = "2024"
+description = "A2A (Agent2Agent) Protocol - An open standard for enabling communication and interoperability between AI agent systems"
+authors = ["kkharji <kkharji@protonmail.com>"]
+license = "Apache-2.0"
+homepage = "https://github.com/kkharji/a2a"
+repository = "https://github.com/kkharji/a2a"
+documentation = "https://docs.rs/a2a"
+readme = "README.md"
+keywords = ["ai", "agents", "protocol", "interop", "communication"]
+categories = ["web-programming", "network-programming", "api-bindings"]
+
+[dependencies]
+# Parsing
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
+
+# Convenience
+async-trait = "0.1"
+
+# Types
+chrono = { version = "0.4.40", features = ["serde"] }
+
+[package.metadata.docs.rs]
+all-features = true
+rustdoc-args = ["--cfg", "docsrs"]
+
+
+[package.metadata]
+status = "experimental"

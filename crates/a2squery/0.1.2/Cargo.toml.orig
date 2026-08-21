@@ -1,0 +1,19 @@
+[package]
+name = "a2squery"
+version = "0.1.2"
+edition = "2024"
+description = "A simple CLI tool for querying Source Dedicated Servers (A2S_INFO)"
+license = "MIT"
+repository = "https://github.com/km-clay/a2squery"
+readme = "README.md"
+keywords = ["source-engine", "gameserver", "cli", "valve", "query"]
+categories = ["command-line-utilities", "network-programming", "games"]
+authors = ["Kyler Clay <kylerclay@proton.me>"]
+homepage = "https://github.com/km-clay/a2squery"
+
+[dependencies]
+anyhow = "1.0.98"
+clap = { version = "4.5.41", features = ["derive"] }
+serde = { version = "1.0.219", features = ["derive"] }
+serde_json = "1.0.141"
+tokio = { version = "1.46.1", features = ["net", "rt-multi-thread", "macros", "time"] }

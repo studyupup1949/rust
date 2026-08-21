@@ -1,0 +1,16 @@
+load("@buckal//:wrapper.bzl", "rust_library")
+
+rust_library(
+    name = "a2ui_iced",
+    srcs = glob(["**/*.rs"]),
+    crate = "a2ui_iced",
+    crate_root = "src/lib.rs",
+    edition = "2024",
+    features = ["default"],
+
+    visibility = ["PUBLIC"],
+    deps = [
+        "//third-party/rust/crates/a2ui-base/0.2.1:a2ui_base",
+        "//third-party/rust/crates/serde_json/1.0.151:serde_json",
+    ],
+)

@@ -1,0 +1,33 @@
+load("@buckal//:wrapper.bzl", "rust_library")
+
+rust_library(
+    name = "a2a_mcp",
+    srcs = glob(["**/*.rs"]),
+    crate = "a2a_mcp",
+    crate_root = "src/lib.rs",
+    edition = "2021",
+    features = ["default"],
+
+    visibility = ["PUBLIC"],
+    deps = [
+        "//third-party/rust/crates/a2a-agents-common/0.3.1:a2a_agents_common",
+        "//third-party/rust/crates/a2a-rs/0.3.0:a2a_rs",
+        "//third-party/rust/crates/anyhow/1.0.104:anyhow",
+        "//third-party/rust/crates/async-trait/0.1.92:async_trait",
+        "//third-party/rust/crates/base64/0.22.1:base64",
+        "//third-party/rust/crates/buffa-types/0.3.0:buffa_types",
+        "//third-party/rust/crates/buffa/0.3.0:buffa",
+        "//third-party/rust/crates/chrono/0.4.45:chrono",
+        "//third-party/rust/crates/connectrpc/0.3.3:connectrpc",
+        "//third-party/rust/crates/futures/0.3.34:futures",
+        "//third-party/rust/crates/rmcp-macros/1.8.0:rmcp_macros",
+        "//third-party/rust/crates/rmcp/1.8.0:rmcp",
+        "//third-party/rust/crates/schemars/1.2.2:schemars",
+        "//third-party/rust/crates/serde/1.0.229:serde",
+        "//third-party/rust/crates/serde_json/1.0.151:serde_json",
+        "//third-party/rust/crates/thiserror/2.0.20:thiserror",
+        "//third-party/rust/crates/tokio/1.53.1:tokio",
+        "//third-party/rust/crates/tracing/0.1.44:tracing",
+        "//third-party/rust/crates/uuid/1.24.0:uuid",
+    ],
+)

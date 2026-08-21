@@ -1,0 +1,24 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+MSG_FILE="${1:?commit message path is required}"
+MSG="$(head -n 1 "$MSG_FILE" | tr -d '\r')"
+
+if [[ "$MSG" =~ ^(Merge|Revert)\  ]]; then
+  exit 0
+fi
+
+PATTERN='^(feat|fix|docs|refactor|test|chore)(\([a-z0-9][a-z0-9._/-]*\))?!?: .+$'
+
+if [[ ! "$MSG" =~ $PATTERN ]]; then
+  cat >&2 <<'EOF'
+commit message must follow Conventional Commits:
+  <type>(<scope>): <description>
+
+Examples:
+  feat(types): add AgentInterface serde model
+  fix(server): return proper JSON-RPC error code
+  docs(readme): update protocol version note
+EOF
+  exit 1
+fi

@@ -1,0 +1,438 @@
+//! ## Low level Apple images
+//! 
+//! This contains common components for images that represent Apple tracks
+//! as nibbles, bits, or fluxes, most notably WOZ images.
+//! 
+//! ### Emulator vs. Editor
+//! 
+//! The WOZ image format is designed to allow emulators to run
+//! copy protected software.  The trick is to make the emulation
+//! accurate enough so that all relevant details of the software's
+//! interaction with the disk hardware is captured.
+//! 
+//! However, a2kit is not an emulator, it is an editor.
+//! Therefore some of the WOZ protocols that are
+//! conceived with emulators in mind are not strictly adhered to.
+//! 
+//! ### Cross-Track Synchronization
+//! 
+//! The position of the head over the disk is maintained internally
+//! for the lifetime of the `DiskImage` trait object.  Emulated time
+//! affects the state of the `TrackEngine` and `FluxCells` objects.
+//! It is possible for cross-track synchronization to be spoiled by certain
+//! pathological write operations.
+//! 
+//! ### Quarter Tracks
+//! 
+//! In terms of the CLI, the user can request quarter tracks using quarter-decimals.
+//! The `DiskImage` trait uses instead the `img::Track` abstraction, which allows
+//! the stepper-motor position to be explicitly specified.
+//! 
+//! In this situation the addressing of a track can be confusing.
+//! The various schemes are given as follows:
+//! 
+//! disk | track | cyl,head | motor,head | TMAP index
+//! -----|-------|----------|------------|-----------
+//! 5.25 | 0..35 | (0..35, 0..1) | (0..140, 0..1) | 0..140
+//! 5.25 | 0..40 | (0..40, 0..1) | (0..160, 0..1) | 0..160
+//! 3.5-400K | 0..80 | (0..80, 0..1) | (0..80, 0..1) | 0..80
+//! 3.5-800K | 0..160 | (0..80, 0..2) | (0..80, 0..2) | 0..160
+//! 
+//! ### Blank Tracks
+//! 
+//! An emulator is supposed to serve up fake bits if the head is on a blank
+//! track, and continue to maintain the head state.
+//! As an editor, a2kit will return `BlankTrack` instead.
+//! 
+//! ### Fake Bits
+//! 
+//! Fake bits will be generated if the `TrackEngine` method is set to emulate.
+//! 
+//! ### Drive Motor and Soft Switches
+//! 
+//! The delayed shut-down of the drive motor is not handled.  Side effects
+//! of various disk-related soft switches are not handled.  This is
+//! because a2kit has no notion of such things.  The track object is
+//! merely serving up bits on demand, subject to certain filters.
+//! 
+//! ### Logic State Sequencer
+//! 
+//! For writing, the LSS is never used, bits and flux transitions are positioned "by hand."
+//! For reading, the LSS is emulated down to the cycle level if `Method==Emulate`.
+//! If `Method==Fast`, reading is carried out using a simplified model.
+//! 
+//! ### Flux tracks
+//! 
+//! The engine can read and write flux tracks.  Flux tracks can be created at image
+//! creation time, but once a disk image exists, bit-stream tracks remain bit-stream tracks,
+//! and flux-tracks remain flux-tracks.
+
+use std::fmt::Write;
+use std::u8;
+use super::{Track,SectorHood,DiskKind};
+use super::tracks::{DiskFormat,ZoneFormat};
+
+use crate::{STDRESULT,DYNERR};
+const RCH: &str = "unreachable was reached";
+
+pub const INFO_ID: u32 = u32::from_le_bytes(*b"INFO");
+pub const TMAP_ID: u32 = u32::from_le_bytes(*b"TMAP");
+pub const TRKS_ID: u32 = u32::from_le_bytes(*b"TRKS");
+pub const FLUX_ID: u32 = u32::from_le_bytes(*b"FLUX");
+pub const WRIT_ID: u32 = u32::from_le_bytes(*b"WRIT");
+pub const META_ID: u32 = u32::from_le_bytes(*b"META");
+pub const ALLOWED_TRACKS_525: [usize;1] = [35];
+
+const CRC32_TAB: [u32;256] = [
+	0x00000000, 0x77073096, 0xee0e612c, 0x990951ba, 0x076dc419, 0x706af48f,
+	0xe963a535, 0x9e6495a3, 0x0edb8832, 0x79dcb8a4, 0xe0d5e91e, 0x97d2d988,
+	0x09b64c2b, 0x7eb17cbd, 0xe7b82d07, 0x90bf1d91, 0x1db71064, 0x6ab020f2,
+	0xf3b97148, 0x84be41de, 0x1adad47d, 0x6ddde4eb, 0xf4d4b551, 0x83d385c7,
+	0x136c9856, 0x646ba8c0, 0xfd62f97a, 0x8a65c9ec, 0x14015c4f, 0x63066cd9,
+	0xfa0f3d63, 0x8d080df5, 0x3b6e20c8, 0x4c69105e, 0xd56041e4, 0xa2677172,
+	0x3c03e4d1, 0x4b04d447, 0xd20d85fd, 0xa50ab56b, 0x35b5a8fa, 0x42b2986c,
+	0xdbbbc9d6, 0xacbcf940, 0x32d86ce3, 0x45df5c75, 0xdcd60dcf, 0xabd13d59,
+	0x26d930ac, 0x51de003a, 0xc8d75180, 0xbfd06116, 0x21b4f4b5, 0x56b3c423,
+	0xcfba9599, 0xb8bda50f, 0x2802b89e, 0x5f058808, 0xc60cd9b2, 0xb10be924,
+	0x2f6f7c87, 0x58684c11, 0xc1611dab, 0xb6662d3d, 0x76dc4190, 0x01db7106,
+	0x98d220bc, 0xefd5102a, 0x71b18589, 0x06b6b51f, 0x9fbfe4a5, 0xe8b8d433,
+	0x7807c9a2, 0x0f00f934, 0x9609a88e, 0xe10e9818, 0x7f6a0dbb, 0x086d3d2d,
+	0x91646c97, 0xe6635c01, 0x6b6b51f4, 0x1c6c6162, 0x856530d8, 0xf262004e,
+	0x6c0695ed, 0x1b01a57b, 0x8208f4c1, 0xf50fc457, 0x65b0d9c6, 0x12b7e950,
+	0x8bbeb8ea, 0xfcb9887c, 0x62dd1ddf, 0x15da2d49, 0x8cd37cf3, 0xfbd44c65,
+	0x4db26158, 0x3ab551ce, 0xa3bc0074, 0xd4bb30e2, 0x4adfa541, 0x3dd895d7,
+	0xa4d1c46d, 0xd3d6f4fb, 0x4369e96a, 0x346ed9fc, 0xad678846, 0xda60b8d0,
+	0x44042d73, 0x33031de5, 0xaa0a4c5f, 0xdd0d7cc9, 0x5005713c, 0x270241aa,
+	0xbe0b1010, 0xc90c2086, 0x5768b525, 0x206f85b3, 0xb966d409, 0xce61e49f,
+	0x5edef90e, 0x29d9c998, 0xb0d09822, 0xc7d7a8b4, 0x59b33d17, 0x2eb40d81,
+	0xb7bd5c3b, 0xc0ba6cad, 0xedb88320, 0x9abfb3b6, 0x03b6e20c, 0x74b1d29a,
+	0xead54739, 0x9dd277af, 0x04db2615, 0x73dc1683, 0xe3630b12, 0x94643b84,
+	0x0d6d6a3e, 0x7a6a5aa8, 0xe40ecf0b, 0x9309ff9d, 0x0a00ae27, 0x7d079eb1,
+	0xf00f9344, 0x8708a3d2, 0x1e01f268, 0x6906c2fe, 0xf762575d, 0x806567cb,
+	0x196c3671, 0x6e6b06e7, 0xfed41b76, 0x89d32be0, 0x10da7a5a, 0x67dd4acc,
+	0xf9b9df6f, 0x8ebeeff9, 0x17b7be43, 0x60b08ed5, 0xd6d6a3e8, 0xa1d1937e,
+	0x38d8c2c4, 0x4fdff252, 0xd1bb67f1, 0xa6bc5767, 0x3fb506dd, 0x48b2364b,
+	0xd80d2bda, 0xaf0a1b4c, 0x36034af6, 0x41047a60, 0xdf60efc3, 0xa867df55,
+	0x316e8eef, 0x4669be79, 0xcb61b38c, 0xbc66831a, 0x256fd2a0, 0x5268e236,
+	0xcc0c7795, 0xbb0b4703, 0x220216b9, 0x5505262f, 0xc5ba3bbe, 0xb2bd0b28,
+	0x2bb45a92, 0x5cb36a04, 0xc2d7ffa7, 0xb5d0cf31, 0x2cd99e8b, 0x5bdeae1d,
+	0x9b64c2b0, 0xec63f226, 0x756aa39c, 0x026d930a, 0x9c0906a9, 0xeb0e363f,
+	0x72076785, 0x05005713, 0x95bf4a82, 0xe2b87a14, 0x7bb12bae, 0x0cb61b38,
+	0x92d28e9b, 0xe5d5be0d, 0x7cdcefb7, 0x0bdbdf21, 0x86d3d2d4, 0xf1d4e242,
+	0x68ddb3f8, 0x1fda836e, 0x81be16cd, 0xf6b9265b, 0x6fb077e1, 0x18b74777,
+	0x88085ae6, 0xff0f6a70, 0x66063bca, 0x11010b5c, 0x8f659eff, 0xf862ae69,
+	0x616bffd3, 0x166ccf45, 0xa00ae278, 0xd70dd2ee, 0x4e048354, 0x3903b3c2,
+	0xa7672661, 0xd06016f7, 0x4969474d, 0x3e6e77db, 0xaed16a4a, 0xd9d65adc,
+	0x40df0b66, 0x37d83bf0, 0xa9bcae53, 0xdebb9ec5, 0x47b2cf7f, 0x30b5ffe9,
+	0xbdbdf21c, 0xcabac28a, 0x53b39330, 0x24b4a3a6, 0xbad03605, 0xcdd70693,
+	0x54de5729, 0x23d967bf, 0xb3667a2e, 0xc4614ab8, 0x5d681b02, 0x2a6f2b94,
+	0xb40bbe37, 0xc30c8ea1, 0x5a05df1b, 0x2d02ef8d
+];
+
+/// Calculate the checksum for the WOZ data in `buf`
+pub fn crc32(crc_seed: u32, buf: &Vec<u8>) -> u32
+{
+	let mut crc = crc_seed ^ !(0 as u32);
+	for p in buf {
+	    crc = CRC32_TAB[((crc ^ *p as u32) & 0xFF) as usize] ^ (crc >> 8);
+    }
+	return crc ^ !(0 as u32);
+}
+
+/// Get the next WOZ metadata chunk.  Return tuple (ptr,id,Option(chunk)).
+/// Here `ptr` is the index to the subsequent chunk, which can be passed back in.
+/// The returned chunk buffer includes the id and size in the first 8 bytes.
+/// The returned pattern can be matched as follows.
+/// (0,id,Some) => good chunk and there are no more chunks.
+/// (ptr,id,Some) => good chunk and there is another chunk.
+/// (0,id,None) => unknown chunk and there are no more chunks.
+/// (ptr,id,None) => unknown chunk and there is another chunk.
+/// The caller should ignore unknown chunks and keep going until no more chunks.
+/// The `DiskStruct` trait can be used to unpack the chunk at higher levels.
+pub fn get_next_chunk(ptr: usize,buf: &[u8]) -> (usize,u32,Option<Vec<u8>>) {
+	// this can only evaluate true on the first call
+	if ptr+8 > buf.len() {
+		return (0,0,None);
+	}
+	let id = u32::from_le_bytes([buf[ptr],buf[ptr+1],buf[ptr+2],buf[ptr+3]]);
+	let size = u32::from_le_bytes([buf[ptr+4],buf[ptr+5],buf[ptr+6],buf[ptr+7]]);
+	let end = ptr + 8 + size as usize;
+	let mut next = end;
+	// if size puts us beyond end of file this is not a good chunk, and also no more chunks
+	if end > buf.len() {
+		return (0,0,None);
+	}
+	// if there is not enough room for the next chunk header then no more chunks
+	if next+8 > buf.len() {
+		next = 0;
+	}
+	if id==0 && size==0 {
+		log::trace!("encountered nulls trailing previous chunk");
+	} else {
+		log::debug!("found chunk id {:08X}/{}, at offset {}, next offset {}",id,String::from_utf8_lossy(&u32::to_le_bytes(id)),ptr,next);
+	}
+	match id {
+		INFO_ID | TMAP_ID | TRKS_ID | FLUX_ID | WRIT_ID | META_ID => {
+			// found something
+			return (next,id,Some(buf[ptr..end].to_vec()));
+		}
+		_ => {
+			// unknown chunk type
+			return (next,id,None);
+		}
+	}
+}
+
+/// Check that `trk` is valid for the given `kind`, does not examine the medium.
+fn verify_track_key(trk: Track,kind: &DiskKind) -> STDRESULT {
+	let trouble = match *kind {
+		DiskKind::D525(_) => {
+			match trk {
+				Track::Num(t) => t > 34,
+				Track::CH((c,h)) => c > 34 || h > 0,
+				Track::Motor((m,h)) => m > 159 || h > 0
+			}
+		},
+		DiskKind::D35(layout) if layout.sides[0]==1 => {
+			match trk {
+				Track::Num(t) => t > 79,
+				Track::CH((c,h)) => c > 79 || h > 0,
+				Track::Motor((m,h)) => m > 79 || h > 0
+			}
+
+		},
+		DiskKind::D35(layout) if layout.sides[0]==2 => {
+			match trk {
+				Track::Num(t) => t > 159,
+				Track::CH((c,h)) => c > 79 || h > 1,
+				Track::Motor((m,h)) => m > 79 || h > 1
+			}
+		},
+		_ => panic!("unsupported disk kind")
+	};
+	if trouble {
+		log::error!("{} is out of range",trk);
+		Err(Box::new(super::Error::TrackNotFound))
+	} else {
+		Ok(())
+	}
+}
+
+/// return [motor,head,width]
+pub fn get_motor_pos(trk: Track,kind: &DiskKind) -> Result<[usize;3],DYNERR> {
+	verify_track_key(trk.clone(),kind)?;
+	let ans = match *kind {
+		DiskKind::D525(_) => {
+			match trk {
+				Track::Num(t) => [t*4,0,4],
+				Track::CH((c,_)) => [c*4,0,4],
+				Track::Motor((m,_)) => [m,0,4]
+			}
+		},
+		DiskKind::D35(layout) if layout.sides[0]==1 => {
+			match trk {
+				Track::Num(t) => [t,0,1],
+				Track::CH((c,_)) => [c,0,1],
+				Track::Motor((m,_)) => [m,0,1]
+			}
+		},
+		DiskKind::D35(layout) if layout.sides[0]==2 => {
+			match trk {
+				Track::Num(t) => [t/2,t%2,1],
+				Track::CH((c,h)) => [c,h,1],
+				Track::Motor((m,h)) => [m,h,1]
+			}
+		},
+		_ => panic!("unsupported disk kind")
+	};
+	Ok(ans)
+}
+
+/// Get the TMAP index, after verifying the `trk` is valid for this `kind`.
+pub fn get_tmap_index(trk: Track,kind: &DiskKind) -> Result<usize,DYNERR> {
+	verify_track_key(trk.clone(),kind)?;
+	let tmap_idx = match *kind {
+		DiskKind::D525(_) => {
+			match trk {
+				Track::Num(t) => t*4,
+				Track::CH((c,_)) => c*4,
+				Track::Motor((m,_)) => m
+			}
+		},
+		DiskKind::D35(layout) if layout.sides[0]==1 => {
+			match trk {
+				Track::Num(t) => t*2,
+				Track::CH((c,_)) => c*2,
+				Track::Motor((m,_)) => m*2
+			}
+		},
+		DiskKind::D35(layout) if layout.sides[0]==2 => {
+			match trk {
+				Track::Num(t) => t,
+				Track::CH((c,h)) => c*2+h,
+				Track::Motor((m,h)) => m*2+h
+			}
+		},
+		_ => panic!("unsupported disk kind")
+	};
+	Ok(tmap_idx)
+}
+
+/// Create a track key for this TMAP index.
+pub fn trk_from_tmap_idx(tmap_idx: usize,kind: &DiskKind) -> Track {
+	match *kind {
+		DiskKind::D525(_) => Track::Motor((tmap_idx,0)),
+		DiskKind::D35(layout) if layout.sides[0]==1 => Track::Motor((tmap_idx/2,0)),
+		DiskKind::D35(layout) if layout.sides[0]==2 => Track::Motor((tmap_idx/2,tmap_idx%2)),
+		_ => panic!("unsupported disk kind")
+	}
+}
+
+/// Get the sector neighborhood for this TMAP index.
+/// Can panic if arguments are invalid.
+pub fn get_sector_hood(vol: u8,tmap_idx: usize,kind: &DiskKind,zone: usize) -> SectorHood {
+	match *kind {
+		DiskKind::D525(_) => SectorHood::a2_525(vol,(tmap_idx as u8+1)/4),
+		DiskKind::D35(layout) => SectorHood::a2_35(
+			(tmap_idx / 2) as u8,
+			(tmap_idx % layout.sides[zone]) as u8
+		),
+		_ => panic!("unsupported disk kind")
+	}
+}
+
+/// This will employ certain rules in an attempt to produce "nice" motor stops
+/// for use in generating a track array for user consumption, or for estimating
+/// the actual capacity of the disk as formatted.
+/// There is an assumption that the set of important tracks are mostly whole tracks apart.
+/// This should only be used for 5.25 inch disks.
+pub fn find_motor_stops(tmap: &[u8],maybe_fmap: Option<&[u8]>) -> Vec<usize> {
+	let mut ans = Vec::new();
+	let mut set = [0xff,0xff,0xff,0xff];
+	for motor in 0..160 {
+		set.rotate_left(1);
+		set[3] = match maybe_fmap {
+			Some(fmap) if fmap[motor] !=0xff => fmap[motor],
+			_ => tmap[motor]
+		};
+		if motor%4 == 2 {
+			match set {
+				[_,w,_,h] if w!=0xff && h!=0xff => {
+					if w == h {
+						ans.push(motor-2);
+					} else {
+						ans.push(motor-2);
+						ans.push(motor);
+					}
+				},
+				[qm,0xff,qp,h] => {
+					if h != 0xff {
+						ans.push(motor);
+					} else if qp != 0xff {
+						ans.push(motor-1);
+					} else if qm != 0xff {
+						ans.push(motor-3);
+					} else {
+						ans.push(motor-2);
+					}
+				},
+				_ => ans.push(motor-2)
+			}
+		}
+	}
+	ans
+}
+
+/// For use in building TRKS chunks, allowing us to get a sector key for
+/// the track's address fields, even if the TMAP/FLUX chunks are something wild.
+/// This can be thought of as inverting the map.
+/// `slot` is the index into the TRKS array (the value of the TMAP/FLUX entry to search for).
+/// Returns `Some((motor_pos, hood, is_flux))`, or `None` if there are no entries for `slot`.
+/// Can panic if arguments are invalid.
+pub fn get_trks_slot_id(vol: u8,slot: usize,tmap: &[u8],maybe_fmap: Option<&[u8]>,kind: &super::DiskKind) -> Option<(u8,SectorHood,bool)> {
+	let mut candidates = Vec::new();
+	let mut is_flux = Vec::new();
+	for i in 0..tmap.len() {
+		if let Some(fmap) = maybe_fmap {
+			if fmap[i] as usize == slot {
+				candidates.push(i as u8);
+				is_flux.push(true);
+				continue;
+			}
+		}
+		if tmap[i] as usize == slot {
+			candidates.push(i as u8);
+			is_flux.push(false);
+		}
+	}
+	let which = match candidates.len() {
+		0 => return None,
+		1 => 0, // just one choice
+		// _ if candidates[0] % 4 == 0 => 0, // if first is a whole track take it
+		_ if candidates[1] - candidates[0] > 1 => 0, // if first has nothing adjacent take it
+		_  => 1, // otherwise prefer center of head
+	};
+	let motor = match *kind {
+		super::DiskKind::D35(_) => candidates[which]/2 as u8,
+		_ => candidates[which]
+	};
+	Some((motor,get_sector_hood(vol,candidates[which] as usize,kind,0),is_flux[which]))
+}
+
+/// Guess a standard format based on the disk kind
+pub fn kind_to_format(kind: &super::DiskKind) -> Option<DiskFormat> {
+	match *kind {
+		super::names::A2_DOS32_KIND => Some(DiskFormat::apple_525_13(9)),
+		super::names::A2_DOS33_KIND => Some(DiskFormat::apple_525_16(10)),
+		super::names::A2_400_KIND => Some(DiskFormat::apple_35(1,4)),
+		super::names::A2_800_KIND => Some(DiskFormat::apple_35(2, 4)),
+		_ => None
+	}
+}
+
+/// Display aligned track nibbles to stdout in columns of hex, track mnemonics
+pub fn track_string_for_display(start_addr: u16,trk: &[u8],fmt: Option<&ZoneFormat>) -> String {
+	let mut ans = String::new();
+    let mut slice_start = 0;
+	let mut last_marker = 0;
+	let mut last_marker_end = 0;
+    let mut err_count = 0;
+    loop {
+        let row_label = start_addr as usize + slice_start;
+        let mut slice_end = slice_start + 16;
+        if slice_end > trk.len() {
+            slice_end = trk.len();
+        }
+        let mut mnemonics = String::new();
+        for i in slice_start..slice_end {
+			if let Some(zfmt) = fmt {
+				mnemonics.push(zfmt.woz_mnemonic(trk, i, &mut last_marker, &mut last_marker_end));
+			} else {
+				mnemonics.push('.');
+			}
+			if mnemonics.ends_with('?') {
+				err_count += 1;
+			}
+        }
+        for _i in mnemonics.len()..16 {
+            mnemonics += " ";
+        }
+        write!(ans,"{:04X} : ",row_label).expect(RCH);
+        for byte in trk[slice_start..slice_end].to_vec() {
+            write!(ans,"{:02X} ",byte).expect(RCH);
+        }
+        for _blank in slice_end..slice_start+16 {
+            write!(ans,"   ").expect(RCH);
+        }
+        writeln!(ans,"|{}|",mnemonics).expect(RCH);
+        slice_start += 16;
+        if slice_end==trk.len() {
+            break;
+        }
+    }
+    if err_count > 0 {
+        writeln!(ans).expect(RCH);
+        writeln!(ans,"Encountered {} invalid bytes",err_count).expect(RCH);
+    }
+	ans
+}

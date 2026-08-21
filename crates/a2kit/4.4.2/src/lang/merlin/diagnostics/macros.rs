@@ -1,0 +1,296 @@
+use std::collections::HashMap;
+use lsp_types as lsp;
+use crate::lang::{Navigate,Navigation};
+use crate::lang::server::basic_diag;
+use crate::lang::merlin::{Symbol,Symbols,MerlinVersion};
+use crate::lang::{node_text,lsp_range};
+use crate::lang::merlin::context::Context;
+use crate::DYNERR;
+
+struct Substitutor {
+    line: String,
+    prev_end: usize,
+    build: String,
+    search: Vec<String>,
+    replace: Vec<String>,
+    types: Vec<String>,
+    /// map from argument numbers that were replaced (1-8) to the conditional depth where it occurred
+    matched_args: HashMap<usize,usize>,
+    conditional_depth: usize
+}
+
+impl Substitutor {
+    fn new(search: Vec<String>,replace: Vec<String>,types: Vec<String>) -> Self {
+        Self {
+            line: String::new(),
+            prev_end: 0,
+            build: String::new(),
+            search,
+            replace,
+            types,
+            matched_args: HashMap::new(),
+            conditional_depth: 0
+        }
+    }
+    fn reset(&mut self,line: &str) {
+        self.line = line.to_owned();
+        self.prev_end = 0;
+        self.build = String::new();
+        self.matched_args = HashMap::new();
+    }
+    fn result(&self) -> (String,HashMap<usize,usize>) {
+        (self.build.clone(),self.matched_args.clone())
+    }
+}
+
+// This makes substitutions and keeps track of arguments that have been matched.
+// It also sets matched_args, which contains the set of arguments for which a replacement was made,
+// and the depth of the conditional (maybe 0) where it happened.
+impl Navigate for Substitutor {
+    fn visit(&mut self,curs: &tree_sitter::TreeCursor) -> Result<Navigation,DYNERR> {
+        let txt = node_text(&curs.node(),&self.line);
+        // add node and any leading spaces that are hidden or ignored by the parser
+        let mut add_spaces_and_node = |beg: &tree_sitter::Node, end: &tree_sitter::Node, repl: &str| {
+            let curr_start = beg.start_position().column;
+            if curr_start > self.prev_end {
+                self.build += &" ".repeat(curr_start - self.prev_end);
+            }
+            self.build += repl;
+            self.prev_end = end.end_position().column;
+        };
+        // we do not evaluate conditionals here, we merely gather information so we can decline
+        // to offer the missing argument diagnostic when we know it might be wrong
+        if ["psop_if","psop_do"].contains(&curs.node().kind()) {
+            self.conditional_depth += 1;
+        }
+        if curs.node().kind() == "psop_fin" {
+            if self.conditional_depth > 0 {
+                self.conditional_depth -= 1;
+            }
+        }
+        for i in 0..self.search.len() {
+            if curs.node().kind() == self.types[i] && txt == self.search[i] {
+                self.matched_args.insert(i,self.conditional_depth);
+                add_spaces_and_node(&curs.node(),&curs.node(),&self.replace[i]);
+                return Ok(Navigation::GotoSibling);
+            }
+        }
+        // append unmodified nodes
+        if curs.node().named_child_count() == 0 {
+            add_spaces_and_node(&curs.node(),&curs.node(),&txt);
+            Ok(Navigation::GotoSibling)
+        } else {
+            let child = curs.node().child(0).unwrap();
+            let diff = child.start_position().column - curs.node().start_position().column;
+            add_spaces_and_node(&curs.node(),&child,&txt.split_at(diff).0);
+            Ok(Navigation::GotoChild)
+        }
+    }
+}
+
+/// Substitute macro variables with arguments
+/// * txt: text of the macro, parsing hints should already be present
+/// * nodes: list of macro argument nodes
+/// * call_source: text of the line where the macro is called
+/// returns (expanded macro, set of variables that were actually used)
+fn substitute_vars(txt: &str, nodes: &Vec<tree_sitter::Node>, call_source: &str, vers: &MerlinVersion) -> Result<(String,HashMap<usize,usize>),DYNERR> {
+    let mut parser = tree_sitter::Parser::new();
+    parser.set_language(&tree_sitter_merlin6502::LANGUAGE.into())?;
+    let mut ans = String::new();
+    let mut matches = HashMap::new();
+    let mut search = Vec::new();
+    let mut replace = Vec::new();
+    let mut types = Vec::new();
+    search.push("]0".to_string());
+    replace.push(match vers {
+        MerlinVersion::Merlin8 => "]0".to_string(), // if Merlin 8 leave it the same
+        _ => nodes.len().to_string()
+    });
+    types.push("var_cnt".to_string());
+    for i in 0..nodes.len() {
+        search.push(format!("]{}",i + 1));
+        replace.push(node_text(&nodes[i], call_source));
+        types.push("var_mac".to_string());
+    }
+    // Search also for things that were not provided, but could be required,
+    // if found all that happens is it goes into the returned matches.
+    for i in nodes.len()..8 {
+        search.push(format!("]{}",i + 1));
+        replace.push(format!("]{}",i + 1));
+        types.push("var_mac".to_string());
+    }
+    let mut subs = Substitutor::new(search,replace,types);
+    for line in txt.lines() {
+        let terminated = line.to_string() + "\n";
+        subs.reset(&terminated);
+        if let Some(tree) = parser.parse(&terminated,None) {
+            subs.walk(&tree)?;
+        }
+        let (ln,partial) = subs.result();
+        ans += &ln;
+        ans += "\n";
+        for (arg_num,depth) in partial {
+            matches.insert(arg_num,depth);
+        }
+    }
+    Ok((ans, matches))
+}
+
+/// Evaluate IF/DO/ELSE, substitutions should be made first.
+/// This will subtract unassembled lines as well as the control operations themselves.
+fn evaluate_conditionals(txt: &str, symbols: &mut Symbols, scope: &Symbol) -> Result<String,DYNERR> {
+    let mut parser = tree_sitter::Parser::new();
+    if let Err(_) = parser.set_language(&tree_sitter_merlin6502::LANGUAGE.into()) {
+        return Ok(txt.to_string());
+    }
+    let mut ans = String::new();
+    let mut asm = vec![true]; // assume assembly is on (otherwise why expand?)
+    for line in txt.lines() {
+        let terminated = line.to_string() + "\n";
+        match parser.parse(terminated.clone(),None) { Some(tree) => {
+            let mut show_it = true;
+            let root = tree.root_node();
+            let mut curs = root.walk();
+            curs.goto_first_child();
+            if curs.node().kind() == "macro_call" {
+                symbols.unset_all_variables();
+            }
+            if curs.node().kind() == "pseudo_operation" {
+                curs.goto_first_child();
+                loop {
+                    if curs.node().kind() == "psop_pmc" {
+                        symbols.unset_all_variables();
+                    }
+                    if curs.node().kind() == "arg_if" || curs.node().kind() == "arg_do" {
+                        show_it = false;
+                        asm.push(super::super::assembly::eval_conditional(&curs.node(),&terminated,None,symbols,None)? != 0);
+                    }
+                    if curs.node().kind() == "psop_else" {
+                        show_it = false;
+                        if let Some(a) = asm.pop() {
+                            asm.push(!a);
+                        }
+                    }
+                    if curs.node().kind() == "psop_fin" {
+                        show_it = false;
+                        asm.pop();
+                        // if there is an unmatched `fin` just keep assembling
+                        if asm.len() == 0 {
+                            asm.push(true);
+                        }
+                    }
+                    if curs.node().kind() == "arg_mx" {
+                        super::update_var_value("", &curs.node(), symbols, &terminated, Some(scope));
+                    }
+                    if curs.node().kind() == "label_def" {
+                        if let Some(var) = curs.node().child(0) {
+                            if var.kind() == "var_label" {
+                                let txt = node_text(&var, &terminated);
+                                super::update_var_value(&txt, &curs.node(), symbols, &terminated, Some(scope));
+                            }
+                        }
+                    }
+                    if !curs.goto_next_sibling() {
+                        break;
+                    }
+                }
+            }
+            if show_it && *asm.last().unwrap() {
+                ans += &line;
+                ans += "\n";    
+            }
+        } _ => {
+            // if line couldn't be parsed just copy it
+            ans += &line;
+            ans += "\n";    
+        }}
+    }
+    Ok(ans)
+}
+
+/// Expand a macro reference assuming arguments have already been checked.
+/// * node: must be a macro_ref node
+/// * call_source: text of the line where the macro is called
+/// * symbols: document symbols
+/// * max_recursion: currently must be 1 otherwise panic
+/// N.b. updates to symbols (variables) can happen within, but are not exposed to the caller.
+/// returns the expanded macro, or None if something went wrong
+pub fn expand_macro(node: &tree_sitter::Node, call_source: &str, symbols: &Symbols, max_recursion: usize) -> Option<String> {
+    if node.kind() != "macro_ref" {
+        log::debug!("expand: wrong node type");
+        return None;
+    }
+    if max_recursion != 1 {
+        panic!("expand: max_recursion must be 1");
+    }
+    let label = node_text(node,call_source);
+    if let Some(sym) = symbols.macros.get(&label) {
+        if sym.defining_code.is_none() {
+            log::debug!("expand: no macro text found");
+            return None;
+        }
+        let next = node.next_named_sibling();
+        let mut nodes = Vec::new();
+        if next.is_some() && next.unwrap().kind() == "arg_macro" {
+            let arg_count = next.unwrap().named_child_count();
+            for i in 0..arg_count {
+                nodes.push(next.unwrap().named_child(i).unwrap());
+            }
+        }
+        if let Ok((expanded,_)) = substitute_vars(sym.defining_code.as_ref().unwrap(), &nodes, call_source, &symbols.assembler) {
+            let mut symbols_clone = symbols.clone();
+            let mut mac = sym.clone();
+            mac.unset_children(); // until we are fully expanding assume these are unknown
+            match evaluate_conditionals(&expanded, &mut symbols_clone, &mac) { Ok(reduced) => {
+                return Some(reduced);
+            } _ => {
+                return Some(expanded);
+            }}
+        }
+    }
+    log::debug!("expand: symbol not found");
+    None
+}
+
+/// This expands a macro's arguments for diagnostic purposes.
+/// For this check there is no need to recursively expand.
+/// The expanded macro is not saved anywhere.
+pub fn check_macro_args(node: &tree_sitter::Node, symbols: &mut Symbols, ctx: &mut Context, diag: &mut Vec<lsp::Diagnostic>) {
+    if node.kind() != "macro_ref" {
+        log::debug!("expand: wrong node type");
+        return;
+    }
+    let (rng,txt) = ctx.node_spec(node);
+    if let Some(sym) = symbols.macros.get(&txt) {
+        if sym.defining_code.is_none() {
+            log::debug!("expand: no macro text found");
+            return;
+        }
+        let next = node.next_named_sibling();
+        let mut arg_count = 0;
+        let mut nodes = Vec::new();
+        if next.is_some() && next.unwrap().kind() == "arg_macro" {
+            arg_count = next.unwrap().named_child_count();
+            for i in 0..arg_count {
+                nodes.push(next.unwrap().named_child(i).unwrap());
+            }
+        }
+        if let Ok((_,arg_matches)) = substitute_vars(sym.defining_code.as_ref().unwrap(), &nodes, ctx.line(), &symbols.assembler) {
+            for i in arg_count+1..9 {
+                match arg_matches.get(&i) {
+                    Some(depth) if *depth == 0 => diag.push(basic_diag(rng, 
+                        &format!("argument missing: `]{}`",i),lsp::DiagnosticSeverity::ERROR)),
+                    Some(_) => diag.push(basic_diag(rng,
+                        &format!("conditionally missing argument: `]{}`",i),lsp::DiagnosticSeverity::HINT)),
+                    None => {}
+                };
+            }
+            for i in 0..nodes.len() {
+                if !arg_matches.contains_key(&(i+1)) {
+                    let rng = lsp_range(nodes[i].range(), ctx.row(), ctx.col());
+                    diag.push(basic_diag(rng, "argument not used",lsp::DiagnosticSeverity::WARNING));
+                }
+            }
+        };
+    }
+}

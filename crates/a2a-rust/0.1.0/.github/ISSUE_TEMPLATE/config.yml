@@ -1,0 +1,8 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Question / Discussion
+    url: https://github.com/longzhi/a2a-rust/discussions
+    about: Ask questions and discuss ideas in GitHub Discussions
+  - name: A2A Protocol Spec
+    url: https://a2a-protocol.org/latest/specification/
+    about: Read the official A2A protocol specification

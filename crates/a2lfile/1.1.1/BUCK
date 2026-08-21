@@ -1,0 +1,14 @@
+load("@buckal//:wrapper.bzl", "rust_library")
+
+rust_library(
+    name = "a2lfile",
+    srcs = glob(["**/*.rs"]),
+    crate = "a2lfile",
+    crate_root = "src/lib.rs",
+    edition = "2021",
+
+    visibility = ["PUBLIC"],
+    deps = [
+        "//third-party/rust/crates/a2lmacros/1.3.0:a2lmacros",
+    ],
+)

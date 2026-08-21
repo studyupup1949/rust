@@ -1,0 +1,61 @@
+# SPDX-License-Identifier: Apache-2.0
+# Copyright 2026 Tom F. <tomf@tomtomtech.net> (https://github.com/tomtom215)
+
+[package]
+name        = "a2a-protocol-types"
+version     = "0.7.0"
+description = "Agent2Agent (A2A) protocol v1.0 — pure data types, serde only, no I/O"
+readme      = "README.md"
+
+edition.workspace      = true
+rust-version.workspace = true
+license.workspace      = true
+authors.workspace      = true
+repository.workspace   = true
+homepage.workspace     = true
+documentation          = "https://docs.rs/a2a-protocol-types"
+keywords               = ["a2a", "agent2agent", "agent", "protocol", "types"]
+categories             = ["api-bindings"]
+
+[features]
+## Enable agent card signing (JWS, RFC 8785 canonicalization).
+signing = ["dep:base64", "dep:ring"]
+## Enable the canonical A2A protobuf message types (`lf.a2a.v1`, prost-generated)
+## and lossless conversions to/from the serde domain types. Wire-compatible with
+## the official Go/Python/Java A2A SDKs. Pure data — still no I/O; the gRPC
+## transports in the server/client crates build their service bindings on top.
+proto = [
+    "dep:prost",
+    "dep:prost-types",
+    "dep:base64",
+    "dep:time",
+    "dep:prost-build",
+    "dep:protoc-bin-vendored",
+]
+
+[dependencies]
+serde       = { workspace = true }
+serde_json  = { workspace = true }
+base64      = { version = "0.22", optional = true }
+ring        = { version = "0.17", optional = true }
+prost       = { workspace = true, optional = true }
+prost-types = { workspace = true, optional = true }
+time        = { workspace = true, optional = true }
+
+[build-dependencies]
+prost-build         = { workspace = true, optional = true }
+protoc-bin-vendored = { workspace = true, optional = true }
+
+[package.metadata.docs.rs]
+all-features = true
+rustdoc-args = ["--cfg", "docsrs"]
+
+[dev-dependencies]
+proptest  = "1"
+criterion = { workspace = true }
+ring      = "0.17"
+base64    = "0.22"
+
+[[bench]]
+name = "json_serde"
+harness = false

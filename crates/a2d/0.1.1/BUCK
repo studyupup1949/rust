@@ -1,0 +1,17 @@
+load("@buckal//:wrapper.bzl", "rust_library")
+
+rust_library(
+    name = "a2d",
+    srcs = glob(["**/*.rs"]),
+    crate = "a2d",
+    crate_root = "src/lib.rs",
+    edition = "2018",
+
+    visibility = ["PUBLIC"],
+    deps = [
+        "//third-party/rust/crates/bytemuck/1.25.2:bytemuck",
+        "//third-party/rust/crates/image/0.23.14:image",
+        "//third-party/rust/crates/wgpu/0.5.2:wgpu",
+        "//third-party/rust/crates/winit/0.22.2:winit",
+    ],
+)

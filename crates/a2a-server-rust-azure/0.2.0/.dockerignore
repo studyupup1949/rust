@@ -1,0 +1,17 @@
+target/
+.git
+.gitignore
+__pycache__
+*.pyc
+.pytest_cache
+.venv
+venv
+*.log
+README.md
+requirements*.txt
+test_*.py
+Makefile
+GEMINI.md
+.gemini
+.aws_creds
+save-aws-creds.sh

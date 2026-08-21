@@ -1,0 +1,62 @@
+[package]
+name = "a2ui"
+version = "0.1.2"
+edition = "2024"
+authors = ["Liangdi <wu@liangdi.me>"]
+description = "A TUI component library built on top of ratatui"
+license = "MIT"
+repository = "https://github.com/Liangdi/a2ui"
+
+[features]
+default = []
+# Real audio playback via rodio.
+# OFF by default: pulls in `rodio` and requires the ALSA system dev library
+# (`alsa-lib-devel` on Fedora / `libasound2-dev` on Debian).
+# Limitation: plays LOCAL file paths only (no HTTP fetch); playback runs on a
+# background thread and silently falls back to the placeholder on any failure.
+audio = ["dep:rodio"]
+
+[dependencies]
+ratatui = "0.30.1"
+crossterm = "0.29"
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+thiserror = "2"
+chrono = "0.4"
+uuid = { version = "1", features = ["v4"] }
+regex = "1"
+unicode-width = "0.2"
+ratatui-image = "11"
+image = "0.25"
+# Embed the A2UI specification tree into the binary at compile time so the
+# gallery is self-contained and distributable (no on-disk spec dir needed).
+include_dir = "0.7"
+rodio = { version = "0.22", optional = true }
+
+# The audio example is only built when its feature is enabled, so the default
+# `cargo build`/`cargo test` is unaffected. 13_image builds by default (image
+# rendering is always available). Run with, e.g.:
+#   cargo run --example 13_image
+[[example]]
+name = "13_image"
+
+[[example]]
+name = "14_audio"
+required-features = ["audio"]
+
+# --- Release profile: optimize for binary size --------------------------------
+# The gallery embeds the full spec tree, so we trim the distributed binary.
+# `cargo build --release` applies these. Trade slower compile for a smaller,
+# self-contained executable.
+[profile.release]
+# "z" optimizes purely for size (smaller than "s", which keeps some speed).
+opt-level = "z"
+# Whole-program link-time optimization: eliminates dead code across crates.
+lto = true
+# One codegen unit → more inlining/dead-code elimination (slower compile).
+codegen-units = 1
+# Abort instead of unwind on panic: drops unwinding machinery. NOTE: panics no
+# longer unwind, so Drop destructors don't run during a panic.
+panic = "abort"
+# Strip debug symbols from the binary.
+strip = true

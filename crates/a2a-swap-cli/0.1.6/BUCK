@@ -1,0 +1,21 @@
+load("@buckal//:wrapper.bzl", "rust_binary")
+
+rust_binary(
+    name = "a2a_swap",
+    srcs = glob(["**/*.rs"]),
+    crate = "a2a_swap",
+    crate_root = "src/main.rs",
+    edition = "2021",
+
+    visibility = ["PUBLIC"],
+    deps = [
+        "//third-party/rust/crates/anyhow/1.0.104:anyhow",
+        "//third-party/rust/crates/clap/4.6.6:clap",
+        "//third-party/rust/crates/serde/1.0.229:serde",
+        "//third-party/rust/crates/serde_json/1.0.151:serde_json",
+        "//third-party/rust/crates/solana-account-decoder-client-types/2.3.13:solana_account_decoder_client_types",
+        "//third-party/rust/crates/solana-client/2.3.13:solana_client",
+        "//third-party/rust/crates/solana-sdk/2.3.1:solana_sdk",
+        "//third-party/rust/crates/tokio/1.53.1:tokio",
+    ],
+)

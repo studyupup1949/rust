@@ -1,0 +1,15 @@
+load("@buckal//:wrapper.bzl", "rust_library")
+
+rust_library(
+    name = "a2ui_protocol",
+    srcs = glob(["**/*.rs"]),
+    crate = "a2ui_protocol",
+    crate_root = "src/lib.rs",
+    edition = "2021",
+
+    visibility = ["PUBLIC"],
+    deps = [
+        "//third-party/rust/crates/bincode/1.3.3:bincode",
+        "//third-party/rust/crates/serde/1.0.229:serde",
+    ],
+)

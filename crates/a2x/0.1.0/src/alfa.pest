@@ -1,0 +1,445 @@
+//  SPDX-FileCopyrightText: 2025 Greg Heartsfield <scsibug@imap.cc>
+//  SPDX-License-Identifier: GPL-3.0-or-later
+
+/** ALFA Documents **/
+// Alfa documents are a collection of namespaces.
+alfa_doc = {SOI ~ COMMENT* ~ namespace* ~ COMMENT* ~ EOI}
+
+/** Namespace Declarations **/
+namespace = {
+    "namespace" ~ ns_identifier ~ "{" ~ alfa_statement* ~ "}"
+}
+
+/** Namespace Identifiers **/
+// Namespace identifier, that allows fully qualified names.
+// Numbers are allowed, but not as leading namespaces.
+// Ex: foo.bar.b4z
+ns_identifier = ${ ns_component ~ ("." ~ ns_component)* }
+ns_component = ${ (ASCII_ALPHA | "_") ~ (ASCII_ALPHANUMERIC | "_")* }
+
+/** ALFA Statements **/
+alfa_statement = {
+    namespace
+  | import_decl
+  | policyset_decl
+  | policy_decl
+  | advice_decl
+  | obligation_decl
+  | infix_decl
+  | type_decl
+  | cat_decl
+  | rule_combinator_decl
+  | policy_combinator_decl
+//  | infix_arg_decl // this shouldn't be here, right?
+  | function_decl
+  | rule_decl
+  | attribute_decl}
+
+/** Import Statements **/
+// Ex: import foo.bar
+// Ex: import foo.bar.*
+// Ex: import foo.bar.++
+import_decl = { "import" ~ import_identifier }
+// Import identifiers are similar to the ns_identifier rule, but they
+// can end with ".*", and the final component is allowed to be an
+// infix operator.
+import_identifier = ${ ns_component ~ ("." ~ ns_component)* ~ (import_wildcard | "." ~ infix_import)? }
+// Prevent partial capture of "**" operators as wildcards.
+// There is ambiguity for importing operators named "*" (see
+// https://github.com/davidjbrossard/alfa-authorization-language/issues/20)
+import_wildcard = @{ ".*" ~ !operator_char}
+infix_import = @{ operator_name+  }
+
+/** Operator Names **/
+// From ALFA 1.0-WD01 spec: The name of the operator must consist of
+// the following characters: ‘*’, ‘/’, ‘%’, ‘+’, ‘@’, ‘^’, ‘=’, ‘<’,
+// ‘>’, ‘&’, ‘$’, ‘_’, ‘|’. In addition, the operator name may begin
+// with the minus sign ‘-‘, but the minus sign may not appear anywhere
+// else.
+// Ex: ++
+ // Ex: -@
+// Ex: +++
+operator_name = @{
+    ("-"? ~ operator_char+ | "-")
+}
+// Valid operator characters (excluding the minus sign)
+operator_char = {
+    "*" | "/" | "%" | "+" | "@" | "^" | "=" | "<" | ">" | "&" | "$" | "_" | "|"
+}
+
+/** PolicySet Declarations **/
+// PolicySets may be bare, named, or named+ID.
+policyset_decl = {
+    "policyset"
+    ~ (policy_with_id | policy_with_name | policy_empty)
+    ~ "{" ~ policyset_stmt+ ~ "}"
+}
+
+/** Policy Statements **/
+policyset_stmt = {
+    apply_stmt
+  | target_stmt
+  | condition_stmt
+  | policy_decl
+  | on_effect
+  | policyset_decl
+  | policy_reference
+}
+
+// Within a policyset, a policy or policyset can be referenced.
+policy_reference = {ns_identifier}
+
+/** Policy Declarations **/
+// Policies may be bare/unidentified; have a name, or have a name and
+// an ID.  Inside braces, there are arbitrary policy statements.
+policy_decl = {
+    "policy"
+    ~ (policy_with_id | policy_with_name | policy_empty)
+    ~ "{" ~ policy_stmt+ ~ "}"
+}
+// Ways of identifying policies:
+policy_empty = {""} // empty
+policy_with_name = {identifier } // named
+policy_with_id = { identifier ~ "=" ~ string_literal } // named with a URI
+
+/** Identifiers for Definitions **/
+// Identifiers that cannot have namespaces/qualifiers.
+// These are typically used in places where a new symbol is being
+// defined (not referenced).
+// Ex: foobar
+// Ex: foo1_bar_baz
+identifier = @{ ASCII_ALPHA ~ (ASCII_ALPHANUMERIC | "_")* }
+
+/** Policy Statements **/
+policy_stmt = {
+    apply_stmt
+  | target_stmt
+  | condition_stmt
+  | on_effect
+  | rule_decl
+  | rule_reference
+}
+
+// Within a policy, a rule can be referenced, bare.
+rule_reference = {ns_identifier}
+
+/** Apply Statements **/
+// This references a policy combining algorithm.
+// Ex: apply xacml10.denyUnlessPermit
+apply_stmt = { "apply" ~ apply_identifier }
+apply_identifier = @{ apply_component ~ ("." ~ apply_component)* }
+apply_component = @{ (ASCII_ALPHA | "_") ~ (ASCII_ALPHANUMERIC | "_")* }
+
+/** Target Declarations **/
+target_stmt = { "target" ~ target_clauses* }
+
+/** Target Clauses **/
+// Clauses consist of disjunctions that are prefixed with the string
+// "clause", and implicitly AND'd together.
+target_clauses = _{"clause" ~ target_disjunction+}
+// Disjunctions are formed of conjuctions, which are explicitly OR'd together.
+target_disjunction = { target_conjunction ~ ("or" ~ target_conjunction)* }
+// finally, we combine individual match statements with AND operators.
+target_conjunction = { target_match ~ ("and" ~ target_match)*}
+// Individual target match statements may be through operators or functions.
+target_match = _{
+    target_match_op
+  | target_match_rev_op
+  | target_match_func
+}
+// function application in a target
+target_match_func = {
+    elem_identifier
+    ~ "("
+    ~ literal
+    ~ ","
+    ~ attribute_designator
+    ~ ")"
+}
+// functions applied through infix operators in a target (literal `op` attribute)
+target_match_op = {
+    literal
+    ~ operator_identifier
+    ~ attribute_designator
+}
+// reversed where we have (attribute `op` literal), which is backwards from XACML.
+target_match_rev_op = {
+    attribute_designator
+    ~ operator_identifier
+    ~ literal
+}
+
+/** Operator Identifiers **/
+// An operator identifier is an optional operator namespace, plus
+// operator name.
+// Ex: foo.bar.==
+operator_identifier = @{ (operator_namespace ~ ".")? ~ operator_name }
+operator_namespace = @{ operator_component ~ ("." ~ operator_component)* }
+operator_component = @{ (ASCII_ALPHA | "_") ~ (ASCII_ALPHANUMERIC | "_")* }
+
+/** Element Identifiers **/
+// Identifier for an element, whether it be a rule, policy, function,
+// attribute, etc.
+// These can contain namespace elements.
+// Ex: foo.bar2_baz
+elem_identifier = @{ elem_component ~ ("." ~ elem_component)* }
+elem_component = @{ (ASCII_ALPHA | "_") ~ (ASCII_ALPHANUMERIC | "_")* }
+
+/** Advice Declarations **/
+advice_decl = {
+  "advice" ~ identifier ~ "=" ~ string_literal
+}
+
+/** Obligation Declarations **/
+obligation_decl = {
+  "obligation" ~ identifier ~ "=" ~ string_literal
+}
+
+/** Infix Declaration **/
+// Note: this allows repetitive infix modifiers (commutative/allowbags
+// options), which needs to be validated after PEG parsing.
+
+// It turns out that others fix the order to be "allowbags comm", and
+// don't allow "comm allowbags"!
+
+// Ex:  infix allowbags comm (==) = {
+//        "urn:oasis:names:tc:xacml:1.0:function:string-equal" : string string -> boolean
+//        "urn:oasis:names:tc:xacml:1.0:function:integer-equal" : integer integer -> boolean
+//      }
+infix_decl = {
+    "infix"
+    ~ infix_modifier*
+    ~ "(" ~ operator_name ~ ")"
+    ~ "="
+    ~ "{" ~ infix_arg_decl+ ~ "}"
+    ~ infix_inverse?
+}
+
+// Infix args must have two inputs, and one output.
+infix_arg_decl = {
+    string_literal
+    ~ ":" ~ identifier ~ identifier ~ "->" ~ identifier
+}
+
+// Operator declaration modifiers
+infix_modifier = { comm_modifier | allowbags_modifier}
+comm_modifier = { "comm" }
+allowbags_modifier = { "allowbags" }
+
+// the name defined here can have a namespace
+infix_inverse = { "inv" ~ operator_identifier }
+
+/** Type Declarations **/
+// Ex: type string = "http://www.w3.org/2001/XMLSchema#string"
+type_decl = { "type" ~ identifier ~ "=" ~ string_literal }
+
+/** Category Declarations **/
+// Ex: category subjectCat =
+//     "urn:oasis:names:tc:xacml:1.0:subject-category:access-subject"
+cat_decl = { "category" ~ identifier ~ "=" ~ string_literal }
+
+/** Rule Combinators **/
+// Ex: ruleCombinator firstApplicable =
+//       "urn:oasis:names:tc:xacml:1.0:rule-combining-algorithm:first-applicable"
+rule_combinator_decl = {
+    "ruleCombinator" ~ identifier ~ "=" ~ string_literal
+}
+
+/** Policy Combinators **/
+// Ex: policyCombinator firstApplicable =
+//   "urn:oasis:names:tc:xacml:1.0:policy-combining-algorithm:first-applicable"
+policy_combinator_decl = {
+    "policyCombinator" ~ identifier ~ "=" ~ string_literal
+}
+
+/** Function Declarations **/
+// Declare a function identifier with type information.
+// Ex: function simple = "urn:simple" : string string -> boolean
+// Ex: function simple = "urn:simple" : string string* -> boolean
+// Ex: function simple = "urn:simple" : string* -> boolean
+function_decl = {"function" ~ function_name ~ "="
+    ~ string_literal ~ ":" ~ function_args ~ "->" ~ func_out}
+// flat identifier for declaration.
+function_name = @{ identifier }
+// Function arguments (zero to many), ending with an optional wildcard
+// argument.
+function_args = { (func_arg+ ~ wildcard_arg?) | (wildcard_arg) }
+// function args that are not wildcards
+func_arg = {func_identifier ~ !"*"}
+// various types of function argument identifiers
+func_identifier = !{
+    func_atomicorbag
+  | func_bag_anyatomic
+  | func_anyatomic
+  | func_fn
+  | func_bag_ident
+  | ns_identifier
+}
+// bags of some type (namespace included)
+func_bag_ident = !{"bag[" ~ ns_identifier ~ "]"}
+// a bag of any atomic type
+func_bag_anyatomic = !{"bag[anyAtomic]"}
+// a function argument
+func_fn = @{"function" ~ !ident_end}
+// any atomic type or a bag
+func_atomicorbag = @{"anyAtomicOrBag" ~ !ident_end}
+// any atomic (but not a bag)
+func_anyatomic = @{"anyAtomic" ~ !ident_end}
+// a wildcard type
+wildcard_arg = {func_identifier ~ "*"}
+// Charaters at the end of an identifier, used as negative assertions.
+ident_end = {ASCII_ALPHANUMERIC | "_" | "." }
+
+// function outputs can be:
+//   identifier (string) or namespaced identifier (foo.string)
+//   bag[identifier]
+//   bag[anyAtomic]
+//   "anyAtomicBag"
+func_out = {
+    func_bag_anyatomic
+  | func_anyatomic
+  | func_bag_ident
+  | ns_identifier
+}
+
+/** Rule Declarations **/
+// Anonymous or named rules can appear in or outside a policy.
+// Named rules can appear internal or external to a policy.
+// statements appear inside a policy.
+rule_decl = {"rule" ~ identifier? ~ "{" ~ rule_stmt+ ~ "}" }
+rule_stmt = _{ effect_stmt | target_stmt | condition_stmt | on_effect }
+effect_stmt = _{ effect_permit | effect_deny }
+effect_permit = {"permit"}
+effect_deny = {"deny"}
+
+/** Obligation / Advice **/
+on_effect = {"on" ~ effect_stmt ~ "{" ~ apply_prescription* ~ "}" }
+
+/** Condition Declaration **/
+condition_stmt = {"condition" ~ cond_expr }
+
+/** Condition Expressions **/
+// An expression is either a single atom, or a atoms combined with
+// operators.
+// Ex: "single literal"
+// Ex: 3 + 4 + 5
+// Ex: (3+4) / (1-(2))
+// Ex: fnName(function[f], "arg", 3) && true
+cond_expr = { cond_atom ~ (operator_identifier ~ cond_atom)* }
+// an atom is a single top-level item (no operators/precedence)
+cond_atom = {
+   cond_function_call
+  | "(" ~ cond_expr ~ ")"
+  | literal
+  | cond_function_ref
+  | attribute_designator
+}
+
+// reference a function by name
+cond_function_ref = { "function[" ~ elem_identifier ~ "]" }
+// apply a function to arguments
+cond_function_call = {
+    elem_identifier ~ "(" ~ cond_argument_list? ~ ")"
+}
+// arguments to a function
+cond_argument_list = {
+    cond_expr ~ ("," ~ cond_expr)*
+}
+
+/** Advice and Obligations **/
+// using the term "prescription" as a generic term to encompass advice and obligations.
+apply_prescription = { apply_advice | apply_obligation }
+// TODO: implement all the attribute definition stuff for advice & obligations.
+apply_advice = {"advice" ~ identifier ~ ("{" ~ prescription_assignment* ~ "}")?}
+apply_obligation = {"obligation" ~ identifier ~ ("{"  ~ prescription_assignment* ~ "}")?}
+
+// prescription_assignment
+prescription_assignment = { elem_identifier ~ "=" ~ (literal | attribute_designator) }
+
+/** Attribute Declarations **/
+// The PEG parser requires 3 instances of attribute id/type/category
+// assertions, but since the order is not fixed, we can't enforce one
+// of each.  Instead we check this after PEG parsing.
+attribute_decl = {
+    "attribute" ~ identifier
+    ~ "{"
+    ~ (attr_id_assoc | attr_type_assoc | attr_category_assoc){3}
+    ~ "}"
+}
+// Each of id, type, and category must be defined for an attribute.
+attr_id_assoc = {"id" ~ "=" ~ string_literal}
+attr_type_assoc = {"type" ~ "=" ~ elem_identifier}
+attr_category_assoc = {"category" ~ "=" ~ elem_identifier}
+
+/** Attribute Designators **/
+// An attribute designator is a qualified element identifier, with
+// optional attributes (mustbepresent, issuer).  This is used anywhere
+// we need to refer to an attribute, such as in targets, conditions,
+// and obligations/advice.
+// Ex: Subject.Age[mustbepresent issuer="urn:issuer:name"]
+attribute_designator = { elem_identifier ~ attribute_designator_options? }
+// optional settings for an attribute designator
+attribute_designator_options = {"[" ~ mustbepresent? ~ issuer? ~ "]"}
+mustbepresent = { "mustbepresent" }
+issuer = {"issuer" ~ "=" ~ string_literal}
+
+/** Literals **/
+// Any kind of literal value
+literal = _{
+    numeric_literal
+  | boolean_literal
+  | custom_literal
+  | string_literal
+}
+
+/** Numeric Literals **/
+// Ex: 38
+// Ex: 3.14
+// Ex: .99
+// Ex: -42
+
+// Integers and Doubles are detected later in code (if '.' appears).
+numeric_literal = @{ decimal_first_numeric_literal
+  | digit_first_numeric_literal
+}
+// Digit (positive or negative) comes first, then an optional decimal.
+digit_first_numeric_literal = @{"-"? ~ ASCII_DIGIT+
+    ~ ("." ~ ASCII_DIGIT+)?}
+// Decimal (positive or negative) first, then digits.
+decimal_first_numeric_literal = @{"-"? ~ "." ~ ASCII_DIGIT+}
+
+/** Boolean Literals **/
+// Ex: true
+// Ex: false
+boolean_literal = @{ true | false }
+true = { "true" }
+false = { "false" }
+
+/** Literals with Custom Datatypes **/
+// Ex: "2025-07-10":date
+custom_literal = {string_literal ~ ":" ~ elem_component}
+
+/** String Literals **/
+// Strings can be single or double-quoted, and escaped.
+// Ex: "foo"
+// Ex: "foo\"bar"
+// Ex: 'foo'
+// Ex: 'foo"foo'
+string_literal = ${ double_string_literal | single_string_literal }
+double_string_literal = ${ "\"" ~ double_string_content ~ "\"" }
+double_string_content = ${ (double_escaped_quote | (!("\"") ~ ANY))* }
+double_escaped_quote = ${ "\\" ~ "\"" }
+
+single_string_literal = ${ "'" ~ single_string_content ~ "'" }
+single_string_content = ${ (single_escaped_quote | (!("'") ~ ANY))* }
+single_escaped_quote = ${ "\\" ~ "'" }
+
+/**  Whitespace and Comment Rules **/
+// These have to be fairly explicit because in some places, comments
+// are copied into the XACML output as descriptions.
+WHITESPACE = _{ " " | "\t" | "\n" | "\r" }
+COMMENT = { (SINGLE_LINE_COMMENT | MULTI_LINE_COMMENT) ~ EOI?}
+SINGLE_LINE_COMMENT = { "//" ~ COMMENT_TEXT ~ (NEWLINE|EOI) }
+COMMENT_TEXT = { (!NEWLINE ~ ANY)* }
+MULTI_LINE_COMMENT = { "/*" ~ ML_COMMENT_TEXT ~ "*/"}
+ML_COMMENT_TEXT = {(!"*/" ~ ANY)*}

@@ -1,0 +1,8 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+echo "[pre-push] cargo test --no-default-features"
+cargo test --no-default-features
+
+echo "[pre-push] cargo test --all-features"
+cargo test --all-features

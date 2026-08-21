@@ -1,0 +1,42 @@
+[package]
+name = "a2"
+version = "0.7.1"
+authors = [
+  "Harry Bairstow <harry@walletconnect.com>",
+  "Julius de Bruijn <julius@nauk.io>",
+  "Sergey Tkachenko <seriy.tkachenko@gmail.com>",
+]
+license = "MIT"
+readme  = "README.md"
+description = "A native, asynchronous Apple push notification client"
+keywords    = ["apns", "apple", "push", "async", "http2"]
+repository  = "https://github.com/walletconnect/a2.git"
+homepage    = "https://github.com/walletconnect/a2"
+documentation = "https://docs.rs/a2"
+edition = "2021"
+rust-version = "1.60"  # set the minimum rust version we can work with.
+
+[features]
+default = ["openssl"]
+tracing = ["dep:tracing"]
+ring = ["dep:ring", "pem"]
+
+[dependencies]
+serde = { version = "1", features = ["derive"] }
+erased-serde = "0.3"
+serde_json = "1"
+thiserror = "1"
+openssl = { version = "0.10", optional = true }
+hyper = { version = "0.14", default-features = false, features = ["client", "http2"] }
+hyper-alpn = "0.4"
+http = "0.2"
+base64 = "0.20"
+tracing = { version = "0.1", optional = true }
+pem = { version = "1.0", optional = true }
+ring = { version = "0.16", features = ["std"], optional = true }
+
+[dev-dependencies]
+argparse = "0.2"
+tracing-subscriber = "0.3"
+tokio = { version = "1", features = ["rt-multi-thread", "macros"] }
+hyper = { version = "0.14", features = ["client", "http2", "tcp"] }

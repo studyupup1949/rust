@@ -1,0 +1,16 @@
+load("@buckal//:wrapper.bzl", "rust_library")
+
+rust_library(
+    name = "a2a_protocol_sdk",
+    srcs = glob(["**/*.rs"]),
+    crate = "a2a_protocol_sdk",
+    crate_root = "src/lib.rs",
+    edition = "2021",
+
+    visibility = ["PUBLIC"],
+    deps = [
+        "//third-party/rust/crates/a2a-protocol-client/0.4.1:a2a_protocol_client",
+        "//third-party/rust/crates/a2a-protocol-server/0.4.1:a2a_protocol_server",
+        "//third-party/rust/crates/a2a-protocol-types/0.4.1:a2a_protocol_types",
+    ],
+)

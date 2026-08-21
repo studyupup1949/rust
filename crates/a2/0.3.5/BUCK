@@ -1,0 +1,32 @@
+load("@buckal//:wrapper.bzl", "rust_library")
+
+rust_library(
+    name = "a2",
+    srcs = glob(["**/*.rs"]),
+    crate = "a2",
+    crate_root = "src/lib.rs",
+    edition = "2015",
+
+    visibility = ["PUBLIC"],
+    deps = [
+        "//third-party/rust/crates/base64/0.9.3:base64",
+        "//third-party/rust/crates/chrono/0.4.45:chrono",
+        "//third-party/rust/crates/crossbeam/0.3.2:crossbeam",
+        "//third-party/rust/crates/erased-serde/0.3.31:erased_serde",
+        "//third-party/rust/crates/futures/0.1.31:futures",
+        "//third-party/rust/crates/http/0.1.21:http",
+        "//third-party/rust/crates/hyper-alpn/0.1.5:hyper_alpn",
+        "//third-party/rust/crates/hyper/0.12.36:hyper",
+        "//third-party/rust/crates/indoc/0.2.8:indoc",
+        "//third-party/rust/crates/log/0.4.33:log",
+        "//third-party/rust/crates/openssl/0.10.81:openssl",
+        "//third-party/rust/crates/pretty_env_logger/0.2.5:pretty_env_logger",
+        "//third-party/rust/crates/serde/1.0.229:serde",
+        "//third-party/rust/crates/serde_derive/1.0.229:serde_derive",
+        "//third-party/rust/crates/serde_json/1.0.151:serde_json",
+        "//third-party/rust/crates/time/0.1.45:time",
+        "//third-party/rust/crates/tokio-io/0.1.13:tokio_io",
+        "//third-party/rust/crates/tokio-timer/0.1.2:tokio_timer",
+        "//third-party/rust/crates/tokio/0.1.22:tokio",
+    ],
+)

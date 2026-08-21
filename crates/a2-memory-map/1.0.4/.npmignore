@@ -1,0 +1,8 @@
+test
+examples
+script
+.github
+.gitattributes
+target
+*.wasm
+*.tgz

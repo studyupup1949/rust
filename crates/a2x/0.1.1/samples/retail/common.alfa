@@ -1,0 +1,20 @@
+// Reusable policies and rules
+namespace common {
+
+  /* Rule that always applies, and denies. */
+  rule deny {
+    deny
+  }
+
+  /* Rule that always applies, and permits. */
+  rule permit {
+    permit
+  }
+
+  /* Policy that always applies, and denies. */
+  policy deny {
+    apply firstApplicable
+    // references rule above
+    deny
+  }
+}

@@ -1,0 +1,16 @@
+load("@buckal//:wrapper.bzl", "rust_library")
+
+rust_library(
+    name = "a2lmacros",
+    srcs = glob(["**/*.rs"]),
+    crate = "a2lmacros",
+    crate_root = "src/lib.rs",
+    edition = "2024",
+    proc_macro = True,
+
+    visibility = ["PUBLIC"],
+    deps = [
+        "//third-party/rust/crates/proc-macro2/1.0.107:proc_macro2",
+        "//third-party/rust/crates/quote/1.0.47:quote",
+    ],
+)

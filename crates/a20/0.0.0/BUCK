@@ -1,0 +1,11 @@
+load("@buckal//:wrapper.bzl", "rust_binary")
+
+rust_binary(
+    name = "a20",
+    srcs = glob(["**/*.rs"]),
+    crate = "a20",
+    crate_root = "src/main.rs",
+    edition = "2015",
+
+    visibility = ["PUBLIC"],
+)

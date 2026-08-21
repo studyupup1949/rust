@@ -1,0 +1,24 @@
+load("@buckal//:wrapper.bzl", "rust_library")
+
+rust_library(
+    name = "a2ui_gallery",
+    srcs = glob(["**/*.rs"]),
+    crate = "a2ui_gallery",
+    crate_root = "src/lib.rs",
+    edition = "2024",
+
+    visibility = ["PUBLIC"],
+    deps = [
+        "//third-party/rust/crates/a2ui-base/0.3.1:a2ui_base",
+        "//third-party/rust/crates/a2ui-tui/0.3.1:a2ui_tui",
+        "//third-party/rust/crates/crossterm/0.29.0:crossterm",
+        "//third-party/rust/crates/dirs/6.0.0:dirs",
+        "//third-party/rust/crates/include_dir/0.7.4:include_dir",
+        "//third-party/rust/crates/ratatui-sci-fi/0.1.2:ratatui_sci_fi",
+        "//third-party/rust/crates/ratatui/0.30.2:ratatui",
+        "//third-party/rust/crates/serde/1.0.229:serde",
+        "//third-party/rust/crates/serde_json/1.0.151:serde_json",
+        "//third-party/rust/crates/toml/0.8.23:toml",
+        "//third-party/rust/crates/uuid/1.24.0:uuid",
+    ],
+)

@@ -1,0 +1,8 @@
+[package]
+name = "a2a-sdk"
+version = "0.1.0"
+edition = "2024"
+description = "Unofficial Google A2A SDK"
+license = "MIT"
+
+[dependencies]

@@ -1,0 +1,19 @@
+load("@buckal//:wrapper.bzl", "rust_library")
+
+rust_library(
+    name = "a2a_ap2",
+    srcs = glob(["**/*.rs"]),
+    crate = "a2a_ap2",
+    crate_root = "src/lib.rs",
+    edition = "2024",
+
+    visibility = ["PUBLIC"],
+    deps = [
+        "//third-party/rust/crates/a2a-rs/0.5.0:a2a_rs",
+        "//third-party/rust/crates/buffa-types/0.3.0:buffa_types",
+        "//third-party/rust/crates/buffa/0.3.0:buffa",
+        "//third-party/rust/crates/serde/1.0.229:serde",
+        "//third-party/rust/crates/serde_json/1.0.151:serde_json",
+        "//third-party/rust/crates/thiserror/2.0.20:thiserror",
+    ],
+)

@@ -1,0 +1,23 @@
+load("@buckal//:wrapper.bzl", "rust_library")
+
+rust_library(
+    name = "a2f",
+    srcs = glob(["**/*.rs"]),
+    crate = "a2f",
+    crate_root = "src/lib.rs",
+    edition = "2021",
+    features = ["default"],
+
+    visibility = ["PUBLIC"],
+    deps = [
+        "//third-party/rust/crates/aes-gcm/0.10.3:aes_gcm",
+        "//third-party/rust/crates/bincode/1.3.3:bincode",
+        "//third-party/rust/crates/chacha20poly1305/0.10.1:chacha20poly1305",
+        "//third-party/rust/crates/hkdf/0.12.4:hkdf",
+        "//third-party/rust/crates/log/0.4.33:log",
+        "//third-party/rust/crates/rand/0.8.7:rand",
+        "//third-party/rust/crates/serde/1.0.229:serde",
+        "//third-party/rust/crates/sha2/0.10.9:sha2",
+        "//third-party/rust/crates/thiserror/1.0.69:thiserror",
+    ],
+)

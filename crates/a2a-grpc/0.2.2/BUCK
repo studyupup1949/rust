@@ -1,0 +1,26 @@
+load("@buckal//:wrapper.bzl", "rust_library")
+
+rust_library(
+    name = "a2a_grpc",
+    srcs = glob(["**/*.rs"]),
+    crate = "a2a_grpc",
+    crate_root = "src/lib.rs",
+    edition = "2024",
+    features = ["default"],
+
+    visibility = ["PUBLIC"],
+    deps = [
+        "//third-party/rust/crates/a2a-client-lf/0.1.17:a2a_client_lf",
+        "//third-party/rust/crates/a2a-lf/0.3.0:a2a_lf",
+        "//third-party/rust/crates/a2a-pb/0.1.8:a2a_pb",
+        "//third-party/rust/crates/a2a-server-lf/0.3.1:a2a_server_lf",
+        "//third-party/rust/crates/async-trait/0.1.92:async_trait",
+        "//third-party/rust/crates/futures/0.3.34:futures",
+        "//third-party/rust/crates/http/1.5.0:http",
+        "//third-party/rust/crates/prost/0.14.4:prost",
+        "//third-party/rust/crates/tokio-stream/0.1.19:tokio_stream",
+        "//third-party/rust/crates/tokio/1.53.1:tokio",
+        "//third-party/rust/crates/tonic/0.14.6:tonic",
+        "//third-party/rust/crates/tracing/0.1.44:tracing",
+    ],
+)

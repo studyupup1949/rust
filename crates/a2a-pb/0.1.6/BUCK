@@ -1,0 +1,22 @@
+load("@buckal//:wrapper.bzl", "rust_library")
+
+rust_library(
+    name = "a2a_pb",
+    srcs = glob(["**/*.rs"]),
+    crate = "a2a_pb",
+    crate_root = "src/lib.rs",
+    edition = "2024",
+
+    visibility = ["PUBLIC"],
+    deps = [
+        "//third-party/rust/crates/a2a-lf/0.2.4:a2a_lf",
+        "//third-party/rust/crates/chrono/0.4.45:chrono",
+        "//third-party/rust/crates/pbjson-types/0.7.0:pbjson_types",
+        "//third-party/rust/crates/pbjson/0.7.0:pbjson",
+        "//third-party/rust/crates/prost-types/0.13.5:prost_types",
+        "//third-party/rust/crates/prost/0.13.5:prost",
+        "//third-party/rust/crates/serde/1.0.229:serde",
+        "//third-party/rust/crates/serde_json/1.0.151:serde_json",
+        "//third-party/rust/crates/tonic/0.13.1:tonic",
+    ],
+)

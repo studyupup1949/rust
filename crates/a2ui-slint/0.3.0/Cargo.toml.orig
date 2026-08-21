@@ -1,0 +1,62 @@
+[package]
+name = "a2ui-slint"
+version.workspace = true
+edition.workspace = true
+authors.workspace = true
+license.workspace = true
+repository.workspace = true
+description = "Slint native-GUI backend for A2UI (Agent to UI)"
+build = "build.rs"
+
+[features]
+default = []
+# Pull in the real Slint runtime + compiler. OFF by default so the workspace's
+# default build stays light (Slint brings a sizeable toolchain and, for windowed
+# rendering, system GUI libs). Enable with `--features backend`.
+#
+# `slint/backend-winit` + `slint/renderer-software`: a windowed backend that
+# works on any display without OpenGL drivers (CPU rasterization). Swap in
+# `slint/renderer-femtovg` later if GPU acceleration is wanted.
+backend = [
+    "dep:slint",
+    "dep:slint-build",
+    "dep:image",
+    "dep:ureq",
+    "slint/backend-winit",
+    "slint/renderer-software",
+]
+
+[dependencies]
+a2ui-base = { workspace = true }
+serde_json = { workspace = true }
+# Optional: the Slint runtime. `default-features = false` + `std` keeps the
+# surface minimal (core types: SharedString, Model, generated components). A
+# windowing backend/renderer is selected by the consumer (gallery) when launching.
+slint = { workspace = true, optional = true }
+# Optional: PNG/JPEG/… decoding for real `Image` rendering (local file paths),
+# mirroring the tui/iced backends. Gated on `backend`.
+image = { workspace = true, optional = true }
+# Optional: sync HTTP client for fetching remote `Image` URLs (the gallery
+# samples reference `https://` images), mirroring the iced backend. Gated on
+# `backend`.
+ureq = { workspace = true, optional = true }
+
+[build-dependencies]
+# Compiles the `.slint` UI files (in `ui/`) into a Rust module consumed by
+# `slint::include_modules!()` in `src/ui.rs`.
+slint-build = { workspace = true, optional = true }
+
+[dev-dependencies]
+# Examples read live values out of the data model and render them with Slint
+# elements directly (NOT via the a2ui-slint reconciler / `live_tree` — the layout
+# *is* an inline `slint!` component; only the data flows through the protocol).
+# `a2ui-tui` provides `build_basic_catalog`; `slint` is the optional runtime dep
+# made available to examples via the `backend` feature (its windowing + software
+# renderer features ride on the crate's `backend` feature when it is enabled).
+a2ui-tui = { workspace = true }
+slint = { workspace = true }
+
+[[example]]
+name = "17_scifi_hud"
+# Needs the real Slint runtime (winit + software renderer) to open a window.
+required-features = ["backend"]

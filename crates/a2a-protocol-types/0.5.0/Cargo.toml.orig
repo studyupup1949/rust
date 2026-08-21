@@ -1,0 +1,42 @@
+# SPDX-License-Identifier: Apache-2.0
+# Copyright 2026 Tom F. <tomf@tomtomtech.net> (https://github.com/tomtom215)
+
+[package]
+name        = "a2a-protocol-types"
+version     = "0.5.0"
+description = "A2A protocol v1.0 — pure data types, serde only, no I/O"
+readme      = "README.md"
+
+edition.workspace      = true
+rust-version.workspace = true
+license.workspace      = true
+authors.workspace      = true
+repository.workspace   = true
+homepage.workspace     = true
+documentation          = "https://docs.rs/a2a-protocol-types"
+keywords               = ["a2a", "agent", "protocol", "types"]
+categories             = ["api-bindings"]
+
+[features]
+## Enable agent card signing (JWS, RFC 8785 canonicalization).
+signing = ["dep:base64", "dep:ring"]
+
+[dependencies]
+serde      = { workspace = true }
+serde_json = { workspace = true }
+base64     = { version = "0.22", optional = true }
+ring       = { version = "0.17", optional = true }
+
+[package.metadata.docs.rs]
+all-features = true
+rustdoc-args = ["--cfg", "docsrs"]
+
+[dev-dependencies]
+proptest  = "1"
+criterion = { workspace = true }
+ring      = "0.17"
+base64    = "0.22"
+
+[[bench]]
+name = "json_serde"
+harness = false

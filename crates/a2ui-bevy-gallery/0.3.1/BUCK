@@ -1,0 +1,20 @@
+load("@buckal//:wrapper.bzl", "rust_binary")
+
+rust_binary(
+    name = "a2ui_bevy_gallery",
+    srcs = glob(["**/*.rs"]),
+    crate = "a2ui_bevy_gallery",
+    crate_root = "src/main.rs",
+    edition = "2024",
+
+    visibility = ["PUBLIC"],
+    deps = [
+        "//third-party/rust/crates/a2ui-base/0.3.1:a2ui_base",
+        "//third-party/rust/crates/a2ui-bevy/0.3.1:a2ui_bevy",
+        "//third-party/rust/crates/a2ui-gallery/0.3.1:a2ui_gallery",
+        "//third-party/rust/crates/a2ui-tui/0.3.1:a2ui_tui",
+        "//third-party/rust/crates/bevy/0.18.1:bevy",
+        "//third-party/rust/crates/bevy_ui_text_input/0.7.0:bevy_ui_text_input",
+        "//third-party/rust/crates/serde_json/1.0.151:serde_json",
+    ],
+)

@@ -1,0 +1,9 @@
+[package]
+name = "a20"
+version = "0.0.0"
+authors = ["sudongqi <sudongki@gmail.com>"]
+description = "A20 in rust"
+license = "MIT"
+
+[package.metadata.docs.rs]
+all-features = true

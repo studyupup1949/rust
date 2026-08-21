@@ -1,0 +1,18 @@
+load("@buckal//:wrapper.bzl", "rust_library")
+
+rust_library(
+    name = "a2httpc",
+    srcs = glob(["**/*.rs"]),
+    crate = "a2httpc",
+    crate_root = "src/lib.rs",
+    edition = "2021",
+    features = ["default"],
+
+    visibility = ["PUBLIC"],
+    deps = [
+        "//third-party/rust/crates/base64/0.22.1:base64",
+        "//third-party/rust/crates/http/1.5.0:http",
+        "//third-party/rust/crates/log/0.4.33:log",
+        "//third-party/rust/crates/url/2.5.8:url",
+    ],
+)

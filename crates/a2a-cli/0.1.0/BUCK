@@ -1,0 +1,22 @@
+load("@buckal//:wrapper.bzl", "rust_library")
+
+rust_library(
+    name = "a2acli",
+    srcs = glob(["**/*.rs"]),
+    crate = "a2acli",
+    crate_root = "src/lib.rs",
+    edition = "2024",
+
+    visibility = ["PUBLIC"],
+    deps = [
+        "//third-party/rust/crates/a2a-client-lf/0.1.17:a2a_client_lf",
+        "//third-party/rust/crates/a2a-lf/0.2.4:a2a_lf",
+        "//third-party/rust/crates/clap/4.6.6:clap",
+        "//third-party/rust/crates/futures/0.3.34:futures",
+        "//third-party/rust/crates/reqwest/0.12.28:reqwest",
+        "//third-party/rust/crates/serde/1.0.229:serde",
+        "//third-party/rust/crates/serde_json/1.0.151:serde_json",
+        "//third-party/rust/crates/thiserror/2.0.20:thiserror",
+        "//third-party/rust/crates/tokio/1.53.1:tokio",
+    ],
+)

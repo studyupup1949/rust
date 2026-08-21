@@ -1,0 +1,28 @@
+load("@buckal//:wrapper.bzl", "rust_library")
+
+rust_library(
+    name = "a2a_slimrpc",
+    srcs = glob(["**/*.rs"]),
+    crate = "a2a_slimrpc",
+    crate_root = "src/lib.rs",
+    edition = "2024",
+
+    visibility = ["PUBLIC"],
+    deps = [
+        "//third-party/rust/crates/a2a-client-lf/0.2.1:a2a_client_lf",
+        "//third-party/rust/crates/a2a-lf/0.3.0:a2a_lf",
+        "//third-party/rust/crates/a2a-pb/0.2.0:a2a_pb",
+        "//third-party/rust/crates/a2a-server-lf/0.4.1:a2a_server_lf",
+        "//third-party/rust/crates/agntcy-slim-auth/0.14.6:agntcy_slim_auth",
+        "//third-party/rust/crates/agntcy-slim-datapath/0.18.2:agntcy_slim_datapath",
+        "//third-party/rust/crates/agntcy-slim-rpc/2.0.0:agntcy_slim_rpc",
+        "//third-party/rust/crates/agntcy-slim-service/0.12.6:agntcy_slim_service",
+        "//third-party/rust/crates/async-stream/0.3.6:async_stream",
+        "//third-party/rust/crates/async-trait/0.1.92:async_trait",
+        "//third-party/rust/crates/futures/0.3.34:futures",
+        "//third-party/rust/crates/prost-types/0.14.4:prost_types",
+        "//third-party/rust/crates/prost/0.14.4:prost",
+        "//third-party/rust/crates/serde_json/1.0.151:serde_json",
+        "//third-party/rust/crates/tokio/1.53.1:tokio",
+    ],
+)

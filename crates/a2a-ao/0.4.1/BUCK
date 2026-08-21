@@ -1,0 +1,29 @@
+load("@buckal//:wrapper.bzl", "rust_library")
+
+rust_library(
+    name = "a2a_ao",
+    srcs = glob(["**/*.rs"]),
+    crate = "a2a_ao",
+    crate_root = "src/lib.rs",
+    edition = "2021",
+
+    visibility = ["PUBLIC"],
+    deps = [
+        "//third-party/rust/crates/async-trait/0.1.92:async_trait",
+        "//third-party/rust/crates/base64/0.22.1:base64",
+        "//third-party/rust/crates/chrono/0.4.45:chrono",
+        "//third-party/rust/crates/eventsource-stream/0.2.3:eventsource_stream",
+        "//third-party/rust/crates/futures/0.3.34:futures",
+        "//third-party/rust/crates/pin-project-lite/0.2.17:pin_project_lite",
+        "//third-party/rust/crates/reqwest/0.12.28:reqwest",
+        "//third-party/rust/crates/schemars/0.8.22:schemars",
+        "//third-party/rust/crates/serde/1.0.229:serde",
+        "//third-party/rust/crates/serde_json/1.0.151:serde_json",
+        "//third-party/rust/crates/thiserror/2.0.20:thiserror",
+        "//third-party/rust/crates/tokio-stream/0.1.19:tokio_stream",
+        "//third-party/rust/crates/tokio/1.53.1:tokio",
+        "//third-party/rust/crates/tracing/0.1.44:tracing",
+        "//third-party/rust/crates/url/2.5.8:url",
+        "//third-party/rust/crates/uuid/1.24.0:uuid",
+    ],
+)

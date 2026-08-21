@@ -1,0 +1,108 @@
+// Container for policies, organized primarily around actions.
+namespace main {
+  // import all entities from the attr namespace.
+  import attr.*
+
+  // import entities by name
+  import advice.clerk_assist
+
+  /* Top-level policy to be used for our retail environment */
+  policyset retail = "urn:example:a2x:policy:retail" {
+    apply firstApplicable
+
+    // Policies
+    customerBusinessHours
+    customerAddToCart
+    clerkAddToCart
+    voidTransaction
+    common.deny
+  }
+
+  /* Prevent customers from performing any action outside of business hours */
+  policy customerBusinessHours = "urn:example:a2x:policy:customer-bus-hours" {
+    // Only apply to customers
+    target clause attr.roleId == "customer"
+
+    // We are open 8AM-5PM.
+    // This is an example of a condition defined at the policy level,
+    // something not possible in XACML.  ALFA converts this into a policyset
+    // with child policies and a rule to hold the condition.
+    condition not(timeInRange(timeOneAndOnly(currentTime),
+                              timeOneAndOnly("8:00:00":time),
+                              timeOneAndOnly("17:00:00":time)))
+
+    apply firstApplicable
+
+    // policy reference from a different namespace
+    common.deny
+  }
+
+  /* Allow customers to add items to their own cart. */
+  policy customerAddToCart = "urn:example:a2x:policy:customer-add-to-cart" {
+
+    target clause roleId   == "customer"
+              and actionId == "addToCart"
+              and rType    == "cart"
+
+    apply firstApplicable
+    // Cart must be owned by the user
+    condition subjectId == cartOwner
+    // Age-restricted items can be added with verification.
+    ageRestricted
+    // permit all other carts without obligation
+    common.permit
+  }
+
+  /* Allow clerks to add items to any customer cart. */
+  policy clerkAddToCart = "urn:example:a2x:policy:clerk-add-to-cart" {
+    target clause roleId   == "clerk"
+              and actionId == "addToCart"
+              and rType    == "cart"
+    apply firstApplicable
+    // require verification in some cases
+    ageRestricted
+    // permit all other additions to cart
+    common.permit
+
+    // advice to record the assisting clerk
+    on permit {
+      advice clerk_assist {
+        // clerk's ID
+        subjectId = subjectId
+      }
+    }
+  }
+
+  /* Supervisors may void completed transactions. */
+  policy voidTransaction = "urn:example:a2x:policy:void-transaction" {
+    target clause roleId   == "supervisor"
+              and actionId == "void"
+              and rType    == "transaction"
+    apply firstApplicable
+
+    // allow voiding
+    common.permit
+
+    // record information about the transaction voided.  Obligation
+    // expressions with attribute designators as well as a literal value.
+    on permit {
+      obligation oblig.record_txn_void {
+        currentTime = currentTime
+        subjectId = subjectId
+        transactionId = transactionId
+        voidReasonCode = "supervisor-approved"
+      }
+    }
+  }
+
+  /* Age-restricted items */
+  rule ageRestricted {
+    permit
+    target clause ageRestrictedContents == true
+    on permit {
+      // require a clerk verify customer's age
+      obligation oblig.verify_age {}
+    }
+  }
+
+}

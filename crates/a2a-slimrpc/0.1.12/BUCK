@@ -1,0 +1,22 @@
+load("@buckal//:wrapper.bzl", "rust_library")
+
+rust_library(
+    name = "a2a_slimrpc",
+    srcs = glob(["**/*.rs"]),
+    crate = "a2a_slimrpc",
+    crate_root = "src/lib.rs",
+    edition = "2024",
+
+    visibility = ["PUBLIC"],
+    deps = [
+        "//third-party/rust/crates/a2a-client-lf/0.1.17:a2a_client_lf",
+        "//third-party/rust/crates/a2a-lf/0.3.0:a2a_lf",
+        "//third-party/rust/crates/a2a-pb/0.1.8:a2a_pb",
+        "//third-party/rust/crates/a2a-server-lf/0.3.1:a2a_server_lf",
+        "//third-party/rust/crates/agntcy-slim-bindings/1.4.0:agntcy_slim_bindings",
+        "//third-party/rust/crates/async-trait/0.1.92:async_trait",
+        "//third-party/rust/crates/futures/0.3.34:futures",
+        "//third-party/rust/crates/prost-types/0.14.4:prost_types",
+        "//third-party/rust/crates/prost/0.14.4:prost",
+    ],
+)

@@ -1,0 +1,17 @@
+load("@buckal//:wrapper.bzl", "rust_library")
+
+rust_library(
+    name = "a2x_derive",
+    srcs = glob(["**/*.rs"]),
+    crate = "a2x_derive",
+    crate_root = "src/lib.rs",
+    edition = "2024",
+    proc_macro = True,
+
+    visibility = ["PUBLIC"],
+    deps = [
+        "//third-party/rust/crates/proc-macro2/1.0.107:proc_macro2",
+        "//third-party/rust/crates/quote/1.0.47:quote",
+        "//third-party/rust/crates/syn/2.0.119:syn",
+    ],
+)

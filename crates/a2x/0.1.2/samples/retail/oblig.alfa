@@ -1,0 +1,14 @@
+// Obligations (and Advice)
+
+namespace advice {
+  // Annotate an item in the cart with the clerk that assisted
+  advice clerk_assist = "urn:example:a2x:advice:clerk-assist-annotate"
+}
+
+namespace oblig {
+  // Require a clerk to verify age for item
+  obligation verify_age = "urn:example:a2x:oblig:verify-age"
+
+  // Record transaction voiding details
+  obligation record_txn_void = "urn:example:a2x:oblig:record-txn-void"
+}

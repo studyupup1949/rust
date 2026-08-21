@@ -1,0 +1,150 @@
+[workspace]
+resolver = "2"
+members = [
+    "crates/smcp",
+    "crates/smcp-agent",
+    "crates/smcp-computer",
+    "crates/smcp-server-core",
+    "crates/smcp-server-hyper",
+]
+
+[workspace.package]
+edition = "2021"
+license = "MIT"
+version = "0.1.6"
+
+[package]
+name = "a2c-smcp"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+description = "A2C-SMCP Rust SDK - Agent, Computer, and Server implementation"
+authors = ["A2C Team"]
+repository = "https://github.com/a2c-smcp/rust-sdk"
+homepage = "https://github.com/a2c-smcp/rust-sdk"
+documentation = "https://docs.rs/a2c-smcp"
+readme = "README.md"
+keywords = ["smcp", "agent", "computer", "server", "mcp"]
+categories = ["development-tools", "network-programming"]
+
+[features]
+default = []
+agent = ["dep:smcp-agent"]
+computer = ["dep:smcp-computer"]
+server = ["dep:smcp-server-core", "dep:smcp-server-hyper"]
+full = ["agent", "computer", "server"]
+
+[dependencies]
+# Core protocol types (always included)
+smcp.workspace = true
+
+# Optional components
+smcp-agent = { workspace = true, optional = true }
+smcp-computer = { workspace = true, optional = true }
+smcp-server-core = { workspace = true, optional = true }
+smcp-server-hyper = { workspace = true, optional = true }
+
+# Re-export commonly used dependencies for convenience
+tokio = { workspace = true }
+serde = { workspace = true }
+serde_json = { workspace = true }
+tracing = { workspace = true }
+thiserror = { workspace = true }
+
+[dev-dependencies]
+# Testing utilities
+tokio-test.workspace = true
+tempfile.workspace = true
+rmcp.workspace = true
+tracing-subscriber.workspace = true
+async-trait.workspace = true
+
+# HTTP server dependencies for E2E tests
+hyper.workspace = true
+hyper-util.workspace = true
+tower.workspace = true
+http-body-util.workspace = true
+socketioxide.workspace = true
+
+# Server components for E2E tests
+smcp-server-core.workspace = true
+smcp-server-hyper.workspace = true
+smcp-agent.workspace = true
+smcp-computer.workspace = true
+
+[workspace.dependencies]
+# 核心运行时 / Core runtime
+tokio = { version = "1", features = ["rt-multi-thread", "macros", "time", "net", "sync", "signal", "process"] }
+tokio-util = { version = "0.7", features = ["codec"] }
+
+# 序列化 / Serialization
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+
+# 错误处理 / Error handling
+thiserror = "2"
+
+# 日志追踪 / Logging & tracing
+tracing = "0.1"
+tracing-subscriber = { version = "0.3", features = ["env-filter"] }
+
+# 工具类 / Utilities
+uuid = { version = "1", features = ["v4"] }
+async-trait = "0.1"
+async-recursion = "1.0"
+dashmap = "5.5"
+futures = "0.3"
+futures-util = "0.3"
+regex = "1.10"
+lazy_static = "1.4"
+chrono = { version = "0.4", features = ["serde"] }
+url = "2.5"
+
+# Socket.IO / Socket.IO
+socketioxide = { version = "0.16.3", features = ["state"] }
+tf-rust-socketio = { version = "0.7.0", features = ["async"] }
+
+# HTTP服务器 / HTTP server
+hyper = { version = "1", features = ["server", "http1", "http2", "full"] }
+hyper-util = { version = "0.1", features = ["tokio", "service", "full"] }
+tower = { version = "0.5", features = ["util"] }
+http = "1.0"
+http-body-util = "0.1"
+hyper-tungstenite = "0.17"
+
+# HTTP客户端 / HTTP client
+reqwest = { version = "0.12", features = ["json", "stream"] }
+eventsource-client = "0.13"
+
+# MCP SDK
+rmcp = { version = "0.11.0", features = ["client", "server", "transport-child-process", "transport-io", "server-side-http", "transport-streamable-http-server"] }
+
+# CLI相关 / CLI related
+clap = { version = "4.4", features = ["derive"] }
+crossterm = "0.29.0"
+console = "0.16.1"
+rustyline = { version = "14.0", features = ["derive"] }
+rustyline-derive = "0.10"
+rpassword = "7.2"
+
+# VRL
+vrl = "0.29.0"
+
+# 内部 crate / Internal crates
+smcp = { path = "crates/smcp", version = "0.1.6" }
+smcp-agent = { path = "crates/smcp-agent", version = "0.1.6" }
+smcp-computer = { path = "crates/smcp-computer", version = "0.1.6" }
+smcp-server-core = { path = "crates/smcp-server-core", version = "0.1.6" }
+smcp-server-hyper = { path = "crates/smcp-server-hyper", version = "0.1.6" }
+
+# 测试 / Testing
+tempfile = "3.8"
+tokio-test = "0.4"
+
+[workspace.metadata.release]
+shared-version = "workspace"
+tag-name = "v{{version}}"
+pre-release-commit-message = "chore: release v{{version}}"
+tag-message = "v{{version}}"
+publish = false
+push = true

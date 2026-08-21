@@ -1,0 +1,16 @@
+load("@buckal//:wrapper.bzl", "rust_library")
+
+rust_library(
+    name = "a2ui",
+    srcs = glob(["**/*.rs"]),
+    crate = "a2ui",
+    crate_root = "src/lib.rs",
+    edition = "2024",
+    features = ["default"],
+
+    visibility = ["PUBLIC"],
+    deps = [
+        "//third-party/rust/crates/a2ui-base/0.3.1:a2ui_base",
+        "//third-party/rust/crates/a2ui-tui/0.3.1:a2ui_tui",
+    ],
+)

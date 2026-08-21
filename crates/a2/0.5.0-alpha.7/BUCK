@@ -1,0 +1,23 @@
+load("@buckal//:wrapper.bzl", "rust_library")
+
+rust_library(
+    name = "a2",
+    srcs = glob(["**/*.rs"]),
+    crate = "a2",
+    crate_root = "src/lib.rs",
+    edition = "2018",
+
+    visibility = ["PUBLIC"],
+    deps = [
+        "//third-party/rust/crates/async-std/0.99.12:async_std",
+        "//third-party/rust/crates/base64/0.9.3:base64",
+        "//third-party/rust/crates/erased-serde/0.3.31:erased_serde",
+        "//third-party/rust/crates/http/0.1.21:http",
+        "//third-party/rust/crates/log/0.4.33:log",
+        "//third-party/rust/crates/openssl/0.10.81:openssl",
+        "//third-party/rust/crates/serde/1.0.229:serde",
+        "//third-party/rust/crates/serde_derive/1.0.229:serde_derive",
+        "//third-party/rust/crates/serde_json/1.0.151:serde_json",
+        "//third-party/rust/crates/time/0.1.45:time",
+    ],
+)

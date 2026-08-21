@@ -1,0 +1,19 @@
+[package]
+name = "a2x-derive"
+version = "0.1.0"
+edition = "2024"
+license = "GPL-3.0-or-later"
+homepage = "https://sr.ht/~gheartsfield/a2x/"
+repository = "https://sr.ht/~gheartsfield/a2x/"
+readme = "_README.md"
+description = "a2x's derive macro"
+keywords = ["XACML", "ALFA"]
+categories = ["command-line-utilities", "compilers"]
+
+[lib]
+proc-macro = true
+
+[dependencies]
+syn = { version = "2.0", features = ["full"] }
+quote = "1.0"
+proc-macro2 = "1.0"

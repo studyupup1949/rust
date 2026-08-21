@@ -1,0 +1,16 @@
+load("@buckal//:wrapper.bzl", "rust_library")
+
+rust_library(
+    name = "a2lfile",
+    srcs = glob(["**/*.rs"]),
+    crate = "a2lfile",
+    crate_root = "src/lib.rs",
+    edition = "2024",
+
+    visibility = ["PUBLIC"],
+    deps = [
+        "//third-party/rust/crates/a2lmacros/2.3.0:a2lmacros",
+        "//third-party/rust/crates/num-traits/0.2.19:num_traits",
+        "//third-party/rust/crates/thiserror/2.0.20:thiserror",
+    ],
+)

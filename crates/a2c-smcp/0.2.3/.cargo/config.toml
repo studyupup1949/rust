@@ -1,0 +1,34 @@
+# Cargo 配置文件 / Cargo configuration file
+# 定义别名以简化常用命令 / Define aliases to simplify common commands
+
+[alias]
+# 测试相关别名 / Test aliases
+test-ws = "test --workspace"
+test-all = "test --workspace --all-features"
+test-e2e = "test --workspace --features e2e -- --ignored"
+# 治理层 CLI 子命令测试在 `cli` feature 之下（marketplace/plugin/settings/skill）；默认带上避免治理套件变暗。
+# Governance CLI subcommand tests live behind the `cli` feature — enable it so the suite is never dark.
+test-computer = "test -p smcp-computer --features cli"
+test-agent = "test -p smcp-agent"
+test-server = "test -p smcp-server-core"
+test-integration = "test -p smcp-computer --test mcp_clients_integration"
+test-e2e-playwright = "test -p smcp-computer --test playwright --features e2e"
+test-all-cov = "llvm-cov --workspace --all-features --no-fail-fast --text --summary-only"
+
+# 检查相关别名 / Check aliases
+check-workspace = "check --workspace"
+check-all = "check --workspace --all-features"
+
+# 构建相关别名 / Build aliases
+build-ws = "build --workspace"
+build-all = "build --workspace --all-features"
+
+# 代码质量别名 / Code quality aliases
+fmt-all = "fmt --all"
+clippy-workspace = "clippy --workspace --all-targets --all-features -- -D warnings"
+clippy-loose = "clippy --workspace --all-targets --all-features"
+
+# 运行相关别名 / Run aliases
+run-server = "run -p smcp-server-hyper"
+run-agent = "run -p smcp-agent --bin agent"
+run-computer = "run -p smcp-computer --bin computer"

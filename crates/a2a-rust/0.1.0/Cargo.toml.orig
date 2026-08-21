@@ -1,0 +1,46 @@
+[package]
+name = "a2a-rust"
+version = "0.1.0"
+edition = "2024"
+rust-version = "1.85"
+description = "Rust SDK for the A2A (Agent-to-Agent) protocol"
+license = "Apache-2.0 OR MIT"
+repository = "https://github.com/longzhi/a2a-rust"
+documentation = "https://docs.rs/a2a-rust"
+keywords = ["a2a", "agent", "protocol", "sdk"]
+categories = ["api-bindings", "web-programming"]
+
+[features]
+default = ["server", "client"]
+server = ["dep:async-trait", "dep:axum", "dep:futures-core", "dep:futures-util", "dep:tokio"]
+client = ["dep:futures-core", "dep:futures-util", "dep:reqwest"]
+
+[dependencies]
+async-trait = { version = "0.1", optional = true }
+base64 = "0.22"
+http = "1"
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+thiserror = "2"
+
+axum = { version = "0.8", optional = true }
+futures-core = { version = "0.3", optional = true }
+futures-util = { version = "0.3", optional = true }
+reqwest = { version = "0.12", default-features = false, features = ["json", "rustls-tls", "stream"], optional = true }
+tokio = { version = "1", features = ["sync"], optional = true }
+
+[dev-dependencies]
+tokio = { version = "1", features = ["macros", "net", "rt-multi-thread", "time"] }
+tower = { version = "0.5", features = ["util"] }
+wiremock = "0.6"
+
+[package.metadata.docs.rs]
+all-features = true
+
+[[example]]
+name = "echo_server"
+required-features = ["server"]
+
+[[example]]
+name = "ping_client"
+required-features = ["client"]

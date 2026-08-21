@@ -1,0 +1,23 @@
+[package]
+name = "a2a-server-rust-azure"
+version = "0.2.0"
+edition = "2024"
+description = "Minimal Rust A2A server agent"
+license = "MIT"
+repository = "https://github.com/xbill9/a2a-hello-world"
+
+
+[dependencies]
+tokio = { version = "^1.37.0", features = ["full"] }
+anyhow = "1.0.86"
+a2a-rs = { version = "0.2.0", features = ["full"] }
+futures = "0.3"
+async-trait = "0.1.80"
+serde_json = "1.0.149"
+
+[profile.release]
+opt-level = 3
+lto = true
+strip = true  # Automatically strip symbols from the binary.
+codegen-units = 1
+panic = "abort"

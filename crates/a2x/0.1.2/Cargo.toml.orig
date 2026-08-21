@@ -1,0 +1,30 @@
+[package]
+name = "a2x"
+version = "0.1.2"
+edition = "2024"
+license = "GPL-3.0-or-later"
+homepage = "https://sr.ht/~gheartsfield/a2x/"
+repository = "https://sr.ht/~gheartsfield/a2x/"
+readme = "README.md"
+description = "A converter from ALFA to XACML policy language."
+keywords = ["XACML", "ALFA"]
+categories = ["command-line-utilities", "compilers"]
+exclude = [".build.yml", ".config"]
+
+[dependencies]
+a2x-derive = { path = "./a2x-derive", version  = "0.1.2" }
+clap = { version = "4.5", features = ["derive"] }
+env_logger = "0.11"
+log = "0.4"
+pest = { version = "2.7", features = ["miette-error", "pretty-print"] }
+miette = { version = "7.6", features = ["fancy"] }
+pest_derive = "2.7"
+thiserror = "2.0"
+unescaper = "0.1"
+uuid = { version = "1.16", features = ["v7"] }
+walkdir = "2.5"
+xml = "1.0"
+
+[dev-dependencies]
+pretty_assertions = "1.4"
+unwrap = "1.2"

@@ -1,0 +1,32 @@
+[package]
+name = "a2ui-tui"
+version.workspace = true
+edition.workspace = true
+authors.workspace = true
+license.workspace = true
+repository.workspace = true
+description = "ratatui terminal backend for A2UI (Agent to UI)"
+
+[features]
+default = []
+# Real audio playback via rodio. OFF by default: pulls in `rodio` and the ALSA
+# system dev library. See the root README for details.
+audio = ["dep:rodio"]
+
+[dependencies]
+a2ui-base = { workspace = true }
+ratatui = { workspace = true }
+crossterm = { workspace = true }
+serde = { workspace = true }
+chrono = { workspace = true }
+uuid = { workspace = true }
+unicode-width = { workspace = true }
+ratatui-image = { workspace = true }
+image = { workspace = true }
+# SVG rasterization + `data:` URI decoding, used by the Image component to
+# render `data:image/svg+xml` avatars/icons and local `.svg` files.
+resvg = { workspace = true }
+base64 = { workspace = true }
+percent-encoding = { workspace = true }
+serde_json = { workspace = true }
+rodio = { workspace = true, optional = true }

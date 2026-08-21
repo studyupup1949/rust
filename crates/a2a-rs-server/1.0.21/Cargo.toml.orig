@@ -1,0 +1,42 @@
+[package]
+name = "a2a-rs-server"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+rust-version.workspace = true
+repository.workspace = true
+homepage.workspace = true
+readme.workspace = true
+description = "Generic A2A RC 1.0 JSON-RPC server framework"
+keywords = ["a2a", "agent", "json-rpc", "server"]
+categories = ["web-programming", "network-programming"]
+
+[lib]
+name = "a2a_rs_server"
+path = "src/lib.rs"
+
+[dependencies]
+a2a-rs-core = { version = "1.0.21", path = "../a2a-core" }
+anyhow.workspace = true
+axum.workspace = true
+reqwest.workspace = true
+serde.workspace = true
+serde_json.workspace = true
+tokio.workspace = true
+tracing.workspace = true
+uuid.workspace = true
+async-trait = "0.1"
+thiserror = "1"
+async-stream = "0.3"
+chrono = "0.4"
+futures = "0.3"
+tokio-stream = "0.1"
+tower = { workspace = true, features = ["timeout"] }
+url = "2"
+
+[dev-dependencies]
+axum = { workspace = true, features = ["macros"] }
+http-body-util = "0.1"
+hyper = "1"
+tower = { workspace = true, features = ["util"] }
+tracing-subscriber = "0.3"

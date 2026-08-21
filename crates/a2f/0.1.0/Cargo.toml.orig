@@ -1,0 +1,31 @@
+[package]
+name = "a2f"
+version = "0.1.0"
+edition = "2021"
+description = "Analysis to Fake - Asynchronous timestamp-bonded cryptography protocol"
+license = "MIT OR Apache-2.0"
+repository = "https://github.com/yourname/a2f"
+
+[dependencies]
+# 暗号
+aes-gcm = "0.10"
+chacha20poly1305 = "0.10"
+rand = "0.8"
+# シリアライズ
+serde = { version = "1", features = ["derive"] }
+bincode = "1"
+# エラーハンドリング
+thiserror = "1"
+# ログ
+log = "0.4"
+# 非同期（オプション、featureで切替可）
+tokio = { version = "1", optional = true, features = ["net", "time"] }
+
+[features]
+default = ["std"]
+std = []
+async = ["dep:tokio"]
+full = ["std", "async"]
+
+[dev-dependencies]
+env_logger = "0.10"

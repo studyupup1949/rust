@@ -1,0 +1,18 @@
+[package]
+name = "a2kit_macro_derive"
+description = "derive macros for a2kit"
+version = "1.0.0"
+edition = "2021"
+license = "MIT"
+keywords = ["disk","image","retro"]
+repository = "https://github.com/dfgordon/a2kit_macro"
+homepage = "https://github.com/dfgordon/a2kit_macro"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[lib]
+proc-macro = true
+
+[dependencies]
+syn = "1.0"
+quote = "1.0"

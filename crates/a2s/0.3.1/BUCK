@@ -1,0 +1,18 @@
+load("@buckal//:wrapper.bzl", "rust_library")
+
+rust_library(
+    name = "a2s",
+    srcs = glob(["**/*.rs"]),
+    crate = "a2s",
+    crate_root = "src/lib.rs",
+    edition = "2018",
+    features = ["default"],
+
+    visibility = ["PUBLIC"],
+    deps = [
+        "//third-party/rust/crates/byteorder/1.5.0:byteorder",
+        "//third-party/rust/crates/bzip2/0.3.3:bzip2",
+        "//third-party/rust/crates/crc/1.8.1:crc",
+        "//third-party/rust/crates/thiserror/1.0.69:thiserror",
+    ],
+)

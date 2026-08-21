@@ -1,0 +1,100 @@
+# Changelog
+
+All notable changes to this project will be documented in this file.
+
+The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
+and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
+
+## [Unreleased]
+
+## [0.1.13](https://github.com/a2aproject/a2a-rs/compare/agntcy-a2a-client-v0.1.12...agntcy-a2a-client-v0.1.13) - 2026-04-06
+
+### Fixed
+
+- *(client)* serialize create-push requests for go interop ([#35](https://github.com/a2aproject/a2a-rs/pull/35))
+
+## [0.1.12](https://github.com/a2aproject/a2a-rs/compare/agntcy-a2a-client-v0.1.11...agntcy-a2a-client-v0.1.12) - 2026-04-06
+
+### Other
+
+- apply rustfmt to interop changes ([#33](https://github.com/a2aproject/a2a-rs/pull/33))
+
+## [0.1.11](https://github.com/a2aproject/a2a-rs/compare/agntcy-a2a-client-v0.1.10...agntcy-a2a-client-v0.1.11) - 2026-04-06
+
+### Fixed
+
+- *(interop)* align push-config JSON bindings with a2a-go ([#31](https://github.com/a2aproject/a2a-rs/pull/31))
+
+## [0.1.10](https://github.com/a2aproject/a2a-rs/compare/agntcy-a2a-client-v0.1.9...agntcy-a2a-client-v0.1.10) - 2026-04-06
+
+### Other
+
+- updated the following local packages: agntcy-a2a-pb
+
+## [0.1.9](https://github.com/a2aproject/a2a-rs/compare/agntcy-a2a-client-v0.1.8...agntcy-a2a-client-v0.1.9) - 2026-04-05
+
+### Other
+
+- updated the following local packages: agntcy-a2a, agntcy-a2a-pb
+
+## [0.1.8](https://github.com/a2aproject/a2a-rs/compare/agntcy-a2a-client-v0.1.7...agntcy-a2a-client-v0.1.8) - 2026-04-05
+
+### Added
+
+- use ProtoJSON for JSON wire payloads
+
+### Other
+
+- format ProtoJSON transport changes
+
+## [0.1.7](https://github.com/a2aproject/a2a-rs/compare/agntcy-a2a-client-v0.1.6...agntcy-a2a-client-v0.1.7) - 2026-04-04
+
+### Fixed
+
+- align HTTP+JSON REST interop
+
+## [0.1.6](https://github.com/a2aproject/a2a-rs/compare/agntcy-a2a-client-v0.1.5...agntcy-a2a-client-v0.1.6) - 2026-04-04
+
+### Fixed
+
+- drop dotted jsonrpc aliases
+- align jsonrpc and agent-card interop
+
+## [0.1.5](https://github.com/a2aproject/a2a-rs/compare/agntcy-a2a-client-v0.1.4...agntcy-a2a-client-v0.1.5) - 2026-04-03
+
+### Other
+
+- updated the following local packages: agntcy-a2a
+
+## [0.1.4](https://github.com/a2aproject/a2a-rs/compare/agntcy-a2a-client-v0.1.3...agntcy-a2a-client-v0.1.4) - 2026-04-03
+
+### Other
+
+- add crate readmes for crates.io
+
+## [0.1.3](https://github.com/a2aproject/a2a-rs/compare/a2a-client-v0.1.2...a2a-client-v0.1.3) - 2026-04-03
+
+### Added
+
+- initialize a2a-rs Rust SDK
+
+### Other
+
+- release
+- release
+
+## [0.1.2](https://github.com/a2aproject/a2a-rs/compare/a2a-client-v0.1.1...a2a-client-v0.1.2) - 2026-04-03
+
+### Added
+
+- initialize a2a-rs Rust SDK
+
+### Other
+
+- release
+
+## [0.1.1](https://github.com/a2aproject/a2a-rs/compare/a2a-client-v0.1.0...a2a-client-v0.1.1) - 2026-04-03
+
+### Added
+
+- initialize a2a-rs Rust SDK

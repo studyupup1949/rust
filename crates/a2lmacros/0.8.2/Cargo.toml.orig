@@ -1,0 +1,15 @@
+[package]
+name = "a2lmacros"
+version = "0.8.2"
+authors = ["Daniel Thaler <daniel@dthaler.de>"]
+edition = "2018"
+description = "provides macros in support of the a2lfile crate"
+license = "MIT OR Apache-2.0"
+repository = "https://github.com/DanielT/a2lfile"
+
+[lib]
+proc-macro = true
+
+[dependencies]
+quote = "1.0"
+proc-macro2 = "1.0"

@@ -1,0 +1,2407 @@
+{
+    "0x000a": {
+        "brief": "USR vector",
+        "ctx": "Applesoft",
+        "desc": "Action to take upon calling `USR` function",
+        "label": "USR",
+        "type": "vector"
+    },
+    "0x0011": {
+        "brief": "FAC flag",
+        "ctx": "Applesoft",
+        "desc": "type of value in FAC, 0=number, $FF=string",
+        "label": "VALTYP",
+        "type": "byte value"
+    },
+    "0x0016": {
+        "brief": "FP compare parameter",
+        "ctx": "Applesoft",
+        "desc": "Code related to floating point comparison routine",
+        "type": "byte value"
+    },
+    "0x001a": {
+        "brief": "Hi-res pointer",
+        "ctx": "Applesoft",
+        "desc": "Can point to screen byte or shape table entry",
+        "label": "HSHAPE",
+        "type": "word"
+    },
+    "0x001c": {
+        "ctx": "Applesoft",
+        "desc": "Color masking byte",
+        "subctx": "hi-res",
+        "type": "byte value"
+    },
+    "0x0020": {
+        "brief": "Sets left margin of text display",
+        "desc": "Sets left margin of text display. Range 0-39.",
+        "label": "WNDLFT",
+        "type": "byte value"
+    },
+    "0x0021": {
+        "brief": "Sets width of text display",
+        "desc": "Sets width of text display. Range 1-40.",
+        "label": "WNDWDTH",
+        "type": "byte value"
+    },
+    "0x0022": {
+        "brief": "Sets top margin of text display",
+        "desc": "Sets top margin of text display. Range 0-23.",
+        "label": "WNDTOP",
+        "type": "byte value"
+    },
+    "0x0023": {
+        "brief": "Sets bottom margin of text display",
+        "desc": "Sets bottom margin of text display. Range 0-24.",
+        "label": "WNDBTM",
+        "type": "byte value"
+    },
+    "0x0024": {
+        "brief": "Horizontal position of the cursor",
+        "desc": "Horizontal position of the cursor. Range 0-39.",
+        "label": "CH",
+        "type": "byte value"
+    },
+    "0x0025": {
+        "brief": "Vertical position of the cursor",
+        "desc": "Vertical position of the cursor. Range 0-23.",
+        "label": "CV",
+        "type": "byte value"
+    },
+    "0x0026": {
+        "ctx": "Applesoft",
+        "desc": "hi-res row address",
+        "label": "ROWADR",
+        "subctx": "hi-res",
+        "type": "word"
+    },
+    "0x0028": {
+        "brief": "cursor address",
+        "desc": "Base address of the cursor's row",
+        "label": "BAS",
+        "type": "word"
+    },
+    "0x002b": {
+        "desc": "Boot slot times 16.",
+        "label": "SLOT",
+        "type": "byte value"
+    },
+    "0x002c": {
+        "desc": "Low resolution horizontal end point.",
+        "label": "H2",
+        "type": "byte value"
+    },
+    "0x002d": {
+        "desc": "Low resolution vertical end point.",
+        "label": "V2",
+        "type": "byte value"
+    },
+    "0x002e": {
+        "desc": "Tape checksum.",
+        "label": "CHKSUM",
+        "type": "byte value"
+    },
+    "0x0030": {
+        "ctx": "Applesoft",
+        "desc": "Bit mask for HPLOT from x%7",
+        "label": "HPLTMSK",
+        "subctx": "hi-res",
+        "type": "byte value"
+    },
+    "0x0032": {
+        "desc": "Text output format.",
+        "label": "INVFLG",
+        "type": "byte value"
+    },
+    "0x0033": {
+        "desc": "Prompt character.",
+        "label": "PROMPT",
+        "type": "byte value"
+    },
+    "0x0034": {
+        "ctx": "Monitor",
+        "desc": "Used by Monitor.",
+        "label": "YSAV",
+        "type": "byte value"
+    },
+    "0x0035": {
+        "ctx": "Monitor",
+        "desc": "Used by Monitor.",
+        "label": "YSAV1",
+        "type": "byte value"
+    },
+    "0x0036": {
+        "desc": "Address of output device.",
+        "label": "CSW",
+        "type": "word"
+    },
+    "0x0038": {
+        "desc": "Address of input device.",
+        "label": "KSW",
+        "type": "word"
+    },
+    "0x003a": {
+        "ctx": "Monitor",
+        "desc": "Program counter",
+        "label": "PC",
+        "type": "word"
+    },
+    "0x003c": {
+        "brief": "source start for AUXMOVE",
+        "desc": "Source starting address for AUXMOVE.",
+        "label": "A1",
+        "type": "word"
+    },
+    "0x003e": {
+        "brief": "source end for AUXMOVE",
+        "desc": "Source ending address for AUXMOVE.",
+        "label": "A2",
+        "type": "word"
+    },
+    "0x0040": {
+        "ctx": "Monitor",
+        "desc": "Used by Monitor.",
+        "label": "A3",
+        "type": "word"
+    },
+    "0x0042": {
+        "brief": "dest start for AUXMOVE",
+        "desc": "Destination starting address for AUXMOVE.",
+        "label": "A4",
+        "type": "word"
+    },
+    "0x0044": {
+        "ctx": "Monitor",
+        "desc": "Used by Monitor.",
+        "label": "A5",
+        "type": "word"
+    },
+    "0x004a": {
+        "ctx": "Integer BASIC",
+        "desc": "Start of variables",
+        "label": "LOMEM",
+        "type": "word"
+    },
+    "0x004c": {
+        "ctx": "Integer BASIC",
+        "desc": "End of program",
+        "label": "HIMEM",
+        "type": "word"
+    },
+    "0x004e": {
+        "desc": "Random number field.",
+        "label": "RND",
+        "type": "word"
+    },
+    "0x0050": {
+        "brief": "line number",
+        "ctx": "Applesoft",
+        "desc": "Place to put 16 bit numbers, especially line numbers.",
+        "label": "LINNUM",
+        "type": "word"
+    },
+    "0x0052": {
+        "ctx": "Applesoft",
+        "desc": "last temp string desc",
+        "label": "TEMPPT",
+        "type": "byte value"
+    },
+    "0x0053": {
+        "ctx": "Applesoft",
+        "desc": "Last temp string ptr",
+        "label": "LASTPT",
+        "type": "byte value"
+    },
+    "0x005e": {
+        "ctx": "Applesoft",
+        "desc": "temp string pointer",
+        "label": "INDEX",
+        "type": "word"
+    },
+    "0x0067": {
+        "ctx": "Applesoft",
+        "desc": "Start of Applesoft program.",
+        "label": "TXTTAB",
+        "type": "word"
+    },
+    "0x0069": {
+        "ctx": "Applesoft",
+        "desc": "Start of variable space, `LOMEM`.",
+        "label": "VARTAB",
+        "type": "word"
+    },
+    "0x006b": {
+        "ctx": "Applesoft",
+        "desc": "Start of array space.",
+        "label": "ARYTAB",
+        "type": "word"
+    },
+    "0x006d": {
+        "ctx": "Applesoft",
+        "desc": "End of array space.",
+        "label": "STREND",
+        "type": "word"
+    },
+    "0x006f": {
+        "ctx": "Applesoft",
+        "desc": "Start of string space.",
+        "label": "FRETOP",
+        "type": "word"
+    },
+    "0x0071": {
+        "ctx": "Applesoft",
+        "desc": "String storage pointer.",
+        "label": "FRESPC",
+        "type": "word"
+    },
+    "0x0073": {
+        "ctx": "Applesoft",
+        "desc": "End of variable space, `HIMEM`.",
+        "label": "MEMSIZ",
+        "type": "word"
+    },
+    "0x0075": {
+        "ctx": "Applesoft",
+        "desc": "Line number being executed.",
+        "label": "CURLIN",
+        "type": "word"
+    },
+    "0x0077": {
+        "ctx": "Applesoft",
+        "desc": "Last line executed.",
+        "label": "OLDLIN",
+        "type": "word"
+    },
+    "0x0079": {
+        "ctx": "Applesoft",
+        "desc": "Address of line being executed.",
+        "label": "NXTPTR",
+        "type": "word"
+    },
+    "0x007b": {
+        "brief": "`DATA` statement line",
+        "ctx": "Applesoft",
+        "desc": "Line number of current `DATA` statement.",
+        "label": "DATLIN",
+        "type": "word"
+    },
+    "0x007d": {
+        "ctx": "Applesoft",
+        "desc": "Address of next `DATA` statement.",
+        "label": "DATPTR",
+        "type": "word"
+    },
+    "0x007f": {
+        "ctx": "Applesoft",
+        "desc": "Address of `DATA` or `INPUT` item.",
+        "label": "INPTR",
+        "type": "word"
+    },
+    "0x0081": {
+        "ctx": "Applesoft",
+        "desc": "Last used variable name.",
+        "label": "VARNAM",
+        "type": "word"
+    },
+    "0x0083": {
+        "ctx": "Applesoft",
+        "desc": "Last used variable address.",
+        "label": "VARPNT",
+        "type": "word"
+    },
+    "0x008a": {
+        "ctx": "Applesoft",
+        "desc": "Temporary FP register",
+        "label": "TEMP3",
+        "type": "float"
+    },
+    "0x0093": {
+        "ctx": "Applesoft",
+        "desc": "Temporary FP register",
+        "label": "TEMP1",
+        "type": "float"
+    },
+    "0x0098": {
+        "ctx": "Applesoft",
+        "desc": "Temporary FP register",
+        "label": "TEMP2",
+        "type": "float"
+    },
+    "0x009b": {
+        "ctx": "Applesoft",
+        "desc": "Result of GETARYPT, FINDLN",
+        "label": "LOWTR",
+        "type": "word"
+    },
+    "0x009d": {
+        "brief": "FP Accumulator",
+        "ctx": "Applesoft",
+        "desc": "FP accumulator, also used for temp string descriptor",
+        "label": "FAC/DSCTMP",
+        "type": "unpacked float"
+    },
+    "0x00a5": {
+        "ctx": "Applesoft",
+        "desc": "FP Argument",
+        "label": "ARG",
+        "type": "unpacked float"
+    },
+    "0x00af": {
+        "ctx": "Applesoft",
+        "desc": "End of Applesoft program.",
+        "label": "PRGEND",
+        "type": "word"
+    },
+    "0x00b1": {
+        "brief": "get next program character",
+        "ctx": "Applesoft",
+        "desc": "Advances TXTPTR and loads first non-space character into A",
+        "label": "CHRGET",
+        "subctx": "parsing",
+        "type": "ZP routine"
+    },
+    "0x00b7": {
+        "ctx": "Applesoft",
+        "desc": "re-get program character",
+        "label": "CHRGOT",
+        "subctx": "parsing",
+        "type": "ZP routine"
+    },
+    "0x00b8": {
+        "ctx": "Applesoft",
+        "desc": "Pointer to current program character",
+        "label": "TXTPTR",
+        "subctx": "parsing",
+        "type": "word"
+    },
+    "0x00c6": {
+        "ctx": "Integer BASIC",
+        "desc": "Address of line for GOTO",
+        "label": "GOTOA",
+        "type": "word"
+    },
+    "0x00ca": {
+        "ctx": "Integer BASIC",
+        "desc": "Pointer to start of program",
+        "label": "PP",
+        "type": "word"
+    },
+    "0x00cc": {
+        "ctx": "Integer BASIC",
+        "desc": "End of variables",
+        "label": "PV",
+        "type": "word"
+    },
+    "0x00ce": {
+        "ctx": "Integer BASIC",
+        "desc": "Next line number",
+        "label": "VAL",
+        "type": "word"
+    },
+    "0x00d6": {
+        "ctx": "Applesoft",
+        "desc": "`RUN` flag.",
+        "type": "byte value"
+    },
+    "0x00d8": {
+        "ctx": "Applesoft",
+        "desc": "Error handler flag for `ONERR`.",
+        "label": "ERRFLG",
+        "type": "byte value"
+    },
+    "0x00d9": {
+        "ctx": "Integer BASIC",
+        "desc": "Run flag, positive is immediate mode",
+        "type": "byte value"
+    },
+    "0x00da": {
+        "ctx": "Applesoft",
+        "desc": "Line number of error.",
+        "label": "ERRLIN",
+        "type": "word"
+    },
+    "0x00dc": {
+        "ctx": "Applesoft | Integer BASIC",
+        "desc": "address of error | current line number",
+        "label": "ERRPOS | CURLIN",
+        "type": "word"
+    },
+    "0x00de": {
+        "ctx": "Applesoft",
+        "desc": "Error code.",
+        "label": "ERRNUM",
+        "type": "byte value"
+    },
+    "0x00df": {
+        "ctx": "Applesoft",
+        "desc": "Stack pointer before error",
+        "label": "ERRSTK",
+        "type": "byte value"
+    },
+    "0x00e0": {
+        "ctx": "Applesoft",
+        "desc": "Last `HPLOT` x coordinate.",
+        "type": "word"
+    },
+    "0x00e2": {
+        "ctx": "Applesoft",
+        "desc": "Last `HPLOT` y coordinate.",
+        "type": "byte value"
+    },
+    "0x00e4": {
+        "ctx": "Applesoft | Integer BASIC",
+        "desc": "color masking byte | line number address",
+        "type": "byte value | word"
+    },
+    "0x00e5": {
+        "ctx": "Applesoft",
+        "desc": "INT(hi-res x coordinate / 7)",
+        "subctx": "hi-res",
+        "type": "byte value"
+    },
+    "0x00e6": {
+        "brief": "high resolution page",
+        "ctx": "Applesoft",
+        "desc": "High resolution plotting page, $20 for page 1, $40 for page 2.",
+        "subctx": "hi-res",
+        "type": "byte value"
+    },
+    "0x00e7": {
+        "desc": "`SCALE` value",
+        "label": "SCALE",
+        "type": "byte value"
+    },
+    "0x00e8": {
+        "desc": "Address of shape table.",
+        "label": "SHADDR",
+        "type": "word"
+    },
+    "0x00ea": {
+        "brief": "hi-res collision flag",
+        "desc": "High resolution graphics collision flag.",
+        "type": "byte value"
+    },
+    "0x00f1": {
+        "desc": "delay for `SPEED`.",
+        "label": "SPDBYT",
+        "type": "byte value"
+    },
+    "0x00f3": {
+        "desc": "Mask for `FLASH`.",
+        "label": "ORMASK",
+        "type": "byte value"
+    },
+    "0x00f4": {
+        "ctx": "Integer BASIC",
+        "desc": "Floating point register 2",
+        "label": "FP2",
+        "type": "float32"
+    },
+    "0x00f8": {
+        "brief": "save stack pointer | floating point register 1",
+        "ctx": "Applesoft | Integer BASIC",
+        "desc": "Stack pointer prior to current statement execution | Floating point register 1",
+        "label": "REMSTK | FP1",
+        "type": "byte value | float32"
+    },
+    "0x00f9": {
+        "ctx": "Applesoft",
+        "desc": "`ROT` value",
+        "label": "ROT",
+        "type": "byte value"
+    },
+    "0x0326": {
+        "ctx": "Integer BASIC",
+        "desc": "Integer BASIC flag for plotting in high-resolution page 1 (32) or 2 (64).",
+        "type": "byte value"
+    },
+    "0x0328": {
+        "ctx": "Integer BASIC",
+        "desc": "Integer BASIC pointer to a high resolution shape table.",
+        "type": "word"
+    },
+    "0x03d0": {
+        "desc": "DOS re-entry from the Monitor",
+        "type": "vector"
+    },
+    "0x03d3": {
+        "desc": "DOS cold start",
+        "type": "vector"
+    },
+    "0x03d6": {
+        "desc": "File manager",
+        "type": "vector"
+    },
+    "0x03d9": {
+        "desc": "DOS RWTS",
+        "type": "vector"
+    },
+    "0x03ed": {
+        "desc": "Program starting address for XFER.",
+        "type": "word"
+    },
+    "0x03f0": {
+        "brief": "address of `BRK` handler",
+        "desc": "Address of subroutine handling `BRK` requests.",
+        "type": "word"
+    },
+    "0x03f2": {
+        "brief": "address of `Reset` handler",
+        "desc": "Address of program taking control after `Reset`",
+        "type": "word"
+    },
+    "0x03f4": {
+        "desc": "Power-up byte",
+        "type": "byte value"
+    },
+    "0x03f5": {
+        "brief": "`&` vector",
+        "desc": "Action to take upon issuing `&` command",
+        "type": "vector"
+    },
+    "0x03f8": {
+        "brief": "`Ctrl-Y` vector",
+        "desc": "Action to take upon issuing `Ctrl-Y`",
+        "type": "vector"
+    },
+    "0x03fb": {
+        "brief": "interrupt vector",
+        "desc": "Action to take upon non-maskable interrupt",
+        "type": "vector"
+    },
+    "0x03fe": {
+        "desc": "Address of interrupt handler",
+        "type": "vector"
+    },
+    "0x9d01": {
+        "ctx": "DOS 3.3",
+        "desc": "Related to length of buffer in pages",
+        "type": "byte value"
+    },
+    "0x9d84": {
+        "ctx": "DOS 3.3",
+        "desc": "Cold start routine",
+        "type": "DOS routine"
+    },
+    "0x9dbf": {
+        "ctx": "DOS 3.3",
+        "desc": "Reconnect DOS.",
+        "type": "DOS routine"
+    },
+    "0x9e42": {
+        "ctx": "DOS 3.3",
+        "desc": "Greeting program type",
+        "type": "byte value"
+    },
+    "0xa56e": {
+        "ctx": "DOS 3.3",
+        "desc": "Print listing of files on disk",
+        "label": "CATALOG",
+        "type": "DOS routine"
+    },
+    "0xa7d4": {
+        "ctx": "DOS 3.3",
+        "desc": "Moves DOS buffers",
+        "type": "DOS routine"
+    },
+    "0xaa60": {
+        "ctx": "DOS 3.3",
+        "desc": "Last `BLOAD` length",
+        "type": "word"
+    },
+    "0xaa68": {
+        "ctx": "DOS 3.3",
+        "desc": "Current drive number",
+        "type": "byte value"
+    },
+    "0xaa6a": {
+        "ctx": "DOS 3.3",
+        "desc": "Current slot number",
+        "type": "byte value"
+    },
+    "0xaa72": {
+        "ctx": "DOS 3.3",
+        "desc": "Last `BLOAD` start",
+        "type": "word"
+    },
+    "0xaab2": {
+        "brief": "DOS command trigger",
+        "ctx": "DOS 3.3",
+        "desc": "Trigger character for DOS commands (`Ctrl-D`)",
+        "type": "byte value"
+    },
+    "0xac01": {
+        "ctx": "DOS 3.3",
+        "desc": "`CATALOG` track number",
+        "type": "byte value"
+    },
+    "0xada4": {
+        "brief": "files+1 before `CATALOG` pause",
+        "ctx": "DOS 3.3",
+        "desc": "Number of files plus one displayed before `CATALOG` pause",
+        "type": "byte value"
+    },
+    "0xadac": {
+        "brief": "vector within `CATALOG`",
+        "ctx": "DOS 3.3",
+        "desc": "If word value is $FC58 (`HOME`) clear screen before `CATALOG`",
+        "type": "word"
+    },
+    "0xadd9": {
+        "brief": "If $EAEA show deleted files",
+        "ctx": "DOS 3.3",
+        "desc": "If word value is $EAEA show deleted files in `CATALOG`",
+        "type": "word"
+    },
+    "0xae34": {
+        "brief": "If $EA cancel `CATALOG` pause",
+        "ctx": "DOS 3.3",
+        "desc": "Fill vector with `NOP` ($EA) to cancel `CATALOG` pause",
+        "type": "vector"
+    },
+    "0xae3d": {
+        "brief": "files before `CATALOG` pause",
+        "ctx": "DOS 3.3",
+        "desc": "Number of files displayed before `CATALOG` pause",
+        "type": "byte value"
+    },
+    "0xb3c1": {
+        "ctx": "DOS 3.3",
+        "desc": "Disk volume number",
+        "type": "byte value"
+    },
+    "0xbeb9": {
+        "ctx": "ProDOS",
+        "desc": "Last `BLOAD` start",
+        "type": "word"
+    },
+    "0xbec8": {
+        "ctx": "ProDOS",
+        "desc": "Last `BLOAD` length",
+        "type": "word"
+    },
+    "0xbf30": {
+        "ctx": "ProDOS",
+        "desc": "Slot/Drive value",
+        "type": "byte value"
+    },
+    "0xbfd3": {
+        "brief": "If $EAEAEA prevent language reload",
+        "ctx": "DOS 3.3",
+        "desc": "Fill vector with `NOP` ($EA) to prevent language card reload",
+        "type": "vector"
+    },
+    "0xc000": {
+        "brief": "read keyboard | PAGE2 normal",
+        "ctx": "Enhanced Apple //e or higher needed for [2]",
+        "desc": "Overloaded. [1] read the keyboard (read) [2] Set PAGE2 function to normal (write)",
+        "label": "80STORE",
+        "type": "soft switch"
+    },
+    "0xc001": {
+        "brief": "PAGE2 controls display bank",
+        "ctx": "Enhanced Apple //e or higher",
+        "desc": "Set PAGE2 function to control the memory bank used for display storage, write only.",
+        "label": "80STORE",
+        "type": "soft switch"
+    },
+    "0xc002": {
+        "brief": "read from main memory",
+        "ctx": "Enhanced Apple //e or higher",
+        "desc": "Read from main memory, write only.",
+        "label": "RAMRD",
+        "type": "soft switch"
+    },
+    "0xc003": {
+        "brief": "read from auxiliary memory",
+        "ctx": "Enhanced Apple //e or higher",
+        "desc": "Read from auxiliary memory, write only.",
+        "label": "RAMRD",
+        "type": "soft switch"
+    },
+    "0xc004": {
+        "brief": "write to main memory",
+        "ctx": "Enhanced Apple //e or higher",
+        "desc": "Write to main memory, write only.",
+        "label": "RAMWRT",
+        "type": "soft switch"
+    },
+    "0xc005": {
+        "brief": "write to auxiliary memory",
+        "ctx": "Enhanced Apple //e or higher",
+        "desc": "Write to auxiliary memory, write only.",
+        "label": "RAMWRT",
+        "type": "soft switch"
+    },
+    "0xc006": {
+        "brief": "internal ROM",
+        "ctx": "Enhanced Apple //e or higher",
+        "desc": "Map to internal ROM, write only.",
+        "label": "SLOTCXROM",
+        "type": "soft switch"
+    },
+    "0xc007": {
+        "brief": "peripheral card ROM",
+        "ctx": "Enhanced Apple //e or higher",
+        "desc": "Map to peripheral card ROM, write only.",
+        "label": "SLOTCXROM",
+        "type": "soft switch"
+    },
+    "0xc008": {
+        "brief": "main stack and zero page",
+        "ctx": "Enhanced Apple //e or higher",
+        "desc": "Main stack and zero page, write only.",
+        "label": "ALTZP",
+        "note": "Apple //e Reference Manual has inconsistent negative address",
+        "type": "soft switch"
+    },
+    "0xc009": {
+        "brief": "aux stack and zero page",
+        "ctx": "Enhanced Apple //e or higher",
+        "desc": "Auxiliary stack and zero page, write only.",
+        "label": "ALTZP",
+        "note": "Apple //e Reference Manual has inconsistent negative address",
+        "type": "soft switch"
+    },
+    "0xc00a": {
+        "brief": "S3 internal ROM",
+        "ctx": "Enhanced Apple //e or higher",
+        "desc": "Map to internal ROM, write only.",
+        "label": "SLOTC3ROM",
+        "type": "soft switch"
+    },
+    "0xc00b": {
+        "brief": "S3 peripheral card ROM",
+        "ctx": "Enhanced Apple //e or higher",
+        "desc": "Map to peripheral card ROM, write only.",
+        "label": "SLOTC3ROM",
+        "type": "soft switch"
+    },
+    "0xc00c": {
+        "brief": "40 columns",
+        "ctx": "Enhanced Apple //e or higher",
+        "desc": "80 column display off, write only.",
+        "label": "80COL",
+        "type": "soft switch"
+    },
+    "0xc00d": {
+        "brief": "80 columns",
+        "ctx": "Enhanced Apple //e or higher",
+        "desc": "80 column display on, write only.",
+        "label": "80COL",
+        "type": "soft switch"
+    },
+    "0xc00e": {
+        "brief": "normal character set",
+        "ctx": "Enhanced Apple //e or higher",
+        "desc": "Disable alternate character set, write only.",
+        "label": "ALTCHARSET",
+        "type": "soft switch"
+    },
+    "0xc00f": {
+        "brief": "alternate character set",
+        "ctx": "Enhanced Apple //e or higher",
+        "desc": "Enable alternate character set, write only.",
+        "label": "ALTCHARSET",
+        "type": "soft switch"
+    },
+    "0xc010": {
+        "desc": "Reset the keyboard strobe.",
+        "type": "soft switch"
+    },
+    "0xc013": {
+        "brief": "read RAMRD",
+        "ctx": "Enhanced Apple //e or higher",
+        "desc": "Read the memory bank read soft switch.",
+        "label": "RAMRD",
+        "type": "soft switch"
+    },
+    "0xc014": {
+        "brief": "read RAMWRT",
+        "ctx": "Enhanced Apple //e or higher",
+        "desc": "Read the memory bank write soft switch.",
+        "label": "RAMWRT",
+        "type": "soft switch"
+    },
+    "0xc015": {
+        "brief": "read SLOTCXROM",
+        "ctx": "Enhanced Apple //e or higher",
+        "desc": "Read the all-slots ROM bank selector switch.",
+        "label": "SLOTCXROM",
+        "type": "soft switch"
+    },
+    "0xc016": {
+        "brief": "read ALTZP",
+        "ctx": "Enhanced Apple //e or higher",
+        "desc": "Read the alternate stack and zero page soft switch.",
+        "label": "ALTZP",
+        "note": "Apple //e Reference Manual has inconsistent negative address",
+        "type": "soft switch"
+    },
+    "0xc017": {
+        "brief": "read SLOTC3ROM",
+        "ctx": "Enhanced Apple //e or higher",
+        "desc": "Read the slot 3 ROM bank selector switch.",
+        "label": "SLOTC3ROM",
+        "type": "soft switch"
+    },
+    "0xc018": {
+        "brief": "read 80STORE",
+        "ctx": "Enhanced Apple //e or higher",
+        "desc": "Read the soft switch controlling the PAGE2 soft switch function.",
+        "label": "80STORE",
+        "type": "soft switch"
+    },
+    "0xc019": {
+        "brief": "read VBL",
+        "ctx": "Enhanced Apple //e or higher",
+        "desc": "Read vertical blanking.",
+        "label": "VBL",
+        "type": "soft switch"
+    },
+    "0xc01a": {
+        "brief": "read TEXT",
+        "ctx": "Enhanced Apple //e or higher",
+        "desc": "Read text display soft switch.",
+        "label": "TEXT",
+        "type": "soft switch"
+    },
+    "0xc01b": {
+        "brief": "read MIXED",
+        "ctx": "Enhanced Apple //e or higher",
+        "desc": "Read mixed display soft switch.",
+        "label": "MIXED",
+        "type": "soft switch"
+    },
+    "0xc01c": {
+        "brief": "read PAGE2",
+        "ctx": "Enhanced Apple //e or higher",
+        "desc": "Read page 2 display soft switch.",
+        "label": "PAGE2",
+        "type": "soft switch"
+    },
+    "0xc01d": {
+        "brief": "read HIRES",
+        "ctx": "Enhanced Apple //e or higher",
+        "desc": "Read high resolution display soft switch.",
+        "label": "HIRES",
+        "type": "soft switch"
+    },
+    "0xc01e": {
+        "brief": "read ALTCHARSET",
+        "ctx": "Enhanced Apple //e or higher",
+        "desc": "Read alternate character set soft switch.",
+        "label": "ALTCHARSET",
+        "type": "soft switch"
+    },
+    "0xc01f": {
+        "brief": "read 80COL",
+        "ctx": "Enhanced Apple //e or higher",
+        "desc": "Read 80 column display soft switch.",
+        "label": "80COL",
+        "type": "soft switch"
+    },
+    "0xc020": {
+        "desc": "Ping the cassette recording.",
+        "type": "soft switch"
+    },
+    "0xc030": {
+        "desc": "Click the speaker.",
+        "type": "soft switch"
+    },
+    "0xc040": {
+        "desc": "strobe output",
+        "type": "soft switch"
+    },
+    "0xc050": {
+        "brief": "graphics",
+        "desc": "Switch to graphics mode. Mode depends on other soft switch settings.",
+        "label": "TXTOFF",
+        "type": "soft switch"
+    },
+    "0xc051": {
+        "brief": "text",
+        "desc": "Switch to text mode. Mode depends on other soft switch settings.",
+        "label": "TXTON",
+        "type": "soft switch"
+    },
+    "0xc052": {
+        "brief": "full screen graphics",
+        "desc": "Switch to full screen graphics. Mode depends on other soft switch settings.",
+        "label": "MIXOFF",
+        "type": "soft switch"
+    },
+    "0xc053": {
+        "brief": "mixed graphics and text",
+        "desc": "Switch to mixed graphics and text. Mode depends on other soft switch settings.",
+        "label": "MIXON",
+        "type": "soft switch"
+    },
+    "0xc054": {
+        "brief": "page 1 | main memory",
+        "ctx": "Enhanced Apple //e or higher needed for [2]",
+        "desc": "Overloaded. [1] Page 2 off, switch to page 1. Mode depends on other soft switch settings. [2] Switch to main display memory if `80STORE` is on.",
+        "label": "TXTPAGE1",
+        "type": "soft switch"
+    },
+    "0xc055": {
+        "brief": "page 2 | aux memory",
+        "ctx": "Enhanced Apple //e or higher needed for [2]",
+        "desc": "Overloaded. [1] Page 2 on, switch to page 2. Mode depends on other soft switch settings. [2] Switch to auxiliary display memory if `80STORE` is on.",
+        "label": "TXTPAGE2",
+        "type": "soft switch"
+    },
+    "0xc056": {
+        "brief": "low resolution",
+        "desc": "Switch to low resolution mode. Mode depends on other soft switch settings.",
+        "label": "LORES",
+        "type": "soft switch"
+    },
+    "0xc057": {
+        "brief": "high resolution",
+        "desc": "Switch to high resolution mode. Mode depends on other soft switch settings.",
+        "label": "HIRES",
+        "type": "soft switch"
+    },
+    "0xc058": {
+        "brief": "game 0 off",
+        "desc": "Set game control annunciator output 0 to high (off).",
+        "type": "soft switch"
+    },
+    "0xc059": {
+        "brief": "game 0 on",
+        "desc": "Set game control annunciator output 0 to low (on).",
+        "type": "soft switch"
+    },
+    "0xc05a": {
+        "brief": "game 1 off",
+        "desc": "Set game control annunciator output 1 to high (off).",
+        "type": "soft switch"
+    },
+    "0xc05b": {
+        "brief": "game 1 on",
+        "desc": "Set game control annunciator output 1 to low (on).",
+        "type": "soft switch"
+    },
+    "0xc05c": {
+        "brief": "game 2 off",
+        "desc": "Set game control annunciator output 2 to high (off).",
+        "type": "soft switch"
+    },
+    "0xc05d": {
+        "brief": "game 2 on",
+        "desc": "Set game control annunciator output 2 to low (on).",
+        "type": "soft switch"
+    },
+    "0xc05e": {
+        "brief": "game 3 off | double hi-res",
+        "ctx": "Enhanced Apple //e or later needed for [2]",
+        "desc": "Overloaded. [1] set game control annunciator output 3 to high (off) [2] switch to double resolution graphics",
+        "label": "DHR",
+        "type": "soft switch"
+    },
+    "0xc05f": {
+        "brief": "game 3 on",
+        "desc": "Set game control annunciator output 3 to low (on).",
+        "type": "soft switch"
+    },
+    "0xc060": {
+        "desc": "Casette In.",
+        "type": "soft switch"
+    },
+    "0xc061": {
+        "desc": "Read pushbutton on game controller 0.",
+        "type": "soft switch"
+    },
+    "0xc062": {
+        "desc": "Read pushbutton on game controller 1.",
+        "type": "soft switch"
+    },
+    "0xc063": {
+        "desc": "Read pushbutton on game controller 2.",
+        "type": "soft switch"
+    },
+    "0xc064": {
+        "desc": "Analog input 0.",
+        "type": "soft switch"
+    },
+    "0xc065": {
+        "desc": "Analog input 1.",
+        "type": "soft switch"
+    },
+    "0xc066": {
+        "desc": "Analog input 2.",
+        "type": "soft switch"
+    },
+    "0xc067": {
+        "desc": "Analog input 3.",
+        "type": "soft switch"
+    },
+    "0xc070": {
+        "desc": "Analog input reset.",
+        "type": "soft switch"
+    },
+    "0xc080": {
+        "brief": "RDRAM | stepper 0",
+        "desc": "Upper address space, read RAM, 4K bank 2 | base addr stepper motor phase 0 off.",
+        "label": "PH0OFF",
+        "type": "soft switch"
+    },
+    "0xc081": {
+        "brief": "WRRAM RDROM | stepper 0",
+        "desc": "Upper address space, write RAM, read ROM, 4K bank 2 | base addr stepper motor phase 0 on.",
+        "label": "PH0ON",
+        "type": "soft switch"
+    },
+    "0xc082": {
+        "brief": "RDROM | stepper 1",
+        "desc": "Upper address space, read ROM, 4K bank 2 | base addr stepper motor phase 1 off.",
+        "label": "PH1OFF",
+        "type": "soft switch"
+    },
+    "0xc083": {
+        "brief": "WRRAM RDRAM | stepper 1",
+        "desc": "Upper address space, write RAM, read RAM, 4K bank 2 | base addr stepper motor phase 1 on.",
+        "label": "PH1ON",
+        "type": "soft switch"
+    },
+    "0xc084": {
+        "brief": "RDRAM | stepper 2",
+        "desc": "Upper address space, read RAM, 4K bank 2 | base addr stepper motor phase 2 off.",
+        "label": "PH2OFF",
+        "type": "soft switch"
+    },
+    "0xc085": {
+        "brief": "WRRAM RDROM | stepper 2",
+        "desc": "Upper address space, write RAM, read ROM, 4K bank 2 | base addr stepper motor phase 2 on.",
+        "label": "PH2ON",
+        "type": "soft switch"
+    },
+    "0xc086": {
+        "brief": "RDROM | stepper 3",
+        "desc": "Upper address space, read ROM, 4K bank 2 | base addr stepper motor phase 3 off.",
+        "label": "PH3OFF",
+        "type": "soft switch"
+    },
+    "0xc087": {
+        "brief": "WRRAM RDRAM | stepper 3",
+        "desc": "Upper address space, write RAM, read RAM, 4K bank 2 | base addr stepper motor phase 3 on.",
+        "label": "PH3ON",
+        "type": "soft switch"
+    },
+    "0xc088": {
+        "brief": "RDRAM | motor off",
+        "desc": "Upper address space, read RAM, 4K bank 1 | base addr for drive motor off.",
+        "label": "MOTOFF",
+        "type": "soft switch"
+    },
+    "0xc089": {
+        "brief": "WRRAM RDROM | motor on",
+        "desc": "Upper address space, write RAM, read ROM, 4K bank 1 | base addr for drive motor on.",
+        "label": "MOTON",
+        "type": "soft switch"
+    },
+    "0xc08a": {
+        "brief": "RDROM | drive 0",
+        "desc": "Upper address space, read ROM, 4K bank 1 | base addr for engage drive 0.",
+        "label": "DRV0EN",
+        "type": "soft switch"
+    },
+    "0xc08b": {
+        "brief": "WRRAM RDRAM | drive 1",
+        "desc": "Upper address space, write RAM, read RAM, 4K bank 1 | base addr for engage drive 1 (indexed from 0).",
+        "label": "DRV1EN",
+        "type": "soft switch"
+    },
+    "0xc08c": {
+        "brief": "RDRAM | IWM Q6 off",
+        "desc": "Upper address space, read RAM, 4K bank 1 | base address for logic state sequencer Q6 off.",
+        "label": "Q6L",
+        "type": "soft switch"
+    },
+    "0xc08d": {
+        "brief": "WRRAM RDROM | IWM Q6 on",
+        "desc": "Upper address space, write RAM, read ROM, 4K bank 1 | base address for logic state sequencer Q6 on.",
+        "label": "Q6H",
+        "type": "soft switch"
+    },
+    "0xc08e": {
+        "brief": "RDROM | IWM Q7 off",
+        "desc": "Upper address space, read ROM, 4K bank 1 | base address for logic state sequencer Q7 off.",
+        "label": "Q7L",
+        "type": "soft switch"
+    },
+    "0xc08f": {
+        "brief": "WRRAM RDRAM | IWM Q7 on",
+        "desc": "Upper address space, write RAM, read RAM, 4K bank 1 | base address for logic state sequencer Q7 on.",
+        "label": "Q7H",
+        "type": "soft switch"
+    },
+    "0xc0e8": {
+        "ctx": "DOS 3.3",
+        "desc": "Stop S6 drive motor",
+        "type": "soft switch"
+    },
+    "0xc0e9": {
+        "ctx": "DOS 3.3",
+        "desc": "Start S6 drive motor",
+        "type": "soft switch"
+    },
+    "0xc311": {
+        "brief": "move data main <-> aux",
+        "desc": "Move blocks of data between main and auxiliary memory.",
+        "label": "AUXMOVE",
+        "type": "ROM routine"
+    },
+    "0xc314": {
+        "brief": "transfer control main <-> aux",
+        "desc": "Transfer program control between main and auxiliary memory.",
+        "label": "XFER",
+        "type": "ROM routine"
+    },
+    "0xd000": {
+        "brief": "init hi-res",
+        "ctx": "Integer BASIC",
+        "desc": "Initialize high-res graphics for Integer BASIC",
+        "label": "INIT",
+        "type": "ROM routine"
+    },
+    "0xd00e": {
+        "brief": "clear hi-res to black",
+        "ctx": "Integer BASIC",
+        "desc": "Integer routine to clear high-res screen to black",
+        "label": "CLEAR",
+        "type": "ROM routine"
+    },
+    "0xd2f9": {
+        "brief": "move hi-res cursor",
+        "ctx": "Integer BASIC",
+        "desc": "Integer routine to set the plotting position without drawing",
+        "label": "POSN",
+        "type": "ROM routine"
+    },
+    "0xd30e": {
+        "brief": "plot a hi-res point",
+        "ctx": "Integer BASIC",
+        "desc": "Integer routine to plot a high-res pixel",
+        "label": "PLOT",
+        "type": "ROM routine"
+    },
+    "0xd314": {
+        "brief": "plot hi-res line",
+        "ctx": "Integer BASIC",
+        "desc": "Integer routine to plot high-res line from last point to new point",
+        "label": "LINE",
+        "type": "ROM routine"
+    },
+    "0xd331": {
+        "brief": "clear hi-res to color",
+        "ctx": "Integer BASIC",
+        "desc": "Integer routine to clear high-res screen to color in color variable",
+        "label": "BKGND",
+        "type": "ROM routine"
+    },
+    "0xd337": {
+        "brief": "draw hi-res shape",
+        "ctx": "Integer BASIC",
+        "desc": "Integer routine to draw a high-res shape",
+        "label": "DRAW",
+        "type": "ROM routine"
+    },
+    "0xd33a": {
+        "brief": "draw hi-res shape at cursor",
+        "ctx": "Integer BASIC",
+        "desc": "Integer routine to draw a high-res shape at cursor position",
+        "label": "DRAW1",
+        "type": "ROM routine"
+    },
+    "0xd39a": {
+        "brief": "Move block up.",
+        "ctx": "Applesoft",
+        "desc": "Move LOWTR..HIGHTR to HIGHDS-HIGHTR+LOWTR..HIGHDS.  On entry LE (A,Y) = (HIGHDS).",
+        "label": "MVBLKUP2",
+        "type": "ROM routine"
+    },
+    "0xd3a5": {
+        "brief": "load shape table",
+        "ctx": "Integer BASIC",
+        "desc": "Integer routine to load high-res shape table",
+        "label": "SHLOAD",
+        "type": "ROM routine"
+    },
+    "0xd412": {
+        "brief": "Error handler.",
+        "ctx": "Applesoft",
+        "desc": "Display error message or branch to program's error handler if ONERR active.",
+        "label": "ERROR",
+        "type": "ROM routine"
+    },
+    "0xd52c": {
+        "brief": "Input no prompt.",
+        "ctx": "Applesoft",
+        "desc": "Get a line into the input buffer and terminate with null",
+        "label": "INLIN",
+        "subctx": "io",
+        "type": "ROM routine"
+    },
+    "0xd52e": {
+        "brief": "Input with prompt.",
+        "ctx": "Applesoft",
+        "desc": "Display character in X and get a line into the input buffer and terminate with null",
+        "label": "INLIN2",
+        "subctx": "io",
+        "type": "ROM routine"
+    },
+    "0xd553": {
+        "brief": "Get character.",
+        "ctx": "Applesoft",
+        "desc": "Get character from input device in A.",
+        "label": "INCHR",
+        "subctx": "io",
+        "type": "ROM routine"
+    },
+    "0xd61a": {
+        "brief": "Find line number.",
+        "ctx": "Applesoft",
+        "desc": "Find line with LINNUM, if found C=1 and LOWTR=address of line, else C=0 LOWTR=first higher line.",
+        "label": "FNDLIN",
+        "subctx": "parsing",
+        "type": "ROM routine"
+    },
+    "0xd66c": {
+        "ctx": "Applesoft",
+        "desc": "Clear variables and stack.",
+        "label": "CLEARC",
+        "type": "ROM routine"
+    },
+    "0xd683": {
+        "ctx": "Applesoft",
+        "desc": "clear the stack.",
+        "label": "STKINI",
+        "type": "ROM routine"
+    },
+    "0xd697": {
+        "ctx": "Applesoft",
+        "desc": "Set TXTPTR to beginning.",
+        "label": "STXTPT",
+        "type": "ROM routine"
+    },
+    "0xd7d2": {
+        "brief": "Execute next statement.",
+        "ctx": "Applesoft",
+        "desc": "With TXTPTR at EOS or EOL, execute the next statement.  Does not return.",
+        "label": "NEWSTT",
+        "subctx": "parsing",
+        "type": "ROM routine"
+    },
+    "0xd849": {
+        "ctx": "Applesoft",
+        "desc": "Set DATAPTR to beginning.",
+        "label": "RESTOR",
+        "type": "ROM routine"
+    },
+    "0xd858": {
+        "brief": "Check for Ctrl-C.",
+        "ctx": "Applesoft",
+        "desc": "Check keyboard for Ctrl-C and BREAK if yes.",
+        "label": "ISCNTC",
+        "type": "ROM routine"
+    },
+    "0xd93e": {
+        "brief": "Parse number and branch.",
+        "ctx": "Applesoft",
+        "desc": "Parse a line number at TXTPTR and update TXTPTR to the new line.",
+        "label": "GOTO",
+        "subctx": "parsing",
+        "type": "ROM routine"
+    },
+    "0xd995": {
+        "ctx": "Applesoft",
+        "desc": "Advance to end of statement",
+        "label": "DATA",
+        "subctx": "parsing",
+        "type": "ROM routine"
+    },
+    "0xd9a3": {
+        "brief": "Offset to EOS.",
+        "ctx": "Applesoft",
+        "desc": "Get offset to end of statement and put in Y.",
+        "label": "DATAN",
+        "subctx": "parsing",
+        "type": "ROM routine"
+    },
+    "0xd9a6": {
+        "brief": "Offset to EOL.",
+        "ctx": "Applesoft",
+        "desc": "Get offset to end of line and put in Y.",
+        "label": "REMN",
+        "subctx": "parsing",
+        "type": "ROM routine"
+    },
+    "0xda0c": {
+        "brief": "Parse line number",
+        "ctx": "Applesoft",
+        "desc": "Having got the first digit, parse line number and put result in LINNUM",
+        "label": "LINGET",
+        "type": "ROM routine"
+    },
+    "0xda46": {
+        "brief": "Assign variable.",
+        "ctx": "Applesoft",
+        "desc": "With TXTPTR at variable name, evaluate formula and assign.",
+        "label": "LET",
+        "subctx": "parsing & variables",
+        "type": "ROM routine"
+    },
+    "0xdab7": {
+        "brief": "Copy string.",
+        "ctx": "Applesoft",
+        "desc": "Pop descriptor at LE (A,Y) from string stack and copy it to FORPNT.  Character data is not touched",
+        "label": "COPY",
+        "subctx": "string",
+        "type": "ROM routine"
+    },
+    "0xdb3a": {
+        "ctx": "Applesoft",
+        "desc": "Print string at LE (A,Y)",
+        "label": "STROUT",
+        "subctx": "io",
+        "type": "ROM routine"
+    },
+    "0xdb3d": {
+        "brief": "Print string at address.",
+        "ctx": "Applesoft",
+        "desc": "Print the string with descriptor at LE (FAC+3,FAC+4).",
+        "label": "STRPRT",
+        "subctx": "io",
+        "type": "ROM routine"
+    },
+    "0xdb5c": {
+        "ctx": "Applesoft",
+        "desc": "Print the character in A.",
+        "label": "OUTDO",
+        "subctx": "io",
+        "type": "ROM routine"
+    },
+    "0xdd67": {
+        "brief": "aexpr at TXTPTR to FAC",
+        "ctx": "Applesoft",
+        "desc": "Evaluate numerical expression at TXTPTR and put into FAC",
+        "label": "FRMNUM",
+        "subctx": "FP & parsing",
+        "type": "ROM routine"
+    },
+    "0xdd6a": {
+        "brief": "Is FAC a number.",
+        "ctx": "Applesoft",
+        "desc": "If FAC is not a number issue TYPE MISMATCH ERROR.",
+        "label": "CHKNUM",
+        "type": "ROM routine"
+    },
+    "0xdd6c": {
+        "brief": "Is FAC a string.",
+        "ctx": "Applesoft",
+        "desc": "If FAC is not a string issue TYPE MISMATCH ERROR.",
+        "label": "CHKSTR",
+        "type": "ROM routine"
+    },
+    "0xdd7b": {
+        "brief": "expr at TXTPTR to FAC",
+        "ctx": "Applesoft",
+        "desc": "Evaluate numerical or string expression at TXTPTR and put into FAC/DSCTMP",
+        "label": "FRMEVL",
+        "subctx": "FP & parsing & string",
+        "type": "ROM routine"
+    },
+    "0xdeb8": {
+        "brief": "check closing bracket",
+        "ctx": "Applesoft",
+        "desc": "Test for closing bracket at TXTPTR, return via CHRGET or SNERR",
+        "label": "CHKCLS",
+        "subctx": "parsing",
+        "type": "ROM routine"
+    },
+    "0xdebb": {
+        "brief": "check opening bracket",
+        "ctx": "Applesoft",
+        "desc": "Test for opening bracket at TXTPTR, return via CHRGET or SNERR",
+        "label": "CHKOPN",
+        "subctx": "parsing",
+        "type": "ROM routine"
+    },
+    "0xdebe": {
+        "brief": "check comma",
+        "ctx": "Applesoft",
+        "desc": "Test for comma at TXTPTR, return via CHRGET or SNERR",
+        "label": "CHKCOM",
+        "subctx": "parsing",
+        "type": "ROM routine"
+    },
+    "0xdec0": {
+        "brief": "Check character.",
+        "ctx": "Applesoft",
+        "desc": "If TXTPTR is different from A issue SYNTAX ERROR.",
+        "label": "SYNCHR",
+        "type": "ROM routine"
+    },
+    "0xdec9": {
+        "brief": "syntax error routine",
+        "ctx": "Applesoft",
+        "desc": "Prints SYNTAX ERROR and warm starts Applesoft",
+        "label": "SNERR",
+        "type": "ROM routine"
+    },
+    "0xdf6a": {
+        "brief": "FAC = ARG lop($16) FAC",
+        "ctx": "Applesoft",
+        "desc": "Compare ARC and FAC using operator encoded at $16, result in FAC",
+        "subctx": "FP",
+        "type": "ROM routine"
+    },
+    "0xdfe3": {
+        "brief": "Get variable at TXTPTR",
+        "ctx": "Applesoft",
+        "desc": "Parse variable name at TXTPTR, create if necessary, set VARPNT to address of value, advance TXTPTR",
+        "label": "PTRGET",
+        "subctx": "parsing & variables",
+        "type": "ROM routine"
+    },
+    "0xe000": {
+        "ctx": "Applesoft | Integer BASIC",
+        "desc": "Cold entry point",
+        "type": "ROM routine"
+    },
+    "0xe003": {
+        "ctx": "Applesoft | Integer BASIC",
+        "desc": "Warm entry point",
+        "type": "ROM routine"
+    },
+    "0xe07d": {
+        "brief": "Is A alpha",
+        "ctx": "Applesoft",
+        "desc": "Set carry bit if accumulator contains ASCII A through Z",
+        "label": "ISLETC",
+        "type": "ROM routine"
+    },
+    "0xe0fe": {
+        "ctx": "Applesoft",
+        "desc": "FP constant, -32768.00049",
+        "type": "float"
+    },
+    "0xe2f2": {
+        "brief": "integer to float",
+        "ctx": "Applesoft",
+        "desc": "convert signed integer LE Y,A into float in FAC",
+        "label": "GIVAYF",
+        "subctx": "FP",
+        "type": "ROM routine"
+    },
+    "0xe301": {
+        "ctx": "Applesoft",
+        "desc": "unsigned Y to FAC",
+        "label": "SNGFLT",
+        "subctx": "FP",
+        "type": "ROM routine"
+    },
+    "0xe3d5": {
+        "brief": "Create string.",
+        "ctx": "Applesoft",
+        "desc": "Make space for a string of length A, create descriptor at DSCTMP, set FRESPC.",
+        "label": "STRINI",
+        "subctx": "string",
+        "type": "ROM routine"
+    },
+    "0xe42a": {
+        "brief": "Push string result.",
+        "ctx": "Applesoft",
+        "desc": "Push DSCTMP (e.g. FRMEVL result) to string descriptor stack. The address of the stack location is saved in LE FAC+3,FAC+4.",
+        "label": "PUTNEW",
+        "subctx": "string",
+        "type": "ROM routine"
+    },
+    "0xe484": {
+        "brief": "Garbage collector.",
+        "ctx": "Applesoft",
+        "desc": "Free unreferenced strings, pack string data.",
+        "label": "GARBAG",
+        "type": "ROM routine"
+    },
+    "0xe4ab": {
+        "ctx": "Integer BASIC",
+        "desc": "Display current line number",
+        "type": "ROM routine"
+    },
+    "0xe51b": {
+        "ctx": "Integer BASIC",
+        "desc": "Display A and X in decimal",
+        "type": "ROM routine"
+    },
+    "0xe56d": {
+        "ctx": "Integer BASIC",
+        "desc": "Find line number",
+        "type": "ROM routine"
+    },
+    "0xe597": {
+        "brief": "Concatenate strings.",
+        "ctx": "Applesoft",
+        "desc": "Concatenate string at LE (FAC+3,FAC+4) with string expression, TXTPTR expected to be at the `+` operator",
+        "label": "CAT",
+        "subctx": "parsing & string",
+        "type": "ROM routine"
+    },
+    "0xe5e2": {
+        "brief": "move string",
+        "ctx": "Applesoft",
+        "desc": "Move string at LE (X,Y) with length A to FRESPC",
+        "label": "MOVSTR",
+        "subctx": "string",
+        "type": "ROM routine"
+    },
+    "0xe5fd": {
+        "brief": "Get and free string.",
+        "ctx": "Applesoft",
+        "desc": "If FAC is string: set A=length, INDEX=address: if temporary pop descriptor: if address=FRETOP then FRETOP += length.",
+        "label": "FRESTR",
+        "subctx": "string",
+        "type": "ROM routine"
+    },
+    "0xe635": {
+        "brief": "Free string descriptor.",
+        "ctx": "Applesoft",
+        "desc": "Pop the descriptor at LE (A,Y) if it points to expected string stack location.",
+        "label": "FRETMS",
+        "subctx": "string",
+        "type": "ROM routine"
+    },
+    "0xe6dc": {
+        "brief": "Get string for number.",
+        "ctx": "Applesoft",
+        "desc": "Call FRESTR, set VALTYP to number, put length in Y.  Used by functions of form sexpr->number.  The string is available at INDEX until overwritten.",
+        "label": "GETSTR",
+        "subctx": "string",
+        "type": "ROM routine"
+    },
+    "0xe6f8": {
+        "brief": "expression to X",
+        "ctx": "Applesoft",
+        "desc": "Evaluate expression at TXTPTR and store in X. Produce error if out of range.",
+        "label": "GETBYT",
+        "subctx": "FP & parsing",
+        "type": "ROM routine"
+    },
+    "0xe6fb": {
+        "brief": "FAC to X",
+        "ctx": "Applesoft",
+        "desc": "Convert FAC to unsigned byte in X",
+        "label": "CONINT",
+        "subctx": "FP",
+        "type": "ROM routine"
+    },
+    "0xe746": {
+        "brief": "parse to LINNUM,X",
+        "ctx": "Applesoft",
+        "desc": "parse two comma-delimited numbers into LINNUM and X",
+        "label": "GETNUM",
+        "subctx": "FP & parsing",
+        "type": "ROM routine"
+    },
+    "0xe752": {
+        "brief": "FAC to LINNUM",
+        "ctx": "Applesoft",
+        "desc": "Convert FAC to integer and store in LINNUM and LE Y,A",
+        "label": "GETADR",
+        "subctx": "FP",
+        "type": "ROM routine"
+    },
+    "0xe7a0": {
+        "ctx": "Applesoft",
+        "desc": "FAC = FAC + 1/2",
+        "label": "FADDH",
+        "subctx": "FP",
+        "type": "ROM routine"
+    },
+    "0xe7aa": {
+        "brief": "FAC = ARG - FAC",
+        "ctx": "Applesoft",
+        "desc": "FAC = ARG - FAC, must follow JSR MOVFM",
+        "label": "FSUBT",
+        "subctx": "FP",
+        "type": "ROM routine"
+    },
+    "0xe7c1": {
+        "brief": "FAC = ARG + FAC",
+        "ctx": "Applesoft",
+        "desc": "FAC = ARG + FAC, must follow JSR MOVFM",
+        "label": "FADDT",
+        "subctx": "FP",
+        "type": "ROM routine"
+    },
+    "0xe867": {
+        "ctx": "Integer BASIC",
+        "desc": "GOTO line of GOTOA",
+        "type": "ROM routine"
+    },
+    "0xe913": {
+        "ctx": "Applesoft",
+        "desc": "FP constant, 1",
+        "subctx": "FP",
+        "type": "float"
+    },
+    "0xe92d": {
+        "ctx": "Applesoft",
+        "desc": "FP constant, sqrt(.5)",
+        "subctx": "FP",
+        "type": "float"
+    },
+    "0xe932": {
+        "ctx": "Applesoft",
+        "desc": "FP constant, sqrt(2)",
+        "subctx": "FP",
+        "type": "float"
+    },
+    "0xe937": {
+        "ctx": "Applesoft",
+        "desc": "FP constant, -1/2",
+        "subctx": "FP",
+        "type": "float"
+    },
+    "0xe93c": {
+        "ctx": "Applesoft",
+        "desc": "FP constant, ln(2)",
+        "subctx": "FP",
+        "type": "float"
+    },
+    "0xe941": {
+        "brief": "FAC = ln(FAC)",
+        "ctx": "Applesoft",
+        "desc": "FAC = ln(FAC), natural logarithm",
+        "label": "LOG",
+        "subctx": "FP",
+        "type": "ROM routine"
+    },
+    "0xe982": {
+        "brief": "FAC = ARG * FAC",
+        "ctx": "Applesoft",
+        "desc": "FAC = ARG * FAC, must follow JSR MOVFM",
+        "label": "FMULTT",
+        "subctx": "FP",
+        "type": "ROM routine"
+    },
+    "0xe9e3": {
+        "brief": "unpack float",
+        "ctx": "Applesoft",
+        "desc": "unpack float at LE (A,Y) and put in ARG",
+        "label": "CONUPK",
+        "subctx": "FP",
+        "type": "ROM routine"
+    },
+    "0xea50": {
+        "ctx": "Applesoft",
+        "desc": "FP constant, 10",
+        "subctx": "FP",
+        "type": "float"
+    },
+    "0xea69": {
+        "brief": "FAC = ARG / FAC",
+        "ctx": "Applesoft",
+        "desc": "FAC = ARG / FAC, must follow JSR MOVFM, must test for div by 0",
+        "label": "FDIVT",
+        "subctx": "FP",
+        "type": "ROM routine"
+    },
+    "0xeaf9": {
+        "brief": "unpack float",
+        "ctx": "Applesoft",
+        "desc": "unpack float at LE (A,Y) and put in FAC",
+        "label": "MOVFM",
+        "subctx": "FP",
+        "type": "ROM routine"
+    },
+    "0xeb2b": {
+        "brief": "pack rounded",
+        "ctx": "Applesoft",
+        "desc": "pack rounded FAC and store at LE (X,Y)",
+        "label": "MOVMF",
+        "subctx": "FP",
+        "type": "ROM routine"
+    },
+    "0xeb2e": {
+        "brief": "pack float",
+        "ctx": "Applesoft",
+        "desc": "pack FAC and store at LE (X,Y)",
+        "label": "MOVMF1",
+        "subctx": "FP",
+        "type": "ROM routine"
+    },
+    "0xeb53": {
+        "brief": "FAC = ARG",
+        "ctx": "Applesoft",
+        "desc": "move ARG to FAC",
+        "label": "MOVFA",
+        "subctx": "FP",
+        "type": "ROM routine"
+    },
+    "0xeb63": {
+        "brief": "ARG = FAC",
+        "ctx": "Applesoft",
+        "desc": "move FAC to ARG",
+        "label": "MOVAF",
+        "subctx": "FP",
+        "type": "ROM routine"
+    },
+    "0xeb82": {
+        "brief": "A = sign of FAC",
+        "ctx": "Applesoft",
+        "desc": "set A = -1, 0, or 1 based on sign of FAC",
+        "label": "SIGN",
+        "subctx": "FP",
+        "type": "ROM routine"
+    },
+    "0xeb90": {
+        "brief": "FAC = sign of FAC",
+        "ctx": "Applesoft",
+        "desc": "set FAC to -1.0, 0.0, 1.0 based on sign of FAC",
+        "label": "SGN",
+        "subctx": "FP",
+        "type": "ROM routine"
+    },
+    "0xeb93": {
+        "ctx": "Applesoft",
+        "desc": "signed A to FAC",
+        "label": "FLOAT",
+        "subctx": "FP",
+        "type": "ROM routine"
+    },
+    "0xebaf": {
+        "brief": "FAC = abs(FAC)",
+        "ctx": "Applesoft",
+        "desc": "set FAC to absolute value of FAC",
+        "label": "ABS",
+        "subctx": "FP",
+        "type": "ROM routine"
+    },
+    "0xebb2": {
+        "brief": "float comparison",
+        "ctx": "Applesoft",
+        "desc": "compare float at LE (A,Y) with FAC, A=-1, 0, 1 if <FAC, =FAC, >FAC",
+        "label": "FCOMP",
+        "subctx": "FP",
+        "type": "ROM routine"
+    },
+    "0xec23": {
+        "brief": "truncate float",
+        "ctx": "Applesoft",
+        "desc": "truncate FAC and put result in FAC",
+        "label": "INT",
+        "subctx": "FP",
+        "type": "ROM routine"
+    },
+    "0xec4a": {
+        "brief": "FP literal to FAC",
+        "ctx": "Applesoft",
+        "desc": "Parse decimal digits and put into FAC",
+        "label": "FIN",
+        "subctx": "FP & parsing",
+        "type": "ROM routine"
+    },
+    "0xed24": {
+        "brief": "Print unsigned integer.",
+        "ctx": "Applesoft",
+        "desc": "Print the unsigned integer in LE X,A.",
+        "label": "LINPRT",
+        "subctx": "io",
+        "type": "ROM routine"
+    },
+    "0xed2e": {
+        "brief": "Print FAC.",
+        "ctx": "Applesoft",
+        "desc": "Print the number in FAC destructively.",
+        "label": "FACPRT",
+        "subctx": "io",
+        "type": "ROM routine"
+    },
+    "0xed34": {
+        "brief": "float to string",
+        "ctx": "Applesoft",
+        "desc": "convert FAC to string and store in FBUFFR (page 1)",
+        "label": "FOUT",
+        "subctx": "FP",
+        "type": "ROM routine"
+    },
+    "0xee64": {
+        "ctx": "Applesoft",
+        "desc": "FP constant, 1/2",
+        "subctx": "FP",
+        "type": "float"
+    },
+    "0xee8d": {
+        "ctx": "Applesoft",
+        "desc": "FAC = sqrt(FAC)",
+        "label": "SQR",
+        "subctx": "FP",
+        "type": "ROM routine"
+    },
+    "0xee97": {
+        "ctx": "Applesoft",
+        "desc": "FAC = ARG^FAC",
+        "label": "FPWRT",
+        "subctx": "FP",
+        "type": "ROM routine"
+    },
+    "0xeed0": {
+        "ctx": "Applesoft",
+        "desc": "FAC = -FAC",
+        "label": "NEGOP",
+        "subctx": "FP",
+        "type": "ROM routine"
+    },
+    "0xeedb": {
+        "ctx": "Applesoft",
+        "desc": "FP constant, log_2(e)",
+        "subctx": "FP",
+        "type": "float"
+    },
+    "0xef09": {
+        "ctx": "Applesoft",
+        "desc": "FAC = exp(FAC)",
+        "label": "EXP",
+        "subctx": "FP",
+        "type": "ROM routine"
+    },
+    "0xefae": {
+        "brief": "pseudorandom number",
+        "ctx": "Applesoft",
+        "desc": "put pseudorandom number in FAC",
+        "label": "RND",
+        "subctx": "FP",
+        "type": "ROM routine"
+    },
+    "0xefea": {
+        "ctx": "Applesoft",
+        "desc": "FAC = cos(FAC)",
+        "label": "COS",
+        "subctx": "FP",
+        "type": "ROM routine"
+    },
+    "0xeff1": {
+        "ctx": "Applesoft",
+        "desc": "FAC = sin(FAC)",
+        "label": "SIN",
+        "subctx": "FP",
+        "type": "ROM routine"
+    },
+    "0xf03a": {
+        "ctx": "Applesoft",
+        "desc": "FAC = tan(FAC)",
+        "label": "TAN",
+        "subctx": "FP",
+        "type": "ROM routine"
+    },
+    "0xf066": {
+        "ctx": "Applesoft",
+        "desc": "FP constant, pi/2",
+        "subctx": "FP",
+        "type": "float"
+    },
+    "0xf06b": {
+        "ctx": "Applesoft",
+        "desc": "FP constant, 2*pi",
+        "subctx": "FP",
+        "type": "float"
+    },
+    "0xf070": {
+        "ctx": "Applesoft",
+        "desc": "FP constant, 1/4",
+        "subctx": "FP",
+        "type": "float"
+    },
+    "0xf09e": {
+        "ctx": "Applesoft",
+        "desc": "FAC = arctan(FAC)",
+        "label": "ATN",
+        "subctx": "FP",
+        "type": "ROM routine"
+    },
+    "0xf1ec": {
+        "ctx": "Applesoft",
+        "desc": "get lo-res plot coords",
+        "label": "PLOTFNS",
+        "subctx": "parsing",
+        "type": "ROM routine"
+    },
+    "0xf2e9": {
+        "brief": "Execute ONERR handler.",
+        "ctx": "Applesoft",
+        "desc": "With the error code in X, execute the program's error handler.",
+        "label": "ERRHNDLR",
+        "type": "ROM routine"
+    },
+    "0xf318": {
+        "brief": "Resume after error.",
+        "ctx": "Applesoft",
+        "desc": "Re-try executing the statement that caused an error.",
+        "label": "RESUME",
+        "type": "ROM routine"
+    },
+    "0xf328": {
+        "brief": "Stack repair.",
+        "ctx": "Applesoft",
+        "desc": "Restore stack to its state prior to executing a statement that caused an error.",
+        "type": "ROM routine"
+    },
+    "0xf3d8": {
+        "ctx": "Applesoft",
+        "desc": "reset hi-res page 2.",
+        "label": "HGR2",
+        "subctx": "hi-res",
+        "type": "ROM routine"
+    },
+    "0xf3e2": {
+        "ctx": "Applesoft",
+        "desc": "reset hi-res page 1.",
+        "label": "HGR",
+        "subctx": "hi-res",
+        "type": "ROM routine"
+    },
+    "0xf3e4": {
+        "ctx": "Applesoft",
+        "desc": "reveal high-res page 1.",
+        "subctx": "hi-res",
+        "type": "ROM routine"
+    },
+    "0xf3f2": {
+        "brief": "clear high-res to black",
+        "ctx": "Applesoft",
+        "desc": "Clear current high resolution screen to black.",
+        "label": "HCLR",
+        "subctx": "hi-res",
+        "type": "ROM routine"
+    },
+    "0xf3f4": {
+        "brief": "clear high-res to last color",
+        "ctx": "Applesoft",
+        "desc": "Clear current high resolution screen to most recent `HPLOT` color.",
+        "label": "BKGND",
+        "subctx": "hi-res",
+        "type": "ROM routine"
+    },
+    "0xf411": {
+        "brief": "position hi-res cursor",
+        "ctx": "Applesoft",
+        "desc": "position cursor at LE X,Y horizontal, A vertical, on page indicated by $E6",
+        "label": "HPOSN",
+        "subctx": "hi-res",
+        "type": "ROM routine"
+    },
+    "0xf425": {
+        "brief": "FP1 = FP1 + FP2",
+        "ctx": "Integer BASIC",
+        "desc": "Integer BASIC floating point sum FP1 = FP1 + FP2.",
+        "label": "FADD",
+        "type": "ROM routine"
+    },
+    "0xf451": {
+        "brief": "convert integer to float",
+        "ctx": "Integer BASIC",
+        "desc": "Integer BASIC convert 16 bit integer to 32 bit float.",
+        "label": "FLOAT",
+        "type": "ROM routine"
+    },
+    "0xf457": {
+        "brief": "plot hi-res point",
+        "ctx": "Applesoft",
+        "desc": "plot point at LE X,Y horizontal, A vertical. ",
+        "label": "HPLOT",
+        "subctx": "hi-res",
+        "type": "ROM routine"
+    },
+    "0xf460": {
+        "brief": "convert +float to integer",
+        "ctx": "Integer BASIC",
+        "desc": "Integer BASIC convert positive 32 bit float to 16 bit integer.",
+        "label": "FIX",
+        "type": "ROM routine"
+    },
+    "0xf467": {
+        "brief": "decrement hi-res x-cursor",
+        "ctx": "Applesoft",
+        "desc": "decrement hi-res x-cursor updating $1c, $e5, and $30",
+        "label": "DECRX",
+        "subctx": "hi-res",
+        "type": "ROM routine"
+    },
+    "0xf468": {
+        "brief": "FP1 = FP2 - FP1",
+        "ctx": "Integer BASIC",
+        "desc": "Integer BASIC floating point difference FP1 = FP1 + FP2.",
+        "label": "FSUB",
+        "type": "ROM routine"
+    },
+    "0xf48a": {
+        "brief": "increment hi-res x-cursor",
+        "ctx": "Applesoft",
+        "desc": "increment hi-res x-cursor updating $1c, $e5, and $30",
+        "label": "INCRX",
+        "subctx": "hi-res",
+        "type": "ROM routine"
+    },
+    "0xf48c": {
+        "brief": "FP1 = FP1 * FP2",
+        "ctx": "Integer BASIC",
+        "desc": "Integer BASIC floating point product FP1 = FP1 * FP2.",
+        "label": "FMUL",
+        "type": "ROM routine"
+    },
+    "0xf4a4": {
+        "brief": "FP1 = -FP1",
+        "ctx": "Integer BASIC",
+        "desc": "Integer BASIC floating point complement FP1 = -FP1.",
+        "label": "FCOMPL",
+        "type": "ROM routine"
+    },
+    "0xf4b2": {
+        "brief": "FP1 = FP2 / FP1",
+        "ctx": "Integer BASIC",
+        "desc": "Integer BASIC floating point quotient FP1 = FP2 / FP1.",
+        "label": "FDIV",
+        "type": "ROM routine"
+    },
+    "0xf4d5": {
+        "brief": "decrement hi-res y-cursor",
+        "ctx": "Applesoft",
+        "desc": "decrement hi-res y-cursor updating ROWADR",
+        "label": "DECRY",
+        "subctx": "hi-res",
+        "type": "ROM routine"
+    },
+    "0xf504": {
+        "brief": "increment hi-res y-cursor",
+        "ctx": "Applesoft",
+        "desc": "increment hi-res y-cursor updating ROWADR",
+        "label": "INCRY",
+        "subctx": "hi-res",
+        "type": "ROM routine"
+    },
+    "0xf53a": {
+        "brief": "draw line to point",
+        "ctx": "Applesoft",
+        "desc": "draw line from last point to current point at LE A,X horizontal, Y vertical. ",
+        "label": "HLIN",
+        "subctx": "hi-res",
+        "type": "ROM routine"
+    },
+    "0xf5cb": {
+        "brief": "load high-res coords at 224",
+        "ctx": "Applesoft",
+        "desc": "Load current high resolution coordinate into word at 224 and byte at 226.",
+        "label": "HFIND",
+        "type": "ROM routine"
+    },
+    "0xf601": {
+        "brief": "draw shape",
+        "ctx": "Applesoft",
+        "desc": "draw shape pointed to by LE X,Y with rotation A",
+        "label": "DRAW",
+        "subctx": "hi-res",
+        "type": "ROM routine"
+    },
+    "0xf65d": {
+        "brief": "EOR the shape",
+        "ctx": "Applesoft",
+        "desc": "EOR shape pointed to by LE X,Y with rotation A",
+        "label": "XDRAW",
+        "subctx": "hi-res",
+        "type": "ROM routine"
+    },
+    "0xf68d": {
+        "brief": "convert -float to integer",
+        "ctx": "Integer BASIC",
+        "desc": "Integer BASIC convert negative 32 bit float to 16 bit integer.",
+        "label": "FIX1",
+        "type": "ROM routine"
+    },
+    "0xf6b9": {
+        "ctx": "Applesoft",
+        "desc": "get hi-res plot coords",
+        "label": "HFNS",
+        "subctx": "parsing",
+        "type": "ROM routine"
+    },
+    "0xf6f0": {
+        "brief": "set hi-res color",
+        "ctx": "Applesoft",
+        "desc": "set hi-res color to X",
+        "label": "HCOLOR",
+        "subctx": "hi-res",
+        "type": "ROM routine"
+    },
+    "0xf730": {
+        "brief": "prepare shape",
+        "ctx": "Applesoft",
+        "desc": "With shape number in X, prepare to draw the shape, HSHAPE receives shape address.",
+        "label": "SETSHP",
+        "subctx": "hi-res",
+        "type": "ROM routine"
+    },
+    "0xf7d9": {
+        "brief": "find array variable",
+        "ctx": "Applesoft",
+        "desc": "Find array variable named by TXTPTR, result in LOWTR. Used by STORE and RECALL.",
+        "label": "GETARYPT",
+        "subctx": "parsing & variables",
+        "type": "ROM routine"
+    },
+    "0xf800": {
+        "brief": "plot lores pixel",
+        "desc": "Plot a pixel on low resolution graphics screen.",
+        "label": "PLOT",
+        "type": "ROM routine"
+    },
+    "0xf819": {
+        "brief": "lores horizontal line",
+        "desc": "Plot a horizontal line on low resolution graphics screen.",
+        "label": "HLINE",
+        "type": "ROM routine"
+    },
+    "0xf828": {
+        "brief": "lores vertical line",
+        "desc": "Plot a vertical line on low resolution graphics screen.",
+        "label": "VLINE",
+        "type": "ROM routine"
+    },
+    "0xf832": {
+        "brief": "clear full screen of low-res",
+        "desc": "Clear full screen of low resolution graphics.",
+        "label": "CLRSCR",
+        "type": "ROM routine"
+    },
+    "0xf836": {
+        "brief": "clear upper 40 lines of low-res",
+        "desc": "Clear upper 40 lines of low resolution graphics.",
+        "label": "CLRTOP",
+        "type": "ROM routine"
+    },
+    "0xf864": {
+        "brief": "set lores color",
+        "desc": "Set color in A on low resolution graphics screen.",
+        "label": "SETCOL",
+        "type": "ROM routine"
+    },
+    "0xf871": {
+        "brief": "get lores pixel color",
+        "desc": "Get the color of the lores pixel at x=Y and y=A, put in A.",
+        "label": "SCRN",
+        "type": "ROM routine"
+    },
+    "0xf941": {
+        "brief": "print 4 digit hex",
+        "desc": "Print 4 digit hex with value X + A*256.",
+        "label": "PRNTAX",
+        "type": "ROM routine"
+    },
+    "0xf948": {
+        "desc": "Print 3 spaces.",
+        "label": "PRBLNK",
+        "type": "ROM routine"
+    },
+    "0xf94a": {
+        "desc": "Print X spaces.",
+        "label": "PRBL2",
+        "type": "ROM routine"
+    },
+    "0xfa62": {
+        "desc": "Pseudo reset.",
+        "type": "ROM routine"
+    },
+    "0xfaa6": {
+        "desc": "Boot.",
+        "type": "ROM routine"
+    },
+    "0xfad7": {
+        "desc": "Display all registers.",
+        "type": "ROM routine"
+    },
+    "0xfb1e": {
+        "desc": "Read analog port X, store in Y.",
+        "label": "PREAD",
+        "type": "ROM routine"
+    },
+    "0xfb2f": {
+        "desc": "Equivalent to TEXT.",
+        "label": "INIT",
+        "type": "ROM routine"
+    },
+    "0xfb40": {
+        "desc": "Equivalent to GR.",
+        "label": "SETGR",
+        "type": "ROM routine"
+    },
+    "0xfb60": {
+        "desc": "Clear screen and display machine type.",
+        "type": "ROM routine"
+    },
+    "0xfbb3": {
+        "brief": "Monitor signature",
+        "desc": "Monitor signature byte, 56 = standard, 234 = autostart, 6 = //e.",
+        "label": "VERSION",
+        "type": "byte value"
+    },
+    "0xfbdd": {
+        "desc": "Ring bell direct.",
+        "label": "BELLA",
+        "type": "ROM routine"
+    },
+    "0xfbf4": {
+        "desc": "Move cursor right.",
+        "type": "ROM routine"
+    },
+    "0xfc10": {
+        "desc": "Move cursor left.",
+        "type": "ROM routine"
+    },
+    "0xfc1a": {
+        "desc": "Move cursor up.",
+        "type": "ROM routine"
+    },
+    "0xfc22": {
+        "brief": "Vertical tab.",
+        "label": "VTAB",
+        "desc": "Set the row to CV. There is no HTAB, just set CH.",
+        "type": "ROM routine"
+    },
+    "0xfc42": {
+        "brief": "clear below cursor",
+        "desc": "Clear text between cursor and bottom margin.",
+        "type": "ROM routine"
+    },
+    "0xfc58": {
+        "brief": "clear text & reset cursor",
+        "desc": "Clear the text screen and reset cursor.",
+        "label": "HOME",
+        "type": "ROM routine"
+    },
+    "0xfc66": {
+        "desc": "Issue a line feed.",
+        "type": "ROM routine"
+    },
+    "0xfc70": {
+        "desc": "Scroll text up one line.",
+        "type": "ROM routine"
+    },
+    "0xfc9c": {
+        "brief": "clear right of cursor",
+        "desc": "Clear text between cursor and right margin",
+        "type": "ROM routine"
+    },
+    "0xfca8": {
+        "brief": "pause loop",
+        "desc": "Wait (26+27*A+5*A*A)/2 cycles, 1 cycle = .977778 microseconds",
+        "label": "WAIT",
+        "type": "ROM routine"
+    },
+    "0xfcc9": {
+        "desc": "write tape header",
+        "label": "HEADR",
+        "type": "ROM routine"
+    },
+    "0xfd0c": {
+        "desc": "Wait for any keypress.",
+        "label": "RDKEY",
+        "type": "ROM routine"
+    },
+    "0xfd1b": {
+        "brief": "get character",
+        "desc": "Get one character in A, set random number, replace cursor with character.",
+        "label": "KEYIN",
+        "type": "ROM routine"
+    },
+    "0xfd5a": {
+        "desc": "Wait for `Return` keypress.",
+        "type": "ROM routine"
+    },
+    "0xfd6a": {
+        "desc": "Input a record.",
+        "label": "GETLN",
+        "type": "ROM routine"
+    },
+    "0xfd6f": {
+        "brief": "Input without parsing `,` or `:`",
+        "desc": "Similar to `INPUT` but without parsing commas or colons, data left in page 2 buffer.",
+        "type": "ROM routine"
+    },
+    "0xfdda": {
+        "desc": "Print A as hex.",
+        "label": "PRBYTE",
+        "type": "ROM routine"
+    },
+    "0xfded": {
+        "brief": "Print character in A",
+        "desc": "Invoke output routine whose address is in (56).  Usually prints character in A.",
+        "label": "COUT",
+        "type": "ROM routine"
+    },
+    "0xfdf0": {
+        "brief": "Print character in A.",
+        "desc": "Print character in A to video with window parameters and control character routines.",
+        "label": "COUT1",
+        "type": "ROM routine"
+    },
+    "0xfe2c": {
+        "brief": "memory move",
+        "desc": "Memory move source (60)-(62) to destination (66).",
+        "label": "MOVE",
+        "type": "ROM routine"
+    },
+    "0xfe61": {
+        "desc": "Disassembler.",
+        "type": "ROM routine"
+    },
+    "0xfe89": {
+        "brief": "equivalent to IN#0",
+        "desc": "Reset the input hook to address of KEYIN.",
+        "label": "SETKB",
+        "type": "ROM routine"
+    },
+    "0xfe93": {
+        "brief": "equivalent to PR#0.",
+        "desc": "Reset the output hook to address of COUT1.",
+        "label": "SETVID",
+        "type": "ROM routine"
+    },
+    "0xfecd": {
+        "brief": "Write to tape.",
+        "desc": "Write block (60)-(62) to tape, including header.",
+        "label": "WRITE",
+        "type": "ROM routine"
+    },
+    "0xfefd": {
+        "brief": "Read from tape.",
+        "desc": "Read block (60)-(62) from tape.",
+        "label": "READ",
+        "type": "ROM routine"
+    },
+    "0xff2d": {
+        "desc": "Ring bell and print `ERR`.",
+        "type": "ROM routine"
+    },
+    "0xff3a": {
+        "desc": "Ring bell indirect.",
+        "label": "BELL",
+        "type": "ROM routine"
+    },
+    "0xff65": {
+        "desc": "Cold start Monitor.",
+        "label": "MON",
+        "type": "ROM routine"
+    },
+    "0xff69": {
+        "desc": "Warm start monitor.",
+        "label": "MONZ",
+        "type": "ROM routine"
+    },
+    "0xff70": {
+        "brief": "Scan input buffer.",
+        "desc": "Monitor routine to process contents of input buffer, cf. Lam's method.",
+        "type": "ROM routine"
+    }
+}

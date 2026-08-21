@@ -1,0 +1,100 @@
+name: Rust
+
+on:
+  push:
+    branches: [ "master" ]
+  pull_request:
+    branches: [ "master" ]
+
+env:
+  CARGO_TERM_COLOR: always
+
+defaults:
+  run:
+    # necessary for windows
+    shell: bash
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v4
+    - name: Cargo cache
+      uses: actions/cache@v4
+      with:
+        path: |
+          ~/.cargo/registry
+          ./target
+        key: test-cargo-registry
+    - name: Run tests
+      run: cargo test --verbose
+
+  build:
+    strategy:
+      matrix:
+        include:
+          - TARGET: x86_64-unknown-linux-musl
+            OS: ubuntu-latest
+          - TARGET: x86_64-apple-darwin
+            OS: macos-latest
+          - TARGET: aarch64-apple-darwin
+            OS: macos-latest
+          - TARGET: x86_64-pc-windows-msvc
+            OS: windows-latest
+    needs: test
+    runs-on: ${{ matrix.OS }}
+    env:
+      TARGET: ${{ matrix.TARGET }}
+      OS: ${{ matrix.OS }}
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install musl GCC wrapper
+        run: |
+          if [[ $OS =~ ^ubuntu.*$ ]]; then
+            sudo apt install musl-tools
+          fi
+      - name: Cargo cache
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.cargo/registry
+            ./target
+          key: build-cargo-registry-${{matrix.TARGET}}
+      - name: Install rust target
+        run: rustup target add $TARGET
+      - name: Run build
+        run: cargo build --release --verbose --target $TARGET
+      - name: Compress
+        run: |
+          mkdir -p ./artifacts
+          SERVERS=("server-applesoft" "server-integerbasic" "server-merlin")
+          if [[ $OS =~ ^windows.*$ ]]; then
+              EXE=".exe"
+          else
+              EXE=""
+          fi
+          if [[ $GITHUB_REF_TYPE =~ ^tag$ ]]; then
+            TAG=$GITHUB_REF_NAME
+          else
+            TAG=$GITHUB_SHA
+          fi
+          mv ./target/$TARGET/release/a2kit$EXE ./a2kit$EXE
+          tar -czf ./artifacts/a2kit-$TARGET-$TAG.tar.gz completions a2kit$EXE
+          for i in ${SERVERS[@]}; do
+            mv ./target/$TARGET/release/${i}$EXE ./artifacts/${i}-${TARGET}$EXE
+          done
+      - name: Archive artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: result-${{ matrix.TARGET }}
+          path: ./artifacts
+  merge:
+    runs-on: ubuntu-latest
+    needs: build
+    steps:
+      - name: Merge Artifacts
+        uses: actions/upload-artifact/merge@v4
+        with:
+          name: result
+          pattern: result-*

@@ -1,0 +1,46 @@
+// Attribute definitions
+namespace attr {
+
+  // A role assigned to a subject.
+  attribute roleId {
+    id = "urn:oasis:names:tc:xacml:2.0:subject:role"
+    type = string
+    category = subjectCat
+  }
+
+  // The owner of a shopping cart.
+  attribute cartOwner {
+    id = "urn:example:a2x:attr:resource:cart-owner"
+    type = string
+    category = resourceCat
+  }
+
+  // The type of a resource
+  attribute rType {
+    id = "urn:example:a2x:attr:resource:type"
+    type = string
+    category = resourceCat
+  }
+
+  // Does the cart contain age-restricted items?
+  attribute ageRestrictedContents {
+    id = "urn:example:a2x:attr:resource:age-restricted"
+    type = boolean
+    category = resourceCat
+  }
+
+  // Unique identifier for a transaction
+  attribute transactionId {
+    id = "urn:example:a2x:attr:resource:txn-id"
+    type = string
+    category = resourceCat
+  }
+
+  // Reason code for transaction voiding (for obligations)
+  attribute voidReasonCode {
+    id = "urn:example:a2x:attr:resource:txn-void-code"
+    type = string
+    category = resourceCat
+  }
+
+}

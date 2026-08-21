@@ -1,0 +1,1257 @@
+use alef_core::config::{Language, ResolvedCrateConfig};
+use anyhow::Context as _;
+use std::sync::LazyLock;
+use tracing::{debug, info, warn};
+
+use super::helpers::run_command;
+use super::{extract, readme};
+
+/// Regex for matching version field in Cargo.toml format files.
+static CARGO_VERSION_RE: LazyLock<regex::Regex> =
+    LazyLock::new(|| regex::Regex::new(r#"(?m)^(version\s*=\s*)"[^"]*""#).expect("valid regex"));
+
+/// Regex for matching semantic version strings.
+static SEMVER_RE: LazyLock<regex::Regex> =
+    LazyLock::new(|| regex::Regex::new(r"\d+\.\d+\.\d+(-[a-zA-Z0-9._]+)*").expect("valid regex"));
+
+/// Read the version from a Cargo.toml file (workspace or regular package).
+pub(crate) fn read_version(version_from: &str) -> anyhow::Result<String> {
+    let content =
+        std::fs::read_to_string(version_from).with_context(|| format!("failed to read version file {version_from}"))?;
+    let value: toml::Value =
+        toml::from_str(&content).with_context(|| format!("failed to parse TOML in {version_from}"))?;
+    if let Some(v) = value
+        .get("workspace")
+        .and_then(|w| w.get("package"))
+        .and_then(|p| p.get("version"))
+        .and_then(|v| v.as_str())
+    {
+        return Ok(v.to_string());
+    }
+    if let Some(v) = value
+        .get("package")
+        .and_then(|p| p.get("version"))
+        .and_then(|v| v.as_str())
+    {
+        return Ok(v.to_string());
+    }
+    anyhow::bail!("Could not find version in {version_from}")
+}
+
+/// Bump a semver version string by the given component (major, minor, patch).
+fn bump_version(version: &str, component: &str) -> anyhow::Result<String> {
+    let parts: Vec<&str> = version.split('.').collect();
+    if parts.len() != 3 {
+        anyhow::bail!("Invalid semver version: {version}");
+    }
+    let mut major: u64 = parts[0]
+        .parse()
+        .with_context(|| format!("Invalid major version component: {}", parts[0]))?;
+    let mut minor: u64 = parts[1]
+        .parse()
+        .with_context(|| format!("Invalid minor version component: {}", parts[1]))?;
+    let mut patch: u64 = parts[2]
+        .parse()
+        .with_context(|| format!("Invalid patch version component: {}", parts[2]))?;
+
+    match component {
+        "major" => {
+            major += 1;
+            minor = 0;
+            patch = 0;
+        }
+        "minor" => {
+            minor += 1;
+            patch = 0;
+        }
+        "patch" => {
+            patch += 1;
+        }
+        other => anyhow::bail!("Unknown bump component '{other}': expected major, minor, or patch"),
+    }
+
+    Ok(format!("{major}.{minor}.{patch}"))
+}
+
+/// Write a bumped version back into a Cargo.toml (workspace or regular package).
+fn write_version_to_cargo_toml(cargo_toml_path: &str, new_version: &str) -> anyhow::Result<()> {
+    let content =
+        std::fs::read_to_string(cargo_toml_path).with_context(|| format!("Failed to read {cargo_toml_path}"))?;
+
+    // Match `version = "..."` as a standalone line (covers both [package] and [workspace.package])
+    let new_content = CARGO_VERSION_RE
+        .replace(&content, format!(r#"version = "{new_version}""#).as_str())
+        .to_string();
+
+    if new_content == content {
+        anyhow::bail!("Could not find a `version = \"...\"` field to update in {cargo_toml_path}");
+    }
+
+    std::fs::write(cargo_toml_path, new_content)
+        .with_context(|| format!("Failed to write updated version to {cargo_toml_path}"))?;
+
+    Ok(())
+}
+
+/// Convert a semver pre-release version to PEP 440 format for Python/PyPI.
+/// e.g., "0.1.0-rc.1" → "0.1.0rc1", "0.1.0-alpha.2" → "0.1.0a2", "0.1.0-beta.3" → "0.1.0b3"
+/// Non-pre-release versions are returned unchanged.
+///
+/// Single-pass implementation: builds the result into one pre-allocated
+/// `String` instead of chaining five `.replace()` calls (each of which
+/// allocates a new intermediate `String`).
+fn to_pep440(version: &str) -> String {
+    let Some((base, pre)) = version.split_once('-') else {
+        return version.to_string();
+    };
+    let mut out = String::with_capacity(base.len() + pre.len());
+    out.push_str(base);
+    let pre_norm = if let Some(rest) = pre.strip_prefix("alpha.").or_else(|| pre.strip_prefix("alpha")) {
+        out.push('a');
+        rest
+    } else if let Some(rest) = pre.strip_prefix("beta.").or_else(|| pre.strip_prefix("beta")) {
+        out.push('b');
+        rest
+    } else if let Some(rest) = pre.strip_prefix("rc.").or_else(|| pre.strip_prefix("rc")) {
+        out.push_str("rc");
+        rest
+    } else {
+        pre
+    };
+    for c in pre_norm.chars() {
+        if c != '.' {
+            out.push(c);
+        }
+    }
+    out
+}
+
+use alef_core::version::{to_r_version, to_rubygems_prerelease};
+
+/// Verify that all package manifest versions match the Cargo.toml source of truth.
+/// Returns a list of mismatches (empty = all consistent).
+pub fn verify_versions(config: &ResolvedCrateConfig) -> anyhow::Result<Vec<String>> {
+    let expected = read_version(&config.version_from)?;
+    let expected_pep440 = to_pep440(&expected);
+    let expected_rubygems = to_rubygems_prerelease(&expected);
+    let mut mismatches = Vec::new();
+
+    // Cache compiled regexes across calls within this verify pass — the same
+    // ~15 patterns get reused on every invocation, and `Regex::new` is the
+    // dominant cost when the function is called from a tight loop.
+    fn extract_version(path: &str, pattern: &str) -> Option<String> {
+        use std::collections::HashMap;
+        use std::sync::Mutex;
+        use std::sync::OnceLock;
+        static CACHE: OnceLock<Mutex<HashMap<String, regex::Regex>>> = OnceLock::new();
+        let content = std::fs::read_to_string(path).ok()?;
+        let cache = CACHE.get_or_init(|| Mutex::new(HashMap::new()));
+        let mut guard = cache.lock().ok()?;
+        let re = match guard.get(pattern) {
+            Some(re) => re.clone(),
+            None => {
+                let re = regex::Regex::new(pattern).ok()?;
+                guard.insert(pattern.to_string(), re.clone());
+                re
+            }
+        };
+        drop(guard);
+        re.captures(&content)?.get(1).map(|m| m.as_str().to_string())
+    }
+
+    // Python (PEP 440 format)
+    if let Some(found) = extract_version("packages/python/pyproject.toml", r#"version\s*=\s*"([^"]*)""#) {
+        if found != expected_pep440 {
+            mismatches.push(format!(
+                "packages/python/pyproject.toml: found {found}, expected {expected_pep440}"
+            ));
+        }
+    }
+
+    // Node
+    if let Some(found) = extract_version("packages/typescript/package.json", r#""version"\s*:\s*"([^"]*)""#) {
+        if found != expected {
+            mismatches.push(format!(
+                "packages/typescript/package.json: found {found}, expected {expected}"
+            ));
+        }
+    }
+
+    // Java
+    if let Some(found) = extract_version("packages/java/pom.xml", r"<version>([^<]*)</version>") {
+        if found != expected {
+            mismatches.push(format!("packages/java/pom.xml: found {found}, expected {expected}"));
+        }
+    }
+
+    // Elixir — check both `version: "X.Y.Z"` and `@version "X.Y.Z"` patterns
+    if let Some(found) = extract_version("packages/elixir/mix.exs", r#"version:\s*"([^"]*)""#)
+        .or_else(|| extract_version("packages/elixir/mix.exs", r#"@version\s*"([^"]*)""#))
+    {
+        if found != expected {
+            mismatches.push(format!("packages/elixir/mix.exs: found {found}, expected {expected}"));
+        }
+    }
+
+    // Ruby gemspec (compare normalized form)
+    if let Ok(entries) = std::fs::read_dir("packages/ruby") {
+        for entry in entries.flatten() {
+            let path = entry.path();
+            if path.extension().is_some_and(|e| e == "gemspec") {
+                if let Some(found) = extract_version(
+                    &path.to_string_lossy(),
+                    r"spec\.version\s*=\s*['\x22]([^'\x22]*)['\x22]",
+                ) {
+                    if found != expected_rubygems {
+                        mismatches.push(format!(
+                            "{}: found {found}, expected {expected_rubygems}",
+                            path.display()
+                        ));
+                    }
+                }
+            }
+        }
+    }
+
+    // Ruby version.rb files (packages/ruby/{lib/*/,ext/*/src/*/,ext/*/native/src/*/}version.rb) (compare normalized form)
+    for pattern in &[
+        "packages/ruby/lib/*/version.rb",
+        "packages/ruby/ext/*/src/*/version.rb",
+        "packages/ruby/ext/*/native/src/*/version.rb",
+    ] {
+        if let Ok(entries) = glob::glob(pattern) {
+            for entry in entries.flatten() {
+                if let Some(found) = extract_version(&entry.to_string_lossy(), r#"VERSION\s*=\s*["']([^"']*)["']"#) {
+                    if found != expected_rubygems {
+                        mismatches.push(format!(
+                            "{}: found {found}, expected {expected_rubygems}",
+                            entry.display()
+                        ));
+                    }
+                }
+            }
+        }
+    }
+
+    // C# csproj
+    if let Some(found) = extract_version(
+        "packages/csharp/Kreuzcrawl/Kreuzcrawl.csproj",
+        r"<Version>([^<]*)</Version>",
+    ) {
+        if found != expected {
+            mismatches.push(format!("packages/csharp: found {found}, expected {expected}"));
+        }
+    }
+
+    // PHP composer.json
+    if let Some(found) = extract_version("packages/php/composer.json", r#""version"\s*:\s*"([^"]*)""#) {
+        if found != expected {
+            mismatches.push(format!(
+                "packages/php/composer.json: found {found}, expected {expected}"
+            ));
+        }
+    }
+
+    Ok(mismatches)
+}
+
+/// Set an explicit version in the Cargo.toml (supports pre-release versions like 0.1.0-rc.1).
+pub fn set_version(config: &ResolvedCrateConfig, version: &str) -> anyhow::Result<()> {
+    write_version_to_cargo_toml(&config.version_from, version)
+        .with_context(|| format!("failed to set version to {version}"))?;
+    info!("Set version to {version} in {}", config.version_from);
+    Ok(())
+}
+
+/// Sync version from Cargo.toml to all package manifest files.
+pub fn sync_versions(
+    config: &ResolvedCrateConfig,
+    config_path: &std::path::Path,
+    bump: Option<&str>,
+) -> anyhow::Result<()> {
+    // If bump is requested, read current version, bump it, and write it back to Cargo.toml.
+    if let Some(component) = bump {
+        let current = read_version(&config.version_from)?;
+        let bumped = bump_version(&current, component)?;
+        info!("Bumping version {current} -> {bumped} ({component})");
+        write_version_to_cargo_toml(&config.version_from, &bumped).context("failed to sync versions")?;
+        info!("Updated {} with bumped version {bumped}", config.version_from);
+    }
+
+    let version = read_version(&config.version_from)?;
+
+    // Always do the manifest scan. The previous warm-path short-circuit
+    // checked `.alef/last_synced_version` and returned early when the
+    // canonical version matched, which silently masked real drift:
+    // a manifest hand-edited to the wrong version, a newly-added manifest
+    // file (e.g. `e2e/rust/Cargo.toml` introduced after the last sync), or
+    // a stale `alef:hash:` line all looked the same as "already synced"
+    // because the cache key was only the version string. CI runs without
+    // the cache, so it produced a different result and the alef-sync-versions
+    // hook failed for downstream consumers. The scan is fast (sub-second
+    // on kreuzberg-sized repos) and the work is idempotent when nothing
+    // is actually stale.
+    let last_path = std::path::Path::new(".alef").join("last_synced_version");
+    info!("Syncing version {version}");
+
+    let mut updated = vec![];
+
+    // Workspace Cargo.toml files: sync [package] version in both members and excluded crates.
+    // Excluded crates (e.g. Ruby ext) have their own version field that needs updating.
+    // Uses write_version_to_cargo_toml which only replaces the [package] version field
+    // (anchored to start-of-line), so dependency version specs are never touched.
+    if let Ok(root_content) = std::fs::read_to_string("Cargo.toml") {
+        if let Ok(root_toml) = root_content.parse::<toml::Table>() {
+            let empty_vec = vec![];
+            let members = root_toml
+                .get("workspace")
+                .and_then(|w| w.get("members"))
+                .and_then(|m| m.as_array())
+                .unwrap_or(&empty_vec);
+            let excludes = root_toml
+                .get("workspace")
+                .and_then(|w| w.get("exclude"))
+                .and_then(|m| m.as_array())
+                .unwrap_or(&empty_vec);
+
+            for pattern_val in members.iter().chain(excludes.iter()) {
+                if let Some(pattern) = pattern_val.as_str() {
+                    if let Ok(paths) = glob::glob(&format!("{pattern}/Cargo.toml")) {
+                        for entry in paths.flatten() {
+                            let path_str = entry.to_string_lossy().to_string();
+                            // Skip crates that use workspace version inheritance or have no version
+                            if write_version_to_cargo_toml(&path_str, &version).is_ok() {
+                                updated.push(path_str);
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    // Python: pyproject.toml — convert semver pre-release to PEP 440 format
+    // e.g., "0.1.0-rc.1" → "0.1.0rc1", "0.1.0-alpha.2" → "0.1.0a2", "0.1.0-beta.3" → "0.1.0b3"
+    let python_version = to_pep440(&version);
+    if let Ok(content) = std::fs::read_to_string("packages/python/pyproject.toml") {
+        if let Some(new_content) = replace_version_pattern(&content, r#"version = "[^"]*""#, &python_version) {
+            std::fs::write("packages/python/pyproject.toml", &new_content)
+                .context("failed to write packages/python/pyproject.toml")?;
+            updated.push("packages/python/pyproject.toml".to_string());
+        }
+    }
+
+    // Node: package.json — use the configured Node package_dir, falling back
+    // to "packages/node" (the modern default) and "packages/typescript" (legacy
+    // path retained so older repos that still use the old default keep syncing).
+    let node_pkg_dir = config.package_dir(Language::Node);
+    let mut node_paths: Vec<String> = vec![format!("{node_pkg_dir}/package.json")];
+    if node_pkg_dir != "packages/typescript" {
+        node_paths.push("packages/typescript/package.json".to_string());
+    }
+    for node_path in node_paths {
+        if let Ok(content) = std::fs::read_to_string(&node_path) {
+            if let Some(new_content) = replace_version_pattern(&content, r#""version": "[^"]*""#, &version) {
+                std::fs::write(&node_path, &new_content).with_context(|| format!("failed to write {node_path}"))?;
+                updated.push(node_path);
+            }
+        }
+    }
+
+    // Ruby: *.gemspec (convert to RubyGems prerelease format)
+    let ruby_version = to_rubygems_prerelease(&version);
+    if let Ok(entries) = std::fs::read_dir("packages/ruby") {
+        for entry in entries.flatten() {
+            let path = entry.path();
+            if path.extension().is_some_and(|e| e == "gemspec") {
+                if let Ok(content) = std::fs::read_to_string(&path) {
+                    if let Some(new_content) =
+                        replace_version_pattern(&content, r#"spec\.version\s*=\s*['"][^'"]*['"]"#, &ruby_version)
+                    {
+                        std::fs::write(&path, &new_content)?;
+                        updated.push(path.to_string_lossy().to_string());
+                    }
+                }
+            }
+        }
+    }
+
+    // Ruby: {lib/*/,ext/*/src/*/,ext/*/native/src/*/}version.rb (convert to RubyGems prerelease format)
+    for pattern in &[
+        "packages/ruby/lib/*/version.rb",
+        "packages/ruby/ext/*/src/*/version.rb",
+        "packages/ruby/ext/*/native/src/*/version.rb",
+    ] {
+        for entry in glob::glob(pattern).into_iter().flatten().flatten() {
+            if let Ok(content) = std::fs::read_to_string(&entry) {
+                if let Some(new_content) =
+                    replace_version_pattern(&content, r#"VERSION\s*=\s*['"][^'"]*['"]"#, &ruby_version)
+                {
+                    std::fs::write(&entry, &new_content)?;
+                    updated.push(entry.to_string_lossy().to_string());
+                }
+            }
+        }
+    }
+
+    // Ruby: Gemfile.lock — update the path-gem version entries so bundler does not
+    // reject the lockfile with "frozen mode" errors on the next CI run.
+    // The lockfile contains the gem version in two places:
+    //   1. Under PATH > specs: `    <name> (<version>)` (4-space indent)
+    //   2. Under CHECKSUMS:    `  <name> (<version>)` (2-space indent, no sha256)
+    // We replace both textually, reusing the already-computed ruby_version.
+    let gemfile_lock_path = std::path::Path::new("packages/ruby/Gemfile.lock");
+    if gemfile_lock_path.exists() {
+        if let Ok(content) = std::fs::read_to_string(gemfile_lock_path) {
+            if let Some(new_content) = sync_gemfile_lock(&content, &ruby_version) {
+                std::fs::write(gemfile_lock_path, &new_content)
+                    .context("failed to write packages/ruby/Gemfile.lock")?;
+                updated.push("packages/ruby/Gemfile.lock".to_string());
+            }
+        }
+    }
+
+    // PHP: composer.json
+    if let Ok(content) = std::fs::read_to_string("packages/php/composer.json") {
+        if let Some(new_content) = replace_version_pattern(&content, r#""version": "[^"]*""#, &version) {
+            std::fs::write("packages/php/composer.json", &new_content)?;
+            updated.push("packages/php/composer.json".to_string());
+        }
+    }
+
+    // Elixir: mix.exs — handle both `version: "X.Y.Z"` and `@version "X.Y.Z"` patterns
+    if let Ok(content) = std::fs::read_to_string("packages/elixir/mix.exs") {
+        if let Some(new_content) = replace_version_pattern(&content, r#"version: "[^"]*""#, &version) {
+            std::fs::write("packages/elixir/mix.exs", &new_content)?;
+            updated.push("packages/elixir/mix.exs".to_string());
+        } else if let Some(new_content) = replace_version_pattern(&content, r#"@version "[^"]*""#, &version) {
+            std::fs::write("packages/elixir/mix.exs", &new_content)?;
+            updated.push("packages/elixir/mix.exs".to_string());
+        }
+    }
+
+    // Go: go.mod (no version field, skip)
+
+    // Java: pom.xml
+    if let Ok(content) = std::fs::read_to_string("packages/java/pom.xml") {
+        if let Some(new_content) = replace_version_pattern(&content, r#"<version>[^<]*</version>"#, &version) {
+            std::fs::write("packages/java/pom.xml", &new_content)?;
+            updated.push("packages/java/pom.xml".to_string());
+        }
+    }
+
+    // C#: *.csproj (recursive under packages/csharp)
+    for entry in glob::glob("packages/csharp/**/*.csproj")
+        .into_iter()
+        .flatten()
+        .flatten()
+    {
+        if let Ok(content) = std::fs::read_to_string(&entry) {
+            if let Some(new_content) = replace_version_pattern(&content, r#"<Version>[^<]*</Version>"#, &version) {
+                std::fs::write(&entry, &new_content)?;
+                updated.push(entry.to_string_lossy().to_string());
+            }
+        }
+    }
+
+    // WASM: package.json
+    for wasm_pkg in glob::glob("crates/*-wasm/package.json").into_iter().flatten().flatten() {
+        if let Ok(content) = std::fs::read_to_string(&wasm_pkg) {
+            if let Some(new_content) = replace_version_pattern(&content, r#""version":\s*"[^"]*""#, &version) {
+                std::fs::write(&wasm_pkg, &new_content)?;
+                updated.push(wasm_pkg.to_string_lossy().to_string());
+            }
+        }
+    }
+
+    // Root composer.json (if present)
+    if let Ok(content) = std::fs::read_to_string("composer.json") {
+        if let Some(new_content) = replace_version_pattern(&content, r#""version":\s*"[^"]*""#, &version) {
+            std::fs::write("composer.json", &new_content)?;
+            updated.push("composer.json".to_string());
+        }
+    }
+
+    // R: DESCRIPTION file — CRAN rejects SemVer dash prereleases.
+    if let Ok(content) = std::fs::read_to_string("packages/r/DESCRIPTION") {
+        let r_version = to_r_version(&version);
+        if let Some(new_content) = replace_version_pattern(&content, r"Version:\s*[^\n]*", &r_version) {
+            std::fs::write("packages/r/DESCRIPTION", &new_content)?;
+            updated.push("packages/r/DESCRIPTION".to_string());
+        }
+    }
+
+    // Python: __init__.py
+    if let Ok(content) = std::fs::read_to_string("packages/python/__init__.py") {
+        if let Some(new_content) = replace_version_pattern(&content, r#"__version__\s*=\s*"[^"]*""#, &version) {
+            std::fs::write("packages/python/__init__.py", &new_content)?;
+            updated.push("packages/python/__init__.py".to_string());
+        }
+    }
+
+    // Go: ffi_loader.go
+    if let Ok(content) = std::fs::read_to_string("packages/go/ffi_loader.go") {
+        if let Some(new_content) = replace_version_pattern(&content, r#"defaultFFIVersion\s*=\s*"[^"]*""#, &version) {
+            std::fs::write("packages/go/ffi_loader.go", &new_content)?;
+            updated.push("packages/go/ffi_loader.go".to_string());
+        }
+    }
+
+    // Process extra_paths from config [sync] section (glob patterns)
+    if let Some(sync_config) = &config.sync {
+        for pattern in &sync_config.extra_paths {
+            match glob::glob(pattern) {
+                Ok(paths) => {
+                    for entry in paths {
+                        match entry {
+                            Ok(path) => {
+                                if let Ok(content) = std::fs::read_to_string(&path) {
+                                    let file_name = path.file_name().and_then(|f| f.to_str()).unwrap_or("");
+                                    let extension = path.extension().and_then(|e| e.to_str()).unwrap_or("");
+                                    if file_name == "package.json" {
+                                        // For package.json files, only update the top-level
+                                        // "version" field to avoid clobbering dependency versions.
+                                        if let Some(new_content) =
+                                            replace_version_pattern(&content, r#""version":\s*"[^"]*""#, &version)
+                                        {
+                                            if let Err(e) = std::fs::write(&path, &new_content) {
+                                                debug!("Could not write {}: {e}", path.display());
+                                            } else {
+                                                updated.push(path.to_string_lossy().to_string());
+                                            }
+                                        }
+                                    } else if file_name == "Cargo.toml" {
+                                        // Cargo.toml: only update [package] version (line-anchored).
+                                        // Never use replace_all — it corrupts dependency version specs.
+                                        let path_str = path.to_string_lossy().to_string();
+                                        if write_version_to_cargo_toml(&path_str, &version).is_ok() {
+                                            updated.push(path_str);
+                                        }
+                                    } else if file_name == "pyproject.toml" {
+                                        // pyproject.toml: only update the `version = "..."` field.
+                                        // Never do blanket regex replace — it corrupts requires-python
+                                        // and dependency version specifiers.
+                                        let py_ver = to_pep440(&version);
+                                        if let Some(new_content) =
+                                            replace_version_pattern(&content, r#"version = "[^"]*""#, &py_ver)
+                                        {
+                                            if let Err(e) = std::fs::write(&path, &new_content) {
+                                                debug!("Could not write {}: {e}", path.display());
+                                            } else {
+                                                updated.push(path.to_string_lossy().to_string());
+                                            }
+                                        }
+                                    } else if file_name == "version.rb" {
+                                        // Ruby version.rb: gem-formatted, replace VERSION constant only.
+                                        // Never use SEMVER_RE — `0.3.0` in `0.3.0.pre.rc.2` would re-acquire
+                                        // a dash-form prerelease, corrupting the gem version.
+                                        let rb_ver = to_rubygems_prerelease(&version);
+                                        if let Some(new_content) = replace_version_pattern(
+                                            &content,
+                                            r#"VERSION\s*=\s*['"][^'"]*['"]"#,
+                                            &rb_ver,
+                                        ) {
+                                            if let Err(e) = std::fs::write(&path, &new_content) {
+                                                debug!("Could not write {}: {e}", path.display());
+                                            } else {
+                                                updated.push(path.to_string_lossy().to_string());
+                                            }
+                                        }
+                                    } else if extension == "gemspec" {
+                                        // gemspec: gem-formatted, replace spec.version only.
+                                        let rb_ver = to_rubygems_prerelease(&version);
+                                        if let Some(new_content) = replace_version_pattern(
+                                            &content,
+                                            r#"spec\.version\s*=\s*['"][^'"]*['"]"#,
+                                            &rb_ver,
+                                        ) {
+                                            if let Err(e) = std::fs::write(&path, &new_content) {
+                                                debug!("Could not write {}: {e}", path.display());
+                                            } else {
+                                                updated.push(path.to_string_lossy().to_string());
+                                            }
+                                        }
+                                    } else if file_name == "gleam.toml" {
+                                        // gleam.toml: update the package version field AND restore
+                                        // canonical dependency version ranges. The restore is a
+                                        // self-healing safeguard — earlier alef releases routed
+                                        // `gleam.toml` through the SEMVER_RE catch-all path, which
+                                        // rewrote `gleam_stdlib = ">= 0.34.0 and < 2.0.0"` into
+                                        // `>= {workspace_version} and < {workspace_version}` (an
+                                        // empty range gleam refuses to resolve). Without the
+                                        // dep-range restore, any package that still has the
+                                        // corrupted shape on disk stays broken until a contributor
+                                        // notices.
+                                        let mut new_content = content.clone();
+                                        if let Some(updated_version) =
+                                            replace_version_pattern(&new_content, r#"version = "[^"]*""#, &version)
+                                        {
+                                            new_content = updated_version;
+                                        }
+                                        new_content = restore_gleam_dep_ranges(&new_content);
+                                        if new_content != content {
+                                            if let Err(e) = std::fs::write(&path, &new_content) {
+                                                debug!("Could not write {}: {e}", path.display());
+                                            } else {
+                                                updated.push(path.to_string_lossy().to_string());
+                                            }
+                                        }
+                                    } else {
+                                        let new_content = SEMVER_RE.replace_all(&content, version.as_str()).to_string();
+                                        if new_content != content {
+                                            if let Err(e) = std::fs::write(&path, &new_content) {
+                                                debug!("Could not write {}: {e}", path.display());
+                                            } else {
+                                                updated.push(path.to_string_lossy().to_string());
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                            Err(e) => {
+                                debug!("Glob entry error for pattern '{pattern}': {e}");
+                            }
+                        }
+                    }
+                }
+                Err(e) => {
+                    debug!("Invalid glob pattern '{pattern}': {e}");
+                }
+            }
+        }
+
+        // Process text_replacements from config [sync] section
+        for replacement in &sync_config.text_replacements {
+            match glob::glob(&replacement.path) {
+                Ok(paths) => {
+                    for entry in paths {
+                        match entry {
+                            Ok(path) => {
+                                if let Ok(content) = std::fs::read_to_string(&path) {
+                                    let search = replacement.search.replace("{version}", &version);
+                                    let replace = replacement.replace.replace("{version}", &version);
+                                    if let Ok(re) = regex::Regex::new(&search) {
+                                        let new_content = re.replace_all(&content, replace.as_str()).to_string();
+                                        if new_content != content {
+                                            if let Err(e) = std::fs::write(&path, &new_content) {
+                                                debug!("Could not write {}: {e}", path.display());
+                                            } else {
+                                                updated.push(path.to_string_lossy().to_string());
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                            Err(e) => {
+                                debug!("Glob entry error for pattern '{}': {e}", replacement.path);
+                            }
+                        }
+                    }
+                }
+                Err(e) => {
+                    debug!("Invalid glob pattern '{}': {e}", replacement.path);
+                }
+            }
+        }
+    }
+
+    // Finalize alef:hash lines in every file that carries the alef header and
+    // was rewritten by this sync. Without this, alef-verify would see a stale
+    // hash because the version string changed but the hash was not updated.
+    let updated_paths: std::collections::HashSet<std::path::PathBuf> =
+        updated.iter().map(std::path::PathBuf::from).collect();
+    if !updated_paths.is_empty() {
+        match super::super::cache::sources_hash(&config.sources) {
+            Ok(sources_hash) => match super::generate::finalize_hashes(&updated_paths, &sources_hash) {
+                Ok(n) if n > 0 => {
+                    debug!("  Finalized alef:hash in {n} file(s)");
+                }
+                Ok(_) => {}
+                Err(e) => {
+                    warn!("Could not finalize hashes after version sync: {e}");
+                }
+            },
+            Err(e) => {
+                warn!("Could not compute sources hash for finalize_hashes: {e}");
+            }
+        }
+    }
+
+    for file in &updated {
+        info!("  Updated: {file}");
+    }
+
+    // Rebuild FFI to refresh C headers (cbindgen) if FFI language is configured
+    // AND something actually changed. Skip when versions were already in sync —
+    // a warm rerun should not invoke cargo at all.
+    if !updated.is_empty() && config.languages.contains(&Language::Ffi) {
+        let ffi_crate = config
+            .explicit_output
+            .ffi
+            .as_ref()
+            .and_then(|p| {
+                // Output path is like "crates/html-to-markdown-ffi/src/" — get the crate dir name
+                let p = p.to_string_lossy();
+                let trimmed = p.trim_end_matches('/');
+                let trimmed = trimmed.strip_suffix("/src").unwrap_or(trimmed);
+                trimmed.rsplit('/').next().map(|s| s.to_string())
+            })
+            .filter(|s| !s.is_empty())
+            .unwrap_or_else(|| format!("{}-ffi", config.core_crate_dir()));
+        info!("Rebuilding FFI ({ffi_crate}) to refresh C headers...");
+        let _ = run_command(&format!("cargo build -p {ffi_crate}"));
+    }
+
+    // Stamp the last-synced version so the next warm run can skip the entire
+    // glob+regex pass without re-stat'ing every manifest.
+    let _ = std::fs::create_dir_all(".alef");
+    let _ = std::fs::write(&last_path, &version);
+
+    // If no manifest actually changed, nothing else needs refreshing — the
+    // generated README/docs/binding hashes still match. This is the warm-path
+    // fast exit: hundreds of files were already on disk with the right
+    // version, so we skip the cache wipe + README regeneration entirely.
+    if updated.is_empty() {
+        debug!("Versions already in sync — skipping README regeneration");
+        return Ok(());
+    }
+
+    // Selective cache invalidation: only README (and stage caches that embed
+    // version strings) are stale after a sync. Leave the IR cache and the
+    // per-language binding hashes in place so the next `alef generate` does
+    // not have to re-extract or re-emit unchanged backends.
+    let hashes_dir = std::path::Path::new(".alef").join("hashes");
+    for stem in ["readme", "docs", "scaffold"] {
+        for ext in [".hash", ".manifest", ".output_hashes"] {
+            let p = hashes_dir.join(format!("{stem}{ext}"));
+            if p.exists() {
+                let _ = std::fs::remove_file(&p);
+            }
+        }
+    }
+
+    // Regenerate READMEs with the new version.
+    info!("Regenerating READMEs with updated version");
+    match regenerate_readmes(config, config_path) {
+        Ok(count) => {
+            if count > 0 {
+                info!("  Regenerated {count} README(s)");
+            } else {
+                debug!("  No READMEs updated");
+            }
+        }
+        Err(e) => {
+            warn!("Could not regenerate READMEs: {e}");
+        }
+    }
+
+    Ok(())
+}
+
+/// Internal helper to regenerate READMEs after a version sync.
+/// Extracts IR, computes README files, and writes them to disk.
+fn regenerate_readmes(config: &ResolvedCrateConfig, config_path: &std::path::Path) -> anyhow::Result<usize> {
+    let api = extract(config, config_path, false)?;
+    let languages = config.languages.clone();
+    let readme_files = readme(&api, config, &languages)?;
+    let base_dir = std::path::PathBuf::from(".");
+    let _ = config_path; // unused now that the embedded hash is per-file content-derived
+    let sources_hash = super::super::cache::sources_hash(&config.sources)?;
+    let count = super::generate::write_scaffold_files_with_overwrite(&readme_files, &base_dir, true)?;
+    let paths: std::collections::HashSet<std::path::PathBuf> =
+        readme_files.iter().map(|f| base_dir.join(&f.path)).collect();
+    super::generate::finalize_hashes(&paths, &sources_hash)?;
+    Ok(count)
+}
+
+/// Update all `<gem-name> (<old-version>)` entries in a Gemfile.lock to `new_ruby_version`.
+///
+/// Gemfile.lock records the path-gem version in two places:
+///
+/// 1. Under `PATH > specs:` — four-space indent, may include dependency lines below it.
+/// 2. Under `CHECKSUMS` — two-space indent, no sha256 suffix (path gems are not downloaded).
+///
+/// Both patterns look like `  <name> (<version>)` with varying indentation. We replace
+/// every occurrence of `<name> (<old>)` with `<name> (<new>)` regardless of indent, so
+/// the function handles any future Gemfile.lock layout changes automatically.
+///
+/// Returns `Some(new_content)` when at least one substitution was made, `None` when the
+/// lockfile already contains the target version everywhere (idempotent).
+fn sync_gemfile_lock(content: &str, new_ruby_version: &str) -> Option<String> {
+    // Build a regex that matches `<gem-name> (<any-version>)` on a word boundary
+    // so we never accidentally match a gem whose name is a prefix of another.
+    // The gem name is captured from the first occurrence we find in the file
+    // (the PATH > specs block always appears first).
+    use std::sync::LazyLock;
+    static GEM_VERSION_RE: LazyLock<regex::Regex> = LazyLock::new(|| {
+        // Matches: optional leading whitespace + gem-name + space + (version)
+        // Capture group 1 = gem name, group 2 = version inside parens.
+        regex::Regex::new(r"(?m)^([ \t]*)([A-Za-z0-9_-]+) \(([^)]+)\)$").expect("valid regex")
+    });
+
+    // Collect the set of gem names that appear in the PATH block (path gems).
+    // PATH block starts with "^PATH" and ends at the next blank line or new section.
+    let path_gem_names: std::collections::HashSet<String> = {
+        let mut names = std::collections::HashSet::new();
+        let mut in_specs = false;
+        for line in content.lines() {
+            if line.trim_start().starts_with("specs:") {
+                // Only enter specs-tracking mode when we are in a PATH block, which
+                // always appears before GEM. A simple heuristic: the PATH section
+                // starts with "^PATH" (no indent). Track whether we saw PATH before
+                // seeing GEM.
+            }
+            if line == "PATH" {
+                in_specs = true;
+                continue;
+            }
+            if in_specs && line.starts_with("  specs:") {
+                continue;
+            }
+            if in_specs && line.starts_with("    ") {
+                // Four-space indent — these are gem entries in the PATH specs block.
+                if let Some(caps) = GEM_VERSION_RE.captures(line) {
+                    let indent = &caps[1];
+                    let name = &caps[2];
+                    if indent.len() == 4 {
+                        names.insert(name.to_string());
+                    }
+                }
+                continue;
+            }
+            // A line without four-space indent ends the PATH > specs block.
+            if in_specs
+                && !line.starts_with("    ")
+                && !line.trim().is_empty()
+                && line != "PATH"
+                && !line.starts_with("  ")
+            {
+                // Top-level section header — PATH block is done.
+                in_specs = false;
+            }
+        }
+        names
+    };
+
+    if path_gem_names.is_empty() {
+        return None;
+    }
+
+    let mut changed = false;
+    let new_content = content
+        .lines()
+        .map(|line| {
+            if let Some(caps) = GEM_VERSION_RE.captures(line) {
+                let gem_name = &caps[2];
+                let current_version = &caps[3];
+                if path_gem_names.contains(gem_name) && current_version != new_ruby_version {
+                    changed = true;
+                    // Reconstruct the line with the new version, preserving indent.
+                    let indent = &caps[1];
+                    return format!("{indent}{gem_name} ({new_ruby_version})");
+                }
+            }
+            line.to_string()
+        })
+        .collect::<Vec<_>>()
+        .join("\n");
+
+    // Preserve trailing newline if the original had one.
+    let new_content = if content.ends_with('\n') {
+        format!("{new_content}\n")
+    } else {
+        new_content
+    };
+
+    if changed { Some(new_content) } else { None }
+}
+
+/// Replace version pattern in content. Returns `Some(new_content)` only when
+/// the regex match exists *and* the captured version string actually differs
+/// from the target. This is the idempotency guard against:
+///   1. backend codegen that emits a manifest with the right value but in a
+///      slightly different syntactic form (e.g. Magnus emits `VERSION =
+///      "4.10.0.pre.rc.9"` while the regex's replacement template uses
+///      single-quotes); without this guard the two paths ping-pong and every
+///      warm `alef generate` rewrites the manifest, triggers README regen,
+///      and looks like real drift to downstream tooling.
+///   2. trivial round-trips where new content == old content despite the
+///      regex matching.
+fn replace_version_pattern(content: &str, pattern: &str, version: &str) -> Option<String> {
+    let regex = regex::Regex::new(pattern).ok()?;
+    let captures = regex.captures(content)?;
+    let matched = captures.get(0)?.as_str();
+    // Extract the version literal (text between the first pair of quotes or
+    // angle/colon delimiters) and short-circuit when it already equals the
+    // target. This way `VERSION = "x"` and `VERSION = 'x'` both count as
+    // "already in sync" when x matches, regardless of quote style.
+    if matched_version_equals(matched, version) {
+        return None;
+    }
+
+    let replacement = match pattern {
+        p if p.contains("version =") && !p.contains("spec") && !p.contains("VERSION") => {
+            format!(r#"version = "{version}""#)
+        }
+        p if p.contains("\"version\"") && p.contains("\"") => format!(r#""version": "{version}""#),
+        p if p.contains("spec") => format!("spec.version = '{version}'"),
+        p if p.contains("<version>") => format!("<version>{version}</version>"),
+        p if p.contains("<Version>") => format!("<Version>{version}</Version>"),
+        p if p.contains("@version") => format!(r#"@version "{version}""#),
+        p if p.contains("version:") && p.contains(":") => format!(r#"version: "{version}""#),
+        p if p.contains("__version__") => format!(r#"__version__ = "{version}""#),
+        p if p.contains("defaultFFIVersion") => format!(r#"defaultFFIVersion = "{version}""#),
+        p if p.contains("Version:") => format!("Version: {version}"),
+        p if p.contains("VERSION") => format!("VERSION = '{version}'"),
+        _ => return None,
+    };
+
+    let new_content = regex.replace(content, replacement.as_str()).to_string();
+    if new_content == content {
+        return None;
+    }
+    Some(new_content)
+}
+
+/// Extract the version-literal substring from a regex match string and decide
+/// whether it already equals `target`. The match string is something like
+/// `VERSION = "1.2.3"`, `version = "1.2.3"`, `<version>1.2.3</version>`,
+/// `Version: 1.2.3`. We look for the first chunk after the delimiter and
+/// compare it to `target`; quote style is irrelevant.
+fn matched_version_equals(matched: &str, target: &str) -> bool {
+    extract_version_literal(matched).is_some_and(|v| v == target)
+}
+
+/// Restore canonical hex dependency version ranges in `gleam.toml`.
+///
+/// Earlier alef releases sometimes routed `gleam.toml` through the catch-all
+/// `SEMVER_RE.replace_all` path, which rewrote every `\d+\.\d+\.\d+` literal
+/// in the file with the workspace version — turning
+/// `gleam_stdlib = ">= 0.34.0 and < 2.0.0"` into
+/// `gleam_stdlib = ">= 5.0.0-rc.1 and < 5.0.0-rc.1"` (an empty version range
+/// that gleam refuses to resolve).
+///
+/// This helper deterministically restores the canonical ranges from
+/// `template_versions::hex` whenever it sees a `gleam_stdlib` or `gleeunit`
+/// dependency line, so a single `alef sync-versions` heals affected
+/// manifests without manual intervention.
+fn restore_gleam_dep_ranges(content: &str) -> String {
+    use alef_core::template_versions::hex;
+    static GLEAM_DEP_RE: LazyLock<regex::Regex> = LazyLock::new(|| {
+        // Match lines like:  `gleam_stdlib = "..."`  or  `gleeunit = "..."`
+        // Captures: 1=name, 2=value (between quotes).
+        regex::Regex::new(r#"(?m)^(gleam_stdlib|gleeunit)\s*=\s*"([^"]*)""#).expect("valid regex")
+    });
+
+    GLEAM_DEP_RE
+        .replace_all(content, |caps: &regex::Captures<'_>| {
+            let name = &caps[1];
+            let canonical = match name {
+                "gleam_stdlib" => hex::GLEAM_STDLIB_VERSION_RANGE,
+                "gleeunit" => hex::GLEEUNIT_VERSION_RANGE,
+                _ => return caps[0].to_string(),
+            };
+            format!("{name} = \"{canonical}\"")
+        })
+        .into_owned()
+}
+
+fn extract_version_literal(matched: &str) -> Option<&str> {
+    // Try paired-quote form first ("..." or '...').
+    if let Some(start) = matched.find(['"', '\'']) {
+        let quote = matched.as_bytes()[start];
+        let rest = &matched[start + 1..];
+        if let Some(end) = rest.find(quote as char) {
+            return Some(&rest[..end]);
+        }
+    }
+    // Try angle-bracket form (<version>...</version> or <Version>...</Version>).
+    if let Some(close) = matched.find('>') {
+        let rest = &matched[close + 1..];
+        if let Some(end) = rest.find('<') {
+            return Some(&rest[..end]);
+        }
+    }
+    // Try colon-delimited form (`Version: 1.2.3`).
+    if let Some(colon) = matched.find(':') {
+        return Some(matched[colon + 1..].trim());
+    }
+    // Try `=` delimited unquoted form.
+    if let Some(eq) = matched.find('=') {
+        return Some(matched[eq + 1..].trim());
+    }
+    None
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::pipeline::generate;
+
+    #[test]
+    fn to_pep440_no_prerelease_passthrough() {
+        assert_eq!(to_pep440("1.2.3"), "1.2.3");
+        assert_eq!(to_pep440("0.1.0"), "0.1.0");
+    }
+
+    #[test]
+    fn to_pep440_rc_prerelease() {
+        assert_eq!(to_pep440("0.1.0-rc.1"), "0.1.0rc1");
+        assert_eq!(to_pep440("4.10.0-rc.9"), "4.10.0rc9");
+    }
+
+    #[test]
+    fn to_pep440_alpha_beta_prerelease() {
+        assert_eq!(to_pep440("1.0.0-alpha.2"), "1.0.0a2");
+        assert_eq!(to_pep440("1.0.0-beta.3"), "1.0.0b3");
+    }
+
+    #[test]
+    fn to_pep440_strips_internal_dots() {
+        assert_eq!(to_pep440("0.1.0-rc.1.2"), "0.1.0rc12");
+    }
+
+    #[test]
+    fn matched_version_equals_treats_quote_style_uniformly() {
+        assert!(matched_version_equals("VERSION = '1.0.0'", "1.0.0"));
+        assert!(matched_version_equals("VERSION = \"1.0.0\"", "1.0.0"));
+        assert!(!matched_version_equals("VERSION = '1.0.0'", "2.0.0"));
+        assert!(matched_version_equals("<version>1.0.0</version>", "1.0.0"));
+        assert!(matched_version_equals("Version: 1.0.0", "1.0.0"));
+    }
+
+    #[test]
+    fn test_replace_version_pattern_ruby_version() {
+        let content = r#"# This file is auto-generated by alef
+module Kreuzberg
+  VERSION = "1.0.0"
+end
+"#;
+
+        let result = replace_version_pattern(content, r#"VERSION\s*=\s*['"][^'"]*['"]"#, "2.0.0");
+        assert!(result.is_some());
+
+        let new_content = result.unwrap();
+        assert_eq!(
+            new_content,
+            r#"# This file is auto-generated by alef
+module Kreuzberg
+  VERSION = '2.0.0'
+end
+"#
+        );
+    }
+
+    #[test]
+    fn test_replace_version_pattern_ruby_version_single_quotes() {
+        let content = "VERSION = '1.5.2'";
+
+        let result = replace_version_pattern(content, r#"VERSION\s*=\s*['"][^'"]*['"]"#, "2.0.0");
+        assert!(result.is_some());
+
+        let new_content = result.unwrap();
+        // rubocop Style/StringLiterals: Ruby VERSION constants use single quotes
+        assert_eq!(new_content, "VERSION = '2.0.0'");
+    }
+
+    #[test]
+    fn test_replace_version_pattern_ruby_version_double_quotes() {
+        let content = "VERSION = \"1.5.2\"";
+
+        let result = replace_version_pattern(content, r#"VERSION\s*=\s*['"][^'"]*['"]"#, "3.0.0");
+        assert!(result.is_some());
+
+        let new_content = result.unwrap();
+        // rubocop Style/StringLiterals: output normalised to single quotes regardless of input
+        assert_eq!(new_content, "VERSION = '3.0.0'");
+    }
+
+    #[test]
+    fn test_replace_version_pattern_ruby_in_module() {
+        let content = r#"module MyGem
+  VERSION = "0.5.0"
+end"#;
+
+        let result = replace_version_pattern(content, r#"VERSION\s*=\s*['"][^'"]*['"]"#, "1.0.0");
+        assert!(result.is_some());
+
+        let new_content = result.unwrap();
+        assert!(new_content.contains("VERSION = '1.0.0'"));
+        assert!(!new_content.contains("0.5.0"));
+    }
+
+    #[test]
+    fn test_replace_version_pattern_no_match() {
+        let content = "NOTHING = \"1.0.0\"";
+
+        let result = replace_version_pattern(content, r#"VERSION\s*=\s*['"][^'"]*['"]"#, "2.0.0");
+        assert!(result.is_none());
+    }
+
+    #[test]
+    fn test_replace_version_pattern_preserves_other_content() {
+        let content = r#"# frozen_string_literal: true
+module Kreuzberg
+  VERSION = "1.0.0"
+  # Other stuff
+  CONST = "something"
+end"#;
+
+        let result = replace_version_pattern(content, r#"VERSION\s*=\s*['"][^'"]*['"]"#, "2.0.0");
+        assert!(result.is_some());
+
+        let new_content = result.unwrap();
+        assert!(new_content.contains("# frozen_string_literal: true"));
+        assert!(new_content.contains("CONST = \"something\""));
+        assert!(new_content.contains("VERSION = '2.0.0'"));
+    }
+
+    /// Verify that `finalize_hashes` updates the alef:hash line in a file that
+    /// carries the alef header marker. This exercises the mechanism used by
+    /// `sync_versions` to refresh stale hashes after rewriting version strings.
+    #[test]
+    fn test_finalize_hashes_updates_alef_hash_line() {
+        let dir = tempfile::tempdir().expect("tempdir");
+        let path = dir.path().join("version.rb");
+
+        // Simulate a version.rb that was written by alef with an alef header
+        // but no hash line yet (as written by write_scaffold_files_with_overwrite
+        // before finalize_hashes runs).
+        let content = "# This file is auto-generated by alef — do not edit manually.\n# frozen_string_literal: true\n\nmodule MyGem\n  VERSION = '2.0.0'\nend\n";
+        std::fs::write(&path, content).expect("write");
+
+        let paths: std::collections::HashSet<std::path::PathBuf> = std::iter::once(path.clone()).collect();
+        let n = generate::finalize_hashes(&paths, "test-sources-hash").expect("finalize ok");
+        assert_eq!(n, 1, "finalize_hashes must update the file with the alef:hash line");
+
+        let updated = std::fs::read_to_string(&path).expect("read");
+        assert!(
+            updated.contains("alef:hash:"),
+            "file must contain alef:hash: after finalize_hashes, got:\n{updated}"
+        );
+    }
+
+    /// Verify that `finalize_hashes` is idempotent: running it twice on the same
+    /// file must not change the hash line on the second run.
+    #[test]
+    fn test_finalize_hashes_is_idempotent() {
+        let dir = tempfile::tempdir().expect("tempdir");
+        let path = dir.path().join("version.rb");
+
+        let content =
+            "# This file is auto-generated by alef — do not edit manually.\n\nmodule MyGem\n  VERSION = '2.0.0'\nend\n";
+        std::fs::write(&path, content).expect("write");
+
+        let paths: std::collections::HashSet<std::path::PathBuf> = std::iter::once(path.clone()).collect();
+
+        let _ = generate::finalize_hashes(&paths, "sources").expect("first finalize");
+        let after_first = std::fs::read_to_string(&path).expect("read after first");
+
+        let n2 = generate::finalize_hashes(&paths, "sources").expect("second finalize");
+        assert_eq!(n2, 0, "second finalize_hashes must be a no-op (same hash)");
+
+        let after_second = std::fs::read_to_string(&path).expect("read after second");
+        assert_eq!(after_first, after_second, "content must not change on second finalize");
+    }
+
+    const GEMFILE_LOCK_SAMPLE: &str = "\
+PATH
+  remote: .
+  specs:
+    kreuzberg (4.10.0.pre.rc.13)
+      rb_sys (~> 0.9)
+
+GEM
+  remote: https://rubygems.org/
+  specs:
+    rake (13.4.2)
+
+PLATFORMS
+  ruby
+
+DEPENDENCIES
+  kreuzberg!
+
+CHECKSUMS
+  kreuzberg (4.10.0.pre.rc.13)
+  rake (13.4.2) sha256=abcdef
+
+BUNDLED WITH
+  4.0.7
+";
+
+    #[test]
+    fn sync_gemfile_lock_updates_both_occurrences() {
+        let result = sync_gemfile_lock(GEMFILE_LOCK_SAMPLE, "4.10.0.pre.rc.14");
+        assert!(result.is_some(), "expected Some when version changes");
+        let new = result.unwrap();
+        // PATH > specs entry updated
+        assert!(
+            new.contains("    kreuzberg (4.10.0.pre.rc.14)"),
+            "PATH specs entry not updated:\n{new}"
+        );
+        // CHECKSUMS entry updated
+        assert!(
+            new.contains("  kreuzberg (4.10.0.pre.rc.14)"),
+            "CHECKSUMS entry not updated:\n{new}"
+        );
+        // Other gem versions are unchanged
+        assert!(
+            new.contains("rake (13.4.2)"),
+            "non-path gem version must not change:\n{new}"
+        );
+        // Old version must be gone
+        assert!(!new.contains("4.10.0.pre.rc.13"), "old version must be removed:\n{new}");
+    }
+
+    #[test]
+    fn sync_gemfile_lock_is_idempotent() {
+        let first = sync_gemfile_lock(GEMFILE_LOCK_SAMPLE, "4.10.0.pre.rc.14").unwrap();
+        let second = sync_gemfile_lock(&first, "4.10.0.pre.rc.14");
+        assert!(
+            second.is_none(),
+            "second call with same version must return None (already in sync)"
+        );
+    }
+
+    #[test]
+    fn sync_gemfile_lock_preserves_trailing_newline() {
+        let with_newline = format!("{GEMFILE_LOCK_SAMPLE}\n");
+        let result = sync_gemfile_lock(&with_newline, "4.10.0.pre.rc.99").unwrap();
+        assert!(result.ends_with('\n'), "trailing newline must be preserved");
+    }
+
+    #[test]
+    fn sync_gemfile_lock_no_path_gem_returns_none() {
+        // A Gemfile.lock with no PATH block — nothing to sync.
+        let content = "GEM\n  remote: https://rubygems.org/\n  specs:\n    rake (13.4.2)\n";
+        let result = sync_gemfile_lock(content, "1.0.0");
+        assert!(result.is_none(), "no PATH gem means nothing to update");
+    }
+
+    #[test]
+    fn restore_gleam_dep_ranges_repairs_corrupted_workspace_version_ranges() {
+        let corrupted = "name = \"kreuzberg\"\nversion = \"5.0.0-rc.1\"\ntarget = \"erlang\"\n\n[dependencies]\ngleam_stdlib = \">= 5.0.0-rc.1 and < 5.0.0-rc.1\"\n\n[dev-dependencies]\ngleeunit = \">= 5.0.0-rc.1 and < 5.0.0-rc.1\"\n";
+        let healed = restore_gleam_dep_ranges(corrupted);
+        assert!(
+            healed.contains("gleam_stdlib = \">= 0.34.0 and < 2.0.0\""),
+            "gleam_stdlib should be restored to canonical range, got:\n{healed}"
+        );
+        assert!(
+            healed.contains("gleeunit = \">= 1.0.0 and < 2.0.0\""),
+            "gleeunit should be restored to canonical range, got:\n{healed}"
+        );
+        // The package version line itself must not be touched.
+        assert!(
+            healed.contains("version = \"5.0.0-rc.1\""),
+            "package version must not be rewritten, got:\n{healed}"
+        );
+    }
+
+    #[test]
+    fn restore_gleam_dep_ranges_is_idempotent_on_healthy_input() {
+        let healthy = "name = \"kreuzberg\"\nversion = \"5.0.0-rc.1\"\n\n[dependencies]\ngleam_stdlib = \">= 0.34.0 and < 2.0.0\"\n\n[dev-dependencies]\ngleeunit = \">= 1.0.0 and < 2.0.0\"\n";
+        let healed = restore_gleam_dep_ranges(healthy);
+        assert_eq!(healed, healthy, "healthy gleam.toml must not be rewritten");
+    }
+}

@@ -1,5 +1,0 @@
----
-source: common/tests/snapshot_extract_v5.rs
-expression: "wrap(&ty, &[\"Result\"])"
----
-Result < adze :: WithLeaf < String > , adze :: WithLeaf < i32 > >

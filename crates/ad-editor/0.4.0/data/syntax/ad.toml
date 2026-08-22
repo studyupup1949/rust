@@ -1,2 +1,0 @@
-comment = "\\b#.*"
-keyword = "\\b(x|y|g|v|p)/.+/\\b"

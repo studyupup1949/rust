@@ -1,7 +1,0 @@
-query ListProjects {
-    projects {
-        id
-        key
-        name
-    }
-}

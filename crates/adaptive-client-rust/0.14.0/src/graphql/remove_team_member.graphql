@@ -1,7 +1,0 @@
-mutation RemoveTeamMember($input: TeamMemberRemove!) {
-    removeTeamMember(input: $input) {
-        id
-        email
-        name
-    }
-}

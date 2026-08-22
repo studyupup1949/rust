@@ -1,7 +1,0 @@
-[self]
-name = "add-header"
-version = "0.5.5"
-description = "A cli to add headers to files"
-license = "MPL-2.0"
-authors = ["AmeKnite"]
-repository = "https://github.com/ameknite/add-header"

@@ -1,5 +1,0 @@
----
-source: common/tests/snapshot_expansion_v2.rs
-expression: "wrap(&parse_quote!([u8; 4]), &[])"
----
-adze :: WithLeaf < [u8 ; 4] >

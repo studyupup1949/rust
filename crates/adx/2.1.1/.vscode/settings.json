@@ -1,3 +1,0 @@
-{
-    "formatFiles.excludePattern": "**/node_modules,**/.vscode,**/dist/**,**/.chrome,**/target,**/offline-copy"
-}

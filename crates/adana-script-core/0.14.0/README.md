@@ -1,1 +1,0 @@
-intrinsics for adana

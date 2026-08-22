@@ -1,3 +1,0 @@
-//! # addon
-//!
-//! More to std

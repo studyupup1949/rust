@@ -1,7 +1,0 @@
-{
-  "git": {
-    "sha1": "974514cc0ba2eedf359ecbff3496a9d0d07c19ac",
-    "dirty": true
-  },
-  "path_in_vcs": "src/mangrove/libs/adaptive-client-rust"
-}

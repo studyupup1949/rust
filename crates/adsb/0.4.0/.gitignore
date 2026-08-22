@@ -1,4 +1,0 @@
-/dump
-/target
-**/*.rs.bk
-Cargo.lock

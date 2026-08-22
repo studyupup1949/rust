@@ -1,8 +1,0 @@
-[package]
-name = "adder_for_TRPL_test"
-version = "0.1.0"
-edition = "2024"
-description = "A fun game where you guess what number the computer has chosen"
-license = "MIT or Apache-2.0"
-
-[dependencies]

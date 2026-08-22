@@ -1,7 +1,0 @@
-query GetCustomRecipes($project: IdOrKey!) {
-    customRecipes(project: $project, filter: {}) {
-        key
-        name
-        description
-    }
-}

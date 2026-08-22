@@ -1,5 +1,0 @@
----
-source: common/tests/snapshot_extract_v5.rs
-expression: "format!(\"is_vec={}\", is_generic_container(&ty, \"Vec\"))"
----
-is_vec=false

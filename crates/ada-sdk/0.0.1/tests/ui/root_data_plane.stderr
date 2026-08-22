@@ -1,5 +1,0 @@
-error[E0599]: no method named `ingest` found for struct `AdaClient` in the current scope
- --> tests/ui/root_data_plane.rs:5:12
-  |
-5 |     client.ingest(IngestRequest::default()).await;
-  |            ^^^^^^ method not found in `AdaClient`

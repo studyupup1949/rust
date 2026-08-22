@@ -1,1 +1,0 @@
-ADTP (**A**lula's **D**ata **T**ransfer **P**rotocol)

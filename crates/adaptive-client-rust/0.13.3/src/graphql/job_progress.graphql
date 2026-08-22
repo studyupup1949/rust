@@ -1,6 +1,0 @@
-mutation UpdateJobProgress($jobId: UUID!, $event: JobProgressEventInput!) {
-    updateJobProgress(jobId: $jobId, event: $event) {
-        success
-        message
-    }
-}

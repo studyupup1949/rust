@@ -1,8 +1,0 @@
-[package]
-name = "ad-core"
-version = "0.6.2"
-edition = "2021"
-description = "[DEPRECATED] Core types and base classes for areaDetector-rs — Use epics-rs instead"
-license-file = "LICENSE"
-repository = "https://github.com/epics-rs/epics-rs"
-readme = "README.md"

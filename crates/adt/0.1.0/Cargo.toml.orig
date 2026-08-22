@@ -1,8 +1,0 @@
-[package]
-name = "adt"
-version = "0.1.0"
-authors = ["ahdavis <ahdavis13@gmail.com>"]
-description = "Implementations of abstract data types"
-license = "LGPL-3.0-or-later"
-
-[dependencies]

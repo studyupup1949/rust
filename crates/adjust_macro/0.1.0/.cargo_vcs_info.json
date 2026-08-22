@@ -1,7 +1,0 @@
-{
-  "git": {
-    "sha1": "bd3167445881b0e4aa1921469fd9abca84d61e14",
-    "dirty": true
-  },
-  "path_in_vcs": "crates/adjust_macro"
-}

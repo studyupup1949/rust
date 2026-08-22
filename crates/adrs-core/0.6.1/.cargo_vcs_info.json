@@ -1,6 +1,0 @@
-{
-  "git": {
-    "sha1": "2fc998d2f0426d2c5511f671b581ce6891034b4a"
-  },
-  "path_in_vcs": "crates/adrs-core"
-}

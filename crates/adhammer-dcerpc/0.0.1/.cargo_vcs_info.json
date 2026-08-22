@@ -1,6 +1,0 @@
-{
-  "git": {
-    "sha1": "e85512793c1c0132212c515d21922a03b01f5c49"
-  },
-  "path_in_vcs": "crates/dcerpc"
-}

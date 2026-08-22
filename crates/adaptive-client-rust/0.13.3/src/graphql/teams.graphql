@@ -1,8 +1,0 @@
-query ListTeams {
-    teams {
-        id
-        key
-        name
-        createdAt
-    }
-}

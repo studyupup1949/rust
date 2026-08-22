@@ -1,6 +1,0 @@
-mutation UploadDataset($file: Upload!, $name: String, $project: IdOrKey!) {
-    createDataset(input: { name: $name, project: $project }, file: $file) {
-        id
-        key
-    }
-}

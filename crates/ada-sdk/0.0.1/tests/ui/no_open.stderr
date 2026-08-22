@@ -1,5 +1,0 @@
-error[E0599]: no method named `open` found for struct `PrincipalEvents` in the current scope
- --> tests/ui/no_open.rs:4:12
-  |
-4 |     events.open();
-  |            ^^^^ method not found in `PrincipalEvents`

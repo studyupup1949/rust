@@ -1,3 +1,0 @@
-# the trailing newline here is required for the test
-arg isfile 
-plumb to editor

@@ -1,9 +1,0 @@
-query GetDataset($idOrKey: IdOrKey!, $useCase: IdOrKey!) {
-    dataset(idOrKey: $idOrKey, useCase: $useCase) {
-        id
-        key
-        name
-        kind
-        downloadUrl
-    }
-}

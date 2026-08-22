@@ -1,7 +1,0 @@
-
-! Hello from included_part3
-included.part3
-
-! Special modifier rules
-||example.com^$cookie=NAME
-||tracking.example.com^$important

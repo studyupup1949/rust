@@ -1,6 +1,0 @@
-{
-  "git": {
-    "sha1": "a7f5f2090e272f2414249822d2689b2c3b6683c5"
-  },
-  "path_in_vcs": "crates/adk-macros"
-}

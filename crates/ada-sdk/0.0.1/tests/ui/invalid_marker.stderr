@@ -1,5 +1,0 @@
-error[E0599]: no method named `on_memory_deleted` found for struct `PrincipalEvents` in the current scope
- --> tests/ui/invalid_marker.rs:4:12
-  |
-4 |     events.on_memory_deleted(|_| {});
-  |            ^^^^^^^^^^^^^^^^^ method not found in `PrincipalEvents`

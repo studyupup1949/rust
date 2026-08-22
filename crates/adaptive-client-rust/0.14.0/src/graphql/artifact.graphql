@@ -1,8 +1,0 @@
-query GetArtifact($project: IdOrKey!, $id: UUID!) {
-    artifact(project: $project, id: $id) {
-        id
-        jobId
-        kind
-        metadata
-    }
-}

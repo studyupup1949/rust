@@ -1,2 +1,0 @@
-# hypo
-Automatic hypothesis testing

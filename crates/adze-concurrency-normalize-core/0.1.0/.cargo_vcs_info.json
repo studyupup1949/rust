@@ -1,6 +1,0 @@
-{
-  "git": {
-    "sha1": "aedce4fc1d10818632df9fedb959cbe513bac44f"
-  },
-  "path_in_vcs": "crates/concurrency-normalize-core"
-}

@@ -1,7 +1,0 @@
-! CSS rules
-example.com##.ads:style(visibility: hidden !important)
-example.org#$#.popup { display: none!important; }
-
-! Hello from included_part1
-
-included.part##.txt:style(visibility: hidden !important)

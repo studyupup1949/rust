@@ -1,8 +1,0 @@
-[package]
-name = "advay26-rust-workshop-tools-lib"
-version = "0.1.2"
-edition = "2021"
-description = "Advay's sample library crate for the Rust workshop"
-license = "MIT"
-
-[dependencies]

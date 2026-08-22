@@ -1,9 +1,0 @@
-[package]
-name = "adventurex_2025_shitfounder"
-version = "0.1.0"
-authors = ["atianxiua@163.com"]
-description = "AdventureX 2025 Project 寻找 Shit 计划"
-repository = "https://github.com/tianxiu2b2t/adventurex_2025_shitfounder"
-license = "MIT"
-keywords = ["adventurex", "shit"]
-categories = ["games"]

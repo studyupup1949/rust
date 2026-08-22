@@ -1,9 +1,0 @@
-[package]
-name = "adolf"
-description = "A renowed diagnostics crate."
-license = "MIT"
-authors = ["advantageous-overtake"]
-version = "0.1.0"
-edition = "2021"
-
-[dependencies]

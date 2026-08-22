@@ -1,7 +1,0 @@
-{
-  "git": {
-    "sha1": "837a001ba88dc4102fadd83dc2aaa7035a1bae34",
-    "dirty": true
-  },
-  "path_in_vcs": "crates/rohas-adapters/adapter-memory"
-}

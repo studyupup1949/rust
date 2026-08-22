@@ -1,1 +1,0 @@
-- [ ] Subdivide D into components (D_intensity, D_stability, D_roi)

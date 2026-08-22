@@ -1,9 +1,0 @@
-# Logs
-logs
-*.log
-
-target
-
-# Editor directories and files
-.vscode/*
-!.vscode/extensions.json

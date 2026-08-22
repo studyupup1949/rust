@@ -1,5 +1,0 @@
-src: bash
-dst: ad
-attrs: a=b c=d
-ndata: 13
-data: hello, world!

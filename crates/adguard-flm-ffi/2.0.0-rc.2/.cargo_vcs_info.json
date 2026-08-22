@@ -1,7 +1,0 @@
-{
-  "git": {
-    "sha1": "e1427f3c6c5e5350794b8316eca8b1f7ecce60d9",
-    "dirty": true
-  },
-  "path_in_vcs": "crates/ffi"
-}

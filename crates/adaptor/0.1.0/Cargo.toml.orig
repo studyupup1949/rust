@@ -1,9 +1,0 @@
-[package]
-name = "adaptor"
-version = "0.1.0"
-edition = "2021"
-authors = ["Raku Hasegawa <raku@avesia.org>"]
-description = "WIP: A gui library"
-license = "MIT"
-
-[dependencies]

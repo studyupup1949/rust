@@ -1,8 +1,0 @@
-mutation CreateTeam($input: TeamCreate!) {
-    createTeam(input: $input) {
-        id
-        key
-        name
-        createdAt
-    }
-}

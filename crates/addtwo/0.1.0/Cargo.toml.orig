@@ -1,9 +1,0 @@
-[package]
-name = "addtwo"
-version = "0.1.0"
-edition = "2021"
-authors = ["Bool <2697470851@qq.com>"]
-description = "A test add-one funcation"
-license = "MIT OR Apache-2.0"
-
-[dependencies]

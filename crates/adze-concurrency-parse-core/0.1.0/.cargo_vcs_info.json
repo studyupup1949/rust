@@ -1,6 +1,0 @@
-{
-  "git": {
-    "sha1": "b412af9cfef5a8eae4de6f83339442b9104bb420"
-  },
-  "path_in_vcs": "crates/concurrency-parse-core"
-}

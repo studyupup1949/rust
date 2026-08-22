@@ -1,4 +1,0 @@
-*.lock
-/target
-.DS_Store
-build

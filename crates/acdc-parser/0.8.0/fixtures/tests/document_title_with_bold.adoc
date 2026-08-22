@@ -1,3 +1,0 @@
-= *Bold* Title
-
-Content here.

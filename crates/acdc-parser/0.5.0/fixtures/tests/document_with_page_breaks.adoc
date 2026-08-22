@@ -1,9 +1,0 @@
-# a document with page breaks
-
-<<<
-
-This is a new page.
-
-- - -
-
-And finally, the end.

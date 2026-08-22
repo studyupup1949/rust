@@ -1,5 +1,0 @@
-package host:impl;
-
-world act-world {
-  export act:tools/tool-provider@0.1.0;
-}

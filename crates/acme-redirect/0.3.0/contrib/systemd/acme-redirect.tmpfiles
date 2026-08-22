@@ -1,2 +1,0 @@
-d /run/acme-redirect 0770 acme-redirect acme-redirect - -
-d /var/lib/acme-redirect 0770 acme-redirect acme-redirect - -

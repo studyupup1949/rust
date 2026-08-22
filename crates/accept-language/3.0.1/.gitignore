@@ -1,5 +1,0 @@
-target/
-**/*.rs.bk
-fuzz/artifacts
-fuzz/corpus
-fuzz/target

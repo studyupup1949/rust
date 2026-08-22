@@ -1,1 +1,0 @@
-image:pause.png[title=Pause stuff]

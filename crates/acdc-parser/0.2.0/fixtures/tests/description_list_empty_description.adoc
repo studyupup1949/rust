@@ -1,2 +1,0 @@
-Term 1::
-Term 2:: With description

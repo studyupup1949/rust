@@ -1,3 +1,0 @@
-= Include with Wildcard Excluding Tag Test
-
-include::tagged_content.adoc[tags=*;!debug]

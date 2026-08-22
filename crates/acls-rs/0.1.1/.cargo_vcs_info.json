@@ -1,7 +1,0 @@
-{
-  "git": {
-    "sha1": "6104b4379ac3c875395ea5645f9b71da7274b444",
-    "dirty": true
-  },
-  "path_in_vcs": "crates/acls-rs"
-}

@@ -1,9 +1,0 @@
-[package]
-name = "acai"
-version = "0.1.0"
-authors = ["Robert Escriva <robert@rescrv.net>"]
-edition = "2021"
-description = "acai is an ai workflow tool, currently a placeholder"
-license = "Apache-2.0"
-
-[dependencies]

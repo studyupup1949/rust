@@ -1,5 +1,0 @@
-/target
-.env
-.idea/
-Cargo.lock
-.vscode/

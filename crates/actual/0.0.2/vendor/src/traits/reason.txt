@@ -1,3 +1,0 @@
-ext ->extension traits for pre-existing types (str, String, &[T], and wanto)
-ops ->arithmetic/operator impls (your VectorArithmetic stuff)
-cusotm -> ma own datatpyes

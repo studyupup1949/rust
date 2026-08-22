@@ -1,7 +1,0 @@
-:snippetFilename: ./index.js
-
-.{snippetFilename}
-[source,javascript]
-----
-const hello = 'world';
-----

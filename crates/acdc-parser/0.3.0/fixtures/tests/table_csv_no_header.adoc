@@ -1,6 +1,0 @@
-[format=csv]
-|===
-Alice,Developer,Engineering
-Bob,Designer,Marketing
-Carol,Manager,Operations
-|===

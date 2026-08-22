@@ -1,8 +1,0 @@
-[package]
-name = "action"
-description = "reserved name for future crate"
-license = "MIT"
-version = "0.1.0"
-edition = "2024"
-
-[dependencies]

@@ -1,3 +1,0 @@
-This is middle content.
-
-include::inner.adoc[]

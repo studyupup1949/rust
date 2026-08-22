@@ -1,7 +1,0 @@
-{
-  "git": {
-    "sha1": "2a074ddf180a117dc4a0e4708fd4262e89bbdc01",
-    "dirty": true
-  },
-  "path_in_vcs": "actix-redis"
-}

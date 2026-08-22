@@ -1,1 +1,0 @@
-pub trait Message: Sized{}

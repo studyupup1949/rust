@@ -1,3 +1,0 @@
-mod partial_next_acceptors_trait_impl;
-
-pub use partial_next_acceptors_trait_impl::PartialNextAcceptorsTraitImpl;

@@ -1,1 +1,0 @@
-Fixed `+` separator handling in `kbd:[Ctrl+C]` syntax

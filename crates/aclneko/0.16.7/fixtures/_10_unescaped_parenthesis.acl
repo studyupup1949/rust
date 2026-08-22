@@ -1,3 +1,0 @@
-2 acl write task.domain=hamoshachi
-    0 allow path="proc:/(\*)/\*"
-    10 deny

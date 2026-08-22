@@ -1,9 +1,0 @@
-[package]
-name = "acutejson"
-version = "0.1.0"
-edition = "2024"
-description = "Quickly get things out of JSON"
-license = "Apache-2.0"
-repository = "https://github.com/alexsnaps/acutejson"
-
-[dependencies]

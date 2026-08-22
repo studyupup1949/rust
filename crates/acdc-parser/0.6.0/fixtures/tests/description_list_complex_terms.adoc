@@ -1,2 +1,0 @@
-Multi word term:: Description here
-Term with-dashes:: Another description

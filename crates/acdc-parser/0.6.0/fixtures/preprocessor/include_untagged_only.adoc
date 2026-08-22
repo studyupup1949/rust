@@ -1,3 +1,0 @@
-= Include Untagged Content Only Test
-
-include::tagged_content.adoc[tags=!*]

@@ -1,5 +1,0 @@
-= Main Document
-
-include::include_utf16le.adoc[]
-
-After include.

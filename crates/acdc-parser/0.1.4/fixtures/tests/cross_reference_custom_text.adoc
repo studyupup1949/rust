@@ -1,9 +1,0 @@
-= Cross Reference with Custom Text
-
-== Introduction
-
-See the <<conclusion,final section>> for more details.
-
-== Conclusion
-
-This is the conclusion section.

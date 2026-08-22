@@ -1,9 +1,0 @@
-[package]
-name = "act2pal"
-version = "0.1.4"
-edition = "2021"
-license = "MIT"
-description = "Converts Adobe Color Tables to .pal files."
-
-[dependencies]
-clap = { version = "4.5.26", features = ["derive"] }

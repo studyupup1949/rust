@@ -1,7 +1,0 @@
-[package]
-authors = ["rise0chen <rise0chen@163.com>"]
-description = "Crate name reserved"
-edition = "2018"
-license-file = "LICENSE"
-name = "ach"
-version = "0.0.1"

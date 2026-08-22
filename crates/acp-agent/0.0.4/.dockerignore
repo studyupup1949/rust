@@ -1,8 +1,0 @@
-*
-!Cargo.toml
-!Cargo.lock
-!Dockerfile
-!src/
-!src/**
-!data/
-!data/yolo-modes.json

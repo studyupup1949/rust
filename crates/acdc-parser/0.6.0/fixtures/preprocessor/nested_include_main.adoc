@@ -1,3 +1,0 @@
-= Nested Include Test
-
-include::subdir/middle.adoc[]

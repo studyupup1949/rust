@@ -1,9 +1,0 @@
-word +passthrough+ word
-
-word +passthrough+
-
-+passthrough+ word
-
-+passthrough+
-
-(+passthrough+) and [+passthrough+]

@@ -1,3 +1,0 @@
-:experimental:
-
-Press kbd:[Ctrl+Shift+N] for incognito.

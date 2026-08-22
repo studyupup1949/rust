@@ -1,6 +1,0 @@
-{
-  "git": {
-    "sha1": "9545fcca0dc56777b663c10e033dfc0f9069768f"
-  },
-  "path_in_vcs": "crates/actuate-macros"
-}

@@ -1,7 +1,0 @@
-*~
-*.pyc
-*.pyo
-*.o
-Cargo.lock
-/target/
-/ref/

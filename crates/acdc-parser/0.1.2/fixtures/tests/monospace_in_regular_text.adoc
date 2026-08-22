@@ -1,1 +1,0 @@
-Workspace-level `forbid(unsafe_code)`, pedantic clippy in CI, `cargo fmt` checks.

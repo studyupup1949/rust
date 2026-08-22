@@ -1,4 +1,0 @@
-[quote, 'https://example.com/docs[Example Docs]']
-____
-This is a quote with a URL citation.
-____

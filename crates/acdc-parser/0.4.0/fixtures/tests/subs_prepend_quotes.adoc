@@ -1,4 +1,0 @@
-[subs=quotes+]
-----
-*bold* and _italic_ first
-----

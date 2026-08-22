@@ -1,1 +1,0 @@
-return ctx.msg .. ' processed'

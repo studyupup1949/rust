@@ -1,9 +1,0 @@
-[package]
-name = "actolyte"
-version = "0.0.0"
-edition = "2024"
-description = "Your devoted (Actuarial) follower..."
-license = "Apache-2.0"
-repository = "https://github.com/paddyhoran/actolyte"
-
-[dependencies]

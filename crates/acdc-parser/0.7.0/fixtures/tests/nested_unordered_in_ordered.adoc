@@ -1,4 +1,0 @@
-. First ordered item
-  * Nested unordered A
-  * Nested unordered B
-. Second ordered item

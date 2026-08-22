@@ -1,4 +1,0 @@
-// Override the generated directory to compile an internal version of the document.
-:generated-dir: acorns/generated/internal
-
-include::main.adoc[]

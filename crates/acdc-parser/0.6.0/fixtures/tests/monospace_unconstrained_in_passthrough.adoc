@@ -1,1 +1,0 @@
-Code pass:q[Use ``special function`` here] works.

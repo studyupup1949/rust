@@ -1,8 +1,0 @@
-[project]
-authors = ["O2 Exchange <contact@o2.app>"]
-entry = "access_control_test.sw"
-license = "Apache-2.0"
-name = "access_control_test"
-
-[dependencies]
-contract_libs = { path = "../../libs" }

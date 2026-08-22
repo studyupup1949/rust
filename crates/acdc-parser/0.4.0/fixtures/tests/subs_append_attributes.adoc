@@ -1,6 +1,0 @@
-:attribute: a *bold* attribute
-
-[subs=+attributes]
-----
-Content with {attribute}
-----

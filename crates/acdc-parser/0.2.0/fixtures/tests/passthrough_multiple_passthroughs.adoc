@@ -1,1 +1,0 @@
-Multiple passthroughs: pass:q[*bold*] and pass:v[*verbatim*] and pass:[*none*] with different substitutions.

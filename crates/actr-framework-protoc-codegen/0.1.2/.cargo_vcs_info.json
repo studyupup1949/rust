@@ -1,6 +1,0 @@
-{
-  "git": {
-    "sha1": "4868fd7095dd4be4fbc9ba09595486e6edf93146"
-  },
-  "path_in_vcs": "crates/framework-protoc-codegen"
-}

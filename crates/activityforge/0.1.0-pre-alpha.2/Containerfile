@@ -1,8 +1,0 @@
-FROM docker.io/rust:alpine3.22
-
-WORKDIR /src
-
-COPY . /src
-
-RUN apk add bash fish vim curl git ripgrep openssl-dev openssl-libs-static
-RUN cargo install --path .

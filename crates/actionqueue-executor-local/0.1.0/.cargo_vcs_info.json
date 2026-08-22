@@ -1,6 +1,0 @@
-{
-  "git": {
-    "sha1": "49ac9050bdfd8d5da1d772fbda35cc786be75f88"
-  },
-  "path_in_vcs": "crates/actionqueue-executor-local"
-}

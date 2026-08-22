@@ -1,2 +1,0 @@
-# actors
-Rust actors.

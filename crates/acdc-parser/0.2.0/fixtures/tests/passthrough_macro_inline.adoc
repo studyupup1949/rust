@@ -1,1 +1,0 @@
-The text pass:q[<del>strike *this*</del>] is marked as deleted.

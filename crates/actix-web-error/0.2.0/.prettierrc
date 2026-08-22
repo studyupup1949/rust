@@ -1,6 +1,0 @@
-trailingComma: es5
-endOfLine: lf
-overrides:
-  - files: "*.md"
-    options:
-      proseWrap: preserve

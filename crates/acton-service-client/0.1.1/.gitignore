@@ -1,6 +1,0 @@
-# Hidden files and directories (except .gitignore)
-.*
-!.gitignore
-
-# Rust
-target/

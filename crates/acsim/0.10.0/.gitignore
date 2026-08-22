@@ -1,8 +1,0 @@
-/target
-*.png
-*.jpg
-*.gif
-*.jpeg
-.env
-acsim.db
-/data

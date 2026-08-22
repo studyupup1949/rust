@@ -1,6 +1,0 @@
-.DS_Store
-*.log
-/target
-**/*.rs.bk
-/extras/
-Makefile.local

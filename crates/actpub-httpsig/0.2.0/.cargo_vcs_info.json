@@ -1,6 +1,0 @@
-{
-  "git": {
-    "sha1": "a4b86dc101450b430a67051449e7278217cf5324"
-  },
-  "path_in_vcs": "crates/actpub-httpsig"
-}

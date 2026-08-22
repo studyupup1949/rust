@@ -1,8 +1,0 @@
-[package]
-name = "acom"
-description = "[A]synchronus [Co]operative [M]ultitasking"
-version = "0.0.1"
-edition = "2024"
-license = "MIT"
-
-[dependencies]

@@ -1,4 +1,0 @@
-= Document Title
-:author: Test Author
-
-Some content.

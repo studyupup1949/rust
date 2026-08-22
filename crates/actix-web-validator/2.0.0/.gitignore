@@ -1,7 +1,0 @@
-/target
-**/*.rs.bk
-Cargo.lock
-**/target
-tarpaulin-report.html
-
-.idea

@@ -1,4 +1,0 @@
-*.wasm
-__pycache__/
-wit/deps/
-.venv/

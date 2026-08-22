@@ -1,6 +1,0 @@
-/.devcontainer
-/.vscode
-/target
-
-Cargo.lock
-bindings.rs

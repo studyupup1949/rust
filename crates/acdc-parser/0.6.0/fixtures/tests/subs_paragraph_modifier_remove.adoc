@@ -1,2 +1,0 @@
-[subs=-quotes]
-This has *bold* and _italic_ text.

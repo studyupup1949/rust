@@ -1,3 +1,0 @@
-= Include with Multiple Tags Test
-
-include::tagged_content.adoc[tags=intro;main]

@@ -1,2 +1,0 @@
-Any ampersands (+&+) and angle brackets (+<+ or
-+>+) will be translated into HTML entities.

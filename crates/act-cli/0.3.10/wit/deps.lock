@@ -1,4 +1,0 @@
-[act-core]
-url = "https://github.com/actcore/act-spec/archive/main.tar.gz"
-sha256 = "2f099c8558f3f64c6d80546386c5dbcbe5e379c3c1e8af16dae378184162f719"
-sha512 = "c721dc6d2247bad5fde0d10e27fd78e96402853d12b6ffdc1fddd209c93fc91b3f289bc07634f5eb6b9ba085884cd12106abaa6a2020d6040ab56f18982ca45f"

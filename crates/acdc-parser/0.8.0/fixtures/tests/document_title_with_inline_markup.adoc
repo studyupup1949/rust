@@ -1,3 +1,0 @@
-= _Italic_ and *bold* title
-
-Content here.

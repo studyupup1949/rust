@@ -1,5 +1,0 @@
-    pattern: "jun %{int:day} %{int:hour}:%{int:min}:%{int:sec} lobotomy sshd[%{int:pid}]: accepted publickey for zts from %{int:oct0}.%{int:oct1}.%{int:oct2}.%{int:oct3} port %{int:port} ssh2"
-  -
-    name: "ssh_disconnect"
-    uuid: "9a49c47d-29e9-4072-be84-3b76c6814743"
-    pattern: "jun %{int:day} %{int:hour}:%{int:min}:%{int:sec} lobotomy sshd[%{int:pid}]: received disconnect from %{greedy:ipaddr}: %{int:dunno}: disconnected by user"

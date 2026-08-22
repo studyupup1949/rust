@@ -1,8 +1,0 @@
-[self]
-name = "actix-firebase-auth"
-version = "0.3.0"
-description = "Firebase ID token verification for Actix Web using Google's JWKs"
-license = "MIT OR Apache-2.0"
-notices = ["Copyright (c) 2025 Nelson Dominguez"]
-authors = ["Nelson Dominguez <ekkolon@proton.me>"]
-repository = "https://github.com/ekkolon/actix-firebase-auth"

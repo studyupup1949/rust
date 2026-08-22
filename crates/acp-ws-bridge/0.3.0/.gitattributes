@@ -1,7 +1,0 @@
-# Auto detect text files and normalize line endings
-* text=auto
-
-# Rust
-*.rs text diff=rust
-*.toml text
-Cargo.lock text -diff

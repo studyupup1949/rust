@@ -1,8 +1,0 @@
-[preface]
-= Foreword
-
-This is a Foreward
-
-== Foreword Subsection
-
-This is a foreword subsection

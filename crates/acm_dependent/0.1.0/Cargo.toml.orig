@@ -1,9 +1,0 @@
-[package]
-name = "acm_dependent"
-version = "0.1.0"
-edition = "2021"
-description = "Project dependent on the arithmetic_congruence_monoid library for working with arithmetic congruence monoids (ACM)."
-license = "MIT"
-
-[dependencies]
-arithmetic_congruence_monoid = "1.0.3"

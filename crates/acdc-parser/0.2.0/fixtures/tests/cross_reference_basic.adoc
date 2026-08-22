@@ -1,9 +1,0 @@
-= Cross Reference Test
-
-== Introduction
-
-This is a reference to <<conclusion>>.
-
-== Conclusion
-
-This is the conclusion section.

@@ -1,8 +1,0 @@
-[package]
-name = "ackermann_function"
-version = "0.1.0"
-description = "Rust crate"
-license = "MIT"
-edition = "2024"
-
-[dependencies]

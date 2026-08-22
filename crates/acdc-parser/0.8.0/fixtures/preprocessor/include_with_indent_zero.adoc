@@ -1,3 +1,0 @@
-= Indent Zero Test
-
-include::include_indent_source.rb[indent=0]

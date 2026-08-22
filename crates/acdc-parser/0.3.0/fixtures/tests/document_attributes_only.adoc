@@ -1,2 +1,0 @@
-:attributeA: a simple attribute
-:attributeB: another attribute

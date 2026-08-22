@@ -1,2 +1,0 @@
-[subs=specialchars]
-This has link:https://example.com[text] and macro text.

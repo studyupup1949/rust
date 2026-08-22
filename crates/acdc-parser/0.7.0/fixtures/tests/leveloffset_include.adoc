@@ -1,7 +1,0 @@
-= Main Document
-
-First paragraph in main.
-
-include::leveloffset_included.adoc[leveloffset=+1]
-
-Last paragraph in main.

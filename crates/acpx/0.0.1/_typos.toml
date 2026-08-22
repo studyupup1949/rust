@@ -1,5 +1,0 @@
-[default.extend-words]
-acpx = "acpx"
-
-[default.extend-identifiers]
-ACPX = "ACPX"

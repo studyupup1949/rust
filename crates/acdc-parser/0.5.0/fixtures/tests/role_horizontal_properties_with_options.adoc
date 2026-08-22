@@ -1,2 +1,0 @@
-[horizontal,role=properties,options=step]
-A paragraph

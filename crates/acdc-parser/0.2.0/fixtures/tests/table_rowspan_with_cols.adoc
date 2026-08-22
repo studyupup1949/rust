@@ -1,8 +1,0 @@
-[cols="1,1,1"]
-|===
-| A | B | C
-
-.2+| Spans rows | D | E
-| F | G
-| H | I | J
-|===

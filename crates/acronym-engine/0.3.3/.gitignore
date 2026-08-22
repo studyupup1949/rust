@@ -1,9 +1,0 @@
-/target
-/models
-*.onnx
-**/*.rs.bk
-*.db
-*.sqlite
-*.sqlite3
-*.sock
-.DS_Store

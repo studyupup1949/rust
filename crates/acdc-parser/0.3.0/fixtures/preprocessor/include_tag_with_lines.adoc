@@ -1,3 +1,0 @@
-= Include with Tag and Lines Test
-
-include::tagged_content.adoc[tag=intro,lines=4]

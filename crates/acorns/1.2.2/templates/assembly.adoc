@@ -1,8 +1,0 @@
-[id="{{ id }}"]
-= {{ title }}
-
-{{ intro_abstract }}
-
-{% for include in includes %}
-{{ include }}
-{% endfor %}

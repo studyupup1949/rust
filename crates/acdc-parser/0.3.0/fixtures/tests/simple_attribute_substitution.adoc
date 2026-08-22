@@ -1,5 +1,0 @@
-:version: **1.0**
-
-== Version {version} Release Notes
-
-Some content here.

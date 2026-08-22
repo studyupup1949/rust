@@ -1,3 +1,0 @@
-/home/tibi/workspace/actiondb/kcov/build/src/CMakeFiles/bash_execve_redirector.dir
-/home/tibi/workspace/actiondb/kcov/build/src/CMakeFiles/kcov.dir
-/home/tibi/workspace/actiondb/kcov/build/src/CMakeFiles/kcov_sowrapper.dir

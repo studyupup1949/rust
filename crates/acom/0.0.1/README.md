@@ -1,3 +1,0 @@
-# acom
-
-Coming Soon

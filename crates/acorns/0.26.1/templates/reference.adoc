@@ -1,8 +1,0 @@
-[id="{{ id }}"]
-= {{ title }}
-
-{{ intro_abstract }}
-
-{% for release_note in release_notes %}
-{{ release_note }}
-{% endfor %}

@@ -1,2 +1,0 @@
-10 acl chmod
-    0 deny path=@bin

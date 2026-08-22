@@ -1,9 +1,0 @@
-[package]
-name = "access-cell"
-version = "0.1.3"
-edition = "2024"
-description = "A cell that allows **re-entrant mutable access** without deadlock"
-license = "Apache-2.0"
-repository = "https://github.com/selimaj-dev/access-cell"
-
-[dependencies]

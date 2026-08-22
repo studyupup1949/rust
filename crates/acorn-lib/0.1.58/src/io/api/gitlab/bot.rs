@@ -1,1 +1,0 @@
-//! GitLab bot implementation

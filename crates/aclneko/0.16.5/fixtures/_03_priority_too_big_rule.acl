@@ -1,2 +1,0 @@
-0 acl inet_stream_connect task.exe="/usr/bin/curl"
-  65537 allow port=443

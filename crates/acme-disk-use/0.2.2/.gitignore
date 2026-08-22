@@ -1,4 +1,0 @@
-/target
-*.log
-logs/
-benches/benchmark_data/

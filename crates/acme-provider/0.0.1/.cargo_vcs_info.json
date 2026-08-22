@@ -1,6 +1,0 @@
-{
-  "git": {
-    "sha1": "7db4a52258a1ecb581adcbe34c5e0fab70fb896e"
-  },
-  "path_in_vcs": "crates/lib/acme-provider"
-}

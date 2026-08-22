@@ -1,6 +1,0 @@
-//! Content-Encoding support
-mod decoder;
-mod encoder;
-
-pub use self::decoder::Decoder;
-pub use self::encoder::Encoder;

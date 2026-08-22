@@ -1,3 +1,0 @@
-= Include with Double Wildcard Test
-
-include::tagged_content.adoc[tags=**]

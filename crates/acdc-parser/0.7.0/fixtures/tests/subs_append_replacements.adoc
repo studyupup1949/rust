@@ -1,4 +1,0 @@
-[subs=+replacements]
-----
-Arrow: -> and <-
-----

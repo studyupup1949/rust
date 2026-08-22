@@ -1,8 +1,0 @@
-____
-First paragraph in quote.
-
-Second paragraph in quote.
-
-.Quote author
-Third paragraph with title.
-____

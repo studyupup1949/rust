@@ -1,6 +1,0 @@
-{
-  "git": {
-    "sha1": "39f01502b9fde29b25e63fa2e3e7031c78a339a2"
-  },
-  "path_in_vcs": "crates/actpub-axum"
-}

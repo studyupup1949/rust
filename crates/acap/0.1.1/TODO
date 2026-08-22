@@ -1,9 +1,0 @@
-In place k_nearest
-
-Python bindings for ann-benchmarks
-
-Clean up TryFrom stuff for distance embeddings
-
-Don't recurse for unbalanced trees
-
-Blanket impls for Box<T>, Rc<T>, Arc<T>

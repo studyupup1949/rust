@@ -1,6 +1,0 @@
-[bumpversion]
-current_version = 0.2.1
-
-[bumpversion:file:Cargo.toml]
-search = version = "{current_version}"
-replace = version = "{new_version}"

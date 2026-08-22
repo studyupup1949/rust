@@ -1,6 +1,0 @@
-{
-  "git": {
-    "sha1": "2608b7bec0b54f764f73fe65b376997c618d11a1"
-  },
-  "path_in_vcs": "crates/actionqueue-cli"
-}

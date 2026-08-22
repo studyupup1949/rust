@@ -1,8 +1,0 @@
-## Section One
-
-- Item one
-- Item two
-
-## Section Two
-
-Some content here.

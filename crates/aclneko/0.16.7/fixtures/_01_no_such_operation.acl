@@ -1,2 +1,0 @@
-10 acl usagi_stream_connect
-  0 allow port=443

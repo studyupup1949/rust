@@ -1,6 +1,0 @@
-[%header,format=csv]
-|===
-name,role,department
-Alice,Developer,Engineering
-Bob,Designer,Marketing
-|===

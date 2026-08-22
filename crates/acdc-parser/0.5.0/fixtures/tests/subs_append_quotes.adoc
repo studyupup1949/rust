@@ -1,4 +1,0 @@
-[subs=+quotes]
-----
-Content with *bold* and _italic_
-----

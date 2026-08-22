@@ -1,7 +1,0 @@
-.Passthrough block with comments
-++++
-<div class="custom">
-// This comment should be preserved in passthrough
-Raw HTML content
-</div>
-++++

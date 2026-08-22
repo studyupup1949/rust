@@ -1,2 +1,0 @@
-10 acl rename
-  1 allow old_path="/home/neko" old_path.uid=10000 old_path.parent.uid=0 new_path="/home/tora"

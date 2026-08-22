@@ -1,4 +1,0 @@
-[id="overview"]
-= Overview of major changes in {ProductShort}
-
-Highlight the major changes here.

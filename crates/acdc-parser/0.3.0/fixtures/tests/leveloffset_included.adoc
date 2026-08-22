@@ -1,7 +1,0 @@
-= Included Section
-
-Content from the included file.
-
-== Nested Section
-
-More included content.

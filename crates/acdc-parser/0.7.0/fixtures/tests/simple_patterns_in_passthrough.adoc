@@ -1,1 +1,0 @@
-pass:q[*bold* and ^super^] text.

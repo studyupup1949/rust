@@ -1,5 +1,0 @@
-scope: global
-tools:
-  deploy:
-    allow: true
-    requires_approval_if: "agent.depth >= 2"

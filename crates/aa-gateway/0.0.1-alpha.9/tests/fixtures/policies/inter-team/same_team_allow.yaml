@@ -1,5 +1,0 @@
-scope: global
-tools:
-  message:
-    allow: true
-    requires_approval_if: "target.team_id != \"team-alpha\""

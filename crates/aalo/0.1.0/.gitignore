@@ -1,8 +1,0 @@
-/target
-.cargo
-rust-toolchain.toml
-*.code-workspace
-index.html
-dist
-nickel/Nickel-pkg.lock
-.helix

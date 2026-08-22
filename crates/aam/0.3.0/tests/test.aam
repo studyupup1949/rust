@@ -1,6 +1,0 @@
-hello = ash
-@schema Name {
-   name: string 
-}
-
-alias = not_alias

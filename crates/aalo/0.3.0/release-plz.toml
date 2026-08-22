@@ -1,4 +1,0 @@
-[workspace]
-changelog_update = false
-git_release_type = "auto"
-git_release_draft = true

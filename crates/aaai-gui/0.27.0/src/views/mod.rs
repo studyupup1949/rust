@@ -1,9 +1,0 @@
-pub mod batch;
-pub mod dashboard;
-pub mod diff_view;
-pub mod help_overlay;
-pub mod inspector;
-pub mod main_view;
-pub mod nav_guard;
-pub mod opening;
-pub mod settings_dialog;

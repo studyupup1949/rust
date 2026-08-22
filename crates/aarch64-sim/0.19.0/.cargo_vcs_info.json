@@ -1,6 +1,0 @@
-{
-  "git": {
-    "sha1": "bfffb4d3ae6df287fb696f7087fb03a163b92d78"
-  },
-  "path_in_vcs": "crates/aarch64-sim"
-}

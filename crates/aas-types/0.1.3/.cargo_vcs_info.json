@@ -1,7 +1,0 @@
-{
-  "git": {
-    "sha1": "9743e8ba40b73afdb77ed749b855953643f9165c",
-    "dirty": true
-  },
-  "path_in_vcs": "crates/aas/types"
-}

@@ -1,4 +1,0 @@
-scope: org:acme
-network:
-  allowlist:
-    - acme.internal

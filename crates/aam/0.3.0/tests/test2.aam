@@ -1,6 +1,0 @@
-@derive test.aam::Name
-a = b
-s = d
-a = c
-host = render
-name = ok

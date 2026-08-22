@@ -1,7 +1,0 @@
-[toolchain]
-components = [
-    "rustfmt",
-    "rust-src",
-    "clippy",
-]
-targets = [ "aarch64-unknown-none" ]

@@ -1,7 +1,0 @@
-hello = ash
-name = "Ashish"
-@schema Name {
-   name: string
-}
-
-alias = not_alias

@@ -1,7 +1,0 @@
-target
-!src/**/target
-
-/.idea
-/.vscode
-
-Cargo.lock

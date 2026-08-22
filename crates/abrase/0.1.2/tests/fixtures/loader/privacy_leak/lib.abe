@@ -1,3 +1,0 @@
-fn helper(x: Int) -> Int { x + 1 }
-
-pub fn double(x: Int) -> Int { helper(x) + helper(x) }

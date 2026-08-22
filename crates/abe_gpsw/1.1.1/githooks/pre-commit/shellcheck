@@ -1,7 +1,0 @@
-#!/bin/bash
-
-set -e
-
-shellcheck scripts/*.sh
-shellcheck githooks/pre-commit/*
-shellcheck tests/*.sh

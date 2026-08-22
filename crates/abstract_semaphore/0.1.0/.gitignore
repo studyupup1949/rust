@@ -1,8 +1,0 @@
-/target
-
-# Archivos temporales de editores
-.rs.bk
-/.idea/
-/.vscode/
-*.swp
-*.swo

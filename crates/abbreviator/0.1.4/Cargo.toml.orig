@@ -1,9 +1,0 @@
-[package]
-name = "abbreviator"
-version = "0.1.4"
-authors = ["Vagelis Prokopiou <vagelis.prokopiou@gmail.com>"]
-edition = "2018"
-description = "A library for abbreviating long words."
-license = "MIT OR Apache-2.0"
-repository = "https://github.com/Vagelis-Prokopiou/abbreviator"
-readme = "README.md"

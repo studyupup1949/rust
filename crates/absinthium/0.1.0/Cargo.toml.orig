@@ -1,9 +1,0 @@
-[package]
-authors = ["Riven Skaye <riven@tae.moe>"]
-name = "absinthium"
-version = "0.1.0"
-edition = "2024"
-license = "MPL-2.0"
-description = "WIP utility for playlist management, built on libabsinthium"
-
-[dependencies]

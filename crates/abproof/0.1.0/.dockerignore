@@ -1,7 +1,0 @@
-target/
-.git/
-.github/
-tests/
-docs/
-*.md
-dist/

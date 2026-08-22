@@ -1,5 +1,0 @@
-// Just a nice little single variant enum
-
-enum "SingleVariantEnum" {
-    "A"
-}

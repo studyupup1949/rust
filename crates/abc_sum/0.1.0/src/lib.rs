@@ -1,3 +1,0 @@
-fn sum(input1: u32, input2:u32) -> u32{
-    input1 + input2
-}

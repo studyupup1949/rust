@@ -1,6 +1,0 @@
-{
-  "git": {
-    "sha1": "ca046669021deac3bb879ee5f51f8b5a5611dae9"
-  },
-  "path_in_vcs": "crates/abi-typegen-core"
-}

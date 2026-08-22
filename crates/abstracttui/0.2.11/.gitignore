@@ -1,6 +1,0 @@
-/target
-*.profraw
-.DS_Store
-/book
-untracked/
-runtime/

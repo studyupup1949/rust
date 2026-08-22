@@ -1,3 +1,0 @@
-[submodule "deps/glibc-abi-tool"]
-	path = deps/glibc-abi-tool
-	url = https://github.com/ziglang/glibc-abi-tool

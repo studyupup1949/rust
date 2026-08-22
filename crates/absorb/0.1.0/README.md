@@ -1,3 +1,0 @@
-# Absorb
-
-quickly absorb text.

@@ -1,5 +1,0 @@
-include:
-  - project: 'abn3213932/common-ci'
-    ref: main
-    file: 'rust.yml'
-

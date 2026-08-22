@@ -1,5 +1,0 @@
-[alias]
-xtask = "run --package xtask --offline"
-xtask-r = "run --release --package xtask --offline"
-xtool = "run --package xtool --offline"
-xtool-r = "run --release --package xtool --offline"

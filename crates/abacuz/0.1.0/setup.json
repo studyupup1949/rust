@@ -1,6 +1,0 @@
-{
-    "serverDebug": true,
-    "serverVerbose": true,
-    "serverHost": "0.0.0.0",
-    "serverPort": 5490
-}

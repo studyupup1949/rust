@@ -1,6 +1,0 @@
-[package]
-name = "aber"
-version = "0.1.1"
-edition = "2024"
-description = "Aber"
-license = "MIT"

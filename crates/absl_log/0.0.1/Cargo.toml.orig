@@ -1,6 +1,0 @@
-[package]
-name = "absl_log"
-version = "0.0.1"
-edition = "2021"
-description = "Name squatting. Contact cramertj@google.com for usage."
-license = "Apache-2.0"

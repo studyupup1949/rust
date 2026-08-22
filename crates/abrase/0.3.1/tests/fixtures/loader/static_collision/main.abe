@@ -1,5 +1,0 @@
-use lib::{read_lib_k};
-
-static K: Int = 1;
-
-fn main() -> Int { K + read_lib_k() }

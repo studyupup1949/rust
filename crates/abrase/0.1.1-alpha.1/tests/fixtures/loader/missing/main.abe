@@ -1,3 +1,0 @@
-use nowhere::{thing};
-
-fn main() -> Int { 0 }

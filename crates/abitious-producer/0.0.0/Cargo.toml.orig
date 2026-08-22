@@ -1,6 +1,0 @@
-[package]
-name = "abitious-producer"
-version = "0.0.0"
-edition = "2021"
-description = "Placeholder to reserve the name for crates.io trusted publishing. Real releases publish via CI (OIDC)."
-license = "MIT"

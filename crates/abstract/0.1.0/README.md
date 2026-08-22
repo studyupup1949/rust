@@ -1,2 +1,0 @@
-# abstract
-Abstract rendering engine

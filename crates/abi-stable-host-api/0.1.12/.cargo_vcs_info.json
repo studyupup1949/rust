@@ -1,6 +1,0 @@
-{
-  "git": {
-    "sha1": "6b6a6411b318167e609bc31b33e6e3aae3b60e64"
-  },
-  "path_in_vcs": "crates/abi-stable-host-api"
-}
